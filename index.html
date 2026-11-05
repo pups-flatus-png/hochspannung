@@ -537,6 +537,8 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .recs .linkbtn{justify-self:start;text-align:left}
 .kv2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .kv2 small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg.lang button{padding:7px 10px;font-size:13px}
+.menu .seg.lang{margin-bottom:4px}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -980,7 +982,7 @@ function plantLine(n){
 function plantInfo(n){
   const[t,k,c]=PLANTS[n];const owner=S.players.find(p=>p.plants.includes(n));const fc=fuelCost(t,k);
   const where=owner?'Im Besitz von '+esc(owner.name):S.market.includes(n)?(buyable().includes(n)?'Aktueller Markt, kaufbar':'Zukünftiger Markt'):'Nicht im Markt';
-  return `<div class="pinfo">${plantCard(n,{lg:true,store:owner?(storeOf(owner)[n]||[]):undefined})}<dl class="kv"><dt>Typ</dt><dd>${TYPE_NAME[t]}</dd><dt>Bedarf</dt><dd>${t==='eco'?'keiner':k+' '+RNAME[t]+' je Lieferung'}</dd><dt>Versorgt</dt><dd>${c} ${c===1?'Stadt':'Städte'}</dd><dt>Effizienz</dt><dd>${t==='eco'?'kostenloser Betrieb':(c/k).toFixed(1).replace('.',',')+' Städte je Einheit'}</dd><dt>Lager</dt><dd>${t==='eco'?'–':2*k+' Einheiten'}</dd><dt>Brennstoff jetzt</dt><dd>${t==='eco'?'0 €':fc===Infinity?'nicht genug am Markt':fc+' € je Lieferung'}</dd><dt>Mindestgebot</dt><dd>${minBid(n)} €${minBid(n)!==n?' (Rabatt)':''}</dd><dt>Status</dt><dd>${where}</dd></dl></div>`;
+  return `<div class="pinfo">${plantCard(n,{lg:true,store:owner?(storeOf(owner)[n]||[]):undefined})}<dl class="kv"><dt>Typ</dt><dd>${TYPE_NAME[t]}</dd><dt>Bedarf</dt><dd>${t==='eco'?'keiner':k+' '+RNAME[t]+' je Lieferung'}</dd><dt>Versorgt</dt><dd>${c} ${c===1?'Stadt':'Städte'}</dd><dt>Effizienz</dt><dd>${t==='eco'?'kostenloser Betrieb':(Math.round(c/k*10)/10).toLocaleString(LANG==='en'?'en-GB':'de-DE')+' Städte je Einheit'}</dd><dt>Lager</dt><dd>${t==='eco'?'–':2*k+' Einheiten'}</dd><dt>Brennstoff jetzt</dt><dd>${t==='eco'?'0 €':fc===Infinity?'nicht genug am Markt':fc+' € je Lieferung'}</dd><dt>Mindestgebot</dt><dd>${minBid(n)} €${minBid(n)!==n?' (Rabatt)':''}</dd><dt>Status</dt><dd>${where}</dd></dl></div>`;
 }
 function trackHTML(r,k=0){
   const first=CAP[r]-S.resMarket[r];let groups='';
@@ -1357,7 +1359,7 @@ function renderSheet(){
   if(!UI.sheet){sheet.hidden=true;sheet.innerHTML='';return}
   let h='';const head=t=>`<div class="sheet-head"><h2>${t}</h2><button type="button" class="btn x" data-act="close">Schließen</button></div>`;
   if(UI.sheet==='menu'){
-    h=head('Menü')+`<div class="menu"><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button></div>`;
+    h=head('Menü')+`<div class="menu"><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button></div>`;
   }else if(UI.sheet==='opp'){
     h=head('Gegner und Betriebe')+S.order.map(id=>{const p=P(id);const sv=storeOf(p);const pool=RES.filter(r=>p.pool[r]>0).map(r=>`<span class="stock">${resIcon(r)}${p.pool[r]}</span>`).join('')||'<span class="hint">leer</span>';
       return `<div class="opp" ${pc(id)}><div class="h"><b>${esc(p.name)}</b><span>${p.money} €</span><span>${p.cities.length} Städte</span><span>Kapazität ${capacity(p)}</span>${p.lastPowered?`<span>zuletzt ${p.lastPowered} versorgt</span>`:''}</div><div class="cards">${p.plants.map(n=>plantCard(n,{lg:true,store:sv[n]||[],act:'pinfo'})).join('')||'<span class="hint">noch keine Kraftwerke</span>'}</div><div class="stock-row"><span class="lbl">Lager</span>${pool}</div></div>`}).join('');
@@ -1409,8 +1411,175 @@ function renderStart(show){
   start.hidden=false;
   start.innerHTML=`<svg class="wires" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path d="M-20 120H180L260 200H520L600 120H820"/><path d="M-20 470H140L230 380H470L560 470H820"/><path d="M260 200V380M520 200V380"/><circle cx="180" cy="120" r="7"/><circle cx="260" cy="200" r="7"/><circle cx="520" cy="200" r="7"/><circle cx="600" cy="120" r="7"/><circle cx="230" cy="380" r="7"/><circle cx="470" cy="380" r="7"/></svg>
   <div class="startbox"><div class="title"><h1>Hoch<em>span</em>nung</h1><p>Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über Deutschland. Wer am Ende die meisten Städte versorgt, gewinnt.</p><span class="volt">380 kV · 3–4 Betriebe</span></div>
-  <div class="form"><label for="nm">Dein Firmenname<input id="nm" maxlength="18" value="${esc(UI.name||'Du')}"></label><div class="gl">Gegner</div><div class="seg"><button type="button" data-act="nai" data-n="2" class="${UI.nAI===2?'on':''}">2 KI</button><button type="button" data-act="nai" data-n="3" class="${UI.nAI===3?'on':''}">3 KI</button></div><div class="gl">KI-Stärke</div><div class="seg">${['easy','normal','hard'].map(d=>`<button type="button" data-act="diff" data-d="${d}" class="${UI.diff===d?'on':''}">${AI_NAME[d]}</button>`).join('')}</div><div class="gl">Netzgebiet</div>${regionPicker()}<button type="button" class="btn pri" data-act="start" ${regionsOk()?'':'disabled'}>Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn" data-act="cont">Weiterspielen</button>':''}<button type="button" class="btn" data-act="startrules">Spielregeln</button><button type="button" class="btn" data-act="stats">Statistik${(()=>{const n=loadHist().length;return n?' · '+n+(n===1?' Partie':' Partien'):''})()}</button></div></div>`;
+  <div class="form"><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><label for="nm">Dein Firmenname<input id="nm" maxlength="18" value="${esc(UI.name||(LANG==='en'?'You':'Du'))}"></label><div class="gl">Gegner</div><div class="seg"><button type="button" data-act="nai" data-n="2" class="${UI.nAI===2?'on':''}">2 KI</button><button type="button" data-act="nai" data-n="3" class="${UI.nAI===3?'on':''}">3 KI</button></div><div class="gl">KI-Stärke</div><div class="seg">${['easy','normal','hard'].map(d=>`<button type="button" data-act="diff" data-d="${d}" class="${UI.diff===d?'on':''}">${AI_NAME[d]}</button>`).join('')}</div><div class="gl">Netzgebiet</div>${regionPicker()}<button type="button" class="btn pri" data-act="start" ${regionsOk()?'':'disabled'}>Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn" data-act="cont">Weiterspielen</button>':''}<button type="button" class="btn" data-act="startrules">Spielregeln</button><button type="button" class="btn" data-act="stats">Statistik${(()=>{const n=loadHist().length;return n?' · '+n+(n===1?' Partie':' Partien'):''})()}</button></div></div>`;
 }
+
+/* --- Sprache --- */
+let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
+const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
+const TP=[
+[/^(.+) verzichtet auf ein Kraftwerk\.$/u,'$1 passes on buying a plant.'],
+[/^(.+) bietet (\d+) € auf Kraftwerk (\d+)\.$/u,'$1 bids $2 € on plant $3.'],
+[/^(.+) erhöht auf (\d+) €\.$/u,'$1 raises to $2 €.'],
+[/^(.+) steigt aus\.$/u,'$1 drops out.'],
+[/^(.+) kauft Kraftwerk (\d+) für (\d+) €\.$/u,'$1 buys plant $2 for $3 €.'],
+[/^(.+) legt Kraftwerk (\d+) still\.$/u,'$1 retires plant $2.'],
+[/^(.+) kauft keine Rohstoffe\.$/u,'$1 buys no resources.'],
+[/^(.+) kauft (.+) für (\d+) €\.$/u,'$1 buys $2 for $3 €.'],
+[/^(.+) baut in (.+) \((\d+) €\)\.$/u,'$1 builds in $2 ($3 €).'],
+[/^(.+) nimmt den Ausbau zurück\.$/u,'$1 undoes this turn\'s building.'],
+[/^(.+) baut nicht aus\.$/u,'$1 does not build.'],
+[/^(.+) versorgt (\d+) Stadt und verdient (\d+) €\.$/u,'$1 powers $2 city and earns $3 €.'],
+[/^(.+) versorgt (\d+) Städte und verdient (\d+) €\.$/u,'$1 powers $2 cities and earns $3 €.'],
+[/^(.+) gewinnt mit (\d+) versorgten Städten\.$/u,'$1 wins with $2 cities powered.'],
+[/^Neues Spiel\. Netzgebiet: (.+)\. KI-Stärke: (.+)\.$/u,'New game. Map area: $1. AI difficulty: $2.'],
+[/^Rabatt: Das kleinste Kraftwerk (\d+) ist diese Runde ab 1 € zu haben\.$/u,'Discount: the smallest plant, $1, starts at 1 € this round.'],
+[/^Das Rabatt-Kraftwerk (\d+) wurde nicht gekauft und fällt weg\.$/u,'Discount plant $1 was not bought and is removed.'],
+[/^Niemand hat gekauft\. Kraftwerk (\d+) fällt weg\.$/u,'Nobody bought. Plant $1 is removed.'],
+[/^Kraftwerk (\d+) ist veraltet und fällt aus dem Markt\.$/u,'Plant $1 is obsolete and leaves the market.'],
+[/^Stufe 3 beginnt\. Kraftwerk (\d+) fällt weg, alle sechs Marktkraftwerke sind kaufbar\.$/u,'Step 3 begins. Plant $1 is removed; all six market plants can be bought.'],
+[/^Stufe 2 beginnt: Jede Stadt bietet jetzt zwei Plätze\. Kraftwerk (\d+) fällt weg\.$/u,'Step 2 begins: every city now has two slots. Plant $1 is removed.'],
+[/^Ein Netz hat (\d+) Städte erreicht\. Dies ist die letzte Stromlieferung\.$/u,'A network has reached $1 cities. This is the final power delivery.'],
+[/^(.+) hat Kraftwerk (\d+) zur Versteigerung gestellt\. Du kannst nur mitbieten oder aussteigen\. Steigst du aus, kommst du danach selbst an die Reihe und wählst dein eigenes Kraftwerk aus dem aktuellen Markt\.$/u,'$1 has put plant $2 up for auction. You can only bid along or drop out. If you drop out, it is your turn afterwards and you pick your own plant from the current market.'],
+[/^(.+) ist am Zug …$/u,'$1 is playing …'],
+[/^(.+) legt ein Kraftwerk still\.$/u,'$1 is retiring a plant.'],
+[/^(.+) legt Kraftwerk (\d+) still\.$/u,'$1 retires plant $2.'],
+[/^Die Gegner haben bereits geliefert: (.+) Städte\.$/u,'Opponents have already delivered: $1 cities.'],
+[/(\d+) von (\d+) Städten versorgt/u,'$1 of $2 cities powered'],
+[/Runde (\d+) · Stufe (\d+) · KI /u,'Round $1 · Step $2 · AI '],
+[/Platz (\d+) von (\d+)/u,'Rank $1 of $2'],
+[/: Platz (\d+), (\d+) Euro, (\d+) Städte/u,': position $1, $2 euros, $3 cities'],
+[/(\d+) Platz je Stadt/u,'$1 slot per city'],[/(\d+) Plätze je Stadt/u,'$1 slots per city'],
+[/Stufe 2 ab (\d+) Städten/u,'Step 2 at $1 cities'],
+[/^Kraftwerk (\d+) stilllegen$/u,'Retire plant $1'],
+[/^Kraftwerk (\d+) verbrennt zuerst$/u,'Plant $1 burns first'],
+[/Kapazität danach: (\d+) Städte \(jetzt (\d+)\)/u,'Capacity afterwards: $1 cities (now $2)'],
+[/^Für (\d+) € anbieten$/u,'Offer for $1 €'],
+[/^Kaufen · (\d+) €$/u,'Buy · $1 €'],
+[/^Hier bauen · (\d+) €$/u,'Build here · $1 €'],
+[/^Platz (\d+) € \+ Leitung (\d+) € = $/u,'Slot $1 € + connection $2 € = '],
+[/^Mit (\d+) Städten endet das Spiel nach dieser Runde\.$/u,'With $1 cities the game ends after this round.'],
+[/^Diesen Zug gebaut: (.+) \((\d+) €\)$/u,'Built this turn: $1 ($2 €)'],
+[/^(\d+) gebaut · Kapazität (\d+)$/u,'$1 built · capacity $2'],
+[/Tippe auf eine Stadt mit Preisschild\. Der Preis enthält den Platz in der Stadt \((.+)\) und die günstigste Leitung zu deinem Netz\./u,'Tap a city with a price tag. The price covers the slot in the city ($1) plus the cheapest connection to your network.'],
+[/^Wähle (\d+) Regionen \((\d+) gewählt\)\.$/u,'Choose $1 regions ($2 selected).'],
+[/^Zufällig: (\d+) zusammenhängende Regionen\.$/u,'Random: $1 connected regions.'],
+[/Partie vom /u,'Game from '],
+[/Stufe 2 ab Runde (\d+)/u,'Step 2 from round $1'],[/Stufe 3 ab Runde (\d+)/u,'Step 3 from round $1'],
+[/^(\d+) R · (.+) · (\d+) Sp\.$/u,'$1 R · $2 · $3 pl.'],
+[/Vom Netz gingen Ø (.+) € in Stadtplätze und (.+) € in Leitungen\./u,'Of network spending, Ø $1 € went to city slots and $2 € to connections.'],
+[/Stufe 2 beginnt bei dir im Schnitt in Runde ([\d.,]+)(?:, Stufe 3 in Runde ([\d.,]+))?\./u,(m,a,b)=>`On average, Step 2 starts in round ${a}${b?`, Step 3 in round ${b}`:''}.`],
+[/Nr\. (\d+) für (\d+) €/u,'No. $1 for $2 €'],
+[/^Alle (\d+) Partien löschen\?$/u,'Delete all $1 games?'],
+[/^Niemand lagert (.+)\.$/u,'Nobody stores $1.'],
+[/versorgt bis (\d+)/u,'powers up to $1'],
+[/zuletzt (\d+) versorgt/u,'last powered $1'],
+[/^Kraftwerk (\d+), /u,'Plant $1, '],
+[/, versorgt (\d+)$/u,', powers $1'],
+[/(\d+) (.+) je Lieferung/u,'$1 $2 per delivery'],
+[/(.+) Städte je Einheit/u,'$1 cities per unit'],
+[/(\d+) € je Lieferung/u,'$1 € per delivery'],
+[/Stufe 2 beginnt, sobald ein Netz (\d+) Städte hat\. Stufe 3 beginnt, wenn ihre Karte aus dem Stapel kommt\. Erreicht jemand (\d+) Städte, folgt eine letzte Lieferung: Es gewinnt, wer dann die meisten Städte versorgt\. Bei Gleichstand zählt das Geld\./u,'Step 2 begins as soon as a network has $1 cities. Step 3 begins when its card comes out of the deck. Once someone reaches $2 cities, one final delivery follows: whoever then powers the most cities wins. Ties are broken by money.'],
+[/Im Besitz von /u,'Owned by '],
+[/(.+) für Kraftwerk (\d+) mehr$/u,'More $1 for plant $2'],[/(.+) für Kraftwerk (\d+) weniger$/u,'Less $1 for plant $2'],
+[/^Lager von Kraftwerk (\d+)$/u,'Storage of plant $1'],
+[/^(.+) gewinnt\.$/u,'$1 wins.'],
+];
+const TS=Object.entries({
+'Lege dein Startgebot fest.':'Set your opening bid.',
+'Die Stufe-3-Karte ist aufgetaucht. Nach der Versteigerung beginnt Stufe 3.':'The Step 3 card has appeared. Step 3 begins after the auction.',
+'Tippe auf ein Kraftwerk im aktuellen Markt, um es zu versteigern.':'Tap a plant in the current market to put it up for auction.',
+' In der ersten Runde muss jeder ein Kraftwerk kaufen.':' In the first round everyone must buy a plant.',
+'Du hast nicht genug Geld, um zu erhöhen.':"You don't have enough money to raise.",
+'Alle liefern Strom. Wähle deine Kraftwerke.':'Everyone delivers power. Choose your plants.',
+'Du bist am Zug':"It's your turn",'Du eröffnest':'You open the auction','Diese Runde passen':'Pass this round',
+'Markt · alle kaufbar':'Market · all buyable','Aktueller Markt, kaufbar':'Current market, buyable','Aktueller Markt':'Current market','Zukünftiger Markt':'Future market','Nicht im Markt':'Not in the market','im Stapel':'in deck',
+'Ein Kraftwerk stilllegen':'Retire a power plant','Auswahl öffnen':'Open selection','Noch nichts ausgewählt.':'Nothing selected yet.',
+'Du hast jetzt vier Kraftwerke, darfst aber nur drei betreiben. Wähle im Fenster aus, welches du stilllegst.':'You now have four plants but may only run three. Choose in the window which one to retire.',
+'Du darfst nur drei Kraftwerke betreiben. Tippe das Kraftwerk an, das du abgeben möchtest, und bestätige. Es verlässt das Spiel endgültig.':'You may only run three plants. Tap the plant you want to give up and confirm. It leaves the game for good.',
+'Alle Rohstoffe finden auf deinen anderen Kraftwerken Platz.':'All resources fit on your other plants.','Geht verloren: ':'Lost: ',
+'Rohstoffmarkt':'Resource market','Einlagern pro Kraftwerk':'Store per plant',
+'Kauf für jedes Kraftwerk gezielt ein. Du bekommst immer die billigsten Einheiten zuerst, jedes Kraftwerk lagert das Doppelte seines Bedarfs.':'Buy for each plant individually. You always get the cheapest units first, and each plant stores twice what it burns.',
+'Deine Kraftwerke brauchen keine Rohstoffe.':"Your plants don't need resources.",'Bedarf für eine Runde':'One round of fuel','Lager neu verteilen':'Rearrange storage','Nichts kaufen':'Buy nothing',
+'Gebaut wird in umgekehrter Reihenfolge. Die Farben in den Städten zeigen, wer dort Strom liefert.':'Building goes in reverse order. The colours in the cities show who supplies them.',
+'Dein Netzausbau':'Your network','Günstigste Städte':'Cheapest cities','Keine Stadt ist für dich frei.':'No city is available to you.','Zurücknehmen':'Undo','Ausbau beenden':'Finish building','Zu wenig Geld':'Not enough money',
+'Tippe Kraftwerke an oder ab. Jedes verbraucht die Rohstoffe, die auf ihm lagern.':'Tap plants on or off. Each one burns the resources stored on it.',
+'Du hast keine Kraftwerke.':'You have no plants.',
+'Mindestens ein gewähltes Kraftwerk hat zu wenig Rohstoffe auf Lager. Verteile dein Lager neu oder wähle anders.':'At least one selected plant has too few resources in storage. Rearrange your storage or choose differently.',
+'Dein Betrieb':'Your company','Ganzes Protokoll':'Full log','Ergebnis ansehen':'View results','Spielende':'Game over','Spiel beendet':'game over',
+'Neues Spiel einrichten':'Set up new game','Neues Spiel?':'New game?','Das laufende Spiel wird beendet.':'The current game will end.','Neues Spiel':'New game',
+'Alle Betriebe':'All companies','Gegner und Betriebe':'Opponents and companies','noch keine Kraftwerke':'no plants yet',
+'Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.':'Restocking happens after every power delivery and depends on the step. What is missing from the supply cannot be restocked.',
+'So läuft eine Runde':'How a round works','1 · Reihenfolge':'1 · Turn order','2 · Kraftwerke versteigern':'2 · Auction power plants','3 · Rohstoffe kaufen':'3 · Buy resources','4 · Netz ausbauen':'4 · Build your network','5 · Strom liefern':'5 · Deliver power','Stufen und Ende':'Steps and game end',
+'Wer die meisten Städte hat, ist zuerst dran. Bei Gleichstand entscheidet das größte Kraftwerk. Beim Rohstoffkauf und beim Bauen geht es rückwärts, der Führende kommt also zuletzt.':'Whoever has the most cities goes first. Ties are broken by the largest plant. Buying resources and building go in reverse, so the leader comes last.',
+'Reihum eröffnet jeder eine Versteigerung um ein Kraftwerk aus dem aktuellen Markt oder passt. Das Mindestgebot ist die Kraftwerksnummer. Jeder kauft höchstens ein Kraftwerk pro Runde und betreibt höchstens drei.':'In turn, each player opens an auction for a plant from the current market or passes. The minimum bid is the plant number. Everyone buys at most one plant per round and runs at most three.',
+'Rabatt: Das kleinste Kraftwerk im aktuellen Markt startet jede Runde mit einem Mindestgebot von 1 €. Kauft es niemand, fällt es am Ende der Versteigerung aus dem Spiel.':'Discount: the smallest plant in the current market starts every round with a minimum bid of 1 €. If nobody buys it, it leaves the game at the end of the auction.',
+'Kohle, Öl, Müll und Uran werden teurer, je knapper sie sind. Jedes Kraftwerk lagert das Doppelte seines Bedarfs. Öko-Kraftwerke brauchen nichts.':'Coal, oil, garbage and uranium get more expensive the scarcer they are. Each plant stores twice what it burns. Eco plants need nothing.',
+'Die erste Stadt kostet 10 €. Jede weitere kostet den Platz plus die günstigste Leitung zu deinem Netz. In Stufe 2 öffnet der zweite Platz einer Stadt (15 €), in Stufe 3 der dritte (20 €).':'Your first city costs 10 €. Each further city costs the slot plus the cheapest connection to your network. In Step 2 a city\'s second slot opens (15 €), in Step 3 the third (20 €).',
+'Du verdienst Geld für jede Stadt, die du mit deinen Kraftwerken versorgst. Danach füllt sich der Rohstoffmarkt auf und der Kraftwerksmarkt rückt nach.':'You earn money for every city you power with your plants. Afterwards the resource market restocks and the plant market moves on.',
+'Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über Deutschland. Wer am Ende die meisten Städte versorgt, gewinnt.':'Win power plants at auction, buy fuel on the market and stretch your grid across Germany. Whoever powers the most cities at the end wins.',
+'380 kV · 3–4 Betriebe':'380 kV · 3–4 companies','Dein Firmenname':'Your company name','Netzgebiet steht.':'Map area is set.','Die Regionen müssen aneinandergrenzen.':'The regions must border each other.','Weiterspielen':'Continue','Regionen auswählen':'Choose regions',
+'Jede Stadt bietet jetzt einen zweiten Platz für 15 €.':'Every city now offers a second slot for 15 €.','Dritter Platz für 20 €. Alle sechs Marktkraftwerke sind kaufbar.':'Third slot for 20 €. All six market plants can be bought.','Neue Stufe':'New step',
+'Stufe 3 nach der Auktion':'Step 3 after the auction','Stufe 3 kommt mit ihrer Karte':'Step 3 comes with its card','Letzte Stufe':'Final step',
+'Noch keine beendete Partie':'No finished game yet',
+'Spiel eine Partie bis zur letzten Stromlieferung. Danach siehst du hier Siegquote, Rekorde, deine Ausgaben für Kraftwerke, Rohstoffe und Netz, die Verläufe von Geld und Städten und deine ganze Spielhistorie.':'Play a game through to the final power delivery. Then you will see your win rate, records, your spending on plants, resources and network, money and city curves, and your full game history here.',
+'Nach KI-Stärke':'By AI difficulty','Wer dich am häufigsten schlägt':'Who beats you most often','Meiste versorgte Städte':'Most cities powered','Höchstes Einkommen in einer Runde':'Highest income in one round','Meiste Elektro am Ende':'Most money at the end','Schnellster Sieg':'Fastest win','Teuerstes Kraftwerk':'Most expensive plant','Längste Partie':'Longest game',
+'Wirtschaft je Partie':'Economy per game','Durchschnitt über alle Partien.':'Average across all games.','Gekaufte Einheiten und Ø Preis je Einheit, alle Partien.':'Units bought and Ø price per unit, all games.','Noch keine Käufe.':'No purchases yet.','Am häufigsten gebaut':'Built most often','Gespielte Regionen':'Regions played','Noch keine Städte gebaut.':'No cities built yet.',
+'Partie im Detail':'Game details','Städte im Netz':'Cities in network','Für diese Partie liegen keine Rundenverläufe vor.':'No round-by-round data for this game.','Tippe eine Partie an, um sie oben im Detail zu sehen.':'Tap a game to see it in detail above.','Statistik zurücksetzen':'Reset statistics','Endgültig löschen':'Delete permanently','← Zurück':'← Back',
+'Ø Aufpreis':'Ø markup','Rabattkäufe':'Discount buys','Lieblingstyp':'Favourite type','Siegquote':'Win rate','Ø Platz':'Ø rank','Ø versorgt':'Ø powered','Ø Runden':'Ø rounds','Spielhistorie':'Game history','Einnahmen':'Income',
+'Brennstoff je Lieferung':'fuel per delivery','ohne Brennstoff':'no fuel','nicht verfügbar':'not available','Brennstoff jetzt':'Fuel now','nicht genug am Markt':'not enough on the market','kostenloser Betrieb':'free to run','ohne Rohstoffe':'no resources','kein Lager':'no storage','Mindestgebot':'Minimum bid','(Rabatt)':'(discount)','ab 1 €':'from 1 €',
+'Kohle oder Öl':'coal or oil','Kohlekraftwerk':'Coal plant','Ölkraftwerk':'Oil plant','Müllverbrennung':'Waste incinerator','Kernkraftwerk':'Nuclear plant','Öko-Kraftwerk':'Eco plant','Hybridkraftwerk':'Hybrid plant',
+'Kraftwerke versteigern':'Auction power plants','Rohstoffe kaufen':'Buy resources','Netz ausbauen':'Build network','Strom liefern':'Deliver power',
+'Spielerreihenfolge':'Turn order','alle gleichzeitig':'all at once','vorwärts':'forward','rückwärts':'backward','am Zug':'to play','Dein Geld':'Your money','KI-Stärke':'AI difficulty','Karte des Stromnetzes':'Map of the power grid','Hineinzoomen':'Zoom in','Herauszoomen':'Zoom out','Karte einpassen':'Fit map','Gebot senken':'Lower bid','Gebot erhöhen':'Raise bid','Höchstgebot':'Highest bid',
+' am Markt':' on market','im Korb':'in basket',
+});
+const TW=Object.entries({
+'Versteigerung':'Auction','Bieten':'Bid','Aussteigen':'Drop out','Kaufen':'Buy','Netzausbau':'Network building','Protokoll':'Log','Ergebnis':'Results','Menü':'Menu','Spielregeln':'Rules','Statistik':'Statistics','Schließen':'Close','Betriebe':'Companies','Gegner':'Opponents','Märkte':'Markets','Abbrechen':'Cancel','Einkommen':'Income','Netzgebiet':'Map area','Zufällig':'Random','Leicht':'Easy','Schwer':'Hard','Rekorde':'Records',
+'Kraftwerke':'Plants','Kraftwerk':'Plant','Rohstoffe':'Resources','Lager':'Storage','leer':'empty','Kapazität':'Capacity','Effizienz':'Efficiency','Bedarf':'Needs','keiner':'none','Typ':'Type','Versorgt':'Powers','Einheiten':'units','Vorrat':'supply','nächste':'next','Nachschub':'restock','kaufbar':'buyable',
+'Kohle':'Coal','Öl':'Oil','Müll':'Garbage','Uran':'Uranium','Öko':'Eco','Hybrid':'Hybrid',
+'Auktion':'Auction','Bauen':'Build','Strom':'Power','Stufe':'Step','Runde':'Round','Runden':'rounds','KI':'AI','Ende':'End','Du':'You','Stadt':'city','Städte':'cities','Städten':'cities','Platz':'Rank','Plätze':'slots','Netz':'Network','Geld':'Money','Betrieb':'Company','versorgt':'powered','Partie':'game','Partien':'games','Sieg':'win','Siege':'wins','Quote':'Rate','Stärke':'Difficulty','Gekauft':'Bought','bis':'up to',
+'Nord':'North','Ost':'East','Mitte':'Central','Südwest':'Southwest','Südost':'Southeast','NORD':'NORTH','OST':'EAST','MITTE':'CENTRAL','SÜDWEST':'SOUTHWEST','SÜDOST':'SOUTHEAST','Sp':'pl'
+});
+const esc_=x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const TSR0=TS.sort((a,b)=>b[0].length-a[0].length).map(([d,e])=>[new RegExp(esc_(d),'gu'),e,d.length]);
+const TSR=TSR0.filter(x=>x[2]>=25),TSR2=TSR0.filter(x=>x[2]<25);
+const TWR=TW.sort((a,b)=>b[0].length-a[0].length).map(([d,e])=>[new RegExp(B+esc_(d)+E,'gu'),e]);
+const TCACHE=new Map();
+function tr(t){
+  if(LANG!=='en'||!t||!/[A-Za-zÄÖÜäöüß]/.test(t))return t;
+  if(TCACHE.has(t))return TCACHE.get(t);
+  let o=t;
+  for(const[re,r]of TSR)o=o.replace(re,r);
+  for(const[re,r]of TP)o=o.replace(re,r);
+  for(const[re,r]of TSR2)o=o.replace(re,r);
+  for(const[re,r]of TWR)o=o.replace(re,r);
+  o=o.replace(/^You (passes|bids|raises|drops|buys|retires|builds|undoes|does|powers|wins)\b/u,(m,v)=>'You '+({passes:'pass',does:'do',undoes:'undo'}[v]||v.replace(/s$/,''))).replace(/^You (.+) and earns /u,'You $1 and earn ').replace(/^You (.+) and earns /u,'You $1 and earn ').replace(/^You is /u,'You are ').replace(/^You (\w+)s\b(?= )/u,(m,v)=>['wins','buys'].includes(v+'s')?'You '+v:m);
+  if(TCACHE.size>4000)TCACHE.clear();TCACHE.set(t,o);return o;
+}
+const ORIG=new WeakMap(),ORIGA=new WeakMap(),TATTR=['aria-label','title'];
+function trNode(n){
+  if(LANG!=='en')return;
+  if(n.nodeType===3){const p=n.parentNode;if(!p||/^(SCRIPT|STYLE|TEXTAREA)$/.test(p.nodeName))return;const v=n.nodeValue,o=tr(v);if(o!==v){if(!ORIG.has(n))ORIG.set(n,v);n.nodeValue=o}return}
+  if(n.nodeType!==1||/^(SCRIPT|STYLE)$/.test(n.nodeName))return;
+  const els=[n,...n.querySelectorAll('[aria-label],[title]')];
+  for(const el of els)for(const a of TATTR){const v=el.getAttribute&&el.getAttribute(a);if(v){const o=tr(v);if(o!==v){const m=ORIGA.get(el)||{};if(!(a in m))m[a]=v;ORIGA.set(el,m);el.setAttribute(a,o)}}}
+  const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT);let t;while((t=w.nextNode()))trNode(t);
+}
+function restoreAll(){
+  const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let t;while((t=w.nextNode()))if(ORIG.has(t)){t.nodeValue=ORIG.get(t);ORIG.delete(t)}
+  document.querySelectorAll('[aria-label],[title]').forEach(el=>{const m=ORIGA.get(el);if(m){for(const a in m)el.setAttribute(a,m[a]);ORIGA.delete(el)}});
+}
+let TOBS=null;
+function setLang(l){
+  LANG=l==='de'?'de':'en';try{localStorage.setItem('hochspannung-lang',LANG)}catch(_){}
+  document.documentElement.lang=LANG;TCACHE.clear();
+  if(LANG==='de')restoreAll();else trNode(document.body);
+}
+(function(){
+  TOBS=new MutationObserver(ms=>{if(LANG!=='en')return;for(const m of ms){if(m.type==='characterData')trNode(m.target);else if(m.type==='attributes'){const el=m.target,v=el.getAttribute(m.attributeName);if(v){const o=tr(v);if(o!==v){const mm=ORIGA.get(el)||{};mm[m.attributeName]=v;ORIGA.set(el,mm);el.setAttribute(m.attributeName,o)}}}else m.addedNodes.forEach(trNode)}});
+  TOBS.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['title','aria-label']});
+  document.documentElement.lang=LANG;if(LANG==='en')trNode(document.body);
+})();
 
 /* --- Statistik --- */
 const STATS_KEY='hochspannung-stats-v1';
@@ -1424,8 +1593,9 @@ function onGameEnd(){
     series:t.series};
   const h=loadHist();h.push(rec);saveHist(h);UI.statSel=rec.id;
 }
-const fmt=n=>Math.round(n).toLocaleString('de-DE');
-const fmt1=n=>(Math.round(n*10)/10).toLocaleString('de-DE');
+const LOC=()=>LANG==='en'?'en-GB':'de-DE';
+const fmt=n=>Math.round(n).toLocaleString(LOC());
+const fmt1=n=>(Math.round(n*10)/10).toLocaleString(LOC());
 const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
 function niceMax(v){if(v<=5)return 5;const e=Math.pow(10,Math.floor(Math.log10(v)));for(const m of[1,2,2.5,5,10])if(m*e>=v)return m*e;return 10*e}
 const CHARTS={};
@@ -1521,14 +1691,14 @@ function renderStats(){
   const charts=sel.series&&sel.series.length?`<div class="charts">${lineChart('m','Geld',' €',sp,sel.series,'m')}${lineChart('c','Städte im Netz','',sp,sel.series,'c')}</div>`:'<p class="hint">Für diese Partie liegen keine Rundenverläufe vor.</p>';
   const selMe=me_(sel);
   const d=new Date(sel.date);
-  const selInfo=`<div class="sel-sum">${placeBadge(selMe.place)}<div><b>${d.toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'})}</b><span>${sel.rounds} Runden · KI ${AI_NAME[sel.diff]||sel.diff} · ${sel.regions.map(r=>REGIONS[r].name).join(', ')}${sel.step2?' · Stufe 2 ab Runde '+sel.step2:''}${sel.step3?' · Stufe 3 ab Runde '+sel.step3:''}</span></div></div>
+  const selInfo=`<div class="sel-sum">${placeBadge(selMe.place)}<div><b>${d.toLocaleDateString(LOC(),{day:'numeric',month:'long',year:'numeric'})}</b><span>${sel.rounds} Runden · KI ${AI_NAME[sel.diff]||sel.diff} · ${sel.regions.map(r=>REGIONS[r].name).join(', ')}${sel.step2?' · Stufe 2 ab Runde '+sel.step2:''}${sel.step3?' · Stufe 3 ab Runde '+sel.step3:''}</span></div></div>
   <div class="st-table"><table><thead><tr><th>Platz</th><th>Betrieb</th><th>Versorgt</th><th>Städte</th><th>Geld</th><th>Einkommen</th><th>Kraftwerke</th></tr></thead><tbody>${[...sel.players].sort((a,b)=>a.place-b.place).map(p=>`<tr class="${p.human?'me':''}"><td>${p.place}.</td><td><i class="dot" style="background:${p.color}"></i>${esc(p.human?'Du':p.name)}</td><td>${p.powered}</td><td>${p.cities}</td><td>${fmt(p.money)} €</td><td>${fmt(p.income||0)} €</td><td><span class="mps">${(p.plants||[]).map(n=>`<span class="mp t-${PLANTS[n][0]}">${n}</span>`).join('')}</span></td></tr>`).join('')}</tbody></table></div>`;
-  const hist=[...h].reverse().map(g=>{const m=me_(g);const dd=new Date(g.date);return `<button type="button" class="hrow${g.id===sel.id?' on':''}" data-act="statsSel" data-id="${g.id}">${placeBadge(m.place)}<span class="hd"><b>${dd.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'})}</b><small>${dd.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</small></span><span class="hm">${m.powered} versorgt · ${m.cities} Städte · ${fmt(m.money)} €</span><span class="hx">${g.rounds} R · ${AI_NAME[g.diff]||g.diff} · ${g.n} Sp.</span></button>`}).join('');
+  const hist=[...h].reverse().map(g=>{const m=me_(g);const dd=new Date(g.date);return `<button type="button" class="hrow${g.id===sel.id?' on':''}" data-act="statsSel" data-id="${g.id}">${placeBadge(m.place)}<span class="hd"><b>${dd.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'})}</b><small>${dd.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})}</small></span><span class="hm">${m.powered} versorgt · ${m.cities} Städte · ${fmt(m.money)} €</span><span class="hx">${g.rounds} R · ${AI_NAME[g.diff]||g.diff} · ${g.n} Sp.</span></button>`}).join('');
   el.innerHTML=`<div class="st-inner">${head}
   <div class="tiles">${tiles.map(([k,v])=>`<div class="tile"><small>${k}</small><b>${v}</b></div>`).join('')}</div>
   <div class="st-grid">
    <section class="card"><h3>Nach KI-Stärke</h3><div class="st-table"><table><thead><tr><th>Stärke</th><th>Partien</th><th>Siege</th><th>Quote</th><th>Ø versorgt</th></tr></thead><tbody>${diffRows.map(r=>`<tr><td>${AI_NAME[r.d]}</td><td>${r.gs.length}</td><td>${r.w}</td><td>${r.gs.length?Math.round(r.w/r.gs.length*100)+' %':'–'}</td><td>${r.gs.length?fmt1(avg(r.gs.map(g=>me_(g).powered))):'–'}</td></tr>`).join('')}</tbody></table></div>${rivalRows.length?`<h4>Wer dich am häufigsten schlägt</h4>${bars(rivalRows)}`:''}</section>
-   <section class="card"><h3>Rekorde</h3><dl class="recs">${rec.map(([k,v,g])=>`<div><dt>${k}</dt><dd>${v}</dd><button type="button" class="linkbtn" data-act="statsSel" data-id="${g.id}">Partie vom ${new Date(g.date).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})}</button></div>`).join('')}</dl></section>
+   <section class="card"><h3>Rekorde</h3><dl class="recs">${rec.map(([k,v,g])=>`<div><dt>${k}</dt><dd>${v}</dd><button type="button" class="linkbtn" data-act="statsSel" data-id="${g.id}">Partie vom ${new Date(g.date).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})}</button></div>`).join('')}</dl></section>
    <section class="card"><h3>Wirtschaft je Partie</h3><p class="hint">Durchschnitt über alle Partien.</p>${bars([{label:'Einnahmen',v:E('inc'),color:'#58b86a',text:fmt(E('inc'))+' €'},{label:'Kraftwerke',v:E('pl'),text:fmt(E('pl'))+' €'},{label:'Rohstoffe',v:E('res'),text:fmt(E('res'))+' €'},{label:'Netz',v:E('net'),text:fmt(E('net'))+' €'}])}<p class="hint">Vom Netz gingen Ø ${fmt(E('slot'))} € in Stadtplätze und ${fmt(E('conn'))} € in Leitungen.</p></section>
    <section class="card"><h3>Kraftwerke</h3><div class="kv2"><div><small>Gekauft</small><b>${auAll.length}</b></div><div><small>Ø Aufpreis</small><b>+${fmt1(over||0)} €</b></div><div><small>Rabattkäufe</small><b>${discN}</b></div><div><small>Lieblingstyp</small><b>${favT?favT.label:'–'}</b></div></div>${typeRows.length?bars(typeRows):'<p class="hint">Noch keine Käufe.</p>'}</section>
    <section class="card"><h3>Rohstoffe</h3><p class="hint">Gekaufte Einheiten und Ø Preis je Einheit, alle Partien.</p>${bars(resRows)}</section>
@@ -1557,6 +1727,7 @@ function schedule(){
 }
 function after(){save();render();schedule()}
 const A={
+  lang:b=>{setLang(b.dataset.l);if(S)render();if(!$('#start').hidden)renderStart(true);if(!$('#stats').hidden)renderStats();renderSheet();return'skip'},
   stats:()=>{UI.statReset=false;UI.sheet=null;renderSheet();renderStats();$('#stats').scrollTop=0;return'skip'},
   statsBack:()=>{$('#stats').hidden=true;$('#stats').innerHTML='';if(!$('#start').hidden)renderStart(true);return'skip'},
   statsSel:b=>{UI.statSel=b.dataset.id;renderStats();const t=$('#st-game');if(t)t.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return'skip'},
@@ -1573,7 +1744,7 @@ const A={
   regrand:()=>{UI.regions=[];UI.name=$('#nm').value;renderStart(true);return'skip'},
   markets:()=>UI.sheet='markets',
   pinfo:b=>{UI.pnum=+b.dataset.num;UI.sheet='plant'},
-  start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();newGame(UI.name||'Du',UI.nAI,UI.diff,regionsValid(UI.regions,UI.nAI+1)?UI.regions:null);UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false)},
+  start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();newGame(UI.name||(LANG==='en'?'You':'Du'),UI.nAI,UI.diff,regionsValid(UI.regions,UI.nAI+1)?UI.regions:null);UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false)},
   cont:()=>renderStart(false),
   zin:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.3);return'skip'},
   zout:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.3);return'skip'},

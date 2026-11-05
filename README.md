@@ -1,6 +1,8 @@
 # Hochspannung
 
-Netzausbau-Strategiespiel für das Handy: Kraftwerke ersteigern, Rohstoffe kaufen und ein Stromnetz über Deutschland bauen, gegen 2–3 KI-Gegner.
+Netzausbau-Strategiespiel für das Handy: Kraftwerke ersteigern, Rohstoffe kaufen und ein Stromnetz über Deutschland bauen, gegen 2–3 KI-Gegner. Auf Deutsch und Englisch spielbar.
+
+A grid-building strategy game for your phone, playable in English and German.
 
 **Spielen:** https://pups-flatus-png.github.io/hochspannung/
 
