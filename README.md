@@ -17,4 +17,4 @@ Spielstand und Statistik werden nur auf dem jeweiligen Gerät gespeichert.
 
 ## Quellen
 
-Städte, Regionen und Leitungskosten der Karten Frankreich und Italien stammen aus dem MIT-lizenzierten Projekt [boardgamers/powergrid](https://github.com/boardgamers/powergrid).
+Städte, Regionen und Leitungskosten der Karten Frankreich und Italien sowie die Kartenwerte der Kraftwerksdecks Set 1 und Set 2 stammen aus dem MIT-lizenzierten Projekt [boardgamers/powergrid](https://github.com/boardgamers/powergrid).
