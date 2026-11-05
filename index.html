@@ -294,7 +294,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .mark{position:absolute;top:-1px;width:2px;height:21px;background:var(--accent);transform:translateX(-1px);opacity:.8}
 .mark span{position:absolute;top:20px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:600;color:var(--accent);white-space:nowrap;text-transform:uppercase;letter-spacing:.06em}
 .mark.end span{left:auto;right:0;transform:none}
-.tok{position:absolute;top:3px;left:0;width:13px;height:13px;border-radius:50%;background:var(--pc);border:2px solid var(--panel);transform:translate(-50%,calc(var(--o,0) * -7px));transition:left .7s cubic-bezier(.3,.7,.2,1),transform .3s;z-index:1}
+.tok{position:absolute;top:3px;left:0;width:13px;height:13px;border-radius:50%;background:var(--pc);border:2px solid var(--panel);transform:translate(-50%,calc(var(--o,0) * var(--tko,-7px)));transition:left .7s cubic-bezier(.3,.7,.2,1),transform .3s;z-index:1}
 .tok.me{width:15px;height:15px;top:2px;border-color:var(--fg)}
 .mbtn{flex:none;font-size:12px;font-weight:600;padding:6px 9px;border-radius:7px;background:var(--panel-2);border:1px solid var(--line);cursor:pointer}
 .regions-tag{top:auto;bottom:10px;right:max(10px,env(safe-area-inset-right,0px))}
@@ -555,13 +555,55 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .delta td:first-child{white-space:normal;min-width:110px}
 .delta th,.delta td{padding-right:10px}
 @media (max-width:480px){.delta{font-size:12px}.delta th{font-size:9px}}
+.nhint{font-size:12px;color:var(--muted);line-height:1.4;margin-top:-4px}
+.order.many .ord{flex-wrap:wrap;gap:5px}
+.order.many .oarr{display:none}
+.order.many .ot{flex:1 1 calc(33.333% - 5px);padding:8px 3px 5px;gap:2px}
+.order.many .ot .n{width:22px;height:22px;font-size:14px}
+.order.many .ot .cap{display:none}
+.order.many .mp{min-width:18px;height:15px;font-size:10px}
+.tracker.many{--tko:-4px}
+/* ---- v4: Rohstoffleiste ---- */
+.track{grid-template-columns:repeat(8,minmax(0,1fr));gap:3px}
+.track.u{grid-template-columns:repeat(12,minmax(0,1fr));gap:2px}
+.track .pg{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0 5px;border-radius:7px;background:var(--panel);border:1px solid var(--line);min-width:0}
+.track .pp{font-family:var(--display);font-size:14px;font-weight:700;line-height:1;color:var(--fg);font-variant-numeric:tabular-nums}
+.track .pp small{font-size:9px;font-weight:600;margin-left:1px;color:var(--muted)}
+.track .pg.sold{background:transparent;border-style:dashed}
+.track .pg.sold .pp{color:var(--muted);opacity:.55}
+.track .pg.next{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--panel));box-shadow:0 0 0 1px var(--accent) inset}
+.track .pg.next .pp{color:var(--accent)}
+.track .slots{display:flex;flex-direction:column;gap:2px;align-items:center}
+.track .sl{width:15px;height:15px;border-radius:4px}
+.track i.sl{background:none;border:1px dashed color-mix(in srgb,var(--fg) 22%,transparent)}
+.track svg.sl.cart{outline:2px solid var(--accent);outline-offset:1px;border-radius:4px}
+.track.u .sl{width:16px;height:16px}
+.track.u .pp{font-size:12px}
+@media (max-width:380px){.track .sl{width:13px;height:13px}.track .pp{font-size:12px}}
+.rres .rhead{font-size:15px}
+.rres .rhead .ri{width:18px;height:18px}
+.rres .meta{font-size:12px}
+.ri{width:13px;height:13px}
+.plant .req .ri{width:13px;height:13px}
+.stock .ri{width:16px;height:16px}
+.stock{font-size:16px}
+.order.many .ot{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto auto;align-items:center;justify-items:start;text-align:left;column-gap:6px;row-gap:1px;padding:6px 6px 5px}
+.order.many .ot .n{grid-row:1/3;width:24px;height:24px;font-size:14px}
+.order.many .ot .nm{font-size:12px;max-width:100%}
+.order.many .ot .mv{font-size:12px}
+.order.many .ot .mps{grid-column:1/3;justify-content:flex-start;margin-top:2px}
+.order.many .ot .tag{left:auto;right:4px;transform:none;top:-7px;font-size:8px}
+.order.many .ot .chk{top:3px;right:5px}
+.title{min-width:0}
+.title h1{font-size:clamp(38px,min(9vw,6.4vw + 12px),84px)}
+@media (orientation:landscape) and (max-height:500px){.title h1{font-size:clamp(36px,6vw,64px)}}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-<symbol id="r-coal" viewBox="0 0 12 12"><path d="M2 4.6 4.6 1.9l4 .6 2.1 2.5-.6 4.2-3.3 1.4-4.2-1.2-1.3-2.8Z" fill="#8b5e3c" stroke="#4d3019" stroke-width=".9"/><path d="M4.4 4.3 7 4.7" stroke="#c09670" stroke-width=".9" stroke-linecap="round"/></symbol>
-<symbol id="r-oil" viewBox="0 0 12 12"><rect x="2.4" y="1.1" width="7.2" height="9.8" rx="1.6" fill="#353b45" stroke="#a7b0ba" stroke-width=".9"/><path d="M2.5 4.3h7M2.5 7.7h7" stroke="#a7b0ba" stroke-width=".8"/></symbol>
-<symbol id="r-garbage" viewBox="0 0 12 12"><path d="M4.3 2.1 6 3.3l1.7-1.2.5 1.7c1.6.8 2.4 2.8 2 4.6-.4 1.8-2.2 2.5-4.2 2.5S2.2 10.2 1.8 8.4c-.4-1.8.4-3.8 2-4.6Z" fill="#c9b236" stroke="#6f5f12" stroke-width=".9"/></symbol>
-<symbol id="r-uranium" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.9" fill="#e0483d" stroke="#86211a" stroke-width=".9"/><path d="M6 6 3.4 3.3M6 6l2.6-2.7M6 6v3.9" stroke="#ffd9d4" stroke-width=".9" stroke-linecap="round"/><circle cx="6" cy="6" r="1.3" fill="#ffd9d4"/></symbol>
+<symbol id="r-coal" viewBox="0 0 12 12"><path d="M1.6 4.7 4.5 1.6l4.3.6 2.3 2.7-.6 4.4-3.5 1.5-4.5-1.3-1.4-3Z" fill="#9a6a44" stroke="#e8be92" stroke-width="1"/><path d="M4.3 4.4 7.2 4.9M3.6 7.3l2 .6" stroke="#4a2e1a" stroke-width="1" stroke-linecap="round"/></symbol>
+<symbol id="r-oil" viewBox="0 0 12 12"><rect x="2.2" y="1" width="7.6" height="10" rx="1.8" fill="#2c4664" stroke="#a9d0f5" stroke-width="1"/><path d="M2.4 4.3h7.2M2.4 7.7h7.2" stroke="#a9d0f5" stroke-width=".9"/></symbol>
+<symbol id="r-garbage" viewBox="0 0 12 12"><path d="M4.2 1.8 6 3.1l1.8-1.3.6 1.8c1.7.9 2.5 2.9 2.1 4.8-.4 1.9-2.3 2.6-4.5 2.6S1.9 10.3 1.5 8.4c-.4-1.9.4-3.9 2.1-4.8Z" fill="#c9ab22" stroke="#fff1a0" stroke-width="1" stroke-linejoin="round"/><path d="M4.4 6.6h3.2" stroke="#5e4f08" stroke-width="1" stroke-linecap="round"/></symbol>
+<symbol id="r-uranium" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="#d93b30" stroke="#ffc2bb" stroke-width="1"/><path d="M6 6 3.3 3.2M6 6l2.7-2.8M6 6v4" stroke="#fff" stroke-width="1.1" stroke-linecap="round"/><circle cx="6" cy="6" r="1.4" fill="#fff"/></symbol>
 <symbol id="r-eco" viewBox="0 0 12 12"><path d="M1.5 10.5C1.5 5 5 2 10.8 1.2 10.4 7 7.2 10.5 1.5 10.5Z" fill="#58b86a"/><path d="M2 10 7 5" stroke="#0f2414" stroke-width="1"/></symbol>
 <symbol id="b-coal" viewBox="0 0 20 16"><path d="M1 15V8.5l4 2.4V8.5l4 2.4V8.5l4 2.4V3h3v12Z" fill="currentColor"/><path d="M14.6 2c.8-1 2.3-.9 3 0" stroke="currentColor" fill="none" stroke-width="1.1" stroke-linecap="round"/></symbol>
 <symbol id="b-hybrid" viewBox="0 0 20 16"><path d="M1 15V8.5l4 2.4V8.5l4 2.4V3h3v12Z" fill="currentColor"/><rect x="13" y="7.5" width="6" height="7.5" rx="1.2" fill="currentColor"/><path d="M13 10.3h6" stroke="var(--panel)" stroke-width=".8"/></symbol>
@@ -598,9 +640,12 @@ const CAP={coal:24,oil:24,garbage:24,uranium:12};
 const UP=[1,2,3,4,5,6,7,8,10,12,14,16];
 const RES=['coal','oil','garbage','uranium'];
 const RNAME={coal:'Kohle',oil:'Öl',garbage:'Müll',uranium:'Uran',eco:'Öko',hybrid:'Kohle oder Öl'};
-const RESUPPLY={3:{coal:[4,5,3],oil:[2,3,4],garbage:[1,2,3],uranium:[1,1,1]},4:{coal:[5,6,4],oil:[3,4,5],garbage:[2,3,4],uranium:[1,2,2]}};
+const RESUPPLY={5:{coal:[5,7,5],oil:[4,5,6],garbage:[3,3,5],uranium:[2,3,2]},6:{coal:[7,9,6],oil:[5,6,7],garbage:[3,5,6],uranium:[2,3,3]},3:{coal:[4,5,3],oil:[2,3,4],garbage:[1,2,3],uranium:[1,1,1]},4:{coal:[5,6,4],oil:[3,4,5],garbage:[2,3,4],uranium:[1,2,2]}};
 const PHASES={auction:'Kraftwerke versteigern',resources:'Rohstoffe kaufen',build:'Netz ausbauen',bureau:'Strom liefern',end:'Spielende'};
-const STEP2_AT=7, END_AT=17, SLOT_COST=[10,15,20];
+let STEP2_AT=7, END_AT=17;const SLOT_COST=[10,15,20];
+const RULES_N={3:{s2:7,end:17,regions:3,remove:8},4:{s2:7,end:17,regions:4,remove:4},5:{s2:7,end:15,regions:5,remove:0},6:{s2:6,end:14,regions:5,remove:0}};
+function applyRulesN(n){const r=RULES_N[n]||RULES_N[4];STEP2_AT=r.s2;END_AT=r.end;return r}
+const regionCount=n=>(RULES_N[n]||RULES_N[4]).regions;
 const REGIONS={N:{name:'Nord',col:'#5d8fb8'},O:{name:'Ost',col:'#c07a5c'},W:{name:'West',col:'#9283c4'},M:{name:'Mitte',col:'#6fae8a'},SW:{name:'Südwest',col:'#c2a85a'},SO:{name:'Südost',col:'#c46a93'}};
 const CITIES=[
 ['kiel','Kiel','N',54.32,10.13],['luebeck','Lübeck','N',53.87,10.69],['rostock','Rostock','N',54.09,12.10],['schwerin','Schwerin','N',53.63,11.41],['hamburg','Hamburg','N',53.55,9.99],['cuxhaven','Cuxhaven','N',53.86,8.69],['bremen','Bremen','N',53.08,8.80],
@@ -668,13 +713,14 @@ function newStats(){return{start:Date.now(),partial:false,series:[],step2:null,s
 function st(){if(!S.stats){S.stats=newStats();S.stats.partial=true}return S.stats}
 function newGame(name,nAI,diff,regions){
   const n=nAI+1;
-  const names=['Rheinstrom AG','Ostwatt','Südnetz'];
-  const cols=['#4f9dff','#ff5fa2','#b48cff','#4fd6c4'];
+  const names=['Rheinstrom AG','Ostwatt','Südnetz','Nordlicht Energie','Westfalen Volt'];
+  const cols=['#4f9dff','#ff5fa2','#b48cff','#4fd6c4','#ff9f43','#c6e05a'];
+  const RN=applyRulesN(n);
   const players=[];
   for(let i=0;i<n;i++)players.push({id:i,name:i===0?(name||'Du'):names[i-1],color:cols[i],human:i===0,money:50,plants:[],cities:[],pool:{coal:0,oil:0,garbage:0,uranium:0},done:false,lastPowered:0});
   const rest=shuffle(Object.keys(PLANTS).map(Number).filter(x=>x>10&&x!==13));
-  rest.splice(0,n===3?8:4);
-  S={v:1,n,players,deck:[13,...rest,STEP3],market:[3,4,5,6,7,8,9,10],resMarket:{coal:24,oil:18,garbage:6,uranium:2},owners:{},regions:(regions&&regions.length===n)?regions.slice():pickRegions(n),ai:diff||'normal',
+  rest.splice(0,RN.remove);
+  S={v:1,n,players,deck:[13,...rest,STEP3],market:[3,4,5,6,7,8,9,10],resMarket:{coal:24,oil:18,garbage:6,uranium:2},owners:{},regions:(regions&&regions.length===RN.regions)?regions.slice():pickRegions(RN.regions),ai:diff||'normal',
      round:1,step:1,phase:null,order:shuffle(players.map(p=>p.id)),log:[],step3Pending:false,endTriggered:false,turnBuilt:[],auc:null,discard:null,seq:[],seqIdx:0,boughtAny:false,ranking:null};
   S.stats=newStats();
   log('Neues Spiel. Netzgebiet: '+S.regions.map(r=>REGIONS[r].name).join(', ')+'. KI-Stärke: '+AI_NAME[S.ai]+'.');
@@ -1001,11 +1047,12 @@ function plantInfo(n){
   return `<div class="pinfo">${plantCard(n,{lg:true,store:owner?(storeOf(owner)[n]||[]):undefined})}<dl class="kv"><dt>Typ</dt><dd>${TYPE_NAME[t]}</dd><dt>Bedarf</dt><dd>${t==='eco'?'keiner':k+' '+RNAME[t]+' je Lieferung'}</dd><dt>Leistung</dt><dd>${c} ${c===1?'Stadt':'Städte'}</dd><dt>Effizienz</dt><dd>${t==='eco'?'kostenloser Betrieb':(Math.round(c/k*10)/10).toLocaleString(LANG==='en'?'en-GB':'de-DE')+' Städte je Einheit'}</dd><dt>Lager</dt><dd>${t==='eco'?'–':2*k+' Einheiten'}</dd><dt>Brennstoff jetzt</dt><dd>${t==='eco'?'0 €':fc===Infinity?'nicht genug am Markt':fc+' € je Lieferung'}</dd><dt>Mindestgebot</dt><dd>${minBid(n)} €${minBid(n)!==n?' (Rabatt)':''}</dd><dt>Status</dt><dd>${where}</dd></dl></div>`;
 }
 function trackHTML(r,k=0){
-  const first=CAP[r]-S.resMarket[r];let groups='';
+  const first=CAP[r]-S.resMarket[r],nx=first+k;let groups='';
   const sl=i=>i>=first?`<svg class="sl${i<first+k?' cart':''}" aria-hidden="true"><use href="#r-${r}"/></svg>`:'<i class="sl"></i>';
-  if(r==='uranium')for(let i=0;i<12;i++)groups+=`<div class="pg"><div class="slots">${sl(i)}</div><span>${UP[i]}</span></div>`;
-  else for(let pr=0;pr<8;pr++){let s='';for(let j=0;j<3;j++)s+=sl(pr*3+j);groups+=`<div class="pg"><div class="slots">${s}</div><span>${pr+1}</span></div>`}
-  return `<div class="track${r==='uranium'?' u':''}">${groups}</div>`;
+  const cell=(lo,hi,price)=>{let s='';for(let i=lo;i<hi;i++)s+=sl(i);const st=hi<=first?' sold':(nx>=lo&&nx<hi?' next':'');return `<div class="pg${st}"><b class="pp">${price}<small>€</small></b><div class="slots">${s}</div></div>`};
+  if(r==='uranium')for(let i=0;i<12;i++)groups+=cell(i,i+1,UP[i]);
+  else for(let pr=0;pr<8;pr++)groups+=cell(pr*3,pr*3+3,pr+1);
+  return `<div class="track${r==='uranium'?' u':''}" aria-label="${RNAME[r]}: ${S.resMarket[r]} am Markt">${groups}</div>`;
 }
 const pc=id=>`style="--pc:${P(id).color}"`;
 
@@ -1023,7 +1070,7 @@ function orderHTML(a){
   const dir={auction:'vorwärts →',resources:'rückwärts ←',build:'rückwärts ←',bureau:'alle gleichzeitig',end:'Spiel beendet'}[S.phase];
   const toks=seq.map((id,i)=>{const p=P(id);const act=a&&a.pid===id&&S.phase!=='bureau'&&S.phase!=='end';const done=!act&&S.phase!=='end'&&isDone(id);
     return `${i?'<span class="oarr">'+(rev?'‹':'›')+'</span>':''}<button type="button" class="ot${act?' act':''}${done?' done':''}${p.human?' me':''}" ${pc(id)} data-act="opp" data-pid="${id}" aria-label="${esc(p.name)}: Platz ${S.order.indexOf(id)+1}, ${p.money} Euro, ${p.cities.length} Städte${act?', am Zug':''}">${act?'<span class="tag">am Zug</span>':''}${done?'<span class="chk">✓</span>':''}<span class="n">${S.order.indexOf(id)+1}</span><span class="nm">${p.human?'Du':esc(p.name)}</span><span class="mv">${p.money} € · ${p.cities.length}${HOUSE}</span><span class="mps">${p.plants.map(n=>`<span class="mp t-${PLANTS[n][0]}" title="Kraftwerk ${n}, ${TYPE_SHORT[PLANTS[n][0]]}, ${PLANTS[n][2]} Städte">${n}</span>`).join('')||'<span class="mp none">–</span>'}</span><span class="cap">versorgt bis ${capacity(p)}</span></button>`}).join('');
-  return `<div class="order"><div class="ord-h"><span>Spielerreihenfolge</span><span>${PS[S.phase]||'Ende'}: ${dir}</span></div><div class="ord">${toks}</div></div>`;
+  return `<div class="order${S.n>=5?' many':''}"><div class="ord-h"><span>Spielerreihenfolge</span><span>${PS[S.phase]||'Ende'}: ${dir}</span></div><div class="ord">${toks}</div></div>`;
 }
 function renderTop(){
   const phases=S.phase==='end'?'<span class="ph cur"><i>✓</i><em>Spielende</em></span>':PH.map((ph,i)=>`<span class="ph${S.phase===ph?' cur':''}${PH.indexOf(S.phase)>i?' past':''}"><i>${i+1}</i><em>${PS[ph]}</em></span>`).join('');
@@ -1042,7 +1089,7 @@ function stageBanner(st){
   document.body.appendChild(d);setTimeout(()=>d.remove(),3200);
 }
 function renderTracker(){
-  const el=$('#tracker');const key=S.players.map(p=>p.color).join();
+  const el=$('#tracker');el.classList.toggle('many',S.n>=5);const key=S.players.map(p=>p.color).join()+END_AT+'/'+STEP2_AT;
   if(el.dataset.k!==key){
     let ticks='';for(let i=0;i<=END_AT;i++)ticks+=`<i class="tick" style="left:${(i/END_AT*100).toFixed(2)}%">${i%5===0?'<span>'+i+'</span>':''}</i>`;
     const marks=`<i class="mark" style="left:${(STEP2_AT/END_AT*100).toFixed(2)}%"><span>Stufe 2</span></i><i class="mark end" style="left:100%"><span>Ende</span></i>`;
@@ -1409,9 +1456,9 @@ function regionsValid(sel,n){
   while(q.length){const r=q.shift();for(const x of RADJ[r])if(set.has(x)&&!seen.has(x)){seen.add(x);q.push(x)}}
   return seen.size===n;
 }
-function regionsOk(){return !UI.regions.length||regionsValid(UI.regions,UI.nAI+1)}
+function regionsOk(){return !UI.regions.length||regionsValid(UI.regions,regionCount(UI.nAI+1))}
 function regionPicker(){
-  const n=UI.nAI+1,sel=UI.regions,rand=!sel.length;
+  const n=regionCount(UI.nAI+1),sel=UI.regions,rand=!sel.length;
   const dots=CITIES.map(([id,,rg])=>{const c=CITY[id];const on=sel.includes(rg);return `<circle cx="${c.x.toFixed(0)}" cy="${c.y.toFixed(0)}" r="15" fill="${REGIONS[rg].col}" opacity="${rand?.6:on?1:.18}" data-act="reg" data-r="${rg}"/>`}).join('');
   const btns=Object.entries(REGIONS).map(([k,r])=>`<button type="button" data-act="reg" data-r="${k}" style="--rc:${r.col}" class="${sel.includes(k)?'on':''}"><i></i>${r.name}</button>`).join('');
   let hint,bad=false;
@@ -1426,14 +1473,15 @@ function renderStart(show){
   if(!show){start.hidden=true;return}
   start.hidden=false;
   start.innerHTML=`<svg class="wires" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path d="M-20 120H180L260 200H520L600 120H820"/><path d="M-20 470H140L230 380H470L560 470H820"/><path d="M260 200V380M520 200V380"/><circle cx="180" cy="120" r="7"/><circle cx="260" cy="200" r="7"/><circle cx="520" cy="200" r="7"/><circle cx="600" cy="120" r="7"/><circle cx="230" cy="380" r="7"/><circle cx="470" cy="380" r="7"/></svg>
-  <div class="startbox"><div class="title"><h1>Hoch<em>span</em>nung</h1><p>Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über Deutschland. Wer am Ende die meisten Städte versorgt, gewinnt.</p><span class="volt">380 kV · 3–4 Betriebe</span></div>
-  <div class="form"><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><label for="nm">Dein Firmenname<input id="nm" maxlength="18" value="${esc(UI.name||(LANG==='en'?'You':'Du'))}"></label><div class="gl">Gegner</div><div class="seg"><button type="button" data-act="nai" data-n="2" class="${UI.nAI===2?'on':''}">2 KI</button><button type="button" data-act="nai" data-n="3" class="${UI.nAI===3?'on':''}">3 KI</button></div><div class="gl">KI-Stärke</div><div class="seg">${['easy','normal','hard'].map(d=>`<button type="button" data-act="diff" data-d="${d}" class="${UI.diff===d?'on':''}">${AI_NAME[d]}</button>`).join('')}</div><div class="gl">Netzgebiet</div>${regionPicker()}<button type="button" class="btn pri" data-act="start" ${regionsOk()?'':'disabled'}>Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn" data-act="cont">Weiterspielen</button>':''}<button type="button" class="btn" data-act="startrules">Spielregeln</button><button type="button" class="btn" data-act="stats">Statistik${(()=>{const n=loadHist().length;return n?' · '+n+(n===1?' Partie':' Partien'):''})()}</button></div></div>`;
+  <div class="startbox"><div class="title"><h1>Hoch<em>span</em>nung</h1><p>Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über Deutschland. Wer am Ende die meisten Städte versorgt, gewinnt.</p><span class="volt">380 kV · 3–6 Betriebe</span></div>
+  <div class="form"><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><label for="nm">Dein Firmenname<input id="nm" maxlength="18" value="${esc(UI.name||(LANG==='en'?'You':'Du'))}"></label><div class="gl">Spieler insgesamt</div><div class="seg">${[2,3,4,5].map(k=>`<button type="button" data-act="nai" data-n="${k}" class="${UI.nAI===k?'on':''}">${k+1}</button>`).join('')}</div><div class="nhint">${UI.nAI+1} Spieler: du und ${UI.nAI} KI · ${regionCount(UI.nAI+1)} Regionen · Stufe 2 ab ${RULES_N[UI.nAI+1].s2} Städten · Ende bei ${RULES_N[UI.nAI+1].end} Städten</div><div class="gl">KI-Stärke</div><div class="seg">${['easy','normal','hard'].map(d=>`<button type="button" data-act="diff" data-d="${d}" class="${UI.diff===d?'on':''}">${AI_NAME[d]}</button>`).join('')}</div><div class="gl">Netzgebiet</div>${regionPicker()}<button type="button" class="btn pri" data-act="start" ${regionsOk()?'':'disabled'}>Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn" data-act="cont">Weiterspielen</button>':''}<button type="button" class="btn" data-act="startrules">Spielregeln</button><button type="button" class="btn" data-act="stats">Statistik${(()=>{const n=loadHist().length;return n?' · '+n+(n===1?' Partie':' Partien'):''})()}</button></div></div>`;
 }
 
 /* --- Sprache --- */
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
+[/^(\d+) Spieler: du und (\d+) KI · (\d+) Regionen · Stufe 2 ab (\d+) Städten · Ende bei (\d+) Städten$/u,'$1 players: you and $2 AI · $3 regions · Step 2 at $4 cities · ends at $5 cities'],
 [/^(.+) verzichtet auf ein Kraftwerk\.$/u,'$1 passes on buying a plant.'],
 [/^(.+) bietet (\d+) € auf Kraftwerk (\d+)\.$/u,'$1 bids $2 € on plant $3.'],
 [/^(.+) erhöht auf (\d+) €\.$/u,'$1 raises to $2 €.'],
@@ -1481,6 +1529,7 @@ const TP=[
 [/^Wähle (\d+) Regionen \((\d+) gewählt\)\.$/u,'Choose $1 regions ($2 selected).'],
 [/^Zufällig: (\d+) zusammenhängende Regionen\.$/u,'Random: $1 connected regions.'],
 [/Partie vom /u,'Game from '],
+
 [/Partie #(\d+)/u,'Game #$1'],
 [/Deine ersten (\d+) Partien im Vergleich zu deinen letzten (\d+)\./u,'Your first $1 games compared with your last $2.'],
 [/Runde mit (\d+) Städten/u,'Round reaching $1 cities'],
@@ -1509,6 +1558,7 @@ const TP=[
 ];
 const TS=Object.entries({
 'Lege dein Startgebot fest.':'Set your opening bid.',
+'Spieler insgesamt':'Total players',
 'Alle Partien (Gesamt)':'All games (totals)','Letzte Partie · ':'Most recent · ','Letzte Partie':'Most recent game','Entwicklung über Zeit':'Development over time','── Einzelne Partie ──':'── Single game ──','Alle Stärken':'All difficulties','Ansicht':'View',
 'Keine Partien mit dieser KI-Stärke':'No games at this AI difficulty','Wähle eine andere Stärke oder „Alle Stärken“.':'Choose another difficulty or “All difficulties”.',
 'Tippe eine Partie an, um sie im Detail zu sehen.':'Tap a game to see it in detail.','Noch zu wenig Partien':'Not enough games yet','Spiel mindestens zwei Partien, um Entwicklungen zu sehen.':'Play at least two games to see trends.',
@@ -1548,7 +1598,7 @@ const TS=Object.entries({
 'Die erste Stadt kostet 10 €. Jede weitere kostet den Platz plus die günstigste Leitung zu deinem Netz. In Stufe 2 öffnet der zweite Platz einer Stadt (15 €), in Stufe 3 der dritte (20 €).':'Your first city costs 10 €. Each further city costs the slot plus the cheapest connection to your network. In Step 2 a city\'s second slot opens (15 €), in Step 3 the third (20 €).',
 'Du verdienst Geld für jede Stadt, die du mit deinen Kraftwerken versorgst. Danach füllt sich der Rohstoffmarkt auf und der Kraftwerksmarkt rückt nach.':'You earn money for every city you power with your plants. Afterwards the resource market restocks and the plant market moves on.',
 'Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über Deutschland. Wer am Ende die meisten Städte versorgt, gewinnt.':'Win power plants at auction, buy fuel on the market and stretch your grid across Germany. Whoever powers the most cities at the end wins.',
-'380 kV · 3–4 Betriebe':'380 kV · 3–4 companies','Dein Firmenname':'Your company name','Netzgebiet steht.':'Map area is set.','Die Regionen müssen aneinandergrenzen.':'The regions must border each other.','Weiterspielen':'Continue','Regionen auswählen':'Choose regions',
+'380 kV · 3–6 Betriebe':'380 kV · 3–6 companies','Dein Firmenname':'Your company name','Netzgebiet steht.':'Map area is set.','Die Regionen müssen aneinandergrenzen.':'The regions must border each other.','Weiterspielen':'Continue','Regionen auswählen':'Choose regions',
 'Jede Stadt bietet jetzt einen zweiten Platz für 15 €.':'Every city now offers a second slot for 15 €.','Dritter Platz für 20 €. Alle sechs Marktkraftwerke sind kaufbar.':'Third slot for 20 €. All six market plants can be bought.','Neue Stufe':'New step',
 'Stufe 3 nach der Auktion':'Step 3 after the auction','Stufe 3 kommt mit ihrer Karte':'Step 3 comes with its card','Letzte Stufe':'Final step',
 'Noch keine beendete Partie':'No finished game yet',
@@ -1680,7 +1730,7 @@ function gameMetrics(g){
   const au=m.auc||[];const nd=au.filter(a=>!a.disc);
   const fam={fossil:0,garbage:0,uranium:0,eco:0};au.forEach(a=>{const t=PLANTS[a.n][0];fam[t==='coal'||t==='oil'||t==='hybrid'?'fossil':t]++});
   const nb=au.length||1;
-  const r7=(g.series||[]).find(x=>x.c[mi]>=STEP2_AT);
+  const r7=(g.series||[]).find(x=>x.c[mi]>=7);
   return{powered:m.powered,place:m.place,win:m.place===1,money:m.money,rounds:g.rounds,
     plPct:Math.round(pl/tot*100),resPct:Math.round(res/tot*100),netPct:Math.round(net/tot*100),
     markup:nd.length?nd.reduce((s,a)=>s+a.price-a.min,0)/nd.length:0,
@@ -1770,7 +1820,7 @@ function statsTrend(h){
     const rows=[
       ['Versorgte Städte','powered','',1],['Siegquote','win','%',100],['Ø Platz','place','',1],
       ['Anteil Kraftwerke an Ausgaben','plPct','%',1],['Anteil Rohstoffe an Ausgaben','resPct','%',1],['Anteil Netz an Ausgaben','netPct','%',1],
-      [`Runde mit ${STEP2_AT} Städten`,'r7','',1],['Ø Aufpreis je Kraftwerk','markup',' €',1],['Ø Kraftwerksnummer','avgPlant','',1],['Anteil Öko-Kraftwerke','eco','%',1]];
+      [`Runde mit 7 Städten`,'r7','',1],['Ø Aufpreis je Kraftwerk','markup',' €',1],['Ø Kraftwerksnummer','avgPlant','',1],['Anteil Öko-Kraftwerke','eco','%',1]];
     summary=`<section class="card wide"><h3>Was sich verändert hat</h3><p class="hint">Deine ersten ${n} Partien im Vergleich zu deinen letzten ${n}.</p><div class="st-table"><table class="delta"><thead><tr><th>Kennzahl</th><th>Früher</th><th>Zuletzt</th><th>Veränderung</th></tr></thead><tbody>${rows.map(([lab,k,u,mul])=>{const a=av(A,k)*mul,z=av(Z,k)*mul;const pct=u==='%'||k==='win';const d=pct?Math.round(z)-Math.round(a):Math.round((z-a)*10)/10;const f=v=>k==='win'||u==='%'?Math.round(v)+' %':fmt1(v)+u;const dd=d===0?'=':(d>0?'↑ ':'↓ ')+(u==='%'||k==='win'?Math.round(Math.abs(d))+' Pkt.':fmt1(Math.abs(d))+u);return `<tr><td>${lab}</td><td>${f(a)}</td><td>${f(z)}</td><td><span class="dchip ${d>0?'up':d<0?'down':''}">${dd}</span></td></tr>`}).join('')}</tbody></table></div></section>`;
   }else summary=`<section class="card wide"><h3>Was sich verändert hat</h3><p class="hint">Ab vier Partien siehst du hier, wie sich deine Strategie verändert.</p></section>`;
   const r7xs=xs.filter(x=>x.r7!=null);
@@ -1780,7 +1830,7 @@ function statsTrend(h){
    ${mk('t2','Ausgabenmix in %',' %',[ser('Kraftwerke','#f2b33d','plPct'),ser('Rohstoffe','#4f9dff','resPct'),ser('Netz','#4fd6c4','netPct')],{min:50})}
    ${mk('t3','Gekaufte Kraftwerkstypen in %',' %',[ser('Fossil','#c88a55','fossil'),ser('Müll','#d9c13f','garbage'),ser('Uran','#ef6a5e','uranium'),ser('Öko','#66cc7d','eco')],{min:50})}
    ${mk('t4','Ø Aufpreis je Kraftwerk in €',' €',[ser('Aufpreis','#f2b33d','markup')])}
-   ${r7xs.length>=2?lineChart('t5',`Runde, in der du ${STEP2_AT} Städte erreicht hast`,'',[ser('Runde','#f2b33d','r7')],r7xs.map(x=>({...x,v:[x.r7]})),'v',opt):''}
+   ${r7xs.length>=2?lineChart('t5',`Runde, in der du 7 Städte erreicht hast`,'',[ser('Runde','#f2b33d','r7')],r7xs.map(x=>({...x,v:[x.r7]})),'v',opt):''}
    ${mk('t6','Geld am Ende in €',' €',[ser('Geld','#f2b33d','money')])}
   </div>`;
 }
@@ -1794,7 +1844,7 @@ function statsGame(sel,idx,isLast){
   return `${nav}<section class="card wide"><div class="sel-sum">${placeBadge(selMe.place)}<div><b>${d.toLocaleDateString(LOC(),{day:'numeric',month:'long',year:'numeric'})}</b><span>${sel.rounds} Runden · KI ${AI_NAME[sel.diff]||sel.diff} · ${sel.regions.map(r=>REGIONS[r].name).join(', ')}${sel.step2?' · Stufe 2 ab Runde '+sel.step2:''}${sel.step3?' · Stufe 3 ab Runde '+sel.step3:''}</span></div></div>
   <div class="st-table"><table><thead><tr><th>Platz</th><th>Betrieb</th><th>Versorgt</th><th>Städte</th><th>Geld</th><th>Einkommen</th><th>Kraftwerke</th></tr></thead><tbody>${[...sel.players].sort((a,b)=>a.place-b.place).map(p=>`<tr class="${p.human?'me':''}"><td>${p.place}.</td><td><i class="dot" style="background:${p.color}"></i>${esc(p.human?'Du':p.name)}</td><td>${p.powered}</td><td>${p.cities}</td><td>${fmt(p.money)} €</td><td>${fmt(p.income||0)} €</td><td><span class="mps">${(p.plants||[]).map(n=>`<span class="mp t-${PLANTS[n][0]}">${n}</span>`).join('')}</span></td></tr>`).join('')}</tbody></table></div>${charts}</section>
   <div class="st-grid">
-   <section class="card"><h3>Ausgaben dieser Partie</h3>${bars([{label:'Einnahmen',v:gm.income,color:'#58b86a',text:fmt(gm.income)+' €'},{label:'Kraftwerke',v:pl,text:fmt(pl)+' € · '+gm.plPct+' %'},{label:'Rohstoffe',v:res,text:fmt(res)+' € · '+gm.resPct+' %'},{label:'Netz',v:(selMe.slot||0)+(selMe.conn||0),text:fmt((selMe.slot||0)+(selMe.conn||0))+' € · '+gm.netPct+' %'}])}${gm.r7?`<p class="hint">${STEP2_AT} Städte hattest du in Runde ${gm.r7}.</p>`:''}</section>
+   <section class="card"><h3>Ausgaben dieser Partie</h3>${bars([{label:'Einnahmen',v:gm.income,color:'#58b86a',text:fmt(gm.income)+' €'},{label:'Kraftwerke',v:pl,text:fmt(pl)+' € · '+gm.plPct+' %'},{label:'Rohstoffe',v:res,text:fmt(res)+' € · '+gm.resPct+' %'},{label:'Netz',v:(selMe.slot||0)+(selMe.conn||0),text:fmt((selMe.slot||0)+(selMe.conn||0))+' € · '+gm.netPct+' %'}])}${gm.r7?`<p class="hint">7 Städte hattest du in Runde ${gm.r7}.</p>`:''}</section>
    <section class="card"><h3>Kraftwerkskäufe</h3>${(selMe.auc||[]).length?`<div class="st-table"><table><thead><tr><th>Runde</th><th>Kraftwerk</th><th>Typ</th><th>Preis</th><th>Aufpreis</th></tr></thead><tbody>${selMe.auc.map(a=>`<tr><td>${a.r}</td><td><span class="mps"><span class="mp t-${PLANTS[a.n][0]}">${a.n}</span></span></td><td>${TYPE_SHORT[PLANTS[a.n][0]]}</td><td>${a.price} €</td><td>${a.disc?'Rabatt':'+'+(a.price-a.min)+' €'}</td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">Noch keine Käufe.</p>'}</section>
    <section class="card"><h3>Rohstoffe dieser Partie</h3>${bars(RES.map(k=>{const r=(selMe.res||{})[k]||[0,0];return{label:RNAME[k],v:r[0],color:TCOL[k],icon:resIcon(k),text:`${r[0]} · ${r[1]} €`}}))}</section>
    <section class="card"><h3>Ausbau-Reihenfolge</h3>${(selMe.built||[]).length?`<ol class="border">${selMe.built.map(c=>`<li><i style="background:${REGIONS[CITY[c]?.reg]?.col}"></i>${CITY[c]?.name||c}</li>`).join('')}</ol>`:'<p class="hint">Noch keine Städte gebaut.</p>'}</section>
@@ -1829,13 +1879,13 @@ const A={
   results:()=>UI.sheet='results',newgame:()=>UI.sheet='newgame',
   newyes:()=>{UI.sheet=null;clearTimeout(timer);renderSheet();renderStart(true);return'skip'},
   startrules:()=>{UI.sheet='rules';renderStart(false);return'rules'},
-  nai:b=>{UI.nAI=+b.dataset.n;UI.name=$('#nm').value;renderStart(true);return'skip'},
+  nai:b=>{UI.nAI=+b.dataset.n;if(UI.regions.length&&UI.regions.length!==regionCount(UI.nAI+1))UI.regions=[];UI.name=$('#nm').value;renderStart(true);return'skip'},
   diff:b=>{UI.diff=b.dataset.d;UI.name=$('#nm').value;renderStart(true);return'skip'},
   reg:b=>{const r=b.dataset.r;UI.regions=UI.regions.includes(r)?UI.regions.filter(x=>x!==r):[...UI.regions,r];UI.name=$('#nm').value;renderStart(true);return'skip'},
   regrand:()=>{UI.regions=[];UI.name=$('#nm').value;renderStart(true);return'skip'},
   markets:()=>UI.sheet='markets',
   pinfo:b=>{UI.pnum=+b.dataset.num;UI.sheet='plant'},
-  start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();newGame(UI.name||(LANG==='en'?'You':'Du'),UI.nAI,UI.diff,regionsValid(UI.regions,UI.nAI+1)?UI.regions:null);UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false)},
+  start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();newGame(UI.name||(LANG==='en'?'You':'Du'),UI.nAI,UI.diff,regionsValid(UI.regions,regionCount(UI.nAI+1))?UI.regions:null);UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false)},
   cont:()=>renderStart(false),
   zin:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.3);return'skip'},
   zout:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.3);return'skip'},
@@ -1879,7 +1929,7 @@ window.addEventListener('resize',()=>{if(S)applyVB()});
 function boot(data){
   if(data&&data.S)S=data.S;
   else{try{const raw=localStorage.getItem(SAVE_KEY);if(raw){const s=JSON.parse(raw);if(s&&s.v===1)S=s}}catch(_){}}
-  if(S){S.ai=S.ai||'normal';UI.prevOwners=JSON.parse(JSON.stringify(S.owners));render();if(data&&data.S){renderStart(false);schedule()}else renderStart(true)}
+  if(S){S.ai=S.ai||'normal';applyRulesN(S.n);UI.prevOwners=JSON.parse(JSON.stringify(S.owners));render();if(data&&data.S){renderStart(false);schedule()}else renderStart(true)}
   else renderStart(true);
 }
 try{window.claude?.hot?.snapshot?.(()=>({S}))}catch(_){}
