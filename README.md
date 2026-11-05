@@ -14,3 +14,7 @@ A grid-building strategy game for your phone, playable in English and German.
 3. Danach startet das Spiel vom Home-Bildschirm, auch offline.
 
 Spielstand und Statistik werden nur auf dem jeweiligen Gerät gespeichert.
+
+## Quellen
+
+Städte, Regionen und Leitungskosten der Karten Frankreich und Italien stammen aus dem MIT-lizenzierten Projekt [boardgamers/powergrid](https://github.com/boardgamers/powergrid).
