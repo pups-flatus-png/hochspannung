@@ -539,6 +539,22 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .kv2 small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .seg.lang button{padding:7px 10px;font-size:13px}
 .menu .seg.lang{margin-bottom:4px}
+.st-bar{display:flex;gap:10px;flex-wrap:wrap;position:sticky;top:-14px;z-index:3;background:var(--bg);padding-block:8px;margin-top:-6px}
+.sel{display:flex;flex-direction:column;gap:4px;flex:1 1 220px;min-width:0}
+.sel span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sel select{appearance:none;-webkit-appearance:none;width:100%;background:var(--panel-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23f2b33d' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 12px center;border:1px solid var(--edge);border-radius:9px;color:var(--fg);font:inherit;font-size:15px;font-weight:600;padding:10px 36px 10px 12px;min-height:44px;cursor:pointer}
+.sel select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.gnav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.gnav span{font-family:var(--display);font-size:18px;font-weight:600}
+.delta td:nth-child(2),.delta td:nth-child(3){font-variant-numeric:tabular-nums}
+.dchip{display:inline-block;padding:2px 8px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line);font-size:12px;font-weight:600;white-space:nowrap}
+.dchip.up{border-color:color-mix(in srgb,var(--accent) 60%,var(--line));color:var(--accent)}
+.dchip.down{border-color:color-mix(in srgb,#4f9dff 60%,var(--line));color:#8fbbe8}
+.border{margin:0;padding-left:22px;columns:2;column-gap:20px;font-size:13px;line-height:1.7}
+.border li i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.delta td:first-child{white-space:normal;min-width:110px}
+.delta th,.delta td{padding-right:10px}
+@media (max-width:480px){.delta{font-size:12px}.delta th{font-size:9px}}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -982,7 +998,7 @@ function plantLine(n){
 function plantInfo(n){
   const[t,k,c]=PLANTS[n];const owner=S.players.find(p=>p.plants.includes(n));const fc=fuelCost(t,k);
   const where=owner?'Im Besitz von '+esc(owner.name):S.market.includes(n)?(buyable().includes(n)?'Aktueller Markt, kaufbar':'Zukünftiger Markt'):'Nicht im Markt';
-  return `<div class="pinfo">${plantCard(n,{lg:true,store:owner?(storeOf(owner)[n]||[]):undefined})}<dl class="kv"><dt>Typ</dt><dd>${TYPE_NAME[t]}</dd><dt>Bedarf</dt><dd>${t==='eco'?'keiner':k+' '+RNAME[t]+' je Lieferung'}</dd><dt>Versorgt</dt><dd>${c} ${c===1?'Stadt':'Städte'}</dd><dt>Effizienz</dt><dd>${t==='eco'?'kostenloser Betrieb':(Math.round(c/k*10)/10).toLocaleString(LANG==='en'?'en-GB':'de-DE')+' Städte je Einheit'}</dd><dt>Lager</dt><dd>${t==='eco'?'–':2*k+' Einheiten'}</dd><dt>Brennstoff jetzt</dt><dd>${t==='eco'?'0 €':fc===Infinity?'nicht genug am Markt':fc+' € je Lieferung'}</dd><dt>Mindestgebot</dt><dd>${minBid(n)} €${minBid(n)!==n?' (Rabatt)':''}</dd><dt>Status</dt><dd>${where}</dd></dl></div>`;
+  return `<div class="pinfo">${plantCard(n,{lg:true,store:owner?(storeOf(owner)[n]||[]):undefined})}<dl class="kv"><dt>Typ</dt><dd>${TYPE_NAME[t]}</dd><dt>Bedarf</dt><dd>${t==='eco'?'keiner':k+' '+RNAME[t]+' je Lieferung'}</dd><dt>Leistung</dt><dd>${c} ${c===1?'Stadt':'Städte'}</dd><dt>Effizienz</dt><dd>${t==='eco'?'kostenloser Betrieb':(Math.round(c/k*10)/10).toLocaleString(LANG==='en'?'en-GB':'de-DE')+' Städte je Einheit'}</dd><dt>Lager</dt><dd>${t==='eco'?'–':2*k+' Einheiten'}</dd><dt>Brennstoff jetzt</dt><dd>${t==='eco'?'0 €':fc===Infinity?'nicht genug am Markt':fc+' € je Lieferung'}</dd><dt>Mindestgebot</dt><dd>${minBid(n)} €${minBid(n)!==n?' (Rabatt)':''}</dd><dt>Status</dt><dd>${where}</dd></dl></div>`;
 }
 function trackHTML(r,k=0){
   const first=CAP[r]-S.resMarket[r];let groups='';
@@ -1465,6 +1481,12 @@ const TP=[
 [/^Wähle (\d+) Regionen \((\d+) gewählt\)\.$/u,'Choose $1 regions ($2 selected).'],
 [/^Zufällig: (\d+) zusammenhängende Regionen\.$/u,'Random: $1 connected regions.'],
 [/Partie vom /u,'Game from '],
+[/Partie #(\d+)/u,'Game #$1'],
+[/Deine ersten (\d+) Partien im Vergleich zu deinen letzten (\d+)\./u,'Your first $1 games compared with your last $2.'],
+[/Runde mit (\d+) Städten/u,'Round reaching $1 cities'],
+[/Runde, in der du (\d+) Städte erreicht hast/u,'Round in which you reached $1 cities'],
+[/^(\d+) Städte hattest du in Runde (\d+)\.$/u,'You had $1 cities in round $2.'],
+[/(\d+) Pkt\./u,'$1 pts'],
 [/Stufe 2 ab Runde (\d+)/u,'Step 2 from round $1'],[/Stufe 3 ab Runde (\d+)/u,'Step 3 from round $1'],
 [/^(\d+) R · (.+) · (\d+) Sp\.$/u,'$1 R · $2 · $3 pl.'],
 [/Vom Netz gingen Ø (.+) € in Stadtplätze und (.+) € in Leitungen\./u,'Of network spending, Ø $1 € went to city slots and $2 € to connections.'],
@@ -1487,6 +1509,14 @@ const TP=[
 ];
 const TS=Object.entries({
 'Lege dein Startgebot fest.':'Set your opening bid.',
+'Alle Partien (Gesamt)':'All games (totals)','Letzte Partie · ':'Most recent · ','Letzte Partie':'Most recent game','Entwicklung über Zeit':'Development over time','── Einzelne Partie ──':'── Single game ──','Alle Stärken':'All difficulties','Ansicht':'View',
+'Keine Partien mit dieser KI-Stärke':'No games at this AI difficulty','Wähle eine andere Stärke oder „Alle Stärken“.':'Choose another difficulty or “All difficulties”.',
+'Tippe eine Partie an, um sie im Detail zu sehen.':'Tap a game to see it in detail.','Noch zu wenig Partien':'Not enough games yet','Spiel mindestens zwei Partien, um Entwicklungen zu sehen.':'Play at least two games to see trends.',
+'Was sich verändert hat':'What has changed','Ab vier Partien siehst du hier, wie sich deine Strategie verändert.':"From four games on, you'll see here how your strategy is changing.",
+'Jeder Punkt ist eine Partie, die älteste links. Tippe auf ein Diagramm für die Werte.':'Each point is one game, oldest on the left. Touch a chart for the values.',
+'Versorgte Städte je Partie':'Cities powered per game','Versorgte Städte je Runde':'Cities powered per round','Versorgte Städte':'Cities powered','Ausgabenmix in %':'Spending mix in %','Gekaufte Kraftwerkstypen in %':'Plant types bought in %','Ø Aufpreis je Kraftwerk in €':'Ø markup per plant in €','Ø Aufpreis je Kraftwerk':'Ø markup per plant','Geld am Ende in €':'Money at the end in €',
+'Anteil Kraftwerke an Ausgaben':'Plant share of spending','Anteil Rohstoffe an Ausgaben':'Resource share of spending','Anteil Netz an Ausgaben':'Network share of spending','Ø Kraftwerksnummer':'Ø plant number','Anteil Öko-Kraftwerke':'Share of eco plants',
+'Kennzahl':'Metric','Früher':'Earlier','Zuletzt':'Recent','Veränderung':'Change','Ausgaben dieser Partie':'Spending in this game','Kraftwerkskäufe':'Plant purchases','Rohstoffe dieser Partie':'Resources in this game','Ausbau-Reihenfolge':'Build order','← Vorherige':'← Previous','Nächste →':'Next →','Aufpreis':'Markup','Preis':'Price','Rabatt':'discount','Fossil':'Fossil',
 'Die Stufe-3-Karte ist aufgetaucht. Nach der Versteigerung beginnt Stufe 3.':'The Step 3 card has appeared. Step 3 begins after the auction.',
 'Tippe auf ein Kraftwerk im aktuellen Markt, um es zu versteigern.':'Tap a plant in the current market to put it up for auction.',
 ' In der ersten Runde muss jeder ein Kraftwerk kaufen.':' In the first round everyone must buy a plant.',
@@ -1535,7 +1565,7 @@ const TS=Object.entries({
 });
 const TW=Object.entries({
 'Versteigerung':'Auction','Bieten':'Bid','Aussteigen':'Drop out','Kaufen':'Buy','Netzausbau':'Network building','Protokoll':'Log','Ergebnis':'Results','Menü':'Menu','Spielregeln':'Rules','Statistik':'Statistics','Schließen':'Close','Betriebe':'Companies','Gegner':'Opponents','Märkte':'Markets','Abbrechen':'Cancel','Einkommen':'Income','Netzgebiet':'Map area','Zufällig':'Random','Leicht':'Easy','Schwer':'Hard','Rekorde':'Records',
-'Kraftwerke':'Plants','Kraftwerk':'Plant','Rohstoffe':'Resources','Lager':'Storage','leer':'empty','Kapazität':'Capacity','Effizienz':'Efficiency','Bedarf':'Needs','keiner':'none','Typ':'Type','Versorgt':'Powers','Einheiten':'units','Vorrat':'supply','nächste':'next','Nachschub':'restock','kaufbar':'buyable',
+'Kraftwerke':'Plants','Kraftwerk':'Plant','Rohstoffe':'Resources','Lager':'Storage','leer':'empty','Kapazität':'Capacity','Effizienz':'Efficiency','Bedarf':'Needs','keiner':'none','Typ':'Type','Versorgt':'Powered','Leistung':'Output','Einheiten':'units','Vorrat':'supply','nächste':'next','Nachschub':'restock','kaufbar':'buyable',
 'Kohle':'Coal','Öl':'Oil','Müll':'Garbage','Uran':'Uranium','Öko':'Eco','Hybrid':'Hybrid',
 'Auktion':'Auction','Bauen':'Build','Strom':'Power','Stufe':'Step','Runde':'Round','Runden':'rounds','KI':'AI','Ende':'End','Du':'You','Stadt':'city','Städte':'cities','Städten':'cities','Platz':'Rank','Plätze':'slots','Netz':'Network','Geld':'Money','Betrieb':'Company','versorgt':'powered','Partie':'game','Partien':'games','Sieg':'win','Siege':'wins','Quote':'Rate','Stärke':'Difficulty','Gekauft':'Bought','bis':'up to',
 'Nord':'North','Ost':'East','Mitte':'Central','Südwest':'Southwest','Südost':'Southeast','NORD':'NORTH','OST':'EAST','MITTE':'CENTRAL','SÜDWEST':'SOUTHWEST','SÜDOST':'SOUTHEAST','Sp':'pl'
@@ -1591,7 +1621,7 @@ function onGameEnd(){
   const rec={v:1,id:Date.now()+'-'+Math.floor(Math.random()*1e4),date:t.start,end:t.end||Date.now(),rounds:S.round,diff:S.ai||'normal',n:S.n,regions:S.regions.slice(),step2:t.step2,step3:t.step3,partial:!!t.partial,
     players:S.players.map(p=>({name:p.name,color:p.color,human:!!p.human,powered:p.lastPowered,cities:p.cities.length,money:p.money,plants:p.plants.slice(),place:S.ranking.indexOf(p.id)+1,...t.pl[p.id]})),
     series:t.series};
-  const h=loadHist();h.push(rec);saveHist(h);UI.statSel=rec.id;
+  const h=loadHist();h.push(rec);saveHist(h);UI.statSel=rec.id;UI.statView='last';
 }
 const LOC=()=>LANG==='en'?'en-GB':'de-DE';
 const fmt=n=>Math.round(n).toLocaleString(LOC());
@@ -1599,15 +1629,16 @@ const fmt1=n=>(Math.round(n*10)/10).toLocaleString(LOC());
 const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
 function niceMax(v){if(v<=5)return 5;const e=Math.pow(10,Math.floor(Math.log10(v)));for(const m of[1,2,2.5,5,10])if(m*e>=v)return m*e;return 10*e}
 const CHARTS={};
-function lineChart(id,title,unit,players,xs,key){
+function lineChart(id,title,unit,players,xs,key,opts={}){
+  const xl=opts.xl||(x=>'R'+x.r),th=opts.th||(x=>'Runde '+x.r);
   const W=360,Hh=172,L=34,R=98,T=10,B=24,pw=W-L-R,ph=Hh-T-B;
   const vals=players.map((_,i)=>xs.map(x=>x[key][i]));
-  const vmax=Math.max(1,...vals.flat());const step=[1,2,5,10,20,25,50,100,200,250,500].find(x=>vmax/x<=4.5)||1000;const ticks=Math.max(1,Math.ceil(vmax/step));const max=ticks*step;const n=xs.length;
+  const vmax=Math.max(opts.min||1,...vals.flat());const step=[1,2,5,10,20,25,50,100,200,250,500].find(x=>vmax/x<=4.5)||1000;const ticks=Math.max(1,Math.ceil(vmax/step));const max=ticks*step;const n=xs.length;
   const X=i=>L+(n<=1?pw/2:i*pw/(n-1)),Y=v=>T+ph-(v/max)*ph;
   let g='';
   for(let k=0;k<=ticks;k++){const v=step*k,y=Y(v);g+=`<line x1="${L}" x2="${L+pw}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" class="cg${k?'':' base'}"/><text x="${L-6}" y="${(y+3.5).toFixed(1)}" class="ct" text-anchor="end">${fmt(v)}</text>`}
   const every=Math.max(1,Math.ceil(n/8));
-  xs.forEach((x,i)=>{if(i%every===0||i===n-1)g+=`<text x="${X(i).toFixed(1)}" y="${Hh-6}" class="ct" text-anchor="middle">R${x.r}</text>`});
+  xs.forEach((x,i)=>{if(i%every===0||i===n-1)g+=`<text x="${X(i).toFixed(1)}" y="${Hh-6}" class="ct" text-anchor="middle">${xl(x)}</text>`});
   const ends=[];
   players.forEach((p,i)=>{
     const pts=vals[i].map((v,j)=>`${X(j).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
@@ -1617,10 +1648,10 @@ function lineChart(id,title,unit,players,xs,key){
   });
   ends.sort((a,b)=>a.y-b.y);for(let k=1;k<ends.length;k++)if(ends[k].y-ends[k-1].y<12)ends[k].y=ends[k-1].y+12;
   const shift=Math.max(0,ends.length?ends[ends.length-1].y-(T+ph+4):0);ends.forEach(e=>e.y-=shift);
-  ends.forEach(e=>{const nm=e.p.human?'Du':e.p.name.split(' ')[0];g+=`<text x="${L+pw+8}" y="${(e.y+3.5).toFixed(1)}" class="cel"><tspan class="cev">${fmt(e.v)}</tspan> ${esc(nm.slice(0,10))}</text>`});
+  ends.forEach(e=>{const nm=e.p.human?'Du':(e.p.short||e.p.name.split(' ')[0]);g+=`<text x="${L+pw+8}" y="${(e.y+3.5).toFixed(1)}" class="cel"><tspan class="cev">${Number.isInteger(e.v)?fmt(e.v):fmt1(e.v)}</tspan>${players.length>1?' '+esc(nm.slice(0,10)):''}</text>`});
   g+=`<line class="cx" x1="0" x2="0" y1="${T}" y2="${T+ph}" hidden/><rect class="chit" x="${L}" y="${T}" width="${pw}" height="${ph}"/>`;
-  CHARTS[id]={players,xs,key,unit,X,n,L,pw,W};
-  const legend=players.map(p=>`<span><i style="background:${p.color}"></i>${esc(p.human?'Du':p.name)}</span>`).join('');
+  CHARTS[id]={players,xs,key,unit,X,n,L,pw,W,th};
+  const legend=players.length<2?'':players.map(p=>`<span><i style="background:${p.color}"></i>${esc(p.human?'Du':p.name)}</span>`).join('');
   return `<figure class="chart" data-chart="${id}"><figcaption>${title}</figcaption><div class="cwrap"><svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${title} je Runde">${g}</svg><div class="ctip" hidden></div></div><div class="clegend">${legend}</div></figure>`;
 }
 document.addEventListener('pointermove',e=>{
@@ -1633,7 +1664,7 @@ document.addEventListener('pointermove',e=>{
   const x=c.X(i),ln=fig.querySelector('.cx');ln.setAttribute('x1',x);ln.setAttribute('x2',x);ln.removeAttribute('hidden');
   const tip=fig.querySelector('.ctip');const row=c.xs[i];
   const order=c.players.map((p,k)=>({p,v:row[c.key][k]})).sort((a,b)=>b.v-a.v);
-  tip.innerHTML=`<b>Runde ${row.r}</b>`+order.map(o=>`<span><i style="background:${o.p.color}"></i>${esc(o.p.human?'Du':o.p.name)}<em>${fmt(o.v)}${c.unit}</em></span>`).join('');
+  tip.innerHTML=`<b>${esc(c.th(row))}</b>`+order.map(o=>`<span><i style="background:${o.p.color}"></i>${esc(o.p.human?'Du':o.p.name)}<em>${fmt(o.v)}${c.unit}</em></span>`).join('');
   tip.hidden=false;const px=x/c.W*r.width;tip.style.left=Math.min(Math.max(px,70),r.width-70)+'px';
 });
 function bars(rows,unit=''){
@@ -1642,16 +1673,50 @@ function bars(rows,unit=''){
 }
 const TCOL={coal:'#c88a55',oil:'#7ea9d6',garbage:'#d9c13f',uranium:'#ef6a5e',eco:'#66cc7d',hybrid:'#b9a088'};
 function placeBadge(pl,n){return `<span class="place p${pl}">${pl}.</span>`}
+function meOf(g){return g.players.find(p=>p.human)||g.players[0]}
+function gameMetrics(g){
+  const m=meOf(g),mi=g.players.indexOf(m);
+  const pl=(m.auc||[]).reduce((s,a)=>s+a.price,0),res=Object.values(m.res||{}).reduce((s,x)=>s+x[1],0),net=(m.slot||0)+(m.conn||0),tot=pl+res+net||1;
+  const au=m.auc||[];const nd=au.filter(a=>!a.disc);
+  const fam={fossil:0,garbage:0,uranium:0,eco:0};au.forEach(a=>{const t=PLANTS[a.n][0];fam[t==='coal'||t==='oil'||t==='hybrid'?'fossil':t]++});
+  const nb=au.length||1;
+  const r7=(g.series||[]).find(x=>x.c[mi]>=STEP2_AT);
+  return{powered:m.powered,place:m.place,win:m.place===1,money:m.money,rounds:g.rounds,
+    plPct:Math.round(pl/tot*100),resPct:Math.round(res/tot*100),netPct:Math.round(net/tot*100),
+    markup:nd.length?nd.reduce((s,a)=>s+a.price-a.min,0)/nd.length:0,
+    fossil:Math.round(fam.fossil/nb*100),garbage:Math.round(fam.garbage/nb*100),uranium:Math.round(fam.uranium/nb*100),eco:Math.round(fam.eco/nb*100),
+    avgPlant:au.length?au.reduce((s,a)=>s+a.n,0)/au.length:0,r7:r7?r7.r:null,income:m.income||0};
+}
+function filtHist(){const h=loadHist();return UI.statDiff&&UI.statDiff!=='all'?h.filter(g=>g.diff===UI.statDiff):h}
+function gameLabel(g,i){const d=new Date(g.date);return `#${i+1} · ${d.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})} ${d.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})} · Platz ${meOf(g).place} · KI ${AI_NAME[g.diff]||g.diff}`}
 function renderStats(){
-  const el=$('#stats');const h=loadHist();
-  const head=`<div class="st-head"><button type="button" class="btn" data-act="statsBack">← Zurück</button><h2>Statistik</h2>${h.length?`<span class="st-n">${h.length} ${h.length===1?'Partie':'Partien'}</span>`:''}</div>`;
-  if(!h.length){el.innerHTML=`<div class="st-inner">${head}<div class="st-empty"><b>Noch keine beendete Partie</b><p>Spiel eine Partie bis zur letzten Stromlieferung. Danach siehst du hier Siegquote, Rekorde, deine Ausgaben für Kraftwerke, Rohstoffe und Netz, die Verläufe von Geld und Städten und deine ganze Spielhistorie.</p></div></div>`;el.hidden=false;return}
-  const me_=g=>g.players.find(p=>p.human)||g.players[0];
+  const el=$('#stats');const all=loadHist();const h=filtHist();
+  const view=UI.statView||'total';
+  const gameIdx=h.findIndex(g=>g.id===UI.statSel);
+  const sel=view==='last'?h[h.length-1]:view==='game'?(h[gameIdx]||h[h.length-1]):null;
+  const opts=`<option value="last" ${view==='last'?'selected':''}>Letzte Partie</option><option value="total" ${view==='total'?'selected':''}>Alle Partien (Gesamt)</option><option value="trend" ${view==='trend'?'selected':''}>Entwicklung über Zeit</option><option disabled>── Einzelne Partie ──</option>${h.map((g,i)=>({g,i})).reverse().map(({g,i})=>`<option value="g:${g.id}" ${view==='game'&&sel&&sel.id===g.id?'selected':''}>${gameLabel(g,i)}</option>`).join('')}`;
+  const dOpts=[['all','Alle Stärken'],['easy',AI_NAME.easy],['normal',AI_NAME.normal],['hard',AI_NAME.hard]].map(([k,l])=>`<option value="${k}" ${(UI.statDiff||'all')===k?'selected':''}>${l}</option>`).join('');
+  const head=`<div class="st-head"><button type="button" class="btn" data-act="statsBack">← Zurück</button><h2>Statistik</h2>${all.length?`<span class="st-n">${all.length} ${all.length===1?'Partie':'Partien'}</span>`:''}</div>`;
+  if(!all.length){el.innerHTML=`<div class="st-inner">${head}<div class="st-empty"><b>Noch keine beendete Partie</b><p>Spiel eine Partie bis zur letzten Stromlieferung. Danach siehst du hier Siegquote, Rekorde, deine Ausgaben für Kraftwerke, Rohstoffe und Netz, die Verläufe von Geld und Städten und deine ganze Spielhistorie.</p></div></div>`;el.hidden=false;return}
+  const bar=`<div class="st-bar"><label class="sel"><span>Ansicht</span><select id="stView">${opts}</select></label><label class="sel"><span>KI-Stärke</span><select id="stDiff">${dOpts}</select></label></div>`;
+  let body;
+  if(!h.length)body=`<div class="st-empty"><b>Keine Partien mit dieser KI-Stärke</b><p>Wähle eine andere Stärke oder „Alle Stärken“.</p></div>`;
+  else if(view==='trend')body=statsTrend(h);
+  else if(view==='game'||view==='last')body=statsGame(sel,h.indexOf(sel),view==='last');
+  else body=statsTotal(h);
+  el.innerHTML=`<div class="st-inner">${head}${bar}${body}</div>`;
+  el.hidden=false;
+}
+document.addEventListener('change',e=>{
+  if(e.target.id==='stView'){const v=e.target.value;if(v.startsWith('g:')){UI.statView='game';UI.statSel=v.slice(2)}else UI.statView=v;renderStats();$('#stats').scrollTop=0}
+  if(e.target.id==='stDiff'){UI.statDiff=e.target.value;renderStats()}
+});
+function statsTotal(h){
+  const me_=meOf;
   const wins=h.filter(g=>me_(g).place===1);
   const tiles=[
     ['Partien',fmt(h.length)],['Siege',fmt(wins.length)],['Siegquote',Math.round(wins.length/h.length*100)+' %'],
     ['Ø Platz',fmt1(avg(h.map(g=>me_(g).place)))],['Ø versorgt',fmt1(avg(h.map(g=>me_(g).powered)))+' Städte'],['Ø Runden',fmt1(avg(h.map(g=>g.rounds)))]];
-  // Rekorde
   const rec=[];
   const best=(f,arr=h)=>arr.reduce((b,g)=>f(g)>f(b)?g:b,arr[0]);
   const bp=best(g=>me_(g).powered);rec.push(['Meiste versorgte Städte',me_(bp).powered,bp]);
@@ -1661,41 +1726,25 @@ function renderStats(){
   const auAll=h.flatMap(g=>(me_(g).auc||[]).map(a=>({...a,g})));
   if(auAll.length){const hb=auAll.reduce((b,a)=>a.price>b.price?a:b,auAll[0]);rec.push(['Teuerstes Kraftwerk',`Nr. ${hb.n} für ${hb.price} €`,hb.g])}
   const lg=best(g=>g.rounds);rec.push(['Längste Partie',lg.rounds+' Runden',lg]);
-  // Schwierigkeit
   const diffRows=['easy','normal','hard'].map(d=>{const gs=h.filter(g=>g.diff===d);const w=gs.filter(g=>me_(g).place===1).length;return{d,gs,w}});
-  // Wirtschaft
   const eco=h.map(g=>{const m=me_(g);const res=Object.values(m.res||{}).reduce((s,x)=>s+x[1],0);return{inc:m.income||0,pl:(m.auc||[]).reduce((s,a)=>s+a.price,0),res,net:(m.slot||0)+(m.conn||0),slot:m.slot||0,conn:m.conn||0}});
   const E=k=>avg(eco.map(e=>e[k]));
-  // Kraftwerke
   const typeCnt={};auAll.forEach(a=>{const t=PLANTS[a.n][0];typeCnt[t]=(typeCnt[t]||0)+1});
   const typeRows=Object.keys(TYPE_NAME).filter(t=>typeCnt[t]).sort((a,b)=>typeCnt[b]-typeCnt[a]).map(t=>({label:TYPE_SHORT[t],v:typeCnt[t],color:TCOL[t],icon:useIcon('r-'+(t==='hybrid'?'coal':t),'ri')}));
   const over=avg(auAll.filter(a=>!a.disc).map(a=>a.price-a.min));
-  const discN=auAll.filter(a=>a.disc).length;
-  const favT=typeRows[0];
-  // Rohstoffe
+  const discN=auAll.filter(a=>a.disc).length;const favT=typeRows[0];
   const resTot={coal:[0,0],oil:[0,0],garbage:[0,0],uranium:[0,0]};
   h.forEach(g=>{const r=me_(g).res||{};RES.forEach(k=>{if(r[k]){resTot[k][0]+=r[k][0];resTot[k][1]+=r[k][1]}})});
   const resRows=RES.map(k=>({label:RNAME[k],v:resTot[k][0],color:TCOL[k],icon:resIcon(k),text:`${fmt(resTot[k][0])} · Ø ${resTot[k][0]?fmt1(resTot[k][1]/resTot[k][0]):'–'} €`}));
-  // Karte
   const cityCnt={};h.forEach(g=>(me_(g).built||[]).forEach(c=>cityCnt[c]=(cityCnt[c]||0)+1));
   const topCities=Object.entries(cityCnt).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([c,v])=>({label:CITY[c]?.name||c,v,color:REGIONS[CITY[c]?.reg]?.col}));
   const regCnt={};h.forEach(g=>g.regions.forEach(r=>regCnt[r]=(regCnt[r]||0)+1));
   const regRows=Object.keys(REGIONS).map(r=>({label:REGIONS[r].name,v:regCnt[r]||0,color:REGIONS[r].col})).sort((a,b)=>b.v-a.v);
-  // Rivalen
   const rivals={};h.forEach(g=>{const w=g.players.find(p=>p.place===1);if(w&&!w.human)rivals[w.name]=(rivals[w.name]||0)+1});
   const rivalRows=Object.entries(rivals).sort((a,b)=>b[1]-a[1]).map(([n,v])=>({label:esc(n),v,color:'var(--edge)',text:v+(v===1?' Sieg':' Siege')}));
-  const startTimes={};const st2=avg(h.filter(g=>g.step2).map(g=>g.step2)),st3=avg(h.filter(g=>g.step3).map(g=>g.step3));
-  // Ausgewählte Partie
-  const sel=h.find(g=>g.id===UI.statSel)||h[h.length-1];
-  const sp=sel.players.map(p=>({...p}));
-  const charts=sel.series&&sel.series.length?`<div class="charts">${lineChart('m','Geld',' €',sp,sel.series,'m')}${lineChart('c','Städte im Netz','',sp,sel.series,'c')}</div>`:'<p class="hint">Für diese Partie liegen keine Rundenverläufe vor.</p>';
-  const selMe=me_(sel);
-  const d=new Date(sel.date);
-  const selInfo=`<div class="sel-sum">${placeBadge(selMe.place)}<div><b>${d.toLocaleDateString(LOC(),{day:'numeric',month:'long',year:'numeric'})}</b><span>${sel.rounds} Runden · KI ${AI_NAME[sel.diff]||sel.diff} · ${sel.regions.map(r=>REGIONS[r].name).join(', ')}${sel.step2?' · Stufe 2 ab Runde '+sel.step2:''}${sel.step3?' · Stufe 3 ab Runde '+sel.step3:''}</span></div></div>
-  <div class="st-table"><table><thead><tr><th>Platz</th><th>Betrieb</th><th>Versorgt</th><th>Städte</th><th>Geld</th><th>Einkommen</th><th>Kraftwerke</th></tr></thead><tbody>${[...sel.players].sort((a,b)=>a.place-b.place).map(p=>`<tr class="${p.human?'me':''}"><td>${p.place}.</td><td><i class="dot" style="background:${p.color}"></i>${esc(p.human?'Du':p.name)}</td><td>${p.powered}</td><td>${p.cities}</td><td>${fmt(p.money)} €</td><td>${fmt(p.income||0)} €</td><td><span class="mps">${(p.plants||[]).map(n=>`<span class="mp t-${PLANTS[n][0]}">${n}</span>`).join('')}</span></td></tr>`).join('')}</tbody></table></div>`;
-  const hist=[...h].reverse().map(g=>{const m=me_(g);const dd=new Date(g.date);return `<button type="button" class="hrow${g.id===sel.id?' on':''}" data-act="statsSel" data-id="${g.id}">${placeBadge(m.place)}<span class="hd"><b>${dd.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'})}</b><small>${dd.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})}</small></span><span class="hm">${m.powered} versorgt · ${m.cities} Städte · ${fmt(m.money)} €</span><span class="hx">${g.rounds} R · ${AI_NAME[g.diff]||g.diff} · ${g.n} Sp.</span></button>`}).join('');
-  el.innerHTML=`<div class="st-inner">${head}
-  <div class="tiles">${tiles.map(([k,v])=>`<div class="tile"><small>${k}</small><b>${v}</b></div>`).join('')}</div>
+  const st2=avg(h.filter(g=>g.step2).map(g=>g.step2)),st3=avg(h.filter(g=>g.step3).map(g=>g.step3));
+  const hist=h.map((g,i)=>({g,i})).reverse().map(({g,i})=>{const m=me_(g);const dd=new Date(g.date);return `<button type="button" class="hrow" data-act="statsSel" data-id="${g.id}">${placeBadge(m.place)}<span class="hd"><b>#${i+1} · ${dd.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'})}</b><small>${dd.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})}</small></span><span class="hm">${m.powered} versorgt · ${m.cities} Städte · ${fmt(m.money)} €</span><span class="hx">${g.rounds} R · ${AI_NAME[g.diff]||g.diff} · ${g.n} Sp.</span></button>`}).join('');
+  return `<div class="tiles">${tiles.map(([k,v])=>`<div class="tile"><small>${k}</small><b>${v}</b></div>`).join('')}</div>
   <div class="st-grid">
    <section class="card"><h3>Nach KI-Stärke</h3><div class="st-table"><table><thead><tr><th>Stärke</th><th>Partien</th><th>Siege</th><th>Quote</th><th>Ø versorgt</th></tr></thead><tbody>${diffRows.map(r=>`<tr><td>${AI_NAME[r.d]}</td><td>${r.gs.length}</td><td>${r.w}</td><td>${r.gs.length?Math.round(r.w/r.gs.length*100)+' %':'–'}</td><td>${r.gs.length?fmt1(avg(r.gs.map(g=>me_(g).powered))):'–'}</td></tr>`).join('')}</tbody></table></div>${rivalRows.length?`<h4>Wer dich am häufigsten schlägt</h4>${bars(rivalRows)}`:''}</section>
    <section class="card"><h3>Rekorde</h3><dl class="recs">${rec.map(([k,v,g])=>`<div><dt>${k}</dt><dd>${v}</dd><button type="button" class="linkbtn" data-act="statsSel" data-id="${g.id}">Partie vom ${new Date(g.date).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})}</button></div>`).join('')}</dl></section>
@@ -1704,11 +1753,52 @@ function renderStats(){
    <section class="card"><h3>Rohstoffe</h3><p class="hint">Gekaufte Einheiten und Ø Preis je Einheit, alle Partien.</p>${bars(resRows)}</section>
    <section class="card"><h3>Netz</h3><h4>Am häufigsten gebaut</h4>${topCities.length?bars(topCities):'<p class="hint">Noch keine Städte gebaut.</p>'}<h4>Gespielte Regionen</h4>${bars(regRows)}${st2?`<p class="hint">Stufe 2 beginnt bei dir im Schnitt in Runde ${fmt1(st2)}${st3?', Stufe 3 in Runde '+fmt1(st3):''}.</p>`:''}</section>
   </div>
-  <section class="card wide" id="st-game"><h3>Partie im Detail</h3>${selInfo}${charts}</section>
-  <section class="card wide"><h3>Spielhistorie</h3><p class="hint">Tippe eine Partie an, um sie oben im Detail zu sehen.</p><div class="hist">${hist}</div></section>
-  <div class="st-foot">${UI.statReset?`<span>Alle ${h.length} Partien löschen?</span><button type="button" class="btn" data-act="statsResetNo">Abbrechen</button><button type="button" class="btn danger" data-act="statsResetYes">Endgültig löschen</button>`:`<button type="button" class="btn" data-act="statsReset">Statistik zurücksetzen</button>`}</div>
+  <section class="card wide"><h3>Spielhistorie</h3><p class="hint">Tippe eine Partie an, um sie im Detail zu sehen.</p><div class="hist">${hist}</div></section>
+  <div class="st-foot">${UI.statReset?`<span>Alle ${loadHist().length} Partien löschen?</span><button type="button" class="btn" data-act="statsResetNo">Abbrechen</button><button type="button" class="btn danger" data-act="statsResetYes">Endgültig löschen</button>`:`<button type="button" class="btn" data-act="statsReset">Statistik zurücksetzen</button>`}</div>`;
+}
+function statsTrend(h){
+  if(h.length<2)return `<div class="st-empty"><b>Noch zu wenig Partien</b><p>Spiel mindestens zwei Partien, um Entwicklungen zu sehen.</p></div>`;
+  const M=h.map(gameMetrics);
+  const xs=h.map((g,i)=>({i,g,...M[i]}));
+  const opt={xl:x=>'#'+(x.i+1),th:x=>`Partie #${x.i+1} · Platz ${x.place} · ${new Date(x.g.date).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})}`};
+  const ser=(name,color,k)=>({name,short:name,color,k});
+  const mk=(id,title,unit,series,o={})=>{const rows=xs.map(x=>({...x,v:series.map(s=>x[s.k]??0)}));return lineChart(id,title,unit,series,rows,'v',{...opt,...o})};
+  let summary;
+  if(h.length>=4){
+    const n=Math.floor(h.length/2),A=M.slice(0,n),Z=M.slice(-n);
+    const av=(arr,k)=>avg(arr.filter(x=>x[k]!=null).map(x=>x[k]));
+    const rows=[
+      ['Versorgte Städte','powered','',1],['Siegquote','win','%',100],['Ø Platz','place','',1],
+      ['Anteil Kraftwerke an Ausgaben','plPct','%',1],['Anteil Rohstoffe an Ausgaben','resPct','%',1],['Anteil Netz an Ausgaben','netPct','%',1],
+      [`Runde mit ${STEP2_AT} Städten`,'r7','',1],['Ø Aufpreis je Kraftwerk','markup',' €',1],['Ø Kraftwerksnummer','avgPlant','',1],['Anteil Öko-Kraftwerke','eco','%',1]];
+    summary=`<section class="card wide"><h3>Was sich verändert hat</h3><p class="hint">Deine ersten ${n} Partien im Vergleich zu deinen letzten ${n}.</p><div class="st-table"><table class="delta"><thead><tr><th>Kennzahl</th><th>Früher</th><th>Zuletzt</th><th>Veränderung</th></tr></thead><tbody>${rows.map(([lab,k,u,mul])=>{const a=av(A,k)*mul,z=av(Z,k)*mul;const pct=u==='%'||k==='win';const d=pct?Math.round(z)-Math.round(a):Math.round((z-a)*10)/10;const f=v=>k==='win'||u==='%'?Math.round(v)+' %':fmt1(v)+u;const dd=d===0?'=':(d>0?'↑ ':'↓ ')+(u==='%'||k==='win'?Math.round(Math.abs(d))+' Pkt.':fmt1(Math.abs(d))+u);return `<tr><td>${lab}</td><td>${f(a)}</td><td>${f(z)}</td><td><span class="dchip ${d>0?'up':d<0?'down':''}">${dd}</span></td></tr>`}).join('')}</tbody></table></div></section>`;
+  }else summary=`<section class="card wide"><h3>Was sich verändert hat</h3><p class="hint">Ab vier Partien siehst du hier, wie sich deine Strategie verändert.</p></section>`;
+  const r7xs=xs.filter(x=>x.r7!=null);
+  return `${summary}<p class="hint">Jeder Punkt ist eine Partie, die älteste links. Tippe auf ein Diagramm für die Werte.</p>
+  <div class="charts">
+   ${mk('t1','Versorgte Städte je Partie','',[ser('Versorgt','#f2b33d','powered')])}
+   ${mk('t2','Ausgabenmix in %',' %',[ser('Kraftwerke','#f2b33d','plPct'),ser('Rohstoffe','#4f9dff','resPct'),ser('Netz','#4fd6c4','netPct')],{min:50})}
+   ${mk('t3','Gekaufte Kraftwerkstypen in %',' %',[ser('Fossil','#c88a55','fossil'),ser('Müll','#d9c13f','garbage'),ser('Uran','#ef6a5e','uranium'),ser('Öko','#66cc7d','eco')],{min:50})}
+   ${mk('t4','Ø Aufpreis je Kraftwerk in €',' €',[ser('Aufpreis','#f2b33d','markup')])}
+   ${r7xs.length>=2?lineChart('t5',`Runde, in der du ${STEP2_AT} Städte erreicht hast`,'',[ser('Runde','#f2b33d','r7')],r7xs.map(x=>({...x,v:[x.r7]})),'v',opt):''}
+   ${mk('t6','Geld am Ende in €',' €',[ser('Geld','#f2b33d','money')])}
   </div>`;
-  el.hidden=false;
+}
+function statsGame(sel,idx,isLast){
+  const me_=meOf;const selMe=me_(sel);const d=new Date(sel.date);
+  const sp=sel.players.map(p=>({...p}));
+  const charts=sel.series&&sel.series.length?`<div class="charts">${lineChart('m','Geld',' €',sp,sel.series,'m')}${lineChart('c','Städte im Netz','',sp,sel.series,'c')}${lineChart('p','Versorgte Städte je Runde','',sp,sel.series,'p')}</div>`:'<p class="hint">Für diese Partie liegen keine Rundenverläufe vor.</p>';
+  const gm=gameMetrics(sel);
+  const pl=(selMe.auc||[]).reduce((s,a)=>s+a.price,0),res=Object.values(selMe.res||{}).reduce((s,x)=>s+x[1],0);
+  const nav=`<div class="gnav"><button type="button" class="btn" data-act="statsNav" data-d="-1" ${idx<=0?'disabled':''}>← Vorherige</button><span>${isLast?'Letzte Partie · ':''}Partie #${idx+1}</span><button type="button" class="btn" data-act="statsNav" data-d="1" ${idx>=filtHist().length-1?'disabled':''}>Nächste →</button></div>`;
+  return `${nav}<section class="card wide"><div class="sel-sum">${placeBadge(selMe.place)}<div><b>${d.toLocaleDateString(LOC(),{day:'numeric',month:'long',year:'numeric'})}</b><span>${sel.rounds} Runden · KI ${AI_NAME[sel.diff]||sel.diff} · ${sel.regions.map(r=>REGIONS[r].name).join(', ')}${sel.step2?' · Stufe 2 ab Runde '+sel.step2:''}${sel.step3?' · Stufe 3 ab Runde '+sel.step3:''}</span></div></div>
+  <div class="st-table"><table><thead><tr><th>Platz</th><th>Betrieb</th><th>Versorgt</th><th>Städte</th><th>Geld</th><th>Einkommen</th><th>Kraftwerke</th></tr></thead><tbody>${[...sel.players].sort((a,b)=>a.place-b.place).map(p=>`<tr class="${p.human?'me':''}"><td>${p.place}.</td><td><i class="dot" style="background:${p.color}"></i>${esc(p.human?'Du':p.name)}</td><td>${p.powered}</td><td>${p.cities}</td><td>${fmt(p.money)} €</td><td>${fmt(p.income||0)} €</td><td><span class="mps">${(p.plants||[]).map(n=>`<span class="mp t-${PLANTS[n][0]}">${n}</span>`).join('')}</span></td></tr>`).join('')}</tbody></table></div>${charts}</section>
+  <div class="st-grid">
+   <section class="card"><h3>Ausgaben dieser Partie</h3>${bars([{label:'Einnahmen',v:gm.income,color:'#58b86a',text:fmt(gm.income)+' €'},{label:'Kraftwerke',v:pl,text:fmt(pl)+' € · '+gm.plPct+' %'},{label:'Rohstoffe',v:res,text:fmt(res)+' € · '+gm.resPct+' %'},{label:'Netz',v:(selMe.slot||0)+(selMe.conn||0),text:fmt((selMe.slot||0)+(selMe.conn||0))+' € · '+gm.netPct+' %'}])}${gm.r7?`<p class="hint">${STEP2_AT} Städte hattest du in Runde ${gm.r7}.</p>`:''}</section>
+   <section class="card"><h3>Kraftwerkskäufe</h3>${(selMe.auc||[]).length?`<div class="st-table"><table><thead><tr><th>Runde</th><th>Kraftwerk</th><th>Typ</th><th>Preis</th><th>Aufpreis</th></tr></thead><tbody>${selMe.auc.map(a=>`<tr><td>${a.r}</td><td><span class="mps"><span class="mp t-${PLANTS[a.n][0]}">${a.n}</span></span></td><td>${TYPE_SHORT[PLANTS[a.n][0]]}</td><td>${a.price} €</td><td>${a.disc?'Rabatt':'+'+(a.price-a.min)+' €'}</td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">Noch keine Käufe.</p>'}</section>
+   <section class="card"><h3>Rohstoffe dieser Partie</h3>${bars(RES.map(k=>{const r=(selMe.res||{})[k]||[0,0];return{label:RNAME[k],v:r[0],color:TCOL[k],icon:resIcon(k),text:`${r[0]} · ${r[1]} €`}}))}</section>
+   <section class="card"><h3>Ausbau-Reihenfolge</h3>${(selMe.built||[]).length?`<ol class="border">${selMe.built.map(c=>`<li><i style="background:${REGIONS[CITY[c]?.reg]?.col}"></i>${CITY[c]?.name||c}</li>`).join('')}</ol>`:'<p class="hint">Noch keine Städte gebaut.</p>'}</section>
+  </div>`;
 }
 
 /* --- Steuerung --- */
@@ -1728,9 +1818,10 @@ function schedule(){
 function after(){save();render();schedule()}
 const A={
   lang:b=>{setLang(b.dataset.l);if(S)render();if(!$('#start').hidden)renderStart(true);if(!$('#stats').hidden)renderStats();renderSheet();return'skip'},
-  stats:()=>{UI.statReset=false;UI.sheet=null;renderSheet();renderStats();$('#stats').scrollTop=0;return'skip'},
+  stats:()=>{UI.statReset=false;if(!UI.statView)UI.statView='last';UI.sheet=null;renderSheet();renderStats();$('#stats').scrollTop=0;return'skip'},
   statsBack:()=>{$('#stats').hidden=true;$('#stats').innerHTML='';if(!$('#start').hidden)renderStart(true);return'skip'},
-  statsSel:b=>{UI.statSel=b.dataset.id;renderStats();const t=$('#st-game');if(t)t.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return'skip'},
+  statsSel:b=>{UI.statSel=b.dataset.id;UI.statView='game';const h=filtHist();if(!h.some(g=>g.id===UI.statSel))UI.statDiff='all';renderStats();$('#stats').scrollTop=0;return'skip'},
+  statsNav:b=>{const h=filtHist();const i=h.findIndex(g=>g.id===UI.statSel);const j=Math.max(0,Math.min(h.length-1,(i<0?h.length-1:i)+ +b.dataset.d));UI.statSel=h[j].id;UI.statView='game';renderStats();return'skip'},
   statsReset:()=>{UI.statReset=true;renderStats();return'skip'},
   statsResetNo:()=>{UI.statReset=false;renderStats();return'skip'},
   statsResetYes:()=>{saveHist([]);try{localStorage.removeItem(STATS_KEY)}catch(_){}UI.statReset=false;renderStats();return'skip'},
