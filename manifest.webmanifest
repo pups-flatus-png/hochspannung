@@ -1,0 +1,17 @@
+{
+  "name": "Hochspannung",
+  "short_name": "Hochspannung",
+  "description": "Netzausbau-Strategiespiel gegen KI-Gegner",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0b1014",
+  "theme_color": "#0b1014",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
