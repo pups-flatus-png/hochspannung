@@ -597,6 +597,8 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .title{min-width:0}
 .title h1{font-size:clamp(38px,min(9vw,6.4vw + 12px),84px)}
 @media (orientation:landscape) and (max-height:500px){.title h1{font-size:clamp(36px,6vw,64px)}}
+.t-fusion{--cbg:#1a1f4d;--cacc:#7fdcff;background:radial-gradient(120% 90% at 70% 30%,#273a7a 0%,#1a1f4d 60%)}
+.plant.t-fusion{box-shadow:inset 0 0 0 1px rgba(127,220,255,.25),0 0 14px -4px rgba(95,212,240,.55)}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -604,6 +606,8 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 <symbol id="r-oil" viewBox="0 0 12 12"><rect x="2.2" y="1" width="7.6" height="10" rx="1.8" fill="#2c4664" stroke="#a9d0f5" stroke-width="1"/><path d="M2.4 4.3h7.2M2.4 7.7h7.2" stroke="#a9d0f5" stroke-width=".9"/></symbol>
 <symbol id="r-garbage" viewBox="0 0 12 12"><path d="M4.2 1.8 6 3.1l1.8-1.3.6 1.8c1.7.9 2.5 2.9 2.1 4.8-.4 1.9-2.3 2.6-4.5 2.6S1.9 10.3 1.5 8.4c-.4-1.9.4-3.9 2.1-4.8Z" fill="#c9ab22" stroke="#fff1a0" stroke-width="1" stroke-linejoin="round"/><path d="M4.4 6.6h3.2" stroke="#5e4f08" stroke-width="1" stroke-linecap="round"/></symbol>
 <symbol id="r-uranium" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="#d93b30" stroke="#ffc2bb" stroke-width="1"/><path d="M6 6 3.3 3.2M6 6l2.7-2.8M6 6v4" stroke="#fff" stroke-width="1.1" stroke-linecap="round"/><circle cx="6" cy="6" r="1.4" fill="#fff"/></symbol>
+<symbol id="r-fusion" viewBox="0 0 12 12"><circle cx="6" cy="6" r="1.8" fill="#e8fbff"/><ellipse cx="6" cy="6" rx="5" ry="2" fill="none" stroke="#5fd4f0" stroke-width="1.1"/><ellipse cx="6" cy="6" rx="5" ry="2" fill="none" stroke="#5fd4f0" stroke-width="1.1" transform="rotate(60 6 6)"/><ellipse cx="6" cy="6" rx="5" ry="2" fill="none" stroke="#5fd4f0" stroke-width="1.1" transform="rotate(120 6 6)"/></symbol>
+<symbol id="b-fusion" viewBox="0 0 20 16"><path d="M1 15h18" stroke="currentColor" stroke-width="1.4"/><path d="M2 14V9.5C2 6 5.6 4 10 4s8 2 8 5.5V14Z" fill="currentColor"/><ellipse cx="10" cy="9.6" rx="4.6" ry="2" fill="var(--panel,#121a20)"/><path d="M9.2 1h1.6v3.2H9.2Z" fill="currentColor"/></symbol>
 <symbol id="r-eco" viewBox="0 0 12 12"><path d="M1.5 10.5C1.5 5 5 2 10.8 1.2 10.4 7 7.2 10.5 1.5 10.5Z" fill="#58b86a"/><path d="M2 10 7 5" stroke="#0f2414" stroke-width="1"/></symbol>
 <symbol id="b-coal" viewBox="0 0 20 16"><path d="M1 15V8.5l4 2.4V8.5l4 2.4V8.5l4 2.4V3h3v12Z" fill="currentColor"/><path d="M14.6 2c.8-1 2.3-.9 3 0" stroke="currentColor" fill="none" stroke-width="1.1" stroke-linecap="round"/></symbol>
 <symbol id="b-hybrid" viewBox="0 0 20 16"><path d="M1 15V8.5l4 2.4V8.5l4 2.4V3h3v12Z" fill="currentColor"/><rect x="13" y="7.5" width="6" height="7.5" rx="1.2" fill="currentColor"/><path d="M13 10.3h6" stroke="var(--panel)" stroke-width=".8"/></symbol>
@@ -633,13 +637,14 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 
 <script>
 /* ===================== DATEN ===================== */
-const PLANTS={3:['oil',2,1],4:['coal',2,1],5:['hybrid',2,1],6:['garbage',1,1],7:['oil',3,2],8:['coal',3,2],9:['oil',1,1],10:['coal',2,2],11:['uranium',1,2],12:['hybrid',2,2],13:['eco',0,1],14:['garbage',2,2],15:['coal',2,3],16:['oil',2,3],17:['uranium',1,2],18:['eco',0,2],19:['garbage',2,3],20:['coal',3,5],21:['hybrid',2,4],22:['eco',0,2],23:['uranium',1,3],24:['garbage',2,4],25:['coal',2,5],26:['oil',2,5],27:['eco',0,3],28:['uranium',1,4],29:['hybrid',1,4],30:['garbage',3,6],31:['coal',3,6],32:['oil',3,6],33:['eco',0,4],34:['uranium',1,5],35:['oil',1,5],36:['coal',3,7],37:['eco',0,4],38:['garbage',3,7],39:['uranium',1,6],40:['oil',2,6],42:['coal',2,6],44:['eco',0,5],46:['hybrid',3,7],50:['eco',0,6]};
+const PLANTS={3:['oil',2,1],4:['coal',2,1],5:['hybrid',2,1],6:['garbage',1,1],7:['oil',3,2],8:['coal',3,2],9:['oil',1,1],10:['coal',2,2],11:['uranium',1,2],12:['hybrid',2,2],13:['eco',0,1],14:['garbage',2,2],15:['coal',2,3],16:['oil',2,3],17:['uranium',1,2],18:['eco',0,2],19:['garbage',2,3],20:['coal',3,5],21:['hybrid',2,4],22:['eco',0,2],23:['uranium',1,3],24:['garbage',2,4],25:['coal',2,5],26:['oil',2,5],27:['eco',0,3],28:['uranium',1,4],29:['hybrid',1,4],30:['garbage',3,6],31:['coal',3,6],32:['oil',3,6],33:['eco',0,4],34:['uranium',1,5],35:['oil',1,5],36:['coal',3,7],37:['eco',0,4],38:['garbage',3,7],39:['uranium',1,6],40:['oil',2,6],42:['coal',2,6],44:['eco',0,5],46:['hybrid',3,7],50:['fusion',0,6]};
+const FREE=t=>t==='eco'||t==='fusion';
 const STEP3=99;
 const PAY=[10,22,33,44,54,64,73,82,90,98,105,112,118,124,129,134,138,142,145,148,150];
 const CAP={coal:24,oil:24,garbage:24,uranium:12};
 const UP=[1,2,3,4,5,6,7,8,10,12,14,16];
 const RES=['coal','oil','garbage','uranium'];
-const RNAME={coal:'Kohle',oil:'Öl',garbage:'Müll',uranium:'Uran',eco:'Öko',hybrid:'Kohle oder Öl'};
+const RNAME={fusion:'Fusion',coal:'Kohle',oil:'Öl',garbage:'Müll',uranium:'Uran',eco:'Öko',hybrid:'Kohle oder Öl'};
 const RESUPPLY={5:{coal:[5,7,5],oil:[4,5,6],garbage:[3,3,5],uranium:[2,3,2]},6:{coal:[7,9,6],oil:[5,6,7],garbage:[3,5,6],uranium:[2,3,3]},3:{coal:[4,5,3],oil:[2,3,4],garbage:[1,2,3],uranium:[1,1,1]},4:{coal:[5,6,4],oil:[3,4,5],garbage:[2,3,4],uranium:[1,2,2]}};
 const PHASES={auction:'Kraftwerke versteigern',resources:'Rohstoffe kaufen',build:'Netz ausbauen',bureau:'Strom liefern',end:'Spielende'};
 let STEP2_AT=7, END_AT=17;const SLOT_COST=[10,15,20];
@@ -704,7 +709,7 @@ function slotPrice(r,i){return r==='uranium'?UP[i]:Math.floor(i/3)+1}
 function nextPrice(r,skip=0){const n=S.resMarket[r]-skip;return n>0?slotPrice(r,CAP[r]-n):null}
 function buyCost(r,k,mk=S.resMarket){let n=mk[r],c=0;for(let i=0;i<k;i++){if(n<=0)return Infinity;c+=slotPrice(r,CAP[r]-n);n--}return c}
 function supply(r){return CAP[r]-S.resMarket[r]-S.players.reduce((s,p)=>s+p.pool[r],0)}
-function caps(p){const c={coal:0,oil:0,garbage:0,uranium:0,hybrid:0};p.plants.forEach(n=>{const[t,k]=PLANTS[n];if(t!=='eco')c[t]+=2*k});return c}
+function caps(p){const c={coal:0,oil:0,garbage:0,uranium:0,hybrid:0};p.plants.forEach(n=>{const[t,k]=PLANTS[n];if(!FREE(t))c[t]+=2*k});return c}
 function canHold(p,pool){const c=caps(p);if(pool.garbage>c.garbage||pool.uranium>c.uranium)return false;return Math.max(0,pool.coal-c.coal)+Math.max(0,pool.oil-c.oil)<=c.hybrid}
 function clampPool(p){let g=0;while(!canHold(p,p.pool)&&g++<200){const c=caps(p);if(p.pool.garbage>c.garbage)p.pool.garbage--;else if(p.pool.uranium>c.uranium)p.pool.uranium--;else{const ec=p.pool.coal-c.coal,eo=p.pool.oil-c.oil;if(ec>=eo&&p.pool.coal>0)p.pool.coal--;else if(p.pool.oil>0)p.pool.oil--;else break}}}
 function pickRegions(n){const keys=Object.keys(REGIONS);const set=[keys[rnd(keys.length)]];while(set.length<n){const fr=[...new Set(set.flatMap(r=>[...RADJ[r]]))].filter(r=>!set.includes(r));set.push(fr[rnd(fr.length)])}return set}
@@ -851,7 +856,7 @@ function endBuild(){
 /* --- Bürokratie --- */
 function powerOptions(p,nums,pool=p.pool){
   const need={coal:0,oil:0,garbage:0,uranium:0};let hyb=0,cities=0;
-  for(const n of nums){const[t,k,c]=PLANTS[n];cities+=c;if(t==='eco')continue;if(t==='hybrid')hyb+=k;else need[t]+=k}
+  for(const n of nums){const[t,k,c]=PLANTS[n];cities+=c;if(FREE(t))continue;if(t==='hybrid')hyb+=k;else need[t]+=k}
   if(need.coal>pool.coal||need.oil>pool.oil||need.garbage>pool.garbage||need.uranium>pool.uranium)return null;
   let lc=pool.coal-need.coal,lo=pool.oil-need.oil;if(hyb>lc+lo)return null;
   const use={...need};while(hyb>0){if(lc>=lo){use.coal++;lc--}else{use.oil++;lo--}hyb--}
@@ -906,8 +911,8 @@ function aiPlantValue(p,num){
   if(p.plants.length<3)after=cur+c;
   else{const worst=Math.min(...p.plants.map(n=>PLANTS[n][2]));after=cur-worst+c}
   const gain=after-cur;if(gain<=0)return -1;
-  let v=num+gain*4+(t==='eco'?6:0)+(k===1&&t!=='eco'?2:0)+(c>=5?4:0)+(S.step===1&&p.plants.length===0?3:0);
-  if(S.ai==='hard')v+=Math.round((t==='eco'?3:c/k)*2);
+  let v=num+gain*4+(FREE(t)?6:0)+(k===1&&!FREE(t)?2:0)+(c>=5?4:0)+(S.step===1&&p.plants.length===0?3:0);
+  if(S.ai==='hard')v+=Math.round((FREE(t)?3:c/k)*2);
   return Math.round(v*L().mul);
 }
 function aiReserve(){return S.round===1?8:L().res}
@@ -940,7 +945,7 @@ function aiBuy(p){
   const cityCount=p.cities.length,cap=capacity(p);
   const reserve=Math.max(0,Math.min(cap,cityCount+3)-cityCount)*16;
   for(const num of plants){
-    const[t,k,c]=PLANTS[num];if(t==='eco'){powered+=c;continue}
+    const[t,k,c]=PLANTS[num];if(FREE(t)){powered+=c;continue}
     let req=k;const take=r=>{const x=Math.min(avail[r],req);avail[r]-=x;req-=x};
     if(t==='hybrid'){take(avail.coal>=avail.oil?'coal':'oil');take('coal');take('oil')}else take(t);
     const mk2={...mk},tb={coal:0,oil:0,garbage:0,uranium:0};let cost=0;
@@ -974,7 +979,7 @@ function aiBuild(p){
 }
 function storageView(p){
   const pool={...p.pool},out={};const pl=[...p.plants].sort((a,b)=>PLANTS[b][2]-PLANTS[a][2]);
-  for(const n of pl){const[t,k]=PLANTS[n];if(t==='eco'||t==='hybrid')continue;const x=Math.min(pool[t],2*k);out[n]=Array(x).fill(t);pool[t]-=x}
+  for(const n of pl){const[t,k]=PLANTS[n];if(FREE(t)||t==='hybrid')continue;const x=Math.min(pool[t],2*k);out[n]=Array(x).fill(t);pool[t]-=x}
   for(const n of pl){const[t,k]=PLANTS[n];if(t!=='hybrid')continue;const arr=[];while(arr.length<2*k&&(pool.coal||pool.oil)){if(pool.coal){arr.push('coal');pool.coal--}else{arr.push('oil');pool.oil--}}out[n]=arr}
   return out;
 }
@@ -1010,28 +1015,28 @@ const LEAF='<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M1.
 const me=()=>P(H);
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function isMine(a){return a&&a.pid===H}
-const TYPE_SHORT={coal:'Kohle',oil:'Öl',garbage:'Müll',uranium:'Uran',eco:'Öko',hybrid:'Hybrid'};
-const TYPE_NAME={coal:'Kohlekraftwerk',oil:'Ölkraftwerk',garbage:'Müllverbrennung',uranium:'Kernkraftwerk',eco:'Öko-Kraftwerk',hybrid:'Hybridkraftwerk'};
+const TYPE_SHORT={coal:'Kohle',oil:'Öl',garbage:'Müll',uranium:'Uran',eco:'Öko',fusion:'Fusion',hybrid:'Hybrid'};
+const TYPE_NAME={fusion:'Fusionsreaktor',coal:'Kohlekraftwerk',oil:'Ölkraftwerk',garbage:'Müllverbrennung',uranium:'Kernkraftwerk',eco:'Öko-Kraftwerk',hybrid:'Hybridkraftwerk'};
 function useIcon(id,cls){return `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`}
 function resIcon(r){return useIcon('r-'+r,'ri')}
 function reqHTML(t,k){
-  if(t==='eco')return resIcon('eco');
+  if(FREE(t))return resIcon(t);
   if(t==='hybrid')return `${k}×${resIcon('coal')}<span class="slash">/</span>${resIcon('oil')}`;
   return Array.from({length:k},()=>resIcon(t)).join('');
 }
 function plantCard(num,o={}){
   if(num===STEP3)return `<div class="plant step3"><b class="pn">III</b><span class="pl">Stufe 3</span></div>`;
   const[t,k,c]=PLANTS[num];
-  const label=`Kraftwerk ${num}, ${TYPE_NAME[t]}, ${t==='eco'?'ohne Rohstoffe':k+' '+RNAME[t]}, versorgt ${c}`;
+  const label=`Kraftwerk ${num}, ${TYPE_NAME[t]}, ${FREE(t)?'ohne Rohstoffe':k+' '+RNAME[t]}, versorgt ${c}`;
   const cls=`plant t-${t}${o.disc?' disc':''}${o.lg?' lg':o.sm?' sm':''}${o.sel?' sel':''}${o.on?' on':''}${o.off?' off':''}${o.inauc?' inauc':''}`;
   let store='';
-  if(o.store){store=`<div class="store">${t==='eco'?'<span class="none">kein Lager</span>':Array.from({length:2*k},(_,i)=>o.store[i]?resIcon(o.store[i]):'<i></i>').join('')}</div>`}
+  if(o.store){store=`<div class="store">${FREE(t)?'<span class="none">kein Lager</span>':Array.from({length:2*k},(_,i)=>o.store[i]?resIcon(o.store[i]):'<i></i>').join('')}</div>`}
   const inner=`${useIcon('b-'+t,'wm')}${o.disc?'<span class="dtag">ab 1 €</span>':''}<div class="top"><div class="nw"><b class="pn">${num}</b><span class="tl">${TYPE_SHORT[t]}</span></div>${useIcon('b-'+t,'bi')}</div><div class="req">${reqHTML(t,k)}</div><div class="out"><span class="arr">→</span><span class="cty">${c}${useIcon('i-house','ico')}</span></div>${store}`;
   if(o.act)return `<button type="button" class="${cls}" data-act="${o.act}" data-num="${num}" ${o.dis?'disabled':''} aria-label="${label}">${inner}</button>`;
   return `<div class="${cls}" aria-label="${label}">${inner}</div>`;
 }
 function fuelCost(t,k){
-  if(t==='eco')return 0;
+  if(FREE(t))return 0;
   if(t!=='hybrid')return buyCost(t,k);
   const mk={...S.resMarket};let c=0;
   for(let i=0;i<k;i++){const pc_=mk.coal>0?slotPrice('coal',CAP.coal-mk.coal):Infinity,po=mk.oil>0?slotPrice('oil',CAP.oil-mk.oil):Infinity;if(pc_===Infinity&&po===Infinity)return Infinity;if(pc_<=po){c+=pc_;mk.coal--}else{c+=po;mk.oil--}}
@@ -1039,12 +1044,12 @@ function fuelCost(t,k){
 }
 function plantLine(n){
   const[t,k,c]=PLANTS[n];const fc=fuelCost(t,k);
-  return `<div class="pline"><b>${TYPE_NAME[t]}</b> · ${t==='eco'?'ohne Brennstoff':k+' '+RNAME[t]} → ${c} ${c===1?'Stadt':'Städte'} · Brennstoff je Lieferung ${fc===Infinity?'nicht verfügbar':fc+' €'}</div>`;
+  return `<div class="pline"><b>${TYPE_NAME[t]}</b> · ${FREE(t)?'ohne Brennstoff':k+' '+RNAME[t]} → ${c} ${c===1?'Stadt':'Städte'} · Brennstoff je Lieferung ${fc===Infinity?'nicht verfügbar':fc+' €'}</div>`;
 }
 function plantInfo(n){
   const[t,k,c]=PLANTS[n];const owner=S.players.find(p=>p.plants.includes(n));const fc=fuelCost(t,k);
   const where=owner?'Im Besitz von '+esc(owner.name):S.market.includes(n)?(buyable().includes(n)?'Aktueller Markt, kaufbar':'Zukünftiger Markt'):'Nicht im Markt';
-  return `<div class="pinfo">${plantCard(n,{lg:true,store:owner?(storeOf(owner)[n]||[]):undefined})}<dl class="kv"><dt>Typ</dt><dd>${TYPE_NAME[t]}</dd><dt>Bedarf</dt><dd>${t==='eco'?'keiner':k+' '+RNAME[t]+' je Lieferung'}</dd><dt>Leistung</dt><dd>${c} ${c===1?'Stadt':'Städte'}</dd><dt>Effizienz</dt><dd>${t==='eco'?'kostenloser Betrieb':(Math.round(c/k*10)/10).toLocaleString(LANG==='en'?'en-GB':'de-DE')+' Städte je Einheit'}</dd><dt>Lager</dt><dd>${t==='eco'?'–':2*k+' Einheiten'}</dd><dt>Brennstoff jetzt</dt><dd>${t==='eco'?'0 €':fc===Infinity?'nicht genug am Markt':fc+' € je Lieferung'}</dd><dt>Mindestgebot</dt><dd>${minBid(n)} €${minBid(n)!==n?' (Rabatt)':''}</dd><dt>Status</dt><dd>${where}</dd></dl></div>`;
+  return `<div class="pinfo">${plantCard(n,{lg:true,store:owner?(storeOf(owner)[n]||[]):undefined})}<dl class="kv"><dt>Typ</dt><dd>${TYPE_NAME[t]}</dd><dt>Bedarf</dt><dd>${FREE(t)?'keiner':k+' '+RNAME[t]+' je Lieferung'}</dd><dt>Leistung</dt><dd>${c} ${c===1?'Stadt':'Städte'}</dd><dt>Effizienz</dt><dd>${FREE(t)?'kostenloser Betrieb':(Math.round(c/k*10)/10).toLocaleString(LANG==='en'?'en-GB':'de-DE')+' Städte je Einheit'}</dd><dt>Lager</dt><dd>${FREE(t)?'–':2*k+' Einheiten'}</dd><dt>Brennstoff jetzt</dt><dd>${FREE(t)?'0 €':fc===Infinity?'nicht genug am Markt':fc+' € je Lieferung'}</dd><dt>Mindestgebot</dt><dd>${minBid(n)} €${minBid(n)!==n?' (Rabatt)':''}</dd><dt>Status</dt><dd>${where}</dd></dl></div>`;
 }
 function trackHTML(r,k=0){
   const first=CAP[r]-S.resMarket[r],nx=first+k;let groups='';
@@ -1282,7 +1287,7 @@ function addP(n,r){(UI.pcart[n]??=Z())[r]++}
 function suggestCart(){
   UI.pcart={};const p=me();
   for(const n of [...p.plants].sort((a,b)=>PLANTS[b][2]-PLANTS[a][2])){
-    const[t,k]=PLANTS[n];if(t==='eco')continue;
+    const[t,k]=PLANTS[n];if(FREE(t))continue;
     let need=Math.max(0,k-(p.alloc[n]||[]).length),g=0;
     while(need>0&&g++<10){
       let r=t;
@@ -1309,7 +1314,7 @@ function panelResources(a){
   }
   h+=`</section>`;
   if(!mine)return h;
-  const plants=p.plants.filter(n=>PLANTS[n][0]!=='eco');
+  const plants=p.plants.filter(n=>!FREE(PLANTS[n][0]));
   h+=`<section class="sec"><h3>Einlagern pro Kraftwerk</h3><p class="hint">Kauf für jedes Kraftwerk gezielt ein. Du bekommst immer die billigsten Einheiten zuerst, jedes Kraftwerk lagert das Doppelte seines Bedarfs.</p>`;
   if(!plants.length)h+=`<p class="hint">Deine Kraftwerke brauchen keine Rohstoffe.</p>`;
   for(const n of plants){
@@ -1343,7 +1348,7 @@ function panelBuild(a){
 function allocPower(p,nums){
   const use=Z(),take={};let cities=0;
   for(const n of nums){
-    const[t,k,c]=PLANTS[n];cities+=c;if(t==='eco')continue;
+    const[t,k,c]=PLANTS[n];cities+=c;if(FREE(t))continue;
     const arr=[...(p.alloc[n]||[])],got=[];
     const order=t==='hybrid'?((UI.hyb[n]||'coal')==='coal'?['coal','oil']:['oil','coal']):[t];
     for(const r of order)while(got.length<k&&arr.includes(r)){arr.splice(arr.indexOf(r),1);got.push(r)}
@@ -1608,7 +1613,7 @@ const TS=Object.entries({
 'Partie im Detail':'Game details','Städte im Netz':'Cities in network','Für diese Partie liegen keine Rundenverläufe vor.':'No round-by-round data for this game.','Tippe eine Partie an, um sie oben im Detail zu sehen.':'Tap a game to see it in detail above.','Statistik zurücksetzen':'Reset statistics','Endgültig löschen':'Delete permanently','← Zurück':'← Back',
 'Ø Aufpreis':'Ø markup','Rabattkäufe':'Discount buys','Lieblingstyp':'Favourite type','Siegquote':'Win rate','Ø Platz':'Ø rank','Ø versorgt':'Ø powered','Ø Runden':'Ø rounds','Spielhistorie':'Game history','Einnahmen':'Income',
 'Brennstoff je Lieferung':'fuel per delivery','ohne Brennstoff':'no fuel','nicht verfügbar':'not available','Brennstoff jetzt':'Fuel now','nicht genug am Markt':'not enough on the market','kostenloser Betrieb':'free to run','ohne Rohstoffe':'no resources','kein Lager':'no storage','Mindestgebot':'Minimum bid','(Rabatt)':'(discount)','ab 1 €':'from 1 €',
-'Kohle oder Öl':'coal or oil','Kohlekraftwerk':'Coal plant','Ölkraftwerk':'Oil plant','Müllverbrennung':'Waste incinerator','Kernkraftwerk':'Nuclear plant','Öko-Kraftwerk':'Eco plant','Hybridkraftwerk':'Hybrid plant',
+'Kohle oder Öl':'coal or oil','Fusionsreaktor':'Fusion reactor','Kohlekraftwerk':'Coal plant','Ölkraftwerk':'Oil plant','Müllverbrennung':'Waste incinerator','Kernkraftwerk':'Nuclear plant','Öko-Kraftwerk':'Eco plant','Hybridkraftwerk':'Hybrid plant',
 'Kraftwerke versteigern':'Auction power plants','Rohstoffe kaufen':'Buy resources','Netz ausbauen':'Build network','Strom liefern':'Deliver power',
 'Spielerreihenfolge':'Turn order','alle gleichzeitig':'all at once','vorwärts':'forward','rückwärts':'backward','am Zug':'to play','Dein Geld':'Your money','KI-Stärke':'AI difficulty','Karte des Stromnetzes':'Map of the power grid','Hineinzoomen':'Zoom in','Herauszoomen':'Zoom out','Karte einpassen':'Fit map','Gebot senken':'Lower bid','Gebot erhöhen':'Raise bid','Höchstgebot':'Highest bid',
 ' am Markt':' on market','im Korb':'in basket',
@@ -1721,20 +1726,20 @@ function bars(rows,unit=''){
   const max=Math.max(1,...rows.map(r=>r.v));
   return `<div class="bars">${rows.map(r=>`<div class="br"><span class="bl">${r.icon||''}${r.label}</span><span class="bt"><i style="width:${(r.v/max*100).toFixed(1)}%;background:${r.color||'var(--accent)'}"></i></span><span class="bv">${r.text??fmt(r.v)+unit}</span></div>`).join('')}</div>`;
 }
-const TCOL={coal:'#c88a55',oil:'#7ea9d6',garbage:'#d9c13f',uranium:'#ef6a5e',eco:'#66cc7d',hybrid:'#b9a088'};
+const TCOL={coal:'#c88a55',oil:'#7ea9d6',garbage:'#d9c13f',uranium:'#ef6a5e',eco:'#66cc7d',fusion:'#5fd4f0',hybrid:'#b9a088'};
 function placeBadge(pl,n){return `<span class="place p${pl}">${pl}.</span>`}
 function meOf(g){return g.players.find(p=>p.human)||g.players[0]}
 function gameMetrics(g){
   const m=meOf(g),mi=g.players.indexOf(m);
   const pl=(m.auc||[]).reduce((s,a)=>s+a.price,0),res=Object.values(m.res||{}).reduce((s,x)=>s+x[1],0),net=(m.slot||0)+(m.conn||0),tot=pl+res+net||1;
   const au=m.auc||[];const nd=au.filter(a=>!a.disc);
-  const fam={fossil:0,garbage:0,uranium:0,eco:0};au.forEach(a=>{const t=PLANTS[a.n][0];fam[t==='coal'||t==='oil'||t==='hybrid'?'fossil':t]++});
+  const fam={fossil:0,garbage:0,uranium:0,eco:0,fusion:0};au.forEach(a=>{const t=PLANTS[a.n][0];fam[t==='coal'||t==='oil'||t==='hybrid'?'fossil':t]++});
   const nb=au.length||1;
   const r7=(g.series||[]).find(x=>x.c[mi]>=7);
   return{powered:m.powered,place:m.place,win:m.place===1,money:m.money,rounds:g.rounds,
     plPct:Math.round(pl/tot*100),resPct:Math.round(res/tot*100),netPct:Math.round(net/tot*100),
     markup:nd.length?nd.reduce((s,a)=>s+a.price-a.min,0)/nd.length:0,
-    fossil:Math.round(fam.fossil/nb*100),garbage:Math.round(fam.garbage/nb*100),uranium:Math.round(fam.uranium/nb*100),eco:Math.round(fam.eco/nb*100),
+    fossil:Math.round(fam.fossil/nb*100),garbage:Math.round(fam.garbage/nb*100),uranium:Math.round(fam.uranium/nb*100),eco:Math.round(fam.eco/nb*100),fusion:Math.round(fam.fusion/nb*100),
     avgPlant:au.length?au.reduce((s,a)=>s+a.n,0)/au.length:0,r7:r7?r7.r:null,income:m.income||0};
 }
 function filtHist(){const h=loadHist();return UI.statDiff&&UI.statDiff!=='all'?h.filter(g=>g.diff===UI.statDiff):h}
@@ -1828,7 +1833,7 @@ function statsTrend(h){
   <div class="charts">
    ${mk('t1','Versorgte Städte je Partie','',[ser('Versorgt','#f2b33d','powered')])}
    ${mk('t2','Ausgabenmix in %',' %',[ser('Kraftwerke','#f2b33d','plPct'),ser('Rohstoffe','#4f9dff','resPct'),ser('Netz','#4fd6c4','netPct')],{min:50})}
-   ${mk('t3','Gekaufte Kraftwerkstypen in %',' %',[ser('Fossil','#c88a55','fossil'),ser('Müll','#d9c13f','garbage'),ser('Uran','#ef6a5e','uranium'),ser('Öko','#66cc7d','eco')],{min:50})}
+   ${mk('t3','Gekaufte Kraftwerkstypen in %',' %',[ser('Fossil','#c88a55','fossil'),ser('Müll','#d9c13f','garbage'),ser('Uran','#ef6a5e','uranium'),ser('Öko','#66cc7d','eco'),ser('Fusion','#5fd4f0','fusion')],{min:50})}
    ${mk('t4','Ø Aufpreis je Kraftwerk in €',' €',[ser('Aufpreis','#f2b33d','markup')])}
    ${r7xs.length>=2?lineChart('t5',`Runde, in der du 7 Städte erreicht hast`,'',[ser('Runde','#f2b33d','r7')],r7xs.map(x=>({...x,v:[x.r7]})),'v',opt):''}
    ${mk('t6','Geld am Ende in €',' €',[ser('Geld','#f2b33d','money')])}
