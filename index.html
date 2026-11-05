@@ -700,15 +700,18 @@ let STEP2_AT=7, END_AT=17;const SLOT_COST=[10,15,20];
 const RULES_N={3:{s2:7,end:17,regions:3,remove:8},4:{s2:7,end:17,regions:4,remove:4},5:{s2:7,end:15,regions:5,remove:0},6:{s2:6,end:14,regions:5,remove:0}};
 function applyRulesN(n){const r=RULES_N[n]||RULES_N[4];STEP2_AT=r.s2;END_AT=r.end;return r}
 const regionCount=n=>(RULES_N[n]||RULES_N[4]).regions;
-const REGIONS={N:{name:'Nord',col:'#5d8fb8'},O:{name:'Ost',col:'#c07a5c'},W:{name:'West',col:'#9283c4'},M:{name:'Mitte',col:'#6fae8a'},SW:{name:'Südwest',col:'#c2a85a'},SO:{name:'Südost',col:'#c46a93'}};
-const CITIES=[
+const COLS6=['#5d8fb8','#c07a5c','#9283c4','#6fae8a','#c2a85a','#c46a93'];
+const MAPS={
+ de:{name:'Deutschland',proj:[5.6,55.1,75.6,120],
+  regions:{N:{name:'Nord',col:'#5d8fb8'},O:{name:'Ost',col:'#c07a5c'},W:{name:'West',col:'#9283c4'},M:{name:'Mitte',col:'#6fae8a'},SW:{name:'Südwest',col:'#c2a85a'},SO:{name:'Südost',col:'#c46a93'}},
+  cities:[
 ['kiel','Kiel','N',54.32,10.13],['luebeck','Lübeck','N',53.87,10.69],['rostock','Rostock','N',54.09,12.10],['schwerin','Schwerin','N',53.63,11.41],['hamburg','Hamburg','N',53.55,9.99],['cuxhaven','Cuxhaven','N',53.86,8.69],['bremen','Bremen','N',53.08,8.80],
 ['berlin','Berlin','O',52.52,13.40],['potsdam','Potsdam','O',52.22,12.85],['ffo','Frankfurt (O.)','O',52.34,14.55],['cottbus','Cottbus','O',51.76,14.33],['dresden','Dresden','O',51.05,13.74],['leipzig','Leipzig','O',51.30,12.45],['chemnitz','Chemnitz','O',50.83,12.92],
 ['hannover','Hannover','M',52.37,9.73],['braunschweig','Braunschweig','M',52.27,10.52],['magdeburg','Magdeburg','M',52.13,11.63],['goettingen','Göttingen','M',51.54,9.93],['kassel','Kassel','M',51.31,9.30],['erfurt','Erfurt','M',50.98,11.03],['halle','Halle','M',51.62,11.80],
 ['osnabrueck','Osnabrück','W',52.42,8.10],['muenster','Münster','W',52.02,7.55],['dortmund','Dortmund','W',51.55,7.85],['essen','Essen','W',51.60,7.15],['duisburg','Duisburg','W',51.48,6.55],['duesseldorf','Düsseldorf','W',51.12,6.70],['koeln','Köln','W',50.80,7.05],
 ['koblenz','Koblenz','SW',50.30,7.55],['frankfurt','Frankfurt','SW',50.15,8.75],['mainz','Mainz','SW',49.92,8.05],['saarbruecken','Saarbrücken','SW',49.24,6.95],['mannheim','Mannheim','SW',49.42,8.55],['stuttgart','Stuttgart','SW',48.78,9.18],['freiburg','Freiburg','SW',47.99,7.85],
-['wuerzburg','Würzburg','SO',49.79,9.95],['nuernberg','Nürnberg','SO',49.45,11.08],['regensburg','Regensburg','SO',49.01,12.10],['ulm','Ulm','SO',48.40,9.99],['augsburg','Augsburg','SO',48.37,10.90],['muenchen','München','SO',48.14,11.58],['passau','Passau','SO',48.57,13.43]];
-const EDGES=[
+['wuerzburg','Würzburg','SO',49.79,9.95],['nuernberg','Nürnberg','SO',49.45,11.08],['regensburg','Regensburg','SO',49.01,12.10],['ulm','Ulm','SO',48.40,9.99],['augsburg','Augsburg','SO',48.37,10.90],['muenchen','München','SO',48.14,11.58],['passau','Passau','SO',48.57,13.43]],
+  edges:[
 ['kiel','luebeck'],['kiel','hamburg'],['luebeck','hamburg'],['luebeck','schwerin'],['luebeck','rostock'],['rostock','schwerin'],['schwerin','hamburg'],['hamburg','cuxhaven'],['hamburg','bremen'],['cuxhaven','bremen'],
 ['rostock','berlin'],['schwerin','berlin'],['schwerin','magdeburg'],
 ['berlin','potsdam'],['berlin','ffo'],['ffo','cottbus'],['berlin','cottbus'],['potsdam','leipzig'],['cottbus','dresden'],['dresden','leipzig'],['dresden','chemnitz'],['leipzig','chemnitz'],
@@ -721,28 +724,81 @@ const EDGES=[
 ['mainz','frankfurt'],['mainz','mannheim'],['frankfurt','mannheim'],['mannheim','saarbruecken'],['mannheim','stuttgart'],['stuttgart','freiburg'],['saarbruecken','freiburg'],
 ['frankfurt','kassel'],['frankfurt','wuerzburg'],['stuttgart','wuerzburg'],['stuttgart','ulm'],['freiburg','ulm'],
 ['wuerzburg','nuernberg'],['nuernberg','regensburg'],['nuernberg','augsburg'],['ulm','augsburg'],['augsburg','muenchen'],['regensburg','muenchen'],['regensburg','passau'],['muenchen','passau'],
-['erfurt','wuerzburg'],['erfurt','nuernberg'],['nuernberg','chemnitz']];
-
-const CITY={};
-CITIES.forEach(([id,name,reg,lat,lon])=>{CITY[id]={id,name,reg,lat,lon,x:(lon-5.6)*75.6,y:(55.1-lat)*120}});
-const proj=(lon,lat)=>[(lon-5.6)*75.6,(55.1-lat)*120];
-const ptsPath=(pts,close)=>pts.map((q,i)=>{const[x,y]=proj(q[0],q[1]);return(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)}).join('')+(close?'Z':'');
-const DE=[[7.0,53.6],[7.3,53.7],[8.0,53.6],[8.5,53.55],[8.7,53.9],[9.0,54.0],[8.6,54.3],[8.8,54.6],[8.6,54.9],[9.4,54.8],[10.0,54.7],[10.2,54.4],[10.9,54.4],[11.0,54.05],[12.0,54.2],[12.5,54.45],[13.0,54.5],[13.4,54.6],[14.2,54.0],[14.4,53.85],[14.3,53.3],[14.6,52.9],[14.6,52.4],[14.7,51.9],[15.0,51.5],[14.9,51.0],[14.3,50.9],[13.5,50.7],[12.9,50.4],[12.3,50.2],[12.1,50.3],[12.5,49.9],[12.9,49.4],[13.5,48.95],[13.8,48.6],[13.0,48.25],[12.8,47.8],[13.0,47.5],[12.4,47.7],[11.6,47.55],[10.9,47.4],[10.4,47.5],[10.0,47.6],[9.6,47.55],[9.0,47.7],[8.6,47.6],[8.0,47.6],[7.6,47.6],[7.6,48.1],[7.9,48.6],[8.2,49.0],[7.6,49.1],[7.0,49.15],[6.4,49.5],[6.4,49.8],[6.1,50.1],[6.1,50.6],[5.95,50.8],[6.1,51.1],[6.0,51.4],[6.1,51.7],[6.7,51.9],[6.9,52.2],[7.0,52.6],[7.2,53.0],[7.2,53.3]];
-const RIVERS=[
+['erfurt','wuerzburg'],['erfurt','nuernberg'],['nuernberg','chemnitz']],
+  land:[[[7.0,53.6],[7.3,53.7],[8.0,53.6],[8.5,53.55],[8.7,53.9],[9.0,54.0],[8.6,54.3],[8.8,54.6],[8.6,54.9],[9.4,54.8],[10.0,54.7],[10.2,54.4],[10.9,54.4],[11.0,54.05],[12.0,54.2],[12.5,54.45],[13.0,54.5],[13.4,54.6],[14.2,54.0],[14.4,53.85],[14.3,53.3],[14.6,52.9],[14.6,52.4],[14.7,51.9],[15.0,51.5],[14.9,51.0],[14.3,50.9],[13.5,50.7],[12.9,50.4],[12.3,50.2],[12.1,50.3],[12.5,49.9],[12.9,49.4],[13.5,48.95],[13.8,48.6],[13.0,48.25],[12.8,47.8],[13.0,47.5],[12.4,47.7],[11.6,47.55],[10.9,47.4],[10.4,47.5],[10.0,47.6],[9.6,47.55],[9.0,47.7],[8.6,47.6],[8.0,47.6],[7.6,47.6],[7.6,48.1],[7.9,48.6],[8.2,49.0],[7.6,49.1],[7.0,49.15],[6.4,49.5],[6.4,49.8],[6.1,50.1],[6.1,50.6],[5.95,50.8],[6.1,51.1],[6.0,51.4],[6.1,51.7],[6.7,51.9],[6.9,52.2],[7.0,52.6],[7.2,53.0],[7.2,53.3]]],
+  rivers:[
  [[7.6,47.6],[7.8,48.5],[8.2,49.0],[8.45,49.45],[8.3,49.95],[7.95,50.05],[7.6,50.33],[7.15,50.75],[6.95,51.0],[6.75,51.2],[6.6,51.5],[6.4,51.75],[6.15,51.85]],
  [[14.3,50.85],[13.75,51.08],[13.2,51.3],[12.6,51.65],[12.0,51.9],[11.65,52.15],[11.85,52.6],[11.55,53.0],[10.9,53.3],[10.4,53.4],[10.0,53.55],[9.4,53.65],[8.9,53.85]],
  [[8.5,47.95],[9.3,48.15],[10.0,48.4],[10.7,48.7],[11.4,48.75],[12.1,49.0],[12.8,48.8],[13.45,48.57]],
  [[11.6,50.1],[11.0,49.95],[10.4,49.95],[9.95,49.8],[9.4,50.05],[8.9,50.1],[8.6,50.08],[8.27,50.0]],
- [[10.1,51.6],[9.7,51.9],[9.3,52.3],[9.15,52.6],[9.0,53.0],[8.75,53.15],[8.55,53.5]]];
+ [[10.1,51.6],[9.7,51.9],[9.3,52.3],[9.15,52.6],[9.0,53.0],[8.75,53.15],[8.55,53.5]]],
+  start:{coal:24,oil:18,garbage:6,uranium:2}},
+ fr:{name:'Frankreich',proj:[-5.4,51.6,62,90],mustRegion:'Z',paris:true,
+  regions:{N:{name:'Nord',col:'#5d8fb8'},Z:{name:'Zentrum',col:'#c2a85a'},E:{name:'Ost',col:'#c07a5c'},W:{name:'West',col:'#9283c4'},SW:{name:'Südwest',col:'#6fae8a'},SE:{name:'Südost',col:'#c46a93'}},
+  cities:[
+   ['lille','Lille','N',50.63,3.06],['calais','Calais','N',50.95,1.86],['amiens','Amiens','N',49.89,2.30],['rouen','Rouen','N',49.44,1.10],['lehavre','Le Havre','N',49.49,0.11],['caen','Caen','N',49.18,-0.37],['reims','Reims','N',49.26,4.03],
+   ['parisn','Paris-Nord','Z',49.12,2.38],['pariso','Paris-Ouest','Z',48.62,1.85],['parise','Paris-Est','Z',48.62,2.92],['orleans','Orléans','Z',47.90,1.91],['troyes','Troyes','Z',48.30,4.08],['auxerre','Auxerre','Z',47.80,3.57],['bourges','Bourges','Z',47.08,2.40],
+   ['chalons','Châlons','E',48.96,4.36],['metz','Metz','E',49.12,6.18],['strasbourg','Strasbourg','E',48.58,7.75],['epinal','Épinal','E',48.17,6.45],['mulhouse','Mulhouse','E',47.75,7.34],['besancon','Besançon','E',47.24,6.02],['dijon','Dijon','E',47.32,5.04],
+   ['brest','Brest','W',48.39,-4.49],['rennes','Rennes','W',48.11,-1.68],['nantes','Nantes','W',47.22,-1.55],['angers','Angers','W',47.47,-0.55],['lemans','Le Mans','W',48.00,0.20],['tours','Tours','W',47.39,0.69],['larochelle','La Rochelle','W',46.16,-1.15],
+   ['poitiers','Poitiers','SW',46.58,0.34],['limoges','Limoges','SW',45.83,1.26],['bordeaux','Bordeaux','SW',44.84,-0.58],['biarritz','Biarritz','SW',43.48,-1.56],['pau','Pau','SW',43.30,-0.37],['toulouse','Toulouse','SW',43.60,1.44],['carcassonne','Carcassonne','SW',43.21,2.35],
+   ['lyon','Lyon','SE',45.76,4.84],['stetienne','Saint-Étienne','SE',45.44,4.39],['grenoble','Grenoble','SE',45.19,5.72],['clermont','Clermont-Ferrand','SE',45.78,3.08],['montpellier','Montpellier','SE',43.61,3.88],['marseille','Marseille','SE',43.30,5.37],['nice','Nice','SE',43.70,7.27]],
+  edges:[
+   ['calais','lille'],['calais','amiens'],['lille','amiens'],['lille','reims'],['amiens','reims'],['amiens','rouen'],['rouen','lehavre'],['lehavre','caen'],['rouen','caen'],
+   ['parisn','pariso',0],['parisn','parise',0],['pariso','parise',0],['parisn','amiens'],['parisn','reims'],['pariso','rouen'],['parise','troyes'],['parise','chalons'],['pariso','orleans'],['pariso','lemans'],['orleans','bourges'],['orleans','auxerre'],['auxerre','troyes'],['parise','auxerre'],
+   ['reims','chalons'],['chalons','metz'],['chalons','troyes'],['metz','strasbourg'],['metz','epinal'],['strasbourg','mulhouse'],['epinal','mulhouse'],['epinal','besancon'],['mulhouse','besancon'],['besancon','dijon'],['troyes','dijon'],['auxerre','dijon'],
+   ['brest','rennes'],['rennes','caen'],['rennes','lemans'],['rennes','nantes'],['nantes','angers'],['angers','lemans'],['angers','tours'],['lemans','tours'],['lemans','caen'],['tours','orleans'],['nantes','larochelle'],['tours','poitiers'],
+   ['larochelle','poitiers'],['larochelle','bordeaux'],['poitiers','limoges'],['limoges','bordeaux'],['bordeaux','biarritz'],['bordeaux','toulouse'],['biarritz','pau'],['pau','toulouse'],['toulouse','carcassonne'],['limoges','clermont'],['bourges','limoges'],['bourges','clermont'],
+   ['clermont','lyon'],['clermont','stetienne'],['stetienne','lyon'],['lyon','dijon'],['lyon','grenoble'],['grenoble','marseille'],['marseille','nice'],['marseille','montpellier'],['montpellier','carcassonne'],['clermont','montpellier']],
+  land:[[[2.4,51.05],[1.85,50.95],[1.6,50.7],[1.6,50.2],[1.08,49.92],[0.1,49.5],[0.2,49.4],[-0.3,49.33],[-1.25,49.4],[-1.6,49.65],[-1.9,49.7],[-1.6,48.8],[-2.0,48.65],[-3.0,48.8],[-4.0,48.7],[-4.75,48.4],[-4.4,48.1],[-4.3,47.8],[-3.4,47.7],[-2.6,47.5],[-2.2,47.25],[-2.0,46.9],[-1.8,46.5],[-1.2,46.15],[-1.25,45.7],[-1.15,45.2],[-1.25,44.6],[-1.4,44.0],[-1.6,43.4],[-1.8,43.35],[-1.4,43.05],[-0.7,42.85],[0.7,42.8],[1.7,42.5],[3.15,42.43],[3.05,42.9],[3.2,43.3],[3.9,43.55],[4.6,43.4],[5.0,43.35],[5.4,43.2],[6.0,43.1],[6.7,43.2],[7.3,43.7],[7.5,43.78],[7.6,44.1],[6.9,44.4],[7.0,45.0],[6.8,45.8],[6.1,46.15],[6.6,46.45],[6.4,46.9],[7.0,47.3],[7.6,47.5],[7.6,48.0],[7.9,48.65],[8.2,48.97],[7.5,49.1],[6.7,49.15],[6.4,49.45],[5.8,49.55],[4.9,49.8],[4.2,49.95],[3.7,50.3],[2.6,50.8]],
+        [[9.4,43.0],[9.55,42.6],[9.55,42.1],[9.2,41.4],[8.8,41.6],[8.6,42.0],[8.6,42.4],[9.0,42.65]]],
+  rivers:[[[4.5,47.9],[4.1,48.3],[3.3,48.4],[2.7,48.6],[2.35,48.85],[1.8,49.0],[1.1,49.35],[0.2,49.45]],[[4.0,45.0],[4.0,46.2],[3.0,46.9],[2.9,47.5],[1.9,47.9],[0.7,47.4],[-0.5,47.4],[-1.55,47.2],[-2.1,47.25]],[[6.1,46.15],[5.5,45.9],[4.85,45.75],[4.85,45.0],[4.75,44.3],[4.65,43.7],[4.6,43.4]],[[0.6,43.0],[1.4,43.6],[0.6,44.2],[-0.55,44.85],[-0.8,45.3]]],
+  start:{coal:24,oil:18,garbage:9,uranium:8}},
+ it:{name:'Italien',proj:[6.0,47.6,62,90],phaseOut39:true,
+  regions:{NW:{name:'Nordwest',col:'#5d8fb8'},NO:{name:'Nordost',col:'#9283c4'},TO:{name:'Toskana',col:'#6fae8a'},MI:{name:'Mitte',col:'#c2a85a'},SU:{name:'Süden',col:'#c07a5c'},SI:{name:'Sizilien',col:'#c46a93'}},
+  cities:[
+   ['aosta','Aosta','NW',45.74,7.32],['torino','Torino','NW',45.07,7.69],['alessandria','Alessandria','NW',44.91,8.61],['milano','Milano','NW',45.46,9.19],['sondrio','Sondrio','NW',46.17,9.87],['brescia','Brescia','NW',45.54,10.21],['genova','Genova','NW',44.41,8.93],
+   ['verona','Verona','NO',45.44,10.99],['vicenza','Vicenza','NO',45.55,11.55],['trento','Trento','NO',46.07,11.12],['bolzano','Bolzano','NO',46.50,11.35],['venezia','Venezia','NO',45.44,12.33],['udine','Udine','NO',46.06,13.24],['trieste','Trieste','NO',45.65,13.78],
+   ['parma','Parma','TO',44.80,10.33],['bologna','Bologna','TO',44.49,11.34],['ravenna','Ravenna','TO',44.42,12.20],['laspezia','La Spezia','TO',44.10,9.82],['pisa','Pisa','TO',43.72,10.40],['firenze','Firenze','TO',43.77,11.25],['arezzo','Arezzo','TO',43.46,11.88],
+   ['rimini','Rimini','MI',44.06,12.57],['ancona','Ancona','MI',43.62,13.52],['perugia','Perugia','MI',43.11,12.39],['viterbo','Viterbo','MI',42.42,12.10],['roma','Roma','MI',41.90,12.50],['laquila',"L'Aquila",'MI',42.35,13.40],['pescara','Pescara','MI',42.46,14.21],
+   ['napoli','Napoli','SU',40.85,14.27],['campobasso','Campobasso','SU',41.56,14.66],['foggia','Foggia','SU',41.46,15.55],['bari','Bari','SU',41.12,16.87],['brindisi','Brindisi','SU',40.63,17.94],['taranto','Taranto','SU',40.47,17.24],['potenza','Potenza','SU',40.64,15.80],
+   ['cosenza','Cosenza','SI',39.30,16.25],['catanzaro','Catanzaro','SI',38.91,16.59],['messina','Messina','SI',38.19,15.55],['palermo','Palermo','SI',38.12,13.36],['trapani','Trapani','SI',38.02,12.51],['catania','Catania','SI',37.50,15.09],['siracusa','Siracusa','SI',37.08,15.29]],
+  edges:[
+   ['aosta','torino'],['torino','alessandria'],['torino','milano'],['alessandria','milano'],['alessandria','genova'],['milano','sondrio'],['milano','brescia'],['sondrio','brescia'],
+   ['brescia','verona'],['verona','vicenza'],['vicenza','venezia'],['verona','trento'],['trento','bolzano'],['trento','vicenza'],['venezia','udine'],['udine','trieste'],
+   ['milano','parma'],['brescia','parma'],['parma','bologna'],['verona','bologna'],['venezia','ravenna'],['bologna','ravenna'],['parma','laspezia',4],['genova','laspezia'],['laspezia','pisa'],['pisa','firenze'],['firenze','bologna',4],['firenze','arezzo'],
+   ['ravenna','rimini'],['rimini','ancona'],['arezzo','perugia'],['perugia','ancona',3],['perugia','viterbo'],['pisa','viterbo'],['viterbo','roma'],['roma','laquila',3],['laquila','pescara',3],['ancona','pescara'],['perugia','laquila',3],
+   ['roma','napoli'],['pescara','campobasso'],['campobasso','napoli'],['campobasso','foggia'],['pescara','foggia'],['napoli','potenza',3],['foggia','bari'],['foggia','potenza'],['potenza','taranto'],['bari','taranto'],['bari','brindisi'],['taranto','brindisi'],
+   ['potenza','cosenza',3],['taranto','cosenza'],['cosenza','catanzaro'],['catanzaro','messina',8],['messina','catania'],['catania','siracusa'],['messina','palermo'],['palermo','trapani'],['palermo','catania',3]],
+  land:[[[7.55,43.79],[8.2,43.9],[8.9,44.4],[9.5,44.2],[9.85,44.05],[10.2,43.9],[10.3,43.5],[10.5,42.95],[11.1,42.4],[11.8,42.1],[12.4,41.7],[12.9,41.4],[13.6,41.25],[14.0,40.9],[14.25,40.8],[14.5,40.6],[14.9,40.6],[15.0,40.2],[15.7,40.0],[15.8,39.6],[16.1,38.95],[15.65,38.2],[15.75,37.95],[16.1,38.0],[16.6,38.4],[17.15,38.95],[17.1,39.4],[16.5,39.7],[16.6,40.1],[17.2,40.4],[17.9,40.3],[18.5,40.1],[18.4,40.5],[17.9,40.7],[16.9,41.15],[16.0,41.45],[15.9,41.95],[15.1,41.95],[14.3,42.4],[13.9,42.9],[13.6,43.55],[12.6,44.1],[12.3,44.6],[12.45,45.2],[12.4,45.45],[13.0,45.65],[13.7,45.7],[13.8,45.6],[13.7,46.5],[12.7,46.65],[12.2,47.05],[11.0,46.8],[10.45,46.6],[10.1,46.4],[9.3,46.5],[8.9,46.0],[8.4,46.3],[7.85,45.95],[7.0,45.9],[6.85,45.1],[7.1,44.6],[6.95,44.25]],
+        [[12.4,37.8],[12.9,38.1],[13.4,38.2],[14.2,38.05],[15.0,38.15],[15.6,38.27],[15.3,37.8],[15.1,37.3],[15.3,37.0],[15.05,36.7],[14.4,36.8],[13.6,37.2],[12.9,37.55]],
+        [[8.4,41.2],[9.2,41.25],[9.7,40.6],[9.6,39.6],[9.5,39.15],[9.0,39.0],[8.4,38.95],[8.4,39.9],[8.2,40.6]]],
+  rivers:[[[7.0,44.7],[7.7,45.05],[8.6,45.1],[9.7,45.1],[10.6,45.0],[11.5,44.95],[12.4,44.95]],[[11.9,43.8],[11.25,43.77],[10.6,43.68],[10.3,43.68]],[[12.2,43.6],[12.4,43.0],[12.6,42.5],[12.45,41.9],[12.25,41.74]]],
+  start:{coal:18,oil:15,garbage:12,uranium:2}}
+};
+const REGIONS={},CITIES=[],CITY={},EDGE_LIST=[],ADJ={},RADJ={},TERR={};
+let GEO_LAND='',GEO_RIV=[],MAPID='de',MAPVB='0 0 100 100';
+let proj=(lon,lat)=>[lon,lat];
+const ptsPath=(pts,close)=>pts.map((q,i)=>{const[x,y]=proj(q[0],q[1]);return(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)}).join('')+(close?'Z':'');
 function hull(pts){pts=pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);const lo=[],up=[];for(const p of pts){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p)}for(const p of pts.slice().reverse()){while(up.length>=2&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p)}return lo.slice(0,-1).concat(up.slice(0,-1))}
-const TERR={};for(const rk of ['N','O','W','M','SW','SO']){const h=hull(CITIES.filter(c=>c[2]===rk).map(c=>[CITY[c[0]].x,CITY[c[0]].y]));TERR[rk]=h.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join('')+'Z'}
-const GEO_LAND=ptsPath(DE,true),GEO_RIV=RIVERS.map(r=>ptsPath(r,false));
 function km(a,b){const t=Math.PI/180,dLa=(b.lat-a.lat)*t,dLo=(b.lon-a.lon)*t;const h=Math.sin(dLa/2)**2+Math.cos(a.lat*t)*Math.cos(b.lat*t)*Math.sin(dLo/2)**2;return 2*6371*Math.asin(Math.sqrt(h))}
-const EDGE_LIST=EDGES.map(([a,b])=>({a,b,cost:Math.max(2,Math.round(km(CITY[a],CITY[b])/12))}));
-const ADJ={};CITIES.forEach(c=>ADJ[c[0]]=[]);
-EDGE_LIST.forEach(e=>{ADJ[e.a].push({to:e.b,cost:e.cost});ADJ[e.b].push({to:e.a,cost:e.cost})});
-const RADJ={};
-EDGE_LIST.forEach(e=>{const ra=CITY[e.a].reg,rb=CITY[e.b].reg;if(ra!==rb){(RADJ[ra]??=new Set()).add(rb);(RADJ[rb]??=new Set()).add(ra)}});
+const clr=o=>{for(const k in o)delete o[k]};
+function loadMap(id){
+  MAPID=MAPS[id]?id:'de';const M=MAPS[MAPID];const[l0,a0,sx,sy]=M.proj;
+  proj=(lon,lat)=>[(lon-l0)*sx,(a0-lat)*sy];
+  [REGIONS,CITY,ADJ,RADJ,TERR].forEach(clr);CITIES.length=0;EDGE_LIST.length=0;
+  Object.assign(REGIONS,JSON.parse(JSON.stringify(M.regions)));
+  M.cities.forEach(c=>{CITIES.push(c);const[id_,name,reg,lat,lon]=c;const[x,y]=proj(lon,lat);CITY[id_]={id:id_,name,reg,lat,lon,x,y};ADJ[id_]=[]});
+  M.edges.forEach(([a,b,x])=>{const base=Math.max(2,Math.round(km(CITY[a],CITY[b])/12));EDGE_LIST.push({a,b,cost:x===0?0:base+(x||0)})});
+  EDGE_LIST.forEach(e=>{ADJ[e.a].push({to:e.b,cost:e.cost});ADJ[e.b].push({to:e.a,cost:e.cost});const ra=CITY[e.a].reg,rb=CITY[e.b].reg;if(ra!==rb){(RADJ[ra]??=new Set()).add(rb);(RADJ[rb]??=new Set()).add(ra)}});
+  for(const rk of Object.keys(REGIONS)){const h=hull(CITIES.filter(c=>c[2]===rk).map(c=>[CITY[c[0]].x,CITY[c[0]].y]));TERR[rk]=h.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join('')+'Z'}
+  GEO_LAND=M.land.map(pl=>ptsPath(pl,true)).join('');GEO_RIV=M.rivers.map(r=>ptsPath(r,false));
+  const xs=Object.values(CITY).map(c=>c.x),ys=Object.values(CITY).map(c=>c.y),pad=26;
+  MAPVB=`${(Math.min(...xs)-pad).toFixed(0)} ${(Math.min(...ys)-pad).toFixed(0)} ${(Math.max(...xs)-Math.min(...xs)+2*pad).toFixed(0)} ${(Math.max(...ys)-Math.min(...ys)+2*pad).toFixed(0)}`;
+  try{UI.vb=null}catch(_){}
+}
+loadMap('de');
+const MCITY={};for(const[k,m]of Object.entries(MAPS)){MCITY[k]={};m.cities.forEach(([id,name,reg])=>MCITY[k][id]={name,reg,col:m.regions[reg].col})}
+const cityOf=(m,c)=>(MCITY[m||'de']||{})[c]||{name:c,col:'var(--edge)'};
 
 /*ENGINE*/
 let S=null;
@@ -761,22 +817,33 @@ function supply(r){return CAP[r]-S.resMarket[r]-S.players.reduce((s,p)=>s+p.pool
 function caps(p){const c={coal:0,oil:0,garbage:0,uranium:0,hybrid:0};p.plants.forEach(n=>{const[t,k]=PLANTS[n];if(!FREE(t))c[t]+=2*k});return c}
 function canHold(p,pool){const c=caps(p);if(pool.garbage>c.garbage||pool.uranium>c.uranium)return false;return Math.max(0,pool.coal-c.coal)+Math.max(0,pool.oil-c.oil)<=c.hybrid}
 function clampPool(p){let g=0;while(!canHold(p,p.pool)&&g++<200){const c=caps(p);if(p.pool.garbage>c.garbage)p.pool.garbage--;else if(p.pool.uranium>c.uranium)p.pool.uranium--;else{const ec=p.pool.coal-c.coal,eo=p.pool.oil-c.oil;if(ec>=eo&&p.pool.coal>0)p.pool.coal--;else if(p.pool.oil>0)p.pool.oil--;else break}}}
-function pickRegions(n){const keys=Object.keys(REGIONS);const set=[keys[rnd(keys.length)]];while(set.length<n){const fr=[...new Set(set.flatMap(r=>[...RADJ[r]]))].filter(r=>!set.includes(r));set.push(fr[rnd(fr.length)])}return set}
+function pickRegions(n){const keys=Object.keys(REGIONS);const must=MAPS[MAPID].mustRegion;const set=[must&&REGIONS[must]?must:keys[rnd(keys.length)]];while(set.length<n){const fr=[...new Set(set.flatMap(r=>[...RADJ[r]]))].filter(r=>!set.includes(r));set.push(fr[rnd(fr.length)])}return set}
 
 function newStats(){return{start:Date.now(),partial:false,series:[],step2:null,step3:null,pl:S.players.map(()=>({auc:[],res:{coal:[0,0],oil:[0,0],garbage:[0,0],uranium:[0,0]},slot:0,conn:0,built:[],income:0,maxInc:0}))}}
 function st(){if(!S.stats){S.stats=newStats();S.stats.partial=true}return S.stats}
-function newGame(name,nAI,diff,regions){
+function newGame(name,nAI,diff,regions,mapId){
+  loadMap(mapId||MAPID);const MP=MAPS[MAPID];
   const n=nAI+1;
   const names=['Rheinstrom AG','Ostwatt','Südnetz','Nordlicht Energie','Westfalen Volt'];
   const cols=['#4f9dff','#ff5fa2','#b48cff','#4fd6c4','#ff9f43','#c6e05a'];
   const RN=applyRulesN(n);
   const players=[];
   for(let i=0;i<n;i++)players.push({id:i,name:i===0?(name||'Du'):names[i-1],color:cols[i],human:i===0,money:50,plants:[],cities:[],pool:{coal:0,oil:0,garbage:0,uranium:0},done:false,lastPowered:0});
-  const rest=shuffle(Object.keys(PLANTS).map(Number).filter(x=>x>10&&x!==13));
-  rest.splice(0,RN.remove);
-  S={v:1,n,players,deck:[13,...rest,STEP3],market:[3,4,5,6,7,8,9,10],resMarket:{coal:24,oil:18,garbage:6,uranium:2},owners:{},regions:(regions&&regions.length===RN.regions)?regions.slice():pickRegions(RN.regions),ai:diff||'normal',
+  let deck,market;
+  if(MP.paris){
+    const plugs=shuffle([3,4,5,6,7,8,9,10,12,14,15]);
+    market=[11,...plugs.splice(0,7)].sort((a,b)=>a-b);
+    plugs.splice(0,n===3?1:0);
+    const sock=shuffle(Object.keys(PLANTS).map(Number).filter(x=>x>15));sock.splice(0,{3:6,4:3}[n]||0);
+    const top=plugs.shift();deck=[top,...shuffle([...plugs,...sock]),STEP3];
+  }else{
+    const rest=shuffle(Object.keys(PLANTS).map(Number).filter(x=>x>10&&x!==13));
+    rest.splice(0,RN.remove);deck=[13,...rest,STEP3];market=[3,4,5,6,7,8,9,10];
+  }
+  S={v:1,n,players,deck,market,map:MAPID,noUranium:false,resMarket:{...MP.start},owners:{},regions:(regions&&regions.length===RN.regions)?regions.slice():pickRegions(RN.regions),ai:diff||'normal',
      round:1,step:1,phase:null,order:shuffle(players.map(p=>p.id)),log:[],step3Pending:false,endTriggered:false,turnBuilt:[],auc:null,discard:null,seq:[],seqIdx:0,boughtAny:false,ranking:null};
   S.stats=newStats();
+  log('Karte: '+MP.name+'.');
   log('Neues Spiel. Netzgebiet: '+S.regions.map(r=>REGIONS[r].name).join(', ')+'. KI-Stärke: '+AI_NAME[S.ai]+'.');
   startAuctionPhase();
 }
@@ -831,6 +898,7 @@ function bidDrop(pid){
 function award(pid){
   const a=S.auc,p=P(pid);
   p.money-=a.bid;p.plants.push(a.plant);p.plants.sort((x,y)=>x-y);
+  if(MAPS[S.map||'de'].phaseOut39&&a.plant===39&&!S.noUranium){S.noUranium=true;log('Atomausstieg: Kraftwerk 39 ist gekauft. Ab jetzt wird kein Uran mehr nachgefüllt.')}
   st().pl[pid].auc.push({n:a.plant,price:a.bid,min:a.plant===S.discount?1:a.plant,r:S.round,disc:a.plant===S.discount});
   S.market=S.market.filter(x=>x!==a.plant);p.done=true;S.boughtAny=true;if(a.plant===S.discount)S.discount=null;
   log(p.name+' kauft Kraftwerk '+a.plant+' für '+a.bid+' €.',pid);
@@ -937,7 +1005,7 @@ function startBureau(){
 function finishBureau(){
   st().series.push({r:S.round,m:S.players.map(p=>p.money),c:S.players.map(p=>p.cities.length),p:S.players.map(p=>p.lastPowered)});
   if(S.endTriggered)return endGame();
-  RES.forEach(r=>{const add=Math.min(RESUPPLY[S.n][r][S.step-1],supply(r),CAP[r]-S.resMarket[r]);S.resMarket[r]+=add});
+  RES.forEach(r=>{const add=(r==='uranium'&&S.noUranium)?0:Math.min(RESUPPLY[S.n][r][S.step-1],supply(r),CAP[r]-S.resMarket[r]);S.resMarket[r]+=add});
   if(S.step===3){const x=S.market.shift();if(x!=null)S.deck.push(x);drawToMarket()}
   else{const hi=S.market.pop();if(hi!=null)S.deck.push(hi);drawToMarket()}
   removeLowCities();
@@ -1175,7 +1243,7 @@ function renderMap(){
   for(const[rk,r]of Object.entries(REGIONS)){
     const cs=CITIES.filter(c=>c[2]===rk).map(c=>CITY[c[0]]);
     const x=cs.reduce((s,c)=>s+c.x,0)/cs.length,y=cs.reduce((s,c)=>s+c.y,0)/cs.length;
-    g+=`<text class="rlabel${S.regions.includes(rk)?'':' off'}" x="${x.toFixed(0)}" y="${(y+10).toFixed(0)}">${r.name.toUpperCase()}</text>`;
+    g+=`<text class="rlabel${S.regions.includes(rk)?'':' off'}" x="${x.toFixed(0)}" y="${(y+10).toFixed(0)}">${tr(r.name).toUpperCase()}</text>`;
   }
   let labels='';
   for(const e of EDGE_LIST){
@@ -1483,7 +1551,7 @@ function renderSheet(){
   }else if(UI.sheet==='plant'){
     h=head('Kraftwerk '+UI.pnum)+plantInfo(UI.pnum);
   }else if(UI.sheet==='markets'){
-    h=head('Märkte')+marketHTML(null)+`<div class="sec"><h3>Rohstoffe</h3>${RES.map(r=>{const hold=S.players.filter(p=>p.pool[r]>0);return `<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)} · Nachschub +${RESUPPLY[S.n][r][S.step-1]}</span></div>${trackHTML(r)}<div class="holders">${hold.length?hold.map(p=>`<span ${pc(p.id)}><i class="dot"></i>${esc(p.name)} ${p.pool[r]}</span>`).join(''):'<span>Niemand lagert '+RNAME[r]+'.</span>'}</div></div>`}).join('')}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`;
+    h=head('Märkte')+marketHTML(null)+`<div class="sec"><h3>Rohstoffe</h3>${RES.map(r=>{const hold=S.players.filter(p=>p.pool[r]>0);return `<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)} · ${r==='uranium'&&S.noUranium?'Kein Uran-Nachschub mehr (Atomausstieg)':'Nachschub +'+RESUPPLY[S.n][r][S.step-1]}</span></div>${trackHTML(r)}<div class="holders">${hold.length?hold.map(p=>`<span ${pc(p.id)}><i class="dot"></i>${esc(p.name)} ${p.pool[r]}</span>`).join(''):'<span>Niemand lagert '+RNAME[r]+'.</span>'}</div></div>`}).join('')}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`;
   }else if(UI.sheet==='log'){
     h=head('Protokoll')+`<div class="loglist">${S.log.map(l=>`<p ${l.pid!=null?pc(l.pid):''}><span class="r">R${l.r}</span><span class="dot"></span>${esc(l.t)}</p>`).join('')}</div>`;
   }else if(UI.sheet==='rules'){
@@ -1493,7 +1561,7 @@ function renderSheet(){
 <h4>3 · Rohstoffe kaufen</h4><p>Kohle, Öl, Müll und Uran werden teurer, je knapper sie sind. Jedes Kraftwerk lagert das Doppelte seines Bedarfs. Öko-Kraftwerke brauchen nichts.</p>
 <h4>4 · Netz ausbauen</h4><p>Die erste Stadt kostet 10 €. Jede weitere kostet den Platz plus die günstigste Leitung zu deinem Netz. In Stufe 2 öffnet der zweite Platz einer Stadt (15 €), in Stufe 3 der dritte (20 €).</p>
 <h4>5 · Strom liefern</h4><p>Du verdienst Geld für jede Stadt, die du mit deinen Kraftwerken versorgst. Danach füllt sich der Rohstoffmarkt auf und der Kraftwerksmarkt rückt nach.</p>
-<h4>Stufen und Ende</h4><p>Stufe 2 beginnt, sobald ein Netz ${STEP2_AT} Städte hat. Stufe 3 beginnt, wenn ihre Karte aus dem Stapel kommt. Erreicht jemand ${END_AT} Städte, folgt eine letzte Lieferung: Es gewinnt, wer dann die meisten Städte versorgt. Bei Gleichstand zählt das Geld.</p>
+${S&&S.map==='fr'?'<h4>Frankreich</h4><p>Paris besteht aus drei Städten. Leitungen zwischen ihnen kosten nichts, du zahlst nur den Platz. Uran ist reichlich vorhanden, Kraftwerk 11 liegt schon zu Beginn im Markt und Kraftwerk 13 ist nicht im Spiel.</p>':''}${S&&S.map==='it'?'<h4>Italien</h4><p>Atomausstieg: Sobald jemand Kraftwerk 39 kauft, wird bis zum Spielende kein Uran mehr nachgefüllt. Was noch im Markt liegt, kann weiter gekauft werden.</p>':''}<h4>Stufen und Ende</h4><p>Stufe 2 beginnt, sobald ein Netz ${STEP2_AT} Städte hat. Stufe 3 beginnt, wenn ihre Karte aus dem Stapel kommt. Erreicht jemand ${END_AT} Städte, folgt eine letzte Lieferung: Es gewinnt, wer dann die meisten Städte versorgt. Bei Gleichstand zählt das Geld.</p>
 <h4>Einkommen</h4><p>${PAY.slice(0,11).map((v,i)=>i+'→'+v).join(' · ')} · … bis 20→150 €</p></div>`;
   }else if(UI.sheet==='newgame'){
     h=head('Neues Spiel?')+`<p class="hint">Das laufende Spiel wird beendet.</p><div class="row"><button type="button" class="btn" data-act="close">Abbrechen</button><button type="button" class="btn pri grow" data-act="newyes">Neues Spiel einrichten</button></div>`;
@@ -1510,25 +1578,28 @@ function regionsValid(sel,n){
   while(q.length){const r=q.shift();for(const x of RADJ[r])if(set.has(x)&&!seen.has(x)){seen.add(x);q.push(x)}}
   return seen.size===n;
 }
-function regionsOk(){return !UI.regions.length||regionsValid(UI.regions,regionCount(UI.nAI+1))}
+function regionsOk(){const m=MAPS[MAPID].mustRegion;return !UI.regions.length||(regionsValid(UI.regions,regionCount(UI.nAI+1))&&(!m||UI.regions.includes(m)))}
 function regionPicker(){
   const n=regionCount(UI.nAI+1),sel=UI.regions,rand=!sel.length;
   const dots=CITIES.map(([id,,rg])=>{const c=CITY[id];const on=sel.includes(rg);return `<circle cx="${c.x.toFixed(0)}" cy="${c.y.toFixed(0)}" r="15" fill="${REGIONS[rg].col}" opacity="${rand?.6:on?1:.18}" data-act="reg" data-r="${rg}"/>`}).join('');
   const btns=Object.entries(REGIONS).map(([k,r])=>`<button type="button" data-act="reg" data-r="${k}" style="--rc:${r.col}" class="${sel.includes(k)?'on':''}"><i></i>${r.name}</button>`).join('');
   let hint,bad=false;
-  if(rand)hint=`Zufällig: ${n} zusammenhängende Regionen.`;
+  if(rand)hint=`Zufällig: ${n} zusammenhängende Regionen.`+(MAPS[MAPID].mustRegion?' Zentrum mit Paris ist immer dabei.':'');
   else if(sel.length!==n){hint=`Wähle ${n} Regionen (${sel.length} gewählt).`;bad=true}
   else if(!regionsValid(sel,n)){hint='Die Regionen müssen aneinandergrenzen.';bad=true}
+  else if(MAPS[MAPID].mustRegion&&!sel.includes(MAPS[MAPID].mustRegion)){hint='Frankreich wird immer mit der Region Zentrum (Paris) gespielt.';bad=true}
   else hint='Netzgebiet steht.';
-  return `<div class="rpick"><svg viewBox="40 80 660 820" role="img" aria-label="Regionen auswählen">${dots}</svg><div class="rp-side"><div class="rp-list">${btns}<button type="button" data-act="regrand" class="${rand?'on':''}" style="--rc:var(--accent)">Zufällig</button></div><div class="rp-hint${bad?' bad':''}">${hint}</div></div></div>`;
+  return `<div class="rpick"><svg viewBox="${MAPVB}" role="img" aria-label="Regionen auswählen">${dots}</svg><div class="rp-side"><div class="rp-list">${btns}<button type="button" data-act="regrand" class="${rand?'on':''}" style="--rc:var(--accent)">Zufällig</button></div><div class="rp-hint${bad?' bad':''}">${hint}</div></div></div>`;
 }
 function hasSave(){try{return !!localStorage.getItem(SAVE_KEY)}catch(_){return false}}
+const MAP_NOTE={de:'Das Basisspiel.',fr:'Paris besteht aus drei Städten, untereinander ohne Leitungskosten. Viel Uran im Markt, Kraftwerk 11 liegt von Beginn an aus.',it:'Lange, teure Leitungen über Apennin und Meerenge. Atomausstieg: Nach dem Kauf von Kraftwerk 39 kommt kein Uran mehr nach.'};
 function renderStart(show){
   if(!show){start.hidden=true;return}
+  UI.map=UI.map||'de';loadMap(UI.map);
   start.hidden=false;
   start.innerHTML=`<svg class="wires" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path d="M-20 120H180L260 200H520L600 120H820"/><path d="M-20 470H140L230 380H470L560 470H820"/><path d="M260 200V380M520 200V380"/><circle cx="180" cy="120" r="7"/><circle cx="260" cy="200" r="7"/><circle cx="520" cy="200" r="7"/><circle cx="600" cy="120" r="7"/><circle cx="230" cy="380" r="7"/><circle cx="470" cy="380" r="7"/></svg>
   <div class="startbox"><div class="title"><h1>Hoch<em>span</em>nung</h1><p>Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über Deutschland. Wer am Ende die meisten Städte versorgt, gewinnt.</p><span class="volt">380 kV · 3–6 Betriebe</span></div>
-  <div class="form"><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><label for="nm">Dein Firmenname<input id="nm" maxlength="18" value="${esc(UI.name||(LANG==='en'?'You':'Du'))}"></label><div class="gl">Spieler insgesamt</div><div class="seg">${[2,3,4,5].map(k=>`<button type="button" data-act="nai" data-n="${k}" class="${UI.nAI===k?'on':''}">${k+1}</button>`).join('')}</div><div class="nhint">${UI.nAI+1} Spieler: du und ${UI.nAI} KI · ${regionCount(UI.nAI+1)} Regionen · Stufe 2 ab ${RULES_N[UI.nAI+1].s2} Städten · Ende bei ${RULES_N[UI.nAI+1].end} Städten</div><div class="gl">KI-Stärke</div><div class="seg">${['easy','normal','hard'].map(d=>`<button type="button" data-act="diff" data-d="${d}" class="${UI.diff===d?'on':''}">${AI_NAME[d]}</button>`).join('')}</div><div class="gl">Netzgebiet</div>${regionPicker()}<button type="button" class="btn pri" data-act="start" ${regionsOk()?'':'disabled'}>Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn" data-act="cont">Weiterspielen</button>':''}<button type="button" class="btn" data-act="startrules">Spielregeln</button><button type="button" class="btn" data-act="stats">Statistik${(()=>{const n=loadHist().length;return n?' · '+n+(n===1?' Partie':' Partien'):''})()}</button></div></div>`;
+  <div class="form"><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><label for="nm">Dein Firmenname<input id="nm" maxlength="18" value="${esc(UI.name||(LANG==='en'?'You':'Du'))}"></label><div class="gl">Karte</div><div class="seg">${Object.entries(MAPS).map(([k,m])=>`<button type="button" data-act="mapSel" data-m="${k}" class="${UI.map===k?'on':''}">${m.name}</button>`).join('')}</div><div class="nhint">${MAP_NOTE[UI.map]}</div><div class="gl">Spieler insgesamt</div><div class="seg">${[2,3,4,5].map(k=>`<button type="button" data-act="nai" data-n="${k}" class="${UI.nAI===k?'on':''}">${k+1}</button>`).join('')}</div><div class="nhint">${UI.nAI+1} Spieler: du und ${UI.nAI} KI · ${regionCount(UI.nAI+1)} Regionen · Stufe 2 ab ${RULES_N[UI.nAI+1].s2} Städten · Ende bei ${RULES_N[UI.nAI+1].end} Städten</div><div class="gl">KI-Stärke</div><div class="seg">${['easy','normal','hard'].map(d=>`<button type="button" data-act="diff" data-d="${d}" class="${UI.diff===d?'on':''}">${AI_NAME[d]}</button>`).join('')}</div><div class="gl">Netzgebiet</div>${regionPicker()}<button type="button" class="btn pri" data-act="start" ${regionsOk()?'':'disabled'}>Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn" data-act="cont">Weiterspielen</button>':''}<button type="button" class="btn" data-act="startrules">Spielregeln</button><button type="button" class="btn" data-act="stats">Statistik${(()=>{const n=loadHist().length;return n?' · '+n+(n===1?' Partie':' Partien'):''})()}</button></div></div>`;
 }
 
 /* --- Sprache --- */
@@ -1582,8 +1653,9 @@ const TP=[
 [/^(\d+) gebaut · Kapazität (\d+)$/u,'$1 built · capacity $2'],
 [/Tippe auf eine Stadt mit Preisschild\. Der Preis enthält den Platz in der Stadt \((.+)\) und die günstigste Leitung zu deinem Netz\./u,'Tap a city with a price tag. The price covers the slot in the city ($1) plus the cheapest connection to your network.'],
 [/^Wähle (\d+) Regionen \((\d+) gewählt\)\.$/u,'Choose $1 regions ($2 selected).'],
-[/^Zufällig: (\d+) zusammenhängende Regionen\.$/u,'Random: $1 connected regions.'],
+[/^Zufällig: (\d+) zusammenhängende Regionen\./u,'Random: $1 connected regions.'],
 [/Partie vom /u,'Game from '],
+[/^Karte: (.+)\.$/u,'Map: $1.'],
 
 [/Partie #(\d+)/u,'Game #$1'],
 [/Deine ersten (\d+) Partien im Vergleich zu deinen letzten (\d+)\./u,'Your first $1 games compared with your last $2.'],
@@ -1613,7 +1685,15 @@ const TP=[
 ];
 const TS=Object.entries({
 'Lege dein Startgebot fest.':'Set your opening bid.',
-'Spieler insgesamt':'Total players','Karte bei Auktion und Rohstoffkauf':'Map during auction and resource buying','Karte verkleinern':'Shrink map','Karte zeigen':'Show map','Verkleinern':'Shrink','Immer groß':'Always full size',
+'Spieler insgesamt':'Total players','Alle Karten':'All maps','Deutschland':'Germany','Frankreich':'France','Italien':'Italy','Zentrum':'Centre','Nordwest':'Northwest','Nordost':'Northeast','Toskana':'Tuscany','Süden':'South','Sizilien':'Sicily',
+'Paris besteht aus drei Städten, untereinander ohne Leitungskosten. Viel Uran im Markt, Kraftwerk 11 liegt von Beginn an aus.':'Paris consists of three cities with free connections between them. Plenty of uranium on the market; plant 11 is available from the start.',
+'Lange, teure Leitungen über Apennin und Meerenge. Atomausstieg: Nach dem Kauf von Kraftwerk 39 kommt kein Uran mehr nach.':'Long, expensive connections across the Apennines and the strait. Nuclear phase-out: once plant 39 is bought, no more uranium is restocked.',
+'Das Basisspiel.':'The base game.',
+'Frankreich wird immer mit der Region Zentrum (Paris) gespielt.':'France is always played with the Centre region (Paris).',' Zentrum mit Paris ist immer dabei.':' The Centre region with Paris is always included.',
+'Paris besteht aus drei Städten. Leitungen zwischen ihnen kosten nichts, du zahlst nur den Platz. Uran ist reichlich vorhanden, Kraftwerk 11 liegt schon zu Beginn im Markt und Kraftwerk 13 ist nicht im Spiel.':'Paris consists of three cities. Connections between them are free; you only pay for the slot. Uranium is plentiful, plant 11 is in the market from the start and plant 13 is not in the game.',
+'Atomausstieg: Sobald jemand Kraftwerk 39 kauft, wird bis zum Spielende kein Uran mehr nachgefüllt. Was noch im Markt liegt, kann weiter gekauft werden.':'Nuclear phase-out: as soon as someone buys plant 39, no more uranium is restocked until the end of the game. What is still on the market can still be bought.',
+'Atomausstieg: Kraftwerk 39 ist gekauft. Ab jetzt wird kein Uran mehr nachgefüllt.':'Nuclear phase-out: plant 39 has been bought. From now on, no more uranium is restocked.',
+'Kein Uran-Nachschub mehr (Atomausstieg)':'No more uranium restocking (nuclear phase-out)','Karte bei Auktion und Rohstoffkauf':'Map during auction and resource buying','Karte verkleinern':'Shrink map','Karte zeigen':'Show map','Verkleinern':'Shrink','Immer groß':'Always full size',
 'Alle Partien (Gesamt)':'All games (totals)','Letzte Partie · ':'Most recent · ','Letzte Partie':'Most recent game','Entwicklung über Zeit':'Development over time','── Einzelne Partie ──':'── Single game ──','Alle Stärken':'All difficulties','Ansicht':'View',
 'Keine Partien mit dieser KI-Stärke':'No games at this AI difficulty','Wähle eine andere Stärke oder „Alle Stärken“.':'Choose another difficulty or “All difficulties”.',
 'Tippe eine Partie an, um sie im Detail zu sehen.':'Tap a game to see it in detail.','Noch zu wenig Partien':'Not enough games yet','Spiel mindestens zwei Partien, um Entwicklungen zu sehen.':'Play at least two games to see trends.',
@@ -1669,7 +1749,7 @@ const TS=Object.entries({
 ' am Markt':' on market','im Korb':'in basket',
 });
 const TW=Object.entries({
-'Versteigerung':'Auction','Bieten':'Bid','Aussteigen':'Drop out','Kaufen':'Buy','Netzausbau':'Network building','Protokoll':'Log','Ergebnis':'Results','Menü':'Menu','Spielregeln':'Rules','Statistik':'Statistics','Schließen':'Close','Betriebe':'Companies','Gegner':'Opponents','Märkte':'Markets','Abbrechen':'Cancel','Einkommen':'Income','Netzgebiet':'Map area','Zufällig':'Random','Leicht':'Easy','Schwer':'Hard','Rekorde':'Records',
+'Versteigerung':'Auction','Karte':'Map','Bieten':'Bid','Aussteigen':'Drop out','Kaufen':'Buy','Netzausbau':'Network building','Protokoll':'Log','Ergebnis':'Results','Menü':'Menu','Spielregeln':'Rules','Statistik':'Statistics','Schließen':'Close','Betriebe':'Companies','Gegner':'Opponents','Märkte':'Markets','Abbrechen':'Cancel','Einkommen':'Income','Netzgebiet':'Map area','Zufällig':'Random','Leicht':'Easy','Schwer':'Hard','Rekorde':'Records',
 'Kraftwerke':'Plants','Kraftwerk':'Plant','Rohstoffe':'Resources','Lager':'Storage','leer':'empty','Kapazität':'Capacity','Effizienz':'Efficiency','Bedarf':'Needs','keiner':'none','Typ':'Type','Versorgt':'Powered','Leistung':'Output','Einheiten':'units','Vorrat':'supply','nächste':'next','Nachschub':'restock','kaufbar':'buyable',
 'Kohle':'Coal','Öl':'Oil','Müll':'Garbage','Uran':'Uranium','Öko':'Eco','Hybrid':'Hybrid',
 'Auktion':'Auction','Bauen':'Build','Strom':'Power','Stufe':'Step','Runde':'Round','Runden':'rounds','KI':'AI','Ende':'End','Du':'You','Stadt':'city','Städte':'cities','Städten':'cities','Platz':'Rank','Plätze':'slots','Netz':'Network','Geld':'Money','Betrieb':'Company','versorgt':'powered','Partie':'game','Partien':'games','Sieg':'win','Siege':'wins','Quote':'Rate','Stärke':'Difficulty','Gekauft':'Bought','bis':'up to',
@@ -1723,7 +1803,7 @@ function saveHist(a){try{localStorage.setItem(STATS_KEY,JSON.stringify(a.slice(-
 function onGameEnd(){
   if(!S||S.recorded||!S.players.some(p=>p.human))return;
   S.recorded=true;const t=st();
-  const rec={v:1,id:Date.now()+'-'+Math.floor(Math.random()*1e4),date:t.start,end:t.end||Date.now(),rounds:S.round,diff:S.ai||'normal',n:S.n,regions:S.regions.slice(),step2:t.step2,step3:t.step3,partial:!!t.partial,
+  const rec={v:1,id:Date.now()+'-'+Math.floor(Math.random()*1e4),date:t.start,end:t.end||Date.now(),rounds:S.round,diff:S.ai||'normal',map:S.map||'de',n:S.n,regions:S.regions.slice(),step2:t.step2,step3:t.step3,partial:!!t.partial,
     players:S.players.map(p=>({name:p.name,color:p.color,human:!!p.human,powered:p.lastPowered,cities:p.cities.length,money:p.money,plants:p.plants.slice(),place:S.ranking.indexOf(p.id)+1,...t.pl[p.id]})),
     series:t.series};
   const h=loadHist();h.push(rec);saveHist(h);UI.statSel=rec.id;UI.statView='last';
@@ -1792,8 +1872,8 @@ function gameMetrics(g){
     fossil:Math.round(fam.fossil/nb*100),garbage:Math.round(fam.garbage/nb*100),uranium:Math.round(fam.uranium/nb*100),eco:Math.round(fam.eco/nb*100),fusion:Math.round(fam.fusion/nb*100),
     avgPlant:au.length?au.reduce((s,a)=>s+a.n,0)/au.length:0,r7:r7?r7.r:null,income:m.income||0};
 }
-function filtHist(){const h=loadHist();return UI.statDiff&&UI.statDiff!=='all'?h.filter(g=>g.diff===UI.statDiff):h}
-function gameLabel(g,i){const d=new Date(g.date);return `#${i+1} · ${d.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})} ${d.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})} · Platz ${meOf(g).place} · KI ${AI_NAME[g.diff]||g.diff}`}
+function filtHist(){let h=loadHist();if(UI.statDiff&&UI.statDiff!=='all')h=h.filter(g=>g.diff===UI.statDiff);if(UI.statMap&&UI.statMap!=='all')h=h.filter(g=>(g.map||'de')===UI.statMap);return h}
+function gameLabel(g,i){const d=new Date(g.date);return `#${i+1} · ${d.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})} ${d.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})} · ${MAPS[g.map||'de'].name} · Platz ${meOf(g).place} · KI ${AI_NAME[g.diff]||g.diff}`}
 function renderStats(){
   const el=$('#stats');const all=loadHist();const h=filtHist();
   const view=UI.statView||'total';
@@ -1803,7 +1883,7 @@ function renderStats(){
   const dOpts=[['all','Alle Stärken'],['easy',AI_NAME.easy],['normal',AI_NAME.normal],['hard',AI_NAME.hard]].map(([k,l])=>`<option value="${k}" ${(UI.statDiff||'all')===k?'selected':''}>${l}</option>`).join('');
   const head=`<div class="st-head"><button type="button" class="btn" data-act="statsBack">← Zurück</button><h2>Statistik</h2>${all.length?`<span class="st-n">${all.length} ${all.length===1?'Partie':'Partien'}</span>`:''}</div>`;
   if(!all.length){el.innerHTML=`<div class="st-inner">${head}<div class="st-empty"><b>Noch keine beendete Partie</b><p>Spiel eine Partie bis zur letzten Stromlieferung. Danach siehst du hier Siegquote, Rekorde, deine Ausgaben für Kraftwerke, Rohstoffe und Netz, die Verläufe von Geld und Städten und deine ganze Spielhistorie.</p></div></div>`;el.hidden=false;return}
-  const bar=`<div class="st-bar"><label class="stsel"><span>Ansicht</span><select id="stView">${opts}</select></label><label class="stsel"><span>KI-Stärke</span><select id="stDiff">${dOpts}</select></label></div>`;
+  const bar=`<div class="st-bar"><label class="stsel"><span>Ansicht</span><select id="stView">${opts}</select></label><label class="stsel"><span>KI-Stärke</span><select id="stDiff">${dOpts}</select></label><label class="stsel"><span>Karte</span><select id="stMap">${[['all','Alle Karten'],...Object.entries(MAPS).map(([k,m])=>[k,m.name])].map(([k,l])=>`<option value="${k}" ${(UI.statMap||'all')===k?'selected':''}>${l}</option>`).join('')}</select></label></div>`;
   let body;
   if(!h.length)body=`<div class="st-empty"><b>Keine Partien mit dieser KI-Stärke</b><p>Wähle eine andere Stärke oder „Alle Stärken“.</p></div>`;
   else if(view==='trend')body=statsTrend(h);
@@ -1815,6 +1895,7 @@ function renderStats(){
 document.addEventListener('change',e=>{
   if(e.target.id==='stView'){const v=e.target.value;if(v.startsWith('g:')){UI.statView='game';UI.statSel=v.slice(2)}else UI.statView=v;renderStats();$('#stats').scrollTop=0}
   if(e.target.id==='stDiff'){UI.statDiff=e.target.value;renderStats()}
+  if(e.target.id==='stMap'){UI.statMap=e.target.value;renderStats()}
 });
 function statsTotal(h){
   const me_=meOf;
@@ -1841,10 +1922,11 @@ function statsTotal(h){
   const resTot={coal:[0,0],oil:[0,0],garbage:[0,0],uranium:[0,0]};
   h.forEach(g=>{const r=me_(g).res||{};RES.forEach(k=>{if(r[k]){resTot[k][0]+=r[k][0];resTot[k][1]+=r[k][1]}})});
   const resRows=RES.map(k=>({label:RNAME[k],v:resTot[k][0],color:TCOL[k],icon:resIcon(k),text:`${fmt(resTot[k][0])} · Ø ${resTot[k][0]?fmt1(resTot[k][1]/resTot[k][0]):'–'} €`}));
-  const cityCnt={};h.forEach(g=>(me_(g).built||[]).forEach(c=>cityCnt[c]=(cityCnt[c]||0)+1));
-  const topCities=Object.entries(cityCnt).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([c,v])=>({label:CITY[c]?.name||c,v,color:REGIONS[CITY[c]?.reg]?.col}));
-  const regCnt={};h.forEach(g=>g.regions.forEach(r=>regCnt[r]=(regCnt[r]||0)+1));
-  const regRows=Object.keys(REGIONS).map(r=>({label:REGIONS[r].name,v:regCnt[r]||0,color:REGIONS[r].col})).sort((a,b)=>b.v-a.v);
+  const multiMap=new Set(h.map(g=>g.map||'de')).size>1;
+  const cityCnt={};h.forEach(g=>(me_(g).built||[]).forEach(c=>{const k=(g.map||'de')+':'+c;cityCnt[k]=(cityCnt[k]||0)+1}));
+  const topCities=Object.entries(cityCnt).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v])=>{const[m,c]=k.split(':');const ci=cityOf(m,c);return{label:esc(ci.name),v,color:ci.col}});
+  const regCnt={};h.forEach(g=>g.regions.forEach(r=>{const k=(g.map||'de')+':'+r;regCnt[k]=(regCnt[k]||0)+1}));
+  const regRows=Object.entries(regCnt).map(([k,v])=>{const[m,r]=k.split(':');const R=MAPS[m].regions[r];return{label:R.name+(multiMap?' ('+MAPS[m].name+')':''),v,color:R.col}}).sort((a,b)=>b.v-a.v);
   const rivals={};h.forEach(g=>{const w=g.players.find(p=>p.place===1);if(w&&!w.human)rivals[w.name]=(rivals[w.name]||0)+1});
   const rivalRows=Object.entries(rivals).sort((a,b)=>b[1]-a[1]).map(([n,v])=>({label:esc(n),v,color:'var(--edge)',text:v+(v===1?' Sieg':' Siege')}));
   const st2=avg(h.filter(g=>g.step2).map(g=>g.step2)),st3=avg(h.filter(g=>g.step3).map(g=>g.step3));
@@ -1896,13 +1978,13 @@ function statsGame(sel,idx,isLast){
   const gm=gameMetrics(sel);
   const pl=(selMe.auc||[]).reduce((s,a)=>s+a.price,0),res=Object.values(selMe.res||{}).reduce((s,x)=>s+x[1],0);
   const nav=`<div class="gnav"><button type="button" class="btn" data-act="statsNav" data-d="-1" ${idx<=0?'disabled':''}>← Vorherige</button><span>${isLast?'Letzte Partie · ':''}Partie #${idx+1}</span><button type="button" class="btn" data-act="statsNav" data-d="1" ${idx>=filtHist().length-1?'disabled':''}>Nächste →</button></div>`;
-  return `${nav}<section class="card wide"><div class="sel-sum">${placeBadge(selMe.place)}<div><b>${d.toLocaleDateString(LOC(),{day:'numeric',month:'long',year:'numeric'})}</b><span>${sel.rounds} Runden · KI ${AI_NAME[sel.diff]||sel.diff} · ${sel.regions.map(r=>REGIONS[r].name).join(', ')}${sel.step2?' · Stufe 2 ab Runde '+sel.step2:''}${sel.step3?' · Stufe 3 ab Runde '+sel.step3:''}</span></div></div>
+  return `${nav}<section class="card wide"><div class="sel-sum">${placeBadge(selMe.place)}<div><b>${d.toLocaleDateString(LOC(),{day:'numeric',month:'long',year:'numeric'})}</b><span>${MAPS[sel.map||'de'].name} · ${sel.rounds} Runden · KI ${AI_NAME[sel.diff]||sel.diff} · ${sel.regions.map(r=>MAPS[sel.map||'de'].regions[r].name).join(', ')}${sel.step2?' · Stufe 2 ab Runde '+sel.step2:''}${sel.step3?' · Stufe 3 ab Runde '+sel.step3:''}</span></div></div>
   <div class="st-table"><table><thead><tr><th>Platz</th><th>Betrieb</th><th>Versorgt</th><th>Städte</th><th>Geld</th><th>Einkommen</th><th>Kraftwerke</th></tr></thead><tbody>${[...sel.players].sort((a,b)=>a.place-b.place).map(p=>`<tr class="${p.human?'me':''}"><td>${p.place}.</td><td><i class="dot" style="background:${p.color}"></i>${esc(p.human?'Du':p.name)}</td><td>${p.powered}</td><td>${p.cities}</td><td>${fmt(p.money)} €</td><td>${fmt(p.income||0)} €</td><td><span class="mps">${(p.plants||[]).map(n=>`<span class="mp t-${PLANTS[n][0]}">${n}</span>`).join('')}</span></td></tr>`).join('')}</tbody></table></div>${charts}</section>
   <div class="st-grid">
    <section class="card"><h3>Ausgaben dieser Partie</h3>${bars([{label:'Einnahmen',v:gm.income,color:'#58b86a',text:fmt(gm.income)+' €'},{label:'Kraftwerke',v:pl,text:fmt(pl)+' € · '+gm.plPct+' %'},{label:'Rohstoffe',v:res,text:fmt(res)+' € · '+gm.resPct+' %'},{label:'Netz',v:(selMe.slot||0)+(selMe.conn||0),text:fmt((selMe.slot||0)+(selMe.conn||0))+' € · '+gm.netPct+' %'}])}${gm.r7?`<p class="hint">7 Städte hattest du in Runde ${gm.r7}.</p>`:''}</section>
    <section class="card"><h3>Kraftwerkskäufe</h3>${(selMe.auc||[]).length?`<div class="st-table"><table><thead><tr><th>Runde</th><th>Kraftwerk</th><th>Typ</th><th>Preis</th><th>Aufpreis</th></tr></thead><tbody>${selMe.auc.map(a=>`<tr><td>${a.r}</td><td><span class="mps"><span class="mp t-${PLANTS[a.n][0]}">${a.n}</span></span></td><td>${TYPE_SHORT[PLANTS[a.n][0]]}</td><td>${a.price} €</td><td>${a.disc?'Rabatt':'+'+(a.price-a.min)+' €'}</td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">Noch keine Käufe.</p>'}</section>
    <section class="card"><h3>Rohstoffe dieser Partie</h3>${bars(RES.map(k=>{const r=(selMe.res||{})[k]||[0,0];return{label:RNAME[k],v:r[0],color:TCOL[k],icon:resIcon(k),text:`${r[0]} · ${r[1]} €`}}))}</section>
-   <section class="card"><h3>Ausbau-Reihenfolge</h3>${(selMe.built||[]).length?`<ol class="border">${selMe.built.map(c=>`<li><i style="background:${REGIONS[CITY[c]?.reg]?.col}"></i>${CITY[c]?.name||c}</li>`).join('')}</ol>`:'<p class="hint">Noch keine Städte gebaut.</p>'}</section>
+   <section class="card"><h3>Ausbau-Reihenfolge</h3>${(selMe.built||[]).length?`<ol class="border">${selMe.built.map(c=>{const ci=cityOf(sel.map,c);return `<li><i style="background:${ci.col}"></i>${esc(ci.name)}</li>`}).join('')}</ol>`:'<p class="hint">Noch keine Städte gebaut.</p>'}</section>
   </div>`;
 }
 
@@ -1934,12 +2016,13 @@ function schedule(){
 }
 function after(){save();render();schedule()}
 const A={
+  mapSel:b=>{UI.map=b.dataset.m;UI.regions=[];UI.name=$('#nm').value;renderStart(true);return'skip'},
   mapPeek:()=>{UI.peek=!UI.peek;UI.peekKey=S.round+S.phase},
   mapMode:b=>{MAPMODE=b.dataset.m==='always'?'always':'auto';try{localStorage.setItem('hochspannung-map',MAPMODE)}catch(_){}},
   lang:b=>{setLang(b.dataset.l);if(S)render();if(!$('#start').hidden)renderStart(true);if(!$('#stats').hidden)renderStats();renderSheet();return'skip'},
   stats:()=>{UI.statReset=false;if(!UI.statView)UI.statView='last';UI.sheet=null;renderSheet();renderStats();$('#stats').scrollTop=0;return'skip'},
   statsBack:()=>{$('#stats').hidden=true;$('#stats').innerHTML='';if(!$('#start').hidden)renderStart(true);return'skip'},
-  statsSel:b=>{UI.statSel=b.dataset.id;UI.statView='game';const h=filtHist();if(!h.some(g=>g.id===UI.statSel))UI.statDiff='all';renderStats();$('#stats').scrollTop=0;return'skip'},
+  statsSel:b=>{UI.statSel=b.dataset.id;UI.statView='game';const h=filtHist();if(!h.some(g=>g.id===UI.statSel)){UI.statDiff='all';UI.statMap='all'}renderStats();$('#stats').scrollTop=0;return'skip'},
   statsNav:b=>{const h=filtHist();const i=h.findIndex(g=>g.id===UI.statSel);const j=Math.max(0,Math.min(h.length-1,(i<0?h.length-1:i)+ +b.dataset.d));UI.statSel=h[j].id;UI.statView='game';renderStats();return'skip'},
   statsReset:()=>{UI.statReset=true;renderStats();return'skip'},
   statsResetNo:()=>{UI.statReset=false;renderStats();return'skip'},
@@ -1954,8 +2037,8 @@ const A={
   regrand:()=>{UI.regions=[];UI.name=$('#nm').value;renderStart(true);return'skip'},
   markets:()=>UI.sheet='markets',
   pinfo:b=>{UI.pnum=+b.dataset.num;UI.sheet='plant'},
-  start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();newGame(UI.name||(LANG==='en'?'You':'Du'),UI.nAI,UI.diff,regionsValid(UI.regions,regionCount(UI.nAI+1))?UI.regions:null);UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false)},
-  cont:()=>renderStart(false),
+  start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();newGame(UI.name||(LANG==='en'?'You':'Du'),UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de');UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false)},
+  cont:()=>{loadMap(S.map||'de');UI.vb=null;renderStart(false)},
   zin:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.3);return'skip'},
   zout:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.3);return'skip'},
   fit:()=>{fitMap();applyVB();return'skip'},
@@ -1998,7 +2081,7 @@ window.addEventListener('resize',()=>{if(S)applyVB()});
 function boot(data){
   if(data&&data.S)S=data.S;
   else{try{const raw=localStorage.getItem(SAVE_KEY);if(raw){const s=JSON.parse(raw);if(s&&s.v===1)S=s}}catch(_){}}
-  if(S){S.ai=S.ai||'normal';applyRulesN(S.n);UI.prevOwners=JSON.parse(JSON.stringify(S.owners));render();if(data&&data.S){renderStart(false);schedule()}else renderStart(true)}
+  if(S){S.ai=S.ai||'normal';applyRulesN(S.n);loadMap(S.map||'de');UI.prevOwners=JSON.parse(JSON.stringify(S.owners));render();if(data&&data.S){renderStart(false);schedule()}else renderStart(true)}
   else renderStart(true);
 }
 try{window.claude?.hot?.snapshot?.(()=>({S}))}catch(_){}
