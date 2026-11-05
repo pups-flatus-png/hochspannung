@@ -540,10 +540,10 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .seg.lang button{padding:7px 10px;font-size:13px}
 .menu .seg.lang{margin-bottom:4px}
 .st-bar{display:flex;gap:10px;flex-wrap:wrap;position:sticky;top:-14px;z-index:3;background:var(--bg);padding-block:8px;margin-top:-6px}
-.sel{display:flex;flex-direction:column;gap:4px;flex:1 1 220px;min-width:0}
-.sel span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.sel select{appearance:none;-webkit-appearance:none;width:100%;background:var(--panel-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23f2b33d' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 12px center;border:1px solid var(--edge);border-radius:9px;color:var(--fg);font:inherit;font-size:15px;font-weight:600;padding:10px 36px 10px 12px;min-height:44px;cursor:pointer}
-.sel select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stsel{display:flex;flex-direction:column;gap:4px;flex:1 1 220px;min-width:0}
+.stsel span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stsel select{appearance:none;-webkit-appearance:none;width:100%;background:var(--panel-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23f2b33d' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 12px center;border:1px solid var(--edge);border-radius:9px;color:var(--fg);font:inherit;font-size:15px;font-weight:600;padding:10px 36px 10px 12px;min-height:44px;cursor:pointer}
+.stsel select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .gnav{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .gnav span{font-family:var(--display);font-size:18px;font-weight:600}
 .delta td:nth-child(2),.delta td:nth-child(3){font-variant-numeric:tabular-nums}
@@ -599,6 +599,21 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 @media (orientation:landscape) and (max-height:500px){.title h1{font-size:clamp(36px,6vw,64px)}}
 .t-fusion{--cbg:#1a1f4d;--cacc:#7fdcff;background:radial-gradient(120% 90% at 70% 30%,#273a7a 0%,#1a1f4d 60%)}
 .plant.t-fusion{box-shadow:inset 0 0 0 1px rgba(127,220,255,.25),0 0 14px -4px rgba(95,212,240,.55)}
+/* ---- v5: kompakte Zugfolge & Auswahl ---- */
+.order.many:not(.wrap) .ord{flex-wrap:nowrap;gap:5px}
+.order.many:not(.wrap) .ot{flex:1 1 0;min-width:0}
+.order{padding-bottom:8px;gap:5px}
+.ord-h{font-size:9px}
+.order.many .ot .cap{display:none}
+.selinfo{flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:8px 10px;border-radius:9px}
+.selinfo .t{font-size:17px;line-height:1.1}
+.selinfo .calc{flex:1 1 160px;font-size:12px;line-height:1.35}
+.selinfo .btn{margin-left:auto;min-height:38px;padding:7px 14px}
+.sheet .selinfo .btn{flex:1 1 100%}
+.plant.sel{outline-width:2px;outline-offset:1px}
+.bidbox{padding:8px;gap:10px}
+.bidbox .big{font-size:26px}
+.plant .dtag{top:5px;right:4px;padding:3px 5px;font-size:10px}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1031,7 +1046,7 @@ function plantCard(num,o={}){
   const cls=`plant t-${t}${o.disc?' disc':''}${o.lg?' lg':o.sm?' sm':''}${o.sel?' sel':''}${o.on?' on':''}${o.off?' off':''}${o.inauc?' inauc':''}`;
   let store='';
   if(o.store){store=`<div class="store">${FREE(t)?'<span class="none">kein Lager</span>':Array.from({length:2*k},(_,i)=>o.store[i]?resIcon(o.store[i]):'<i></i>').join('')}</div>`}
-  const inner=`${useIcon('b-'+t,'wm')}${o.disc?'<span class="dtag">ab 1 €</span>':''}<div class="top"><div class="nw"><b class="pn">${num}</b><span class="tl">${TYPE_SHORT[t]}</span></div>${useIcon('b-'+t,'bi')}</div><div class="req">${reqHTML(t,k)}</div><div class="out"><span class="arr">→</span><span class="cty">${c}${useIcon('i-house','ico')}</span></div>${store}`;
+  const inner=`${useIcon('b-'+t,'wm')}${o.disc?'<span class="dtag" title="Rabatt: ab 1 €">1 €</span>':''}<div class="top"><div class="nw"><b class="pn">${num}</b><span class="tl">${TYPE_SHORT[t]}</span></div>${useIcon('b-'+t,'bi')}</div><div class="req">${reqHTML(t,k)}</div><div class="out"><span class="arr">→</span><span class="cty">${c}${useIcon('i-house','ico')}</span></div>${store}`;
   if(o.act)return `<button type="button" class="${cls}" data-act="${o.act}" data-num="${num}" ${o.dis?'disabled':''} aria-label="${label}">${inner}</button>`;
   return `<div class="${cls}" aria-label="${label}">${inner}</div>`;
 }
@@ -1075,7 +1090,7 @@ function orderHTML(a){
   const dir={auction:'vorwärts →',resources:'rückwärts ←',build:'rückwärts ←',bureau:'alle gleichzeitig',end:'Spiel beendet'}[S.phase];
   const toks=seq.map((id,i)=>{const p=P(id);const act=a&&a.pid===id&&S.phase!=='bureau'&&S.phase!=='end';const done=!act&&S.phase!=='end'&&isDone(id);
     return `${i?'<span class="oarr">'+(rev?'‹':'›')+'</span>':''}<button type="button" class="ot${act?' act':''}${done?' done':''}${p.human?' me':''}" ${pc(id)} data-act="opp" data-pid="${id}" aria-label="${esc(p.name)}: Platz ${S.order.indexOf(id)+1}, ${p.money} Euro, ${p.cities.length} Städte${act?', am Zug':''}">${act?'<span class="tag">am Zug</span>':''}${done?'<span class="chk">✓</span>':''}<span class="n">${S.order.indexOf(id)+1}</span><span class="nm">${p.human?'Du':esc(p.name)}</span><span class="mv">${p.money} € · ${p.cities.length}${HOUSE}</span><span class="mps">${p.plants.map(n=>`<span class="mp t-${PLANTS[n][0]}" title="Kraftwerk ${n}, ${TYPE_SHORT[PLANTS[n][0]]}, ${PLANTS[n][2]} Städte">${n}</span>`).join('')||'<span class="mp none">–</span>'}</span><span class="cap">versorgt bis ${capacity(p)}</span></button>`}).join('');
-  return `<div class="order${S.n>=5?' many':''}"><div class="ord-h"><span>Spielerreihenfolge</span><span>${PS[S.phase]||'Ende'}: ${dir}</span></div><div class="ord">${toks}</div></div>`;
+  return `<div class="order many${S.n>=5?' wrap':''}"><div class="ord-h"><span>Spielerreihenfolge</span><span>${PS[S.phase]||'Ende'}: ${dir}</span></div><div class="ord">${toks}</div></div>`;
 }
 function renderTop(){
   const phases=S.phase==='end'?'<span class="ph cur"><i>✓</i><em>Spielende</em></span>':PH.map((ph,i)=>`<span class="ph${S.phase===ph?' cur':''}${PH.indexOf(S.phase)>i?' past':''}"><i>${i+1}</i><em>${PS[ph]}</em></span>`).join('');
@@ -1486,6 +1501,7 @@ function renderStart(show){
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
+[/Brennstoff je Lieferung/u,'fuel per delivery'],
 [/^(\d+) Spieler: du und (\d+) KI · (\d+) Regionen · Stufe 2 ab (\d+) Städten · Ende bei (\d+) Städten$/u,'$1 players: you and $2 AI · $3 regions · Step 2 at $4 cities · ends at $5 cities'],
 [/^(.+) verzichtet auf ein Kraftwerk\.$/u,'$1 passes on buying a plant.'],
 [/^(.+) bietet (\d+) € auf Kraftwerk (\d+)\.$/u,'$1 bids $2 € on plant $3.'],
@@ -1753,7 +1769,7 @@ function renderStats(){
   const dOpts=[['all','Alle Stärken'],['easy',AI_NAME.easy],['normal',AI_NAME.normal],['hard',AI_NAME.hard]].map(([k,l])=>`<option value="${k}" ${(UI.statDiff||'all')===k?'selected':''}>${l}</option>`).join('');
   const head=`<div class="st-head"><button type="button" class="btn" data-act="statsBack">← Zurück</button><h2>Statistik</h2>${all.length?`<span class="st-n">${all.length} ${all.length===1?'Partie':'Partien'}</span>`:''}</div>`;
   if(!all.length){el.innerHTML=`<div class="st-inner">${head}<div class="st-empty"><b>Noch keine beendete Partie</b><p>Spiel eine Partie bis zur letzten Stromlieferung. Danach siehst du hier Siegquote, Rekorde, deine Ausgaben für Kraftwerke, Rohstoffe und Netz, die Verläufe von Geld und Städten und deine ganze Spielhistorie.</p></div></div>`;el.hidden=false;return}
-  const bar=`<div class="st-bar"><label class="sel"><span>Ansicht</span><select id="stView">${opts}</select></label><label class="sel"><span>KI-Stärke</span><select id="stDiff">${dOpts}</select></label></div>`;
+  const bar=`<div class="st-bar"><label class="stsel"><span>Ansicht</span><select id="stView">${opts}</select></label><label class="stsel"><span>KI-Stärke</span><select id="stDiff">${dOpts}</select></label></div>`;
   let body;
   if(!h.length)body=`<div class="st-empty"><b>Keine Partien mit dieser KI-Stärke</b><p>Wähle eine andere Stärke oder „Alle Stärken“.</p></div>`;
   else if(view==='trend')body=statsTrend(h);
