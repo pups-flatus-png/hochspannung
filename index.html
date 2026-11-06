@@ -765,6 +765,9 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .netst.bad .nmsg{color:#ff8a7a}
 .nturn{margin:0;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:7px}
 .nwarn{color:#ff8a7a}
+.lbsteps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:13px;line-height:1.4}
+.lbsteps li::marker{color:var(--accent);font-weight:700}
+.lbok{color:var(--accent)}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1881,6 +1884,13 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'Tippe auf „Auf claude.ai eintragen“. Hochspannung öffnet sich auf claude.ai, der Ergebnis-Link wird zusätzlich kopiert.':'Tap “Add on claude.ai”. Hochspannung opens on claude.ai, and the result link is also copied.',
+'Tippe dort auf „In Rangliste eintragen“. Kommt kein Fenster, öffne dort Statistik → Gemeinsame Rangliste und füge den Link bei „Ergebnis eintragen“ ein.':'Tap “Add to leaderboard” there. If no window appears, open Statistics → Shared leaderboard there and paste the link under “Add a result”.',
+'Freunde, die die Rangliste nur ansehen dürfen, schicken dir ihren Link. Du trägst ihn genauso ein.':'Friends who can only view the leaderboard send you their link. You add it the same way.',
+'Die gemeinsame Rangliste liegt in der claude.ai-Version von Hochspannung. Diese App hat keinen Zugriff darauf, deshalb überträgst du jedes Ergebnis per Link.':'The shared leaderboard lives in the claude.ai version of Hochspannung. This app can’t reach it, so you transfer each result with a link.',
+'Link kopiert. Trag das Ergebnis jetzt auf claude.ai ein.':'Link copied. Now add the result on claude.ai.',
+'✓ Diese Partie steht in der Rangliste.':'✓ This game is on the leaderboard.',
+'Gib oben deinen Namen ein.':'Enter your name above.','Auf claude.ai eintragen':'Add on claude.ai','Link an jemand anderen senden':'Send link to someone else',
 'Kapazität voll. Weitere Städte bringen erst mit größeren Kraftwerken Geld.':'Capacity full. More cities only pay off once you have bigger plants.',
 'Über Kapazität: bringt erst mit größeren Kraftwerken Geld.':'Over capacity: only pays off once you have bigger plants.',
 'Brennstoff reicht nicht: bringt diese Runde kein Geld.':'Not enough fuel: earns nothing this round.',
@@ -2281,7 +2291,8 @@ function lbBoxHTML(rec){
   const nm=lbName()||(isDefaultName(meOf(rec).name)?'':meOf(rec).name);
   const writer=LB.db&&LB.canWrite!==false;
   let h=`<div class="lbbox"><h3>Gemeinsame Rangliste</h3><label class="lbname" for="lbn">Dein Name in der Rangliste<input id="lbn" maxlength="24" value="${esc(nm)}" placeholder="z. B. Vorname"></label>`;
-  if(writer)h+=`<button type="button" class="btn pri" data-act="lbSubmitLast" data-id="${esc(rec.id)}">${UI.lbDone===rec.id?'Erneut eintragen':'In Rangliste eintragen'}</button>`;
+  if(writer){h+=`<button type="button" class="btn pri" data-act="lbSubmitLast" data-id="${esc(rec.id)}">${UI.lbDone===rec.id?'Erneut eintragen':'In Rangliste eintragen'}</button>`;if(UI.lbDone===rec.id)h+=`<p class="hint lbok">✓ Diese Partie steht in der Rangliste.</p>`}
+  else if(!LB.db)h+=`<ol class="lbsteps"><li>Gib oben deinen Namen ein.</li><li>Tippe auf „Auf claude.ai eintragen“. Hochspannung öffnet sich auf claude.ai, der Ergebnis-Link wird zusätzlich kopiert.</li><li>Tippe dort auf „In Rangliste eintragen“. Kommt kein Fenster, öffne dort Statistik → Gemeinsame Rangliste und füge den Link bei „Ergebnis eintragen“ ein.</li></ol><button type="button" class="btn pri" data-act="lbOpen" data-id="${esc(rec.id)}">Auf claude.ai eintragen</button><button type="button" class="btn" data-act="lbShare" data-id="${esc(rec.id)}">Link an jemand anderen senden</button><p class="hint">Freunde, die die Rangliste nur ansehen dürfen, schicken dir ihren Link. Du trägst ihn genauso ein.</p>`;
   else h+=`<button type="button" class="btn pri" data-act="lbShare" data-id="${esc(rec.id)}">Ergebnis senden</button><p class="hint">Schick den Link an die Person, die die Rangliste führt. Sie trägt dein Ergebnis mit einem Tipp ein.</p>`;
   if(UI.lbMsg)h+=`<p class="hint lbmsg">${esc(UI.lbMsg)}</p>`;
   if(UI.lbLink)h+=`<input class="lblink" readonly value="${esc(UI.lbLink)}" aria-label="Link zum Ergebnis">`;
@@ -2291,7 +2302,7 @@ function statsBoard(){
   const local=filtHist();
   if(!LB.db){
     const last=local[local.length-1];
-    return `<section class="card wide"><h3>Gemeinsame Rangliste</h3><p class="hint">Die gemeinsame Rangliste liegt in der claude.ai-Version von Hochspannung. Von hier aus kannst du dein Ergebnis als Link verschicken.</p>${last?lbBoxHTML(last):'<p class="hint">Beende eine Partie, dann kannst du sie senden.</p>'}</section>`;
+    return `<section class="card wide"><h3>Gemeinsame Rangliste</h3><p class="hint">Die gemeinsame Rangliste liegt in der claude.ai-Version von Hochspannung. Diese App hat keinen Zugriff darauf, deshalb überträgst du jedes Ergebnis per Link.</p>${last?lbBoxHTML(last):'<p class="hint">Beende eine Partie, dann kannst du sie senden.</p>'}</section>`;
   }
   if(LB.status==='loading')return `<section class="card wide"><h3>Gemeinsame Rangliste</h3><p class="hint">Rangliste wird geladen …</p></section>`;
   if(LB.status!=='ok')return `<section class="card wide"><h3>Gemeinsame Rangliste</h3><p class="hint">Die Rangliste ist gerade nicht erreichbar. Öffne die Statistik später noch einmal.</p></section>`;
@@ -2352,6 +2363,8 @@ function after(){save();render();schedule()}
 const A={
   boardView:()=>{UI.statView='board';renderStats();return'skip'},
   lbSubmitLast:b=>{const nm=($('#lbn')?.value||'').trim();if(isDefaultName(nm)){UI.lbMsg=LB_MSG.name;renderSheet();if(!$('#stats').hidden)renderStats();return'skip'}setLbName(nm);const g=loadHist().find(x=>String(x.id)===b.dataset.id);const r=g&&recToResult(g,nm);lbSubmit(r,'app').then(st=>{UI.lbMsg=LB_MSG[st]||'';if(st==='ok')UI.lbDone=b.dataset.id;renderSheet();if(!$('#stats').hidden)renderStats()});return'skip'},
+  lbOpen:b=>{const nm=($('#lbn')?.value||'').trim();if(isDefaultName(nm)){UI.lbMsg=LB_MSG.name;renderSheet();if(!$('#stats').hidden)renderStats();return'skip'}setLbName(nm);const g=loadHist().find(x=>String(x.id)===b.dataset.id);const r=g&&recToResult(g,nm);if(!r)return'skip';const url=shareLink(r);
+    try{navigator.clipboard.writeText(url).catch(()=>{})}catch(_){}const w=window.open(url,'_blank','noopener');UI.lbMsg=w===null?'':'Link kopiert. Trag das Ergebnis jetzt auf claude.ai ein.';if(w===null)UI.lbLink=url;renderSheet();if(!$('#stats').hidden)renderStats();return'skip'},
   lbShare:b=>{const nm=($('#lbn')?.value||'').trim();if(isDefaultName(nm)){UI.lbMsg=LB_MSG.name;renderSheet();if(!$('#stats').hidden)renderStats();return'skip'}setLbName(nm);const g=loadHist().find(x=>String(x.id)===b.dataset.id);const r=g&&recToResult(g,nm);if(!r)return'skip';shareResult(r).then(()=>{renderSheet();if(!$('#stats').hidden)renderStats()});return'skip'},
   lbImport:()=>{const r=UI.imp&&UI.imp.r;lbSubmit(r,'link').then(st=>{UI.lbMsg=LB_MSG[st]||'';if(st==='ok'){try{history.replaceState(null,'',location.pathname+location.search)}catch(_){}}renderSheet()});return'skip'},
   lbImportCode:()=>{const raw=($('#lbcode')?.value||'').trim();const code=raw.includes('#r-')?raw.slice(raw.indexOf('#r-')+3):raw.replace(/^r-/,'');const r=decodeResult(code);if(!r){UI.lbMsg=LB_MSG.bad;renderStats();return'skip'}lbSubmit(r,'link').then(st=>{UI.lbMsg=st==='ok'?`${lbHuman(r).name}: eingetragen.`:(LB_MSG[st]||'');renderStats()});return'skip'},
