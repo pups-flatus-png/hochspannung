@@ -696,6 +696,44 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
   .overlay .sheet>*{zoom:1.15}
 }
 @media (orientation:portrait){#app.mapmin #board>.mapbar{max-width:480px;margin-inline:auto}}
+/* ---- v9: Schnellzugriff Märkte & Gegner ---- */
+.qbar{position:sticky;top:-10px;z-index:6;margin-top:-10px;padding:10px 0 8px;background:var(--panel);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;box-shadow:-16px 0 0 var(--panel),16px 0 0 var(--panel),0 10px 12px -12px #000}
+.qb{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;min-height:54px;padding:7px 11px;border-radius:11px;background:var(--panel-2);border:1px solid var(--edge);cursor:pointer;text-align:left;min-width:0;color:var(--fg)}
+.qb:active{background:var(--line)}
+.ql{display:flex;align-items:center;gap:7px;font-weight:700;font-size:14px;line-height:1}
+.ql svg{color:var(--accent);flex:none}
+.qv{display:flex;gap:9px;align-items:center;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;max-width:100%}
+.qp{display:inline-flex;align-items:center;gap:3px}
+.qp .ri{width:13px;height:13px}
+.qp b,.qs b{color:var(--fg);font-family:var(--display);font-size:15px;font-weight:600;line-height:1}
+.qp.out b{color:var(--muted)}
+.qs{display:inline-flex;align-items:center;gap:3px}
+.qs .ico{width:11px;height:11px;color:var(--accent)}
+.sheet-head.tabs{flex-wrap:wrap}
+.stabs{flex:1 1 100%;margin-top:2px}
+.stabs button{min-height:40px}
+.cmp{display:flex;flex-direction:column;gap:6px}
+.cmph,.cmprow{display:grid;grid-template-columns:minmax(0,1fr) 58px 46px 50px;gap:4px 8px;align-items:center}
+.cmph{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 10px}
+.cmph span:not(:first-child){text-align:right}
+.cmprow{padding:8px 10px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--pc);text-align:left;cursor:pointer;color:var(--fg);font:inherit}
+.cmprow.me{border-color:color-mix(in srgb,var(--accent) 50%,var(--line));border-left-color:var(--pc)}
+.cn{display:flex;align-items:center;gap:6px;font-weight:700;min-width:0}
+.cn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cn .dot{width:9px;height:9px;border-radius:50%;background:var(--pc);flex:none}
+.cv{text-align:right;font-size:12px;color:var(--muted);display:flex;justify-content:flex-end;align-items:center;gap:3px}
+.cv b{font-family:var(--display);font-size:17px;font-weight:600;color:var(--fg)}
+.cv .ico{width:12px;height:12px}
+.cv.hi b{color:#ff8a7a}
+.cx{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:12px}
+.cxl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cxl.sep{margin-left:6px}
+.nchip{display:inline-flex;align-items:center;gap:2px}
+.nchip i{font-style:normal;color:var(--muted);font-size:10px}
+.nchip b{font-family:var(--display);font-size:14px;font-weight:600}
+.opp{scroll-margin-top:130px}
+.dem{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);margin-top:6px}
+.dem b{font-family:var(--display);font-size:15px;color:var(--fg);margin-left:5px}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1274,7 +1312,7 @@ function renderTracker(){
     let ticks='';for(let i=0;i<=END_AT;i++)ticks+=`<i class="tick" style="left:${(i/END_AT*100).toFixed(2)}%">${i%5===0?'<span>'+i+'</span>':''}</i>`;
     const marks=`<i class="mark" style="left:${(STEP2_AT/END_AT*100).toFixed(2)}%"><span>Stufe 2</span></i><i class="mark end" style="left:100%"><span>Ende</span></i>`;
     const toks=S.players.map(p=>`<b class="tok${p.human?' me':''}" data-tok="${p.id}" style="--pc:${p.color}" title="${esc(p.name)}"></b>`).join('');
-    el.innerHTML=`<div class="stp" id="tkStep"></div><span class="tk-l">Städte<b id="tkLead">0 / ${END_AT}</b></span><div class="tk"><div class="tk-bar"></div><div class="tk-fill" id="tkFill"></div>${ticks}${marks}${toks}</div><div class="tk-btns"><button type="button" class="mbtn" data-act="markets">Märkte</button><button type="button" class="mbtn" data-act="opp">Gegner</button></div>`;
+    el.innerHTML=`<div class="stp" id="tkStep"></div><span class="tk-l">Städte<b id="tkLead">0 / ${END_AT}</b></span><div class="tk"><div class="tk-bar"></div><div class="tk-fill" id="tkFill"></div>${ticks}${marks}${toks}</div>`;
     el.dataset.k=key;
   }
   const groups={};
@@ -1569,8 +1607,27 @@ function panelLog(){
   const nw=UI.lastLog!==S.log[0]?.t;UI.lastLog=S.log[0]?.t;
   return `<section class="ticker">${S.log.slice(0,4).map((l,i)=>`<p class="${i===0&&nw?'new':''}" ${l.pid!=null?pc(l.pid):''}><span class="dot"></span>${esc(l.t)}</p>`).join('')}<button type="button" class="linkbtn" data-act="log">Ganzes Protokoll</button></section>`;
 }
+const ICO_MKT='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 14V9M6 14V5M10 14V7M14 14V2" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
+const ICO_OPP='<svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><circle cx="6" cy="5" r="2.8" fill="currentColor"/><circle cx="12.5" cy="5.6" r="2.3" fill="currentColor" opacity=".7"/><path d="M.8 14.5c.4-3 2.6-4.7 5.2-4.7s4.8 1.7 5.2 4.7z" fill="currentColor"/><path d="M12 14.5c-.2-1.7-.8-3-1.8-3.9.7-.4 1.5-.6 2.3-.6 2.2 0 3.9 1.5 4.3 4.5z" fill="currentColor" opacity=".7"/></svg>';
+const BOLT='<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M7 .8 2 7h3.2L4.6 11.2 10 4.8H6.7z" fill="currentColor"/></svg>';
+function fuelNeed(p){const d={};p.plants.forEach(n=>{const t=PLANTS[n][0],k=PLANTS[n][1];if(FREE(t)||!k)return;d[t]=(d[t]||0)+k});return d}
+function needChips(d){return Object.entries(d).map(([t,k])=>`<span class="nchip" title="${RNAME[t]}">${HYB[t]?resIcon(HYB[t][0])+'<i>/</i>'+resIcon(HYB[t][1]):resIcon(t)}<b>${k}</b></span>`).join('')}
+function qbarHTML(){
+  const opps=S.players.filter(p=>!p.human);const rich=Math.max(...opps.map(p=>p.money)),cap=Math.max(...opps.map(capacity));
+  const pr=RES.map(r=>{const np=nextPrice(r);return `<span class="qp${np==null?' out':''}" title="${RNAME[r]}">${resIcon(r)}<b>${np==null?'–':np}</b></span>`}).join('');
+  return `<div class="qbar"><button type="button" class="qb" data-act="markets" aria-label="Märkte: Kraftwerke und Rohstoffpreise"><span class="ql">${ICO_MKT}<span>Märkte</span></span><span class="qv">${pr}</span></button><button type="button" class="qb" data-act="opp" aria-label="Gegner: Geld, Kraftwerke und Lager"><span class="ql">${ICO_OPP}<span>Gegner</span></span><span class="qv"><span class="qs"><b>${rich} €</b><small>reichster</small></span><span class="qs"><b>${cap}</b>${BOLT}<small>max.</small></span></span></button></div>`;
+}
+function oppCompare(){
+  const mine=me().money;
+  return `<div class="cmp"><div class="cmph"><span></span><span>Geld</span><span>Städte</span><span>Kapazität</span></div>${S.order.map(id=>{const p=P(id);const need=needChips(fuelNeed(p));const pool=RES.filter(r=>p.pool[r]>0).map(r=>`<span class="nchip">${resIcon(r)}<b>${p.pool[r]}</b></span>`).join('');
+    return `<button type="button" class="cmprow${p.human?' me':''}" ${pc(id)} data-act="oppjump" data-pid="${id}"><span class="cn"><i class="dot"></i><span>${p.human?'Du':esc(p.name)}</span></span><span class="cv${!p.human&&p.money>mine?' hi':''}"><b>${p.money}</b> €</span><span class="cv"><b>${p.cities.length}</b>${HOUSE}</span><span class="cv"><b>${capacity(p)}</b>${BOLT}</span><span class="cx"><span class="cxl">Bedarf</span>${need||'<span class="cxl">–</span>'}<span class="cxl sep">Lager</span>${pool||'<span class="cxl">–</span>'}</span></button>`}).join('')}<p class="hint">Rot markiert: Gegner mit mehr Geld als du. Bedarf ist der Brennstoff pro Lieferung. Tippe auf eine Zeile für die Kraftwerke.</p></div>`;
+}
+function marketDemand(r){
+  let all=0,mine=0,flex=0;S.players.forEach(p=>{const d=fuelNeed(p);all+=d[r]||0;if(p.human)mine+=d[r]||0;Object.keys(HYB).forEach(t=>{if(d[t]&&HYB[t].includes(r))flex+=d[t]})});
+  return `<div class="dem"><span><span class="dl">Bedarf aller Betriebe je Lieferung</span><b>${all}</b></span>${flex?`<span><span class="dl">plus flexibel (Hybrid)</span><b>${flex}</b></span>`:''}<span><span class="dl">davon du</span><b>${mine}</b></span></div>`;
+}
 function renderPanel(){
-  const a=actor();let h=orderHTML(a)+turnLine(a);
+  const a=actor();let h=qbarHTML()+orderHTML(a)+turnLine(a);
   switch(S.phase){
     case'auction':h+=panelAuction(a);break;
     case'resources':h+=panelResources(a);break;
@@ -1603,16 +1660,16 @@ function renderSheet(){
   const ac=S&&actor();
   if(ac&&ac.kind==='discard'&&ac.pid===H&&UI.sheet!=='plant'){sheet.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${discardSheet()}</div>`;sheet.hidden=false;return}
   if(!UI.sheet){sheet.hidden=true;sheet.innerHTML='';return}
-  let h='';const head=t=>`<div class="sheet-head"><h2>${t}</h2><button type="button" class="xbtn" data-act="close" aria-label="Schließen" title="Schließen"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 3l12 12M15 3 3 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>`;
+  let h='';const head=(t,tb)=>`<div class="sheet-head${tb?' tabs':''}"><h2>${t}</h2><button type="button" class="xbtn" data-act="close" aria-label="Schließen" title="Schließen"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 3l12 12M15 3 3 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>${tb?`<div class="seg stabs">${[['markets','Märkte'],['opp','Gegner']].map(([k,l])=>`<button type="button" data-act="${k}" class="${tb===k?'on':''}">${l}</button>`).join('')}</div>`:''}</div>`;
   if(UI.sheet==='menu'){
     h=head('Menü')+`<div class="menu"><div class="mgl">Karte bei Auktion und Rohstoffkauf</div><div class="seg">${[['auto','Verkleinern'],['always','Immer groß']].map(([k,l])=>`<button type="button" data-act="mapMode" data-m="${k}" class="${MAPMODE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Sprache · Language</div><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button></div>`;
   }else if(UI.sheet==='opp'){
-    h=head('Gegner und Betriebe')+S.order.map(id=>{const p=P(id);const sv=storeOf(p);const pool=RES.filter(r=>p.pool[r]>0).map(r=>`<span class="stock">${resIcon(r)}${p.pool[r]}</span>`).join('')||'<span class="hint">leer</span>';
-      return `<div class="opp" ${pc(id)}><div class="h"><b>${esc(p.name)}</b><span>${p.money} €</span><span>${p.cities.length} Städte</span><span>Kapazität ${capacity(p)}</span>${p.lastPowered?`<span>zuletzt ${p.lastPowered} versorgt</span>`:''}</div><div class="cards">${p.plants.map(n=>plantCard(n,{lg:true,store:sv[n]||[],act:'pinfo'})).join('')||'<span class="hint">noch keine Kraftwerke</span>'}</div><div class="stock-row"><span class="lbl">Lager</span>${pool}</div></div>`}).join('');
+    h=head('Gegner und Betriebe','opp')+oppCompare()+S.order.map(id=>{const p=P(id);const sv=storeOf(p);const pool=RES.filter(r=>p.pool[r]>0).map(r=>`<span class="stock">${resIcon(r)}${p.pool[r]}</span>`).join('')||'<span class="hint">leer</span>';
+      return `<div class="opp" id="opp-${id}" ${pc(id)}><div class="h"><b>${esc(p.name)}</b><span>${p.money} €</span><span>${p.cities.length} Städte</span><span>Kapazität ${capacity(p)}</span>${p.lastPowered?`<span>zuletzt ${p.lastPowered} versorgt</span>`:''}</div><div class="cards">${p.plants.map(n=>plantCard(n,{lg:true,store:sv[n]||[],act:'pinfo'})).join('')||'<span class="hint">noch keine Kraftwerke</span>'}</div><div class="stock-row"><span class="lbl">Lager</span>${pool}</div></div>`}).join('');
   }else if(UI.sheet==='plant'){
     h=head('Kraftwerk '+PN(UI.pnum))+plantInfo(UI.pnum);
   }else if(UI.sheet==='markets'){
-    h=head('Märkte')+marketHTML(null)+`<div class="sec"><h3>Rohstoffe</h3>${RES.map(r=>{const hold=S.players.filter(p=>p.pool[r]>0);return `<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)} · ${r==='uranium'&&S.noUranium?'Kein Uran-Nachschub mehr (Atomausstieg)':'Nachschub +'+RESUPPLY[S.n][r][S.step-1]}</span></div>${trackHTML(r)}<div class="holders">${hold.length?hold.map(p=>`<span ${pc(p.id)}><i class="dot"></i>${esc(p.name)} ${p.pool[r]}</span>`).join(''):'<span>Niemand lagert '+RNAME[r]+'.</span>'}</div></div>`}).join('')}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`;
+    h=head('Märkte','markets')+marketHTML(null)+`<div class="sec"><h3>Rohstoffe</h3>${RES.map(r=>{const hold=S.players.filter(p=>p.pool[r]>0);return `<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)} · ${r==='uranium'&&S.noUranium?'Kein Uran-Nachschub mehr (Atomausstieg)':'Nachschub +'+RESUPPLY[S.n][r][S.step-1]}</span></div>${trackHTML(r)}${marketDemand(r)}<div class="holders">${hold.length?hold.map(p=>`<span ${pc(p.id)}><i class="dot"></i>${esc(p.name)} ${p.pool[r]}</span>`).join(''):'<span>Niemand lagert '+RNAME[r]+'.</span>'}</div></div>`}).join('')}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`;
   }else if(UI.sheet==='log'){
     h=head('Protokoll')+`<div class="loglist">${S.log.map(l=>`<p ${l.pid!=null?pc(l.pid):''}><span class="r">R${l.r}</span><span class="dot"></span>${esc(l.t)}</p>`).join('')}</div>`;
   }else if(UI.sheet==='rules'){
@@ -1764,6 +1821,10 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'Rot markiert: Gegner mit mehr Geld als du. Bedarf ist der Brennstoff pro Lieferung. Tippe auf eine Zeile für die Kraftwerke.':'Red: opponents with more money than you. Needs is the fuel per delivery. Tap a row to see the plants.',
+'Bedarf aller Betriebe je Lieferung':'All companies need per delivery','plus flexibel (Hybrid)':'plus flexible (hybrid)','davon du':'of which you',
+'Märkte: Kraftwerke und Rohstoffpreise':'Markets: power plants and resource prices','Gegner: Geld, Kraftwerke und Lager':'Opponents: money, plants and storage',
+'reichster':'richest',
 'Lege dein Startgebot fest.':'Set your opening bid.',
 'Spieler insgesamt':'Total players','Alle Karten':'All maps','Deutschland':'Germany','Frankreich':'France','Italien':'Italy','Zentrum':'Centre','Nordwest':'Northwest','Nordost':'Northeast','Toskana':'Tuscany','Süden':'South','Sizilien':'Sicily',
 'Paris besteht aus drei Städten, untereinander ohne Leitungskosten. Viel Uran im Markt, Kraftwerk 11 liegt von Beginn an aus.':'Paris consists of three cities with free connections between them. Plenty of uranium on the market; plant 11 is available from the start.',
@@ -2248,7 +2309,7 @@ const A={
   statsReset:()=>{UI.statReset=true;renderStats();return'skip'},
   statsResetNo:()=>{UI.statReset=false;renderStats();return'skip'},
   statsResetYes:()=>{saveHist([]);try{localStorage.removeItem(STATS_KEY)}catch(_){}UI.statReset=false;renderStats();return'skip'},
-  menu:()=>UI.sheet='menu',close:()=>UI.sheet=null,opp:()=>UI.sheet='opp',log:()=>UI.sheet='log',rules:()=>UI.sheet='rules',
+  menu:()=>UI.sheet='menu',close:()=>UI.sheet=null,opp:()=>UI.sheet='opp',oppjump:b=>{const el=document.getElementById('opp-'+b.dataset.pid);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return'skip'},log:()=>UI.sheet='log',rules:()=>UI.sheet='rules',
   results:()=>UI.sheet='results',newgame:()=>UI.sheet='newgame',
   newyes:()=>{UI.sheet=null;clearTimeout(timer);renderSheet();renderStart(true);return'skip'},
   startrules:()=>{UI.sheet='rules';renderStart(false);return'rules'},
