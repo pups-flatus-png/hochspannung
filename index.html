@@ -673,6 +673,29 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .dlabel{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
 .dlabel span:first-child{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fg)}
 .dlabel .newtag{background:var(--accent);color:var(--accent-ink)!important;padding:3px 8px;border-radius:10px}
+/* ---- v8: Tablets & große Bildschirme ---- */
+#panel{container:panel/inline-size}
+@container panel (min-width:640px){
+  #panel>*{zoom:1.18;width:100%;max-width:760px;margin-inline:auto}
+}
+@container panel (min-width:1000px){#panel>*{zoom:1.25}}
+.title{container-type:inline-size}
+.title h1{font-size:clamp(36px,min(15.5cqi,96px),96px)}
+@media (min-width:900px) and (min-height:600px){
+  .startbox{max-width:1040px;grid-template-columns:minmax(0,1fr) minmax(0,400px);gap:48px}
+}
+@media (orientation:portrait) and (min-width:621px){
+  .startbox{grid-template-columns:minmax(0,1fr);max-width:560px;gap:22px}
+  .title h1{font-size:clamp(44px,min(15.5cqi,104px),104px)}
+}
+@media (pointer:coarse) and (min-width:744px) and (min-height:744px){
+  .startbox{zoom:1.15}
+  #top>*,.tracker>*,#board>.mapbar{zoom:1.15}
+  .mapctl{zoom:1.2}
+  .sheet{width:min(640px,100%)}
+  .overlay .sheet>*{zoom:1.15}
+}
+@media (orientation:portrait){#app.mapmin #board>.mapbar{max-width:480px;margin-inline:auto}}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1652,7 +1675,7 @@ function renderStart(show){
   UI.map=UI.map||'de';loadMap(UI.map);
   start.hidden=false;
   start.innerHTML=`<svg class="wires" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path d="M-20 120H180L260 200H520L600 120H820"/><path d="M-20 470H140L230 380H470L560 470H820"/><path d="M260 200V380M520 200V380"/><circle cx="180" cy="120" r="7"/><circle cx="260" cy="200" r="7"/><circle cx="520" cy="200" r="7"/><circle cx="600" cy="120" r="7"/><circle cx="230" cy="380" r="7"/><circle cx="470" cy="380" r="7"/></svg>
-  <div class="startbox"><div class="title"><h1>Hoch<em>span</em>nung</h1><p>Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über Deutschland. Wer am Ende die meisten Städte versorgt, gewinnt.</p><span class="volt">380 kV · 3–6 Betriebe</span></div>
+  <div class="startbox"><div class="title"><h1>Hoch<wbr><em>span</em>nung</h1><p>Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über Deutschland. Wer am Ende die meisten Städte versorgt, gewinnt.</p><span class="volt">380 kV · 3–6 Betriebe</span></div>
   <div class="form"><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><label for="nm">Dein Firmenname<input id="nm" maxlength="18" value="${esc(UI.name||(LANG==='en'?'You':'Du'))}"></label><div class="gl">Karte</div><div class="seg">${Object.entries(MAPS).map(([k,m])=>`<button type="button" data-act="mapSel" data-m="${k}" class="${UI.map===k?'on':''}">${m.name}</button>`).join('')}</div><div class="nhint">${MAP_NOTE[UI.map]}</div>${MAPS[UI.map].phaseOutOpt?`<div class="gl">Atomausstieg (Recharged-Regel)</div><div class="seg">${[[true,'Mit Atomausstieg'],[false,'Ohne']].map(([v,l])=>`<button type="button" data-act="atom" data-v="${v}" class="${(UI.deAtom!==false)===v?'on':''}">${l}</button>`).join('')}</div><div class="nhint">${UI.deAtom!==false?'Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt bis Spielende kein Uran mehr nach.':'Uran wird wie im Basisspiel nachgefüllt.'}</div>`:''}<div class="gl">Kraftwerksdeck</div><div class="seg wrap3">${Object.entries(DECKS).map(([k,d])=>{const dis=MAPS[UI.map].paris&&(k==='mix'||k==='mix1');return `<button type="button" data-act="deckSel" data-d="${k}" class="${(UI.deck||'std')===k?'on':''}" ${dis?'disabled':''}>${d.name}</button>`}).join('')}</div><div class="nhint">${DECK_NOTE[UI.deck||'std']}${MAPS[UI.map].paris?' Frankreich verteilt feste Kraftwerksnummern, darum gibt es hier keine gemischten Decks.':''}</div>${uraniumTrapWarn()}<div class="gl">Spieler insgesamt</div><div class="seg">${[2,3,4,5].map(k=>`<button type="button" data-act="nai" data-n="${k}" class="${UI.nAI===k?'on':''}">${k+1}</button>`).join('')}</div><div class="nhint">${UI.nAI+1} Spieler: du und ${UI.nAI} KI · ${regionCount(UI.nAI+1)} Regionen · Stufe 2 ab ${RULES_N[UI.nAI+1].s2} Städten · Ende bei ${RULES_N[UI.nAI+1].end} Städten</div><div class="gl">KI-Stärke</div><div class="seg">${['easy','normal','hard'].map(d=>`<button type="button" data-act="diff" data-d="${d}" class="${UI.diff===d?'on':''}">${AI_NAME[d]}</button>`).join('')}</div><div class="gl">Netzgebiet</div>${regionPicker()}<button type="button" class="btn pri" data-act="start" ${regionsOk()?'':'disabled'}>Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn" data-act="cont">Weiterspielen</button>':''}<button type="button" class="btn" data-act="startrules">Spielregeln</button><button type="button" class="btn" data-act="stats">Statistik${(()=>{const n=loadHist().length;return n?' · '+n+(n===1?' Partie':' Partien'):''})()}</button></div></div>`;
 }
 
