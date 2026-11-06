@@ -668,6 +668,11 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .xbtn.sm{width:32px;height:32px;margin:0;border-radius:8px}
 .lbdel{display:flex;gap:6px}
 @media (max-width:520px){.lbrow{grid-template-columns:auto minmax(0,1fr) auto}.lbrow .hx{grid-column:2/4}}
+.dgroup{display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:11px;border:1px solid var(--line);background:var(--panel-2)}
+.dgroup.new{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--panel-2))}
+.dlabel{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.dlabel span:first-child{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fg)}
+.dlabel .newtag{background:var(--accent);color:var(--accent-ink)!important;padding:3px 8px;border-radius:10px}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -926,12 +931,13 @@ function award(pid){
   S.market=S.market.filter(x=>x!==a.plant);p.done=true;S.boughtAny=true;if(a.plant===S.discount)S.discount=null;
   log(p.name+' kauft Kraftwerk '+PN(a.plant)+' für '+a.bid+' €.',pid);
   drawToMarket();removeLowCities();
-  if(p.plants.length>3){S.discard=pid;S.auc={mode:'wait'};return}
+  if(p.plants.length>3){S.discard=pid;S.newPlant=a.plant;S.auc={mode:'wait'};return}
   nextChooser();
 }
 function discardPlant(pid,num){
-  const p=P(pid);p.plants=p.plants.filter(x=>x!==num);clampPool(p);
-  log(p.name+' legt Kraftwerk '+PN(num)+' still.',pid);S.discard=null;nextChooser();
+  const p=P(pid);if(num===S.newPlant&&p.plants.length>3){const old=p.plants.filter(x=>x!==S.newPlant);num=old.sort((a,b)=>PLANTS[a][2]-PLANTS[b][2]||a-b)[0]}
+  p.plants=p.plants.filter(x=>x!==num);clampPool(p);
+  log(p.name+' legt Kraftwerk '+PN(num)+' still.',pid);S.discard=null;S.newPlant=null;nextChooser();
 }
 function endAuctionPhase(){
   if(S.discount!=null&&S.market.includes(S.discount)){const x=S.discount;S.market=S.market.filter(y=>y!==x);log('Das Rabatt-Kraftwerk '+PN(x)+' wurde nicht gekauft und fällt weg.');drawToMarket();removeLowCities()}
@@ -1082,7 +1088,7 @@ function aiBid(p){
   if(a.bid+1<=maxb)bidRaise(p.id,a.bid+1);else bidDrop(p.id);
 }
 function aiDiscard(p){
-  const worst=[...p.plants].sort((a,b)=>PLANTS[a][2]-PLANTS[b][2]||a-b)[0];discardPlant(p.id,worst);
+  const worst=p.plants.filter(x=>x!==S.newPlant).sort((a,b)=>PLANTS[a][2]-PLANTS[b][2]||a-b)[0];discardPlant(p.id,worst);
 }
 function aiBuy(p){
   const plants=[...p.plants].sort((a,b)=>PLANTS[b][2]-PLANTS[a][2]);
@@ -1559,8 +1565,11 @@ function discardPreview(p,n){
   return{lost:RES.filter(r=>p.pool[r]>q.pool[r]).map(r=>(p.pool[r]-q.pool[r])+' '+RNAME[r]),cap:capacity(q)};
 }
 function discardSheet(){
-  const p=me();const sv=normAlloc(p);const sel=p.plants.includes(UI.discSel)?UI.discSel:null;
-  let h=`<div class="sheet-head"><h2>Ein Kraftwerk stilllegen</h2></div><p class="hint">Du darfst nur drei Kraftwerke betreiben. Tippe das Kraftwerk an, das du abgeben möchtest, und bestätige. Es verlässt das Spiel endgültig.</p><div class="cards">${p.plants.map(n=>plantCard(n,{lg:true,store:sv[n]||[],act:'dsel',sel:sel===n})).join('')}</div>`;
+  const p=me();const sv=normAlloc(p);const nw=p.plants.includes(S.newPlant)?S.newPlant:null;
+  const old=p.plants.filter(n=>n!==nw);const sel=old.includes(UI.discSel)?UI.discSel:null;
+  let h=`<div class="sheet-head"><h2>Ein Kraftwerk stilllegen</h2></div><p class="hint">Du darfst nur drei Kraftwerke betreiben. Wähle eines deiner bisherigen Kraftwerke, das du für das neue abgibst. Es verlässt das Spiel endgültig.</p>`;
+  if(nw!=null)h+=`<div class="dgroup new"><div class="dlabel"><span class="newtag">Neu gekauft</span><span>bleibt in deinem Betrieb</span></div><div class="cards">${plantCard(nw,{lg:true,store:sv[nw]||[]})}</div></div>`;
+  h+=`<div class="dgroup"><div class="dlabel"><span>Bisher in Betrieb</span><span>eines davon abgeben</span></div><div class="cards">${old.map(n=>plantCard(n,{lg:true,store:sv[n]||[],act:'dsel',sel:sel===n})).join('')}</div></div>`;
   if(sel!=null){
     const pv=discardPreview(p,sel);
     h+=`<div class="selinfo"><div class="t">Kraftwerk ${PN(sel)} stilllegen</div><div class="calc">Kapazität danach: ${pv.cap} Städte (jetzt ${capacity(p)})<br>${pv.lost.length?'Geht verloren: <b>'+pv.lost.join(', ')+'</b>':'Alle Rohstoffe finden auf deinen anderen Kraftwerken Platz.'}</div><button type="button" class="btn pri" data-act="dconfirm">Kraftwerk ${PN(sel)} stilllegen</button></div>`;
@@ -1586,7 +1595,7 @@ function renderSheet(){
   }else if(UI.sheet==='rules'){
     h=head('So läuft eine Runde')+`<div class="rules">
 <h4>1 · Reihenfolge</h4><p>Wer die meisten Städte hat, ist zuerst dran. Bei Gleichstand entscheidet das größte Kraftwerk. Beim Rohstoffkauf und beim Bauen geht es rückwärts, der Führende kommt also zuletzt.</p>
-<h4>2 · Kraftwerke versteigern</h4><p>Reihum eröffnet jeder eine Versteigerung um ein Kraftwerk aus dem aktuellen Markt oder passt. Das Mindestgebot ist die Kraftwerksnummer. Jeder kauft höchstens ein Kraftwerk pro Runde und betreibt höchstens drei.</p><p>Rabatt: Das kleinste Kraftwerk im aktuellen Markt startet jede Runde mit einem Mindestgebot von 1 €. Kauft es niemand, fällt es am Ende der Versteigerung aus dem Spiel.</p>
+<h4>2 · Kraftwerke versteigern</h4><p>Reihum eröffnet jeder eine Versteigerung um ein Kraftwerk aus dem aktuellen Markt oder passt. Das Mindestgebot ist die Kraftwerksnummer. Jeder kauft höchstens ein Kraftwerk pro Runde und betreibt höchstens drei. Wer ein viertes kauft, legt eines seiner bisherigen still.</p><p>Rabatt: Das kleinste Kraftwerk im aktuellen Markt startet jede Runde mit einem Mindestgebot von 1 €. Kauft es niemand, fällt es am Ende der Versteigerung aus dem Spiel.</p>
 <h4>3 · Rohstoffe kaufen</h4><p>Kohle, Öl, Müll und Uran werden teurer, je knapper sie sind. Jedes Kraftwerk lagert das Doppelte seines Bedarfs. Öko-Kraftwerke brauchen nichts.</p>
 <h4>4 · Netz ausbauen</h4><p>Die erste Stadt kostet 10 €. Jede weitere kostet den Platz plus die günstigste Leitung zu deinem Netz. In Stufe 2 öffnet der zweite Platz einer Stadt (15 €), in Stufe 3 der dritte (20 €).</p>
 <h4>5 · Strom liefern</h4><p>Du verdienst Geld für jede Stadt, die du mit deinen Kraftwerken versorgst. Danach füllt sich der Rohstoffmarkt auf und der Kraftwerksmarkt rückt nach.</p>
@@ -1738,7 +1747,7 @@ const TS=Object.entries({
 'Atomausstieg: Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt kein Uran mehr nach.':'Nuclear phase-out: once plant 39 is bought, no more uranium is restocked.',
 'Das Basisspiel.':'The base game.','Atomausstieg (Recharged-Regel)':'Nuclear phase-out (Recharged rule)','Mit Atomausstieg':'With phase-out','Ohne':'Without',
 'Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt bis Spielende kein Uran mehr nach.':'Once plant 39 is bought, no more uranium is restocked for the rest of the game.','Uran wird wie im Basisspiel nachgefüllt.':'Uranium is restocked as in the base game.',
-'Alpen':'Alps','Kraftwerksdeck':'Power plant deck','Gemeinsame Rangliste ansehen':'View shared leaderboard','Gemeinsame Rangliste':'Shared leaderboard','Dein Name in der Rangliste':'Your name on the leaderboard','z. B. Vorname':'e.g. first name','In Rangliste eintragen':'Add to leaderboard','Erneut eintragen':'Add again','Ergebnis senden':'Send result',
+'Alpen':'Alps','Kraftwerksdeck':'Power plant deck','Du darfst nur drei Kraftwerke betreiben. Wähle eines deiner bisherigen Kraftwerke, das du für das neue abgibst. Es verlässt das Spiel endgültig.':'You may only run three plants. Choose one of your existing plants to give up for the new one. It leaves the game for good.','Neu gekauft':'Just bought',' Wer ein viertes kauft, legt eines seiner bisherigen still.':' Whoever buys a fourth retires one of their existing plants.','bleibt in deinem Betrieb':'stays in your company','Bisher in Betrieb':'Already running','eines davon abgeben':'give up one of these','Gemeinsame Rangliste ansehen':'View shared leaderboard','Gemeinsame Rangliste':'Shared leaderboard','Dein Name in der Rangliste':'Your name on the leaderboard','z. B. Vorname':'e.g. first name','In Rangliste eintragen':'Add to leaderboard','Erneut eintragen':'Add again','Ergebnis senden':'Send result',
 'Schick den Link an die Person, die die Rangliste führt. Sie trägt dein Ergebnis mit einem Tipp ein.':'Send the link to whoever runs the leaderboard. They add your result with one tap.',
 'In der Rangliste eingetragen.':'Added to the leaderboard.','Du kannst in dieser Rangliste nichts eintragen. Schick dein Ergebnis stattdessen per Link.':'You can’t add entries to this leaderboard. Send your result as a link instead.','Die Rangliste ist voll. Lösche alte Einträge.':'The leaderboard is full. Delete old entries.','Eintragen hat nicht geklappt. Versuch es gleich noch einmal.':'Adding didn’t work. Try again in a moment.','Dieser Code ist ungültig oder beschädigt.':'This code is invalid or damaged.','Gib zuerst einen Namen für die Rangliste ein.':'Enter a name for the leaderboard first.',
 'Link kopiert. Schick ihn an die Person, die die Rangliste führt.':'Link copied. Send it to whoever runs the leaderboard.','Geteilt.':'Shared.','Link zum Ergebnis':'Link to the result',
@@ -2237,7 +2246,7 @@ const A={
   pass:()=>{if(!myTurn('choose'))return;doPass(H);UI.sel=null},
   raise:()=>{if(!myTurn('bid'))return;bidRaise(H,UI.bid)},
   drop:()=>{if(!myTurn('bid'))return;bidDrop(H)},
-  dsel:b=>{UI.discSel=+b.dataset.num},
+  dsel:b=>{const n=+b.dataset.num;if(n!==S.newPlant)UI.discSel=n},
   dopen:()=>{UI.sheet=null},
   dconfirm:()=>{if(!myTurn('discard')||UI.discSel==null)return;const n=UI.discSel;UI.discSel=null;discardPlant(H,n)},
   cartp:b=>{const n=+b.dataset.n,r=b.dataset.r;if(canAddP(n,r))addP(n,r)},
