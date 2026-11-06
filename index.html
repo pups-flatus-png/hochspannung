@@ -654,6 +654,20 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .seg.wrap3 button{padding:9px 6px;font-size:13px;border-top:1px solid var(--line)}
 .seg button[disabled]{opacity:.35;cursor:not-allowed}
 .warnhint{color:#ffb4a8;border-left:3px solid var(--bad);padding-left:8px}
+.overlay{z-index:42}
+.lbbox{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:11px;background:var(--panel-2);border:1px solid var(--line)}
+.lbbox h3{margin:0;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.lbname{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:flex;flex-direction:column;gap:5px}
+.lbname input,.lbin,.lblink{background:var(--panel);border:1px solid var(--edge);border-radius:8px;padding:10px;color:var(--fg);font:inherit;font-size:15px;text-transform:none;letter-spacing:0;min-width:0}
+.lbin{flex:1 1 200px}
+.lblink{width:100%;font-size:12px}
+.lbmsg{color:var(--fg)}
+.lbt td.lbn{font-weight:600;white-space:normal;min-width:90px}
+.lbt tr:first-child td{color:var(--accent)}
+.lbrow{grid-template-columns:auto auto minmax(0,1fr) auto auto;cursor:default}
+.xbtn.sm{width:32px;height:32px;margin:0;border-radius:8px}
+.lbdel{display:flex;gap:6px}
+@media (max-width:520px){.lbrow{grid-template-columns:auto minmax(0,1fr) auto}.lbrow .hx{grid-column:2/4}}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1580,8 +1594,17 @@ ${S&&S.map==='fr'?'<h4>Frankreich</h4><p>Paris besteht aus drei Städten. Leitun
 <h4>Einkommen</h4><p>${PAY.slice(0,11).map((v,i)=>i+'→'+v).join(' · ')} · … bis 20→150 €</p></div>`;
   }else if(UI.sheet==='newgame'){
     h=head('Neues Spiel?')+`<p class="hint">Das laufende Spiel wird beendet.</p><div class="row"><button type="button" class="btn" data-act="close">Abbrechen</button><button type="button" class="btn pri grow" data-act="newyes">Neues Spiel einrichten</button></div>`;
+  }else if(UI.sheet==='import'){
+    const im=UI.imp||{};const r=im.r;
+    h=head('Ergebnis übernehmen');
+    if(!r)h+=`<p class="warn">${LB_MSG.bad}</p>`;
+    else{const x=lbHuman(r);h+=`<div class="sel-sum">${placeBadge(x.place)}<div><b>${esc(x.name)}</b><span>Platz ${x.place} von ${r.n} · ${x.powered} versorgt · ${x.cities} Städte · ${fmt(x.money)} €<br>${MAPS[r.map].name} · Deck ${DECKS[r.deck].name} · KI ${AI_NAME[r.diff]} · ${r.rounds} Runden · ${new Date(r.date).toLocaleDateString(LOC())}</span></div></div>`;
+      if(LB.db&&LB.canWrite!==false){const dup=(LB.docs||[]).some(d=>d.id===r.id);h+=`<button type="button" class="btn pri" data-act="lbImport">${dup?'Ist schon eingetragen · erneut speichern':'In Rangliste eintragen'}</button>`}
+      else if(LB.db)h+=`<p class="hint">Du kannst in dieser Rangliste nichts eintragen.</p>`;
+      else h+=`<p class="hint">Öffne diesen Link in der claude.ai-Version von Hochspannung, um das Ergebnis einzutragen.</p>`;}
+    if(UI.lbMsg)h+=`<p class="hint lbmsg">${esc(UI.lbMsg)}</p>`;
   }else if(UI.sheet==='results'){
-    h=head('Ergebnis')+`<div class="rank">${S.ranking.map((id,i)=>{const p=P(id);return `<div ${pc(id)}><span class="pl">${i+1}</span><span class="dot"></span><b>${esc(p.name)}</b><span class="v">${p.lastPowered} versorgt · ${p.cities.length} Städte<br>${p.money} €</span></div>`}).join('')}</div><div class="row"><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn pri grow" data-act="newyes">Neues Spiel</button></div>`;
+    h=head('Ergebnis')+`<div class="rank">${S.ranking.map((id,i)=>{const p=P(id);return `<div ${pc(id)}><span class="pl">${i+1}</span><span class="dot"></span><b>${esc(p.name)}</b><span class="v">${p.lastPowered} versorgt · ${p.cities.length} Städte<br>${p.money} €</span></div>`}).join('')}</div>${lbBoxHTML(loadHist().slice(-1)[0])}<div class="row"><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn pri grow" data-act="newyes">Neues Spiel</button></div>`;
   }
   sheet.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${h}</div>`;sheet.hidden=false;
 }
@@ -1628,6 +1651,7 @@ function renderStart(show){
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
+[/^(\d+) eigene Partien? aus diesem Gerät (?:ist|sind) noch nicht in der Rangliste\.$/u,'$1 of your games from this device are not on the leaderboard yet.'],[/^(.+): eingetragen\.$/u,'$1: added.'],[/^(\d+) Partien? eingetragen\.$/u,'$1 games added.'],
 [/^Atomausstieg: Kein Uran-Nachschub mehr, (\d+) Uran im Markt\.$/u,'Nuclear phase-out: no more uranium restocking, $1 uranium on the market.'],[/^Atomausstieg aktiv: Nach dem Kauf von (.+) kommt kein Uran mehr nach\.$/u,'Nuclear phase-out active: once $1 is bought, no more uranium is restocked.'],
 [/^Sobald jemand (.+) kauft, wird bis zum Spielende kein Uran mehr nachgefüllt\. Was noch im Markt liegt, kann weiter gekauft werden\.$/u,'As soon as someone buys $1, no more uranium is restocked until the end of the game. What is still on the market can still be bought.'],[/eines der Kraftwerke /u,'one of the plants '],[/^Kraftwerksdeck: /u,'Power plant deck: '],
 [/Brennstoff je Lieferung/u,'fuel per delivery'],
@@ -1714,7 +1738,16 @@ const TS=Object.entries({
 'Atomausstieg: Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt kein Uran mehr nach.':'Nuclear phase-out: once plant 39 is bought, no more uranium is restocked.',
 'Das Basisspiel.':'The base game.','Atomausstieg (Recharged-Regel)':'Nuclear phase-out (Recharged rule)','Mit Atomausstieg':'With phase-out','Ohne':'Without',
 'Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt bis Spielende kein Uran mehr nach.':'Once plant 39 is bought, no more uranium is restocked for the rest of the game.','Uran wird wie im Basisspiel nachgefüllt.':'Uranium is restocked as in the base game.',
-'Alpen':'Alps','Kraftwerksdeck':'Power plant deck','Achtung: In diesem Deck ist das größte Kraftwerk (50) ein Uran-Kraftwerk. Mit Atomausstieg geht das Uran oft aus, dann steht es still. Für ein ausgewogenes Spiel Basisdeck wählen oder ohne Atomausstieg spielen.':'Note: in this deck the largest plant (50) is a uranium plant. With the nuclear phase-out, uranium often runs out and it sits idle. For a balanced game choose the base deck or play without the phase-out.','Kein Nachschub mehr':'No more restocking','Aktiv, Auslöser ':'Active, triggered by ','Basis':'Base','Alle drei gemischt':'All three mixed','Je Nummer zufällig':'Random per number','Stufe 3 nach 34 Karten':'Step 3 after 34 cards','Stufe 3 ganz unten':'Step 3 at the bottom','Müll/Öl':'Garbage/Oil','Müll oder Öl':'garbage or oil','Müll-Öl-Hybrid':'Garbage-oil hybrid','Deck':'Deck',
+'Alpen':'Alps','Kraftwerksdeck':'Power plant deck','Gemeinsame Rangliste ansehen':'View shared leaderboard','Gemeinsame Rangliste':'Shared leaderboard','Dein Name in der Rangliste':'Your name on the leaderboard','z. B. Vorname':'e.g. first name','In Rangliste eintragen':'Add to leaderboard','Erneut eintragen':'Add again','Ergebnis senden':'Send result',
+'Schick den Link an die Person, die die Rangliste führt. Sie trägt dein Ergebnis mit einem Tipp ein.':'Send the link to whoever runs the leaderboard. They add your result with one tap.',
+'In der Rangliste eingetragen.':'Added to the leaderboard.','Du kannst in dieser Rangliste nichts eintragen. Schick dein Ergebnis stattdessen per Link.':'You can’t add entries to this leaderboard. Send your result as a link instead.','Die Rangliste ist voll. Lösche alte Einträge.':'The leaderboard is full. Delete old entries.','Eintragen hat nicht geklappt. Versuch es gleich noch einmal.':'Adding didn’t work. Try again in a moment.','Dieser Code ist ungültig oder beschädigt.':'This code is invalid or damaged.','Gib zuerst einen Namen für die Rangliste ein.':'Enter a name for the leaderboard first.',
+'Link kopiert. Schick ihn an die Person, die die Rangliste führt.':'Link copied. Send it to whoever runs the leaderboard.','Geteilt.':'Shared.','Link zum Ergebnis':'Link to the result',
+'Die gemeinsame Rangliste liegt in der claude.ai-Version von Hochspannung. Von hier aus kannst du dein Ergebnis als Link verschicken.':'The shared leaderboard lives in the claude.ai version of Hochspannung. From here you can send your result as a link.','Beende eine Partie, dann kannst du sie senden.':'Finish a game, then you can send it.',
+'Rangliste wird geladen …':'Loading leaderboard …','Die Rangliste ist gerade nicht erreichbar. Öffne die Statistik später noch einmal.':'The leaderboard is unavailable right now. Open the statistics again later.',
+'Noch keine Ergebnisse':'No results yet',' mit diesem Filter':' with this filter','. Beende eine Partie und trag sie ein, oder füge unten einen Ergebnis-Link ein.':'. Finish a game and add it, or paste a result link below.',
+'Letzte Ergebnisse':'Recent results','Behalten':'Keep','Löschen':'Delete','Eintrag entfernen':'Remove entry','Ergebnis eintragen':'Add a result','Füge den Link oder Code ein, den dir jemand geschickt hat.':'Paste the link or code someone sent you.','Ergebnis-Link oder Code':'Result link or code','Eintragen':'Add',
+'Du kannst die Rangliste ansehen. Eintragen kann nur, wer sie bearbeiten darf. Schick dein Ergebnis per „Ergebnis senden“ nach einer Partie.':'You can view the leaderboard. Only people who can edit it can add entries. Send your result with “Send result” after a game.',
+'Ergebnis übernehmen':'Import result','Du kannst in dieser Rangliste nichts eintragen.':'You can’t add entries to this leaderboard.','Öffne diesen Link in der claude.ai-Version von Hochspannung, um das Ergebnis einzutragen.':'Open this link in the claude.ai version of Hochspannung to add the result.','Ist schon eingetragen · erneut speichern':'Already added · save again','Löschen hat nicht geklappt.':'Deleting didn’t work.','Leg zuerst nach einer Partie deinen Namen für die Rangliste fest.':'First set your leaderboard name after a game.','Bestwert':'Best','Name':'Name','Achtung: In diesem Deck ist das größte Kraftwerk (50) ein Uran-Kraftwerk. Mit Atomausstieg geht das Uran oft aus, dann steht es still. Für ein ausgewogenes Spiel Basisdeck wählen oder ohne Atomausstieg spielen.':'Note: in this deck the largest plant (50) is a uranium plant. With the nuclear phase-out, uranium often runs out and it sits idle. For a balanced game choose the base deck or play without the phase-out.','Kein Nachschub mehr':'No more restocking','Aktiv, Auslöser ':'Active, triggered by ','Basis':'Base','Alle drei gemischt':'All three mixed','Je Nummer zufällig':'Random per number','Stufe 3 nach 34 Karten':'Step 3 after 34 cards','Stufe 3 ganz unten':'Step 3 at the bottom','Müll/Öl':'Garbage/Oil','Müll oder Öl':'garbage or oil','Müll-Öl-Hybrid':'Garbage-oil hybrid','Deck':'Deck',
 'Die Kraftwerke aus dem Grundspiel.':'The power plants from the base game.',
 '„Die neuen Kraftwerke“, Set 1: Nummern 1 bis 50, mehr kleine und günstige Kraftwerke, Fusion bei 44, großes Uran-Kraftwerk 50.':'“The New Power Plants”, set 1: numbers 1 to 50, more small and cheap plants, fusion at 44, large uranium plant 50.',
 'Set 2: neue Müll-Öl-Hybride, viele Kohle- und Müllkraftwerke, großes Uran-Kraftwerk 50.':'Set 2: new garbage-oil hybrids, many coal and garbage plants, large uranium plant 50.',
@@ -1840,7 +1873,8 @@ function onGameEnd(){
   const rec={v:1,id:Date.now()+'-'+Math.floor(Math.random()*1e4),date:t.start,end:t.end||Date.now(),rounds:S.round,diff:S.ai||'normal',map:S.map||'de',deck:S.deckId||'std',n:S.n,regions:S.regions.slice(),step2:t.step2,step3:t.step3,partial:!!t.partial,
     players:S.players.map(p=>({name:p.name,color:p.color,human:!!p.human,powered:p.lastPowered,cities:p.cities.length,money:p.money,plants:p.plants.slice(),place:S.ranking.indexOf(p.id)+1,...t.pl[p.id]})),
     series:t.series};
-  const h=loadHist();h.push(rec);saveHist(h);UI.statSel=rec.id;UI.statView='last';
+  const h=loadHist();h.push(rec);saveHist(h);UI.statSel=rec.id;UI.statView='last';UI.lbMsg='';UI.lbLink='';
+  if(LB.db&&LB.canWrite!==false&&!isDefaultName(lbName())){const r=recToResult(rec,lbName());lbSubmit(r,'app').then(st=>{UI.lbMsg=LB_MSG[st]||'';if(st==='ok')UI.lbDone=rec.id;refreshLB()})}
 }
 const LOC=()=>LANG==='en'?'en-GB':'de-DE';
 const fmt=n=>Math.round(n).toLocaleString(LOC());
@@ -1913,13 +1947,14 @@ function renderStats(){
   const view=UI.statView||'total';
   const gameIdx=h.findIndex(g=>g.id===UI.statSel);
   const sel=view==='last'?h[h.length-1]:view==='game'?(h[gameIdx]||h[h.length-1]):null;
-  const opts=`<option value="last" ${view==='last'?'selected':''}>Letzte Partie</option><option value="total" ${view==='total'?'selected':''}>Alle Partien (Gesamt)</option><option value="trend" ${view==='trend'?'selected':''}>Entwicklung über Zeit</option><option disabled>── Einzelne Partie ──</option>${h.map((g,i)=>({g,i})).reverse().map(({g,i})=>`<option value="g:${g.id}" ${view==='game'&&sel&&sel.id===g.id?'selected':''}>${gameLabel(g,i)}</option>`).join('')}`;
+  const opts=`<option value="board" ${view==='board'?'selected':''}>Gemeinsame Rangliste</option><option value="last" ${view==='last'?'selected':''}>Letzte Partie</option><option value="total" ${view==='total'?'selected':''}>Alle Partien (Gesamt)</option><option value="trend" ${view==='trend'?'selected':''}>Entwicklung über Zeit</option><option disabled>── Einzelne Partie ──</option>${h.map((g,i)=>({g,i})).reverse().map(({g,i})=>`<option value="g:${g.id}" ${view==='game'&&sel&&sel.id===g.id?'selected':''}>${gameLabel(g,i)}</option>`).join('')}`;
   const dOpts=[['all','Alle Stärken'],['easy',AI_NAME.easy],['normal',AI_NAME.normal],['hard',AI_NAME.hard]].map(([k,l])=>`<option value="${k}" ${(UI.statDiff||'all')===k?'selected':''}>${l}</option>`).join('');
   const head=`<div class="st-head"><button type="button" class="btn" data-act="statsBack">← Zurück</button><h2>Statistik</h2>${all.length?`<span class="st-n">${all.length} ${all.length===1?'Partie':'Partien'}</span>`:''}</div>`;
-  if(!all.length){el.innerHTML=`<div class="st-inner">${head}<div class="st-empty"><b>Noch keine beendete Partie</b><p>Spiel eine Partie bis zur letzten Stromlieferung. Danach siehst du hier Siegquote, Rekorde, deine Ausgaben für Kraftwerke, Rohstoffe und Netz, die Verläufe von Geld und Städten und deine ganze Spielhistorie.</p></div></div>`;el.hidden=false;return}
+  if(!all.length&&view!=='board'){el.innerHTML=`<div class="st-inner">${head}<div class="st-empty"><b>Noch keine beendete Partie</b><p>Spiel eine Partie bis zur letzten Stromlieferung. Danach siehst du hier Siegquote, Rekorde, deine Ausgaben für Kraftwerke, Rohstoffe und Netz, die Verläufe von Geld und Städten und deine ganze Spielhistorie.</p>${LB.db?'<button type="button" class="btn" data-act="boardView">Gemeinsame Rangliste ansehen</button>':''}</div></div>`;el.hidden=false;return}
   const bar=`<div class="st-bar"><label class="stsel"><span>Ansicht</span><select id="stView">${opts}</select></label><label class="stsel"><span>KI-Stärke</span><select id="stDiff">${dOpts}</select></label><label class="stsel"><span>Karte</span><select id="stMap">${[['all','Alle Karten'],...Object.entries(MAPS).map(([k,m])=>[k,m.name])].map(([k,l])=>`<option value="${k}" ${(UI.statMap||'all')===k?'selected':''}>${l}</option>`).join('')}</select></label></div>`;
   let body;
-  if(!h.length)body=`<div class="st-empty"><b>Keine Partien mit dieser KI-Stärke</b><p>Wähle eine andere Stärke oder „Alle Stärken“.</p></div>`;
+  if(view==='board')body=statsBoard();
+  else if(!h.length)body=`<div class="st-empty"><b>Keine Partien mit dieser KI-Stärke</b><p>Wähle eine andere Stärke oder „Alle Stärken“.</p></div>`;
   else if(view==='trend')body=statsTrend(h);
   else if(view==='game'||view==='last')body=statsGame(sel,h.indexOf(sel),view==='last');
   else body=statsTotal(h);
@@ -2006,13 +2041,14 @@ function statsTrend(h){
   </div>`;
 }
 function statsGame(sel,idx,isLast){
+  const lbb=`<section class="card wide">${lbBoxHTML(sel)}</section>`;
   const me_=meOf;const selMe=me_(sel);const d=new Date(sel.date);
   const sp=sel.players.map(p=>({...p}));
   const charts=sel.series&&sel.series.length?`<div class="charts">${lineChart('m','Geld',' €',sp,sel.series,'m')}${lineChart('c','Städte im Netz','',sp,sel.series,'c')}${lineChart('p','Versorgte Städte je Runde','',sp,sel.series,'p')}</div>`:'<p class="hint">Für diese Partie liegen keine Rundenverläufe vor.</p>';
   const gm=gameMetrics(sel);
   const pl=(selMe.auc||[]).reduce((s,a)=>s+a.price,0),res=Object.values(selMe.res||{}).reduce((s,x)=>s+x[1],0);
   const nav=`<div class="gnav"><button type="button" class="btn" data-act="statsNav" data-d="-1" ${idx<=0?'disabled':''}>← Vorherige</button><span>${isLast?'Letzte Partie · ':''}Partie #${idx+1}</span><button type="button" class="btn" data-act="statsNav" data-d="1" ${idx>=filtHist().length-1?'disabled':''}>Nächste →</button></div>`;
-  return `${nav}<section class="card wide"><div class="sel-sum">${placeBadge(selMe.place)}<div><b>${d.toLocaleDateString(LOC(),{day:'numeric',month:'long',year:'numeric'})}</b><span>${MAPS[sel.map||'de'].name} · Deck ${DECKS[sel.deck||'std'].name} · ${sel.rounds} Runden · KI ${AI_NAME[sel.diff]||sel.diff} · ${sel.regions.map(r=>MAPS[sel.map||'de'].regions[r].name).join(', ')}${sel.step2?' · Stufe 2 ab Runde '+sel.step2:''}${sel.step3?' · Stufe 3 ab Runde '+sel.step3:''}</span></div></div>
+  return lbb+`${nav}<section class="card wide"><div class="sel-sum">${placeBadge(selMe.place)}<div><b>${d.toLocaleDateString(LOC(),{day:'numeric',month:'long',year:'numeric'})}</b><span>${MAPS[sel.map||'de'].name} · Deck ${DECKS[sel.deck||'std'].name} · ${sel.rounds} Runden · KI ${AI_NAME[sel.diff]||sel.diff} · ${sel.regions.map(r=>MAPS[sel.map||'de'].regions[r].name).join(', ')}${sel.step2?' · Stufe 2 ab Runde '+sel.step2:''}${sel.step3?' · Stufe 3 ab Runde '+sel.step3:''}</span></div></div>
   <div class="st-table"><table><thead><tr><th>Platz</th><th>Betrieb</th><th>Versorgt</th><th>Städte</th><th>Geld</th><th>Einkommen</th><th>Kraftwerke</th></tr></thead><tbody>${[...sel.players].sort((a,b)=>a.place-b.place).map(p=>`<tr class="${p.human?'me':''}"><td>${p.place}.</td><td><i class="dot" style="background:${p.color}"></i>${esc(p.human?'Du':p.name)}</td><td>${p.powered}</td><td>${p.cities}</td><td>${fmt(p.money)} €</td><td>${fmt(p.income||0)} €</td><td><span class="mps">${(p.plants||[]).map(n=>`<span class="mp t-${ALLPLANTS[n][0]}">${PN(n)}</span>`).join('')}</span></td></tr>`).join('')}</tbody></table></div>${charts}</section>
   <div class="st-grid">
    <section class="card"><h3>Ausgaben dieser Partie</h3>${bars([{label:'Einnahmen',v:gm.income,color:'#58b86a',text:fmt(gm.income)+' €'},{label:'Kraftwerke',v:pl,text:fmt(pl)+' € · '+gm.plPct+' %'},{label:'Rohstoffe',v:res,text:fmt(res)+' € · '+gm.resPct+' %'},{label:'Netz',v:(selMe.slot||0)+(selMe.conn||0),text:fmt((selMe.slot||0)+(selMe.conn||0))+' € · '+gm.netPct+' %'}])}${gm.r7?`<p class="hint">7 Städte hattest du in Runde ${gm.r7}.</p>`:''}</section>
@@ -2020,6 +2056,113 @@ function statsGame(sel,idx,isLast){
    <section class="card"><h3>Rohstoffe dieser Partie</h3>${bars(RES.map(k=>{const r=(selMe.res||{})[k]||[0,0];return{label:RNAME[k],v:r[0],color:TCOL[k],icon:resIcon(k),text:`${r[0]} · ${r[1]} €`}}))}</section>
    <section class="card"><h3>Ausbau-Reihenfolge</h3>${(selMe.built||[]).length?`<ol class="border">${selMe.built.map(c=>{const ci=cityOf(sel.map,c);return `<li><i style="background:${ci.col}"></i>${esc(ci.name)}</li>`}).join('')}</ol>`:'<p class="hint">Noch keine Städte gebaut.</p>'}</section>
   </div>`;
+}
+
+/* --- Gemeinsame Rangliste --- */
+const BOARD_URL='https://claude.ai/artifact/8zW5oTwCiGBjg4bKxMM14g';
+const LB={db:null,user:null,canWrite:null,canEdit:false,docs:null,status:'off'};
+const B62='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+function b62e(bytes){let n=1n;for(const b of bytes)n=(n<<8n)|BigInt(b);let s='';while(n>0n){s=B62[Number(n%62n)]+s;n/=62n}return s}
+function b62d(str){let n=0n;for(const ch of str){const i=B62.indexOf(ch);if(i<0)throw new Error('bad');n=n*62n+BigInt(i)}const out=[];while(n>0n){out.unshift(Number(n&255n));n>>=8n}out.shift();return new Uint8Array(out)}
+function fnv(str){let h=0x811c9dc5;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h.toString(36)}
+function lbName(){try{return localStorage.getItem('hochspannung-lbname')||''}catch(_){return''}}
+function setLbName(v){try{localStorage.setItem('hochspannung-lbname',v)}catch(_){}}
+const isDefaultName=n=>['du','you',''].includes(String(n||'').trim().toLowerCase());
+function recToResult(g,name){
+  const players=g.players.map(p=>({name:String(p.human&&name?name:p.name).trim().slice(0,24),place:p.place|0,powered:p.powered|0,cities:p.cities|0,money:Math.max(0,Math.round(p.money||0)),human:!!p.human}));
+  return sanitizeResult([1,String(g.id).replace(/[^0-9A-Za-z-]/g,'-'),g.date,g.map||'de',g.deck||'std',g.n||players.length,g.diff||'normal',g.rounds,players.map(p=>[p.name,p.place,p.powered,p.cities,p.money,p.human?1:0])]);
+}
+function encodeResult(r){const arr=[1,r.id,r.date,r.map,r.deck,r.n,r.diff,r.rounds,r.players.map(p=>[p.name,p.place,p.powered,p.cities,p.money,p.human?1:0])];const js=JSON.stringify(arr);return b62e(new TextEncoder().encode(js))+'-'+fnv(js)}
+function decodeResult(code){
+  const m=/^([0-9A-Za-z]{8,3000})-([0-9a-z]{1,8})$/.exec(String(code||'').trim());if(!m)return null;
+  let js,a;try{js=new TextDecoder().decode(b62d(m[1]));a=JSON.parse(js)}catch(_){return null}
+  if(fnv(js)!==m[2])return null;return sanitizeResult(a);
+}
+function sanitizeResult(a){
+  if(!Array.isArray(a)||a[0]!==1)return null;const[,id,date,map,deck,n,diff,rounds,P]=a;
+  if(typeof id!=='string'||!/^[0-9A-Za-z-]{4,40}$/.test(id)||!MAPS[map]||!DECKS[deck]||!AI_NAME[diff])return null;
+  if(!Number.isFinite(date)||!Number.isInteger(n)||n<3||n>6||!Number.isInteger(rounds)||rounds<1||rounds>99||!Array.isArray(P)||P.length!==n)return null;
+  const players=[];
+  for(const q of P){if(!Array.isArray(q)||q.length<6)return null;const[name,place,powered,cities,money,human]=q;
+    if(typeof name!=='string'||!name.trim())return null;for(const v of[place,powered,cities,money])if(!Number.isInteger(v)||v<0||v>100000)return null;
+    players.push({name:name.trim().slice(0,24),place,powered,cities,money,human:!!human})}
+  if(players.filter(p=>p.human).length!==1)return null;
+  return{id,date,map,deck,n,diff,rounds,players};
+}
+const lbHuman=r=>r.players.find(p=>p.human);
+async function lbSubmit(r,src){
+  if(!LB.db||!r)return 'off';
+  try{await LB.db.doc('results/'+r.id).set({...r,src,addedAt:Date.now()});return 'ok'}
+  catch(e){if(e&&e.code==='invalid_argument'){LB.canWrite=false;return 'denied'}if(e&&e.code==='quota_exceeded')return 'full';return 'error'}
+}
+const LB_MSG={ok:'In der Rangliste eingetragen.',denied:'Du kannst in dieser Rangliste nichts eintragen. Schick dein Ergebnis stattdessen per Link.',full:'Die Rangliste ist voll. Lösche alte Einträge.',error:'Eintragen hat nicht geklappt. Versuch es gleich noch einmal.',bad:'Dieser Code ist ungültig oder beschädigt.',name:'Gib zuerst einen Namen für die Rangliste ein.'};
+function refreshLB(){if(!$('#stats').hidden&&UI.statView==='board')renderStats();if(UI.sheet==='results'||UI.sheet==='import')renderSheet()}
+function shareLink(r){return BOARD_URL+'#r-'+encodeResult(r)}
+async function shareResult(r,btn){
+  const h=lbHuman(r);const url=shareLink(r);
+  const text=LANG==='en'?`Hochspannung: ${h.name}, rank ${h.place} of ${r.n}, ${h.powered} cities powered (${tr(MAPS[r.map].name)}, ${tr(AI_NAME[r.diff])}).`:`Hochspannung: ${h.name}, Platz ${h.place} von ${r.n}, ${h.powered} Städte versorgt (${MAPS[r.map].name}, ${AI_NAME[r.diff]}).`;
+  if(navigator.share){try{await navigator.share({title:'Hochspannung-Ergebnis',text,url});UI.lbMsg='Geteilt.';return}catch(e){if(e&&e.name==='AbortError')return}}
+  try{await navigator.clipboard.writeText(text+' '+url);UI.lbMsg='Link kopiert. Schick ihn an die Person, die die Rangliste führt.'}catch(_){UI.lbMsg='';UI.lbLink=url}
+}
+function checkHashImport(){
+  const h=location.hash||'';if(!h.startsWith('#r-'))return;
+  const r=decodeResult(h.slice(3));UI.imp={r,status:r?'ready':'bad'};UI.sheet='import';renderSheet();
+}
+window.addEventListener('hashchange',checkHashImport);
+(async()=>{try{
+  if(!window.claude||!window.claude.use)return;
+  const[db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')]);
+  if(!db)return;LB.db=db;LB.user=user;
+  if(user){LB.canWrite=await user.can('data.write');LB.canEdit=await user.canEdit()}
+  LB.status='loading';
+  const t=setTimeout(()=>{if(LB.status==='loading'){LB.status='timeout';refreshLB()}},10000);
+  db.collection('results').orderBy('date','desc').limit(500).onSnapshot(sn=>{clearTimeout(t);LB.docs=sn.docs.map(d=>d.data()).filter(Boolean);LB.status='ok';refreshLB()},()=>{clearTimeout(t);LB.status='error';refreshLB()});
+  refreshLB();
+}catch(_){}})();
+function lbBoxHTML(rec){
+  if(!rec)return '';
+  const nm=lbName()||(isDefaultName(meOf(rec).name)?'':meOf(rec).name);
+  const writer=LB.db&&LB.canWrite!==false;
+  let h=`<div class="lbbox"><h3>Gemeinsame Rangliste</h3><label class="lbname" for="lbn">Dein Name in der Rangliste<input id="lbn" maxlength="24" value="${esc(nm)}" placeholder="z. B. Vorname"></label>`;
+  if(writer)h+=`<button type="button" class="btn pri" data-act="lbSubmitLast" data-id="${esc(rec.id)}">${UI.lbDone===rec.id?'Erneut eintragen':'In Rangliste eintragen'}</button>`;
+  else h+=`<button type="button" class="btn pri" data-act="lbShare" data-id="${esc(rec.id)}">Ergebnis senden</button><p class="hint">Schick den Link an die Person, die die Rangliste führt. Sie trägt dein Ergebnis mit einem Tipp ein.</p>`;
+  if(UI.lbMsg)h+=`<p class="hint lbmsg">${esc(UI.lbMsg)}</p>`;
+  if(UI.lbLink)h+=`<input class="lblink" readonly value="${esc(UI.lbLink)}" aria-label="Link zum Ergebnis">`;
+  return h+'</div>';
+}
+function statsBoard(){
+  const local=filtHist();
+  if(!LB.db){
+    const last=local[local.length-1];
+    return `<section class="card wide"><h3>Gemeinsame Rangliste</h3><p class="hint">Die gemeinsame Rangliste liegt in der claude.ai-Version von Hochspannung. Von hier aus kannst du dein Ergebnis als Link verschicken.</p>${last?lbBoxHTML(last):'<p class="hint">Beende eine Partie, dann kannst du sie senden.</p>'}</section>`;
+  }
+  if(LB.status==='loading')return `<section class="card wide"><h3>Gemeinsame Rangliste</h3><p class="hint">Rangliste wird geladen …</p></section>`;
+  if(LB.status!=='ok')return `<section class="card wide"><h3>Gemeinsame Rangliste</h3><p class="hint">Die Rangliste ist gerade nicht erreichbar. Öffne die Statistik später noch einmal.</p></section>`;
+  let docs=(LB.docs||[]).filter(r=>r&&r.players&&lbHuman(r));
+  if(UI.statDiff&&UI.statDiff!=='all')docs=docs.filter(r=>r.diff===UI.statDiff);
+  if(UI.statMap&&UI.statMap!=='all')docs=docs.filter(r=>r.map===UI.statMap);
+  const by={};
+  docs.forEach(r=>{const h=lbHuman(r);const k=h.name.trim().toLowerCase();const e=by[k]??={name:h.name,g:0,w:0,pl:[],pw:[],best:0};e.g++;if(h.place===1)e.w++;e.pl.push(h.place);e.pw.push(h.powered);e.best=Math.max(e.best,h.powered)});
+  const rows=Object.values(by).sort((a,b)=>(b.w/b.g)-(a.w/a.g)||b.w-a.w||avg(b.pw)-avg(a.pw));
+  const writer=LB.canWrite!==false;
+  const localIds=new Set((LB.docs||[]).map(r=>r.id));
+  const missing=loadHist().filter(g=>!localIds.has(String(g.id).replace(/[^0-9A-Za-z-]/g,'-'))&&g.players&&g.players.some(p=>p.human));
+  let h=`<section class="card wide"><h3>Gemeinsame Rangliste</h3>`;
+  if(!rows.length)h+=`<p class="hint">Noch keine Ergebnisse${docs.length!==(LB.docs||[]).length?' mit diesem Filter':''}. Beende eine Partie und trag sie ein, oder füge unten einen Ergebnis-Link ein.</p>`;
+  else h+=`<div class="st-table"><table class="lbt"><thead><tr><th>#</th><th>Name</th><th>Partien</th><th>Siege</th><th>Quote</th><th>Ø Platz</th><th>Ø versorgt</th><th>Bestwert</th></tr></thead><tbody>${rows.map((e,i)=>`<tr><td>${i+1}.</td><td class="lbn">${esc(e.name)}</td><td>${e.g}</td><td>${e.w}</td><td>${Math.round(e.w/e.g*100)} %</td><td>${fmt1(avg(e.pl))}</td><td>${fmt1(avg(e.pw))}</td><td>${e.best}</td></tr>`).join('')}</tbody></table></div>`;
+  h+=`</section>`;
+  if(docs.length){
+    h+=`<section class="card wide"><h3>Letzte Ergebnisse</h3><div class="hist">${docs.slice(0,20).map(r=>{const x=lbHuman(r);const d=new Date(r.date);
+      const del=LB.canEdit?(UI.lbDel===r.id?`<span class="lbdel"><button type="button" class="btn" data-act="lbDelNo">Behalten</button><button type="button" class="btn danger" data-act="lbDelYes" data-id="${esc(r.id)}">Löschen</button></span>`:`<button type="button" class="xbtn sm" data-act="lbDel" data-id="${esc(r.id)}" aria-label="Eintrag entfernen" title="Eintrag entfernen"><svg width="12" height="12" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 3l12 12M15 3 3 15" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>`):'';
+      return `<div class="hrow lbrow">${placeBadge(x.place)}<span class="hd"><b>${esc(x.name)}</b><small>${d.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'})}</small></span><span class="hm">Platz ${x.place} von ${r.n} · ${x.powered} versorgt · ${fmt(x.money)} €</span><span class="hx">${MAPS[r.map]?.name||''} · ${DECKS[r.deck]?.name||''} · ${AI_NAME[r.diff]||''}</span>${del}</div>`}).join('')}</div></section>`;
+  }
+  if(writer){
+    h+=`<section class="card wide"><h3>Ergebnis eintragen</h3><p class="hint">Füge den Link oder Code ein, den dir jemand geschickt hat.</p><div class="row"><input id="lbcode" class="lbin" placeholder="https://claude.ai/…#r-…" aria-label="Ergebnis-Link oder Code"><button type="button" class="btn pri" data-act="lbImportCode">Eintragen</button></div>`;
+    if(missing.length)h+=`<div class="row"><span class="hint">${missing.length} ${missing.length===1?'eigene Partie':'eigene Partien'} aus diesem Gerät ${missing.length===1?'ist':'sind'} noch nicht in der Rangliste.</span><button type="button" class="btn" data-act="lbBulk">Eintragen</button></div>`;
+    if(UI.lbMsg)h+=`<p class="hint lbmsg">${esc(UI.lbMsg)}</p>`;
+    h+=`</section>`;
+  }else h+=`<section class="card wide"><p class="hint">Du kannst die Rangliste ansehen. Eintragen kann nur, wer sie bearbeiten darf. Schick dein Ergebnis per „Ergebnis senden“ nach einer Partie.</p></section>`;
+  return h;
 }
 
 /* --- Steuerung --- */
@@ -2050,6 +2193,15 @@ function schedule(){
 }
 function after(){save();render();schedule()}
 const A={
+  boardView:()=>{UI.statView='board';renderStats();return'skip'},
+  lbSubmitLast:b=>{const nm=($('#lbn')?.value||'').trim();if(isDefaultName(nm)){UI.lbMsg=LB_MSG.name;renderSheet();if(!$('#stats').hidden)renderStats();return'skip'}setLbName(nm);const g=loadHist().find(x=>String(x.id)===b.dataset.id);const r=g&&recToResult(g,nm);lbSubmit(r,'app').then(st=>{UI.lbMsg=LB_MSG[st]||'';if(st==='ok')UI.lbDone=b.dataset.id;renderSheet();if(!$('#stats').hidden)renderStats()});return'skip'},
+  lbShare:b=>{const nm=($('#lbn')?.value||'').trim();if(isDefaultName(nm)){UI.lbMsg=LB_MSG.name;renderSheet();if(!$('#stats').hidden)renderStats();return'skip'}setLbName(nm);const g=loadHist().find(x=>String(x.id)===b.dataset.id);const r=g&&recToResult(g,nm);if(!r)return'skip';shareResult(r).then(()=>{renderSheet();if(!$('#stats').hidden)renderStats()});return'skip'},
+  lbImport:()=>{const r=UI.imp&&UI.imp.r;lbSubmit(r,'link').then(st=>{UI.lbMsg=LB_MSG[st]||'';if(st==='ok'){try{history.replaceState(null,'',location.pathname+location.search)}catch(_){}}renderSheet()});return'skip'},
+  lbImportCode:()=>{const raw=($('#lbcode')?.value||'').trim();const code=raw.includes('#r-')?raw.slice(raw.indexOf('#r-')+3):raw.replace(/^r-/,'');const r=decodeResult(code);if(!r){UI.lbMsg=LB_MSG.bad;renderStats();return'skip'}lbSubmit(r,'link').then(st=>{UI.lbMsg=st==='ok'?`${lbHuman(r).name}: eingetragen.`:(LB_MSG[st]||'');renderStats()});return'skip'},
+  lbBulk:()=>{(async()=>{const nm=lbName();if(isDefaultName(nm)){UI.lbMsg='Leg zuerst nach einer Partie deinen Namen für die Rangliste fest.';renderStats();return}const ids=new Set((LB.docs||[]).map(r=>r.id));let ok=0;for(const g of loadHist()){const r=recToResult(g,nm);if(!r||ids.has(r.id))continue;const st=await lbSubmit(r,'app');if(st!=='ok'){UI.lbMsg=LB_MSG[st]||'';break}ok++}if(ok)UI.lbMsg=`${ok} ${ok===1?'Partie':'Partien'} eingetragen.`;renderStats()})();return'skip'},
+  lbDel:b=>{UI.lbDel=b.dataset.id;renderStats();return'skip'},
+  lbDelNo:()=>{UI.lbDel=null;renderStats();return'skip'},
+  lbDelYes:b=>{const id=b.dataset.id;UI.lbDel=null;LB.db&&LB.db.doc('results/'+id).delete().catch(()=>{UI.lbMsg='Löschen hat nicht geklappt.';renderStats()});return'skip'},
   deckSel:b=>{UI.deck=b.dataset.d;UI.name=$('#nm').value;renderStart(true);return'skip'},
   s3:b=>{UI.s3Early=b.dataset.v==='true';UI.name=$('#nm').value;renderStart(true);return'skip'},
   atom:b=>{UI.deAtom=b.dataset.v==='true';UI.name=$('#nm').value;renderStart(true);return'skip'},
@@ -2122,6 +2274,7 @@ function boot(data){
   else renderStart(true);
 }
 try{window.claude?.hot?.snapshot?.(()=>({S}))}catch(_){}
+setTimeout(checkHashImport,0);
 window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});
 </script>
 
