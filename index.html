@@ -740,6 +740,31 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 @keyframes dockIn{from{transform:translateX(-24px);opacity:.4}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.overlay.dock .sheet{animation:none}}
 .qb.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--panel-2))}
+/* ---- v11: Netzstatus beim Bauen ---- */
+.netst{background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:11px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.netst.full{border-left-color:#e8b24a}
+.netst.bad{border-left-color:#ff6b5a}
+.nsn{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.nsn div{display:flex;flex-direction:column;min-width:0}
+.nsn b{font-family:var(--display);font-size:26px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.nsn div:first-child b{color:var(--accent)}
+.nsn small{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:3px;line-height:1.2}
+.nbar{display:flex;gap:3px;flex-wrap:wrap}
+.nb{display:inline-block;width:18px;height:14px;border-radius:3px;flex:none}
+.nbar .nb{flex:1 1 0;min-width:10px;max-width:34px;height:16px}
+.nb.on{background:var(--accent)}
+.nb.nofuel{background:repeating-linear-gradient(135deg,#e8b24a 0 3px,color-mix(in srgb,#e8b24a 30%,var(--panel)) 3px 6px)}
+.nb.over{background:#ff6b5a}
+.nb.free{border:1.5px dashed var(--muted);background:none}
+.nb.nw{box-shadow:0 0 0 2px var(--panel-2),0 0 0 3.5px var(--fg)}
+.nleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:var(--muted)}
+.nleg span{display:inline-flex;align-items:center;gap:5px}
+.nleg .nb{width:12px;height:10px}
+.nleg .nb.nw{box-shadow:0 0 0 1.5px var(--panel-2),0 0 0 2.5px var(--fg)}
+.nmsg{margin:0;font-size:13px;line-height:1.35}
+.netst.bad .nmsg{color:#ff8a7a}
+.nturn{margin:0;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:7px}
+.nwarn{color:#ff8a7a}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1544,22 +1569,36 @@ function panelResources(a){
   h+=`<div class="row"><button type="button" class="btn" data-act="suggest">Bedarf für eine Runde</button><button type="button" class="btn" data-act="realloc">Lager neu verteilen</button></div><div class="row"><button type="button" class="btn" data-act="skipbuy">Nichts kaufen</button><button type="button" class="btn pri grow" data-act="buy" ${tot?'':'disabled'}>Kaufen · ${tot} €</button></div></section>`;
   return h;
 }
+function fueledCap(p){let best=0;const pl=p.plants;for(let m=1;m<(1<<pl.length);m++){const o=powerOptions(p,pl.filter((_,i)=>m&(1<<i)));if(o&&o.cities>best)best=o.cities}return best}
+function incomeFor(c,f){return PAY[Math.min(c,f,20)]}
+function netStatus(p,extra){
+  const n=p.cities.length,cap=capacity(p),fu=fueledCap(p),nw=new Set(S.turnBuilt.map(b=>b.city));
+  const newCount=p.cities.filter(c=>nw.has(c)).length,boxes=Math.max(n,cap);
+  let bx='';for(let i=0;i<boxes;i++){const own=i<n;const cls=own?(i>=cap?'over':i>=fu?'nofuel':'on'):'free';bx+=`<i class="nb ${cls}${own&&i>=n-newCount?' nw':''}"></i>`}
+  const inc=incomeFor(n,fu),gain=incomeFor(n+1,fu)-inc;
+  let msg,cls='';
+  if(n>cap){msg=`${n-cap} ${n-cap===1?'Stadt':'Städte'} über deiner Kapazität. Sie bringen erst mit größeren Kraftwerken Geld.`;cls='bad'}
+  else if(n===cap){msg='Kapazität voll. Weitere Städte bringen erst mit größeren Kraftwerken Geld.';cls='full'}
+  else if(n>=fu){msg=`Brennstoff reicht nur für ${fu} ${fu===1?'Stadt':'Städte'}. Weitere Städte bringen erst mit mehr Brennstoff Geld.`;cls='full'}
+  else msg=`Noch ${cap-n} ${cap-n===1?'freier Platz':'freie Plätze'} im Netz. Die nächste Stadt bringt +${gain} € Einnahme.`;
+  return `<div class="netst ${cls}"><div class="nsn"><div><b>${n}</b><small>Städte im Netz</small></div><div><b>${cap}</b><small>Kapazität</small></div><div><b>${fu}</b><small>mit Brennstoff</small></div><div><b>${inc} €</b><small>Einnahme jetzt</small></div></div><div class="nbar" aria-hidden="true">${bx}</div><div class="nleg"><span><i class="nb on"></i>versorgt</span>${fu<Math.min(n,cap)?'<span><i class="nb nofuel"></i>ohne Brennstoff</span>':''}${n>cap?'<span><i class="nb over"></i>über Kapazität</span>':''}${n<cap?'<span><i class="nb free"></i>frei</span>':''}${newCount?'<span><i class="nb on nw"></i>neu gebaut</span>':''}</div><p class="nmsg">${msg}</p>${extra||''}</div>`;
+}
 function panelBuild(a){
   if(!isMine(a)){
-    return `<section class="sec"><h3>Netzausbau</h3><p class="hint">Gebaut wird in umgekehrter Reihenfolge. Die Farben in den Städten zeigen, wer dort Strom liefert.</p></section>`;
+    return `<section class="sec"><h3>Netzausbau</h3>${netStatus(me())}<p class="hint">Gebaut wird in umgekehrter Reihenfolge. Die Farben in den Städten zeigen, wer dort Strom liefert.</p></section>`;
   }
   const p=me();const opts=buildOptions(p);
-  let h=`<section class="sec"><h3>Dein Netzausbau</h3><p class="hint">Tippe auf eine Stadt mit Preisschild. Der Preis enthält den Platz in der Stadt (${SLOT_COST.slice(0,S.step).join(' / ')} €) und die günstigste Leitung zu deinem Netz.</p>`;
+  const tb=S.turnBuilt.length?`<p class="nturn">Diesen Zug: ${S.turnBuilt.length} ${S.turnBuilt.length===1?'Stadt':'Städte'} für ${S.turnBuilt.reduce((s,b)=>s+b.cost,0)} € (${S.turnBuilt.map(b=>CITY[b.city].name).join(', ')})</p>`:'';
+  let h=`<section class="sec"><h3>Dein Netzausbau</h3>${netStatus(p,tb)}<p class="hint">Tippe auf eine Stadt mit Preisschild. Der Preis enthält den Platz in der Stadt (${SLOT_COST.slice(0,S.step).join(' / ')} €) und die günstigste Leitung zu deinem Netz.</p>`;
   const sel=UI.buildSel&&opts.find(o=>o.city===UI.buildSel);
   if(UI.buildSel&&!sel)UI.buildSel=null;
   if(sel){
     const c=CITY[sel.city];
-    h+=`<div class="selinfo"><div class="t">${c.name}</div><div class="calc">Platz ${sel.slot} € + Leitung ${sel.conn} € = <b>${sel.cost} €</b></div><button type="button" class="btn pri" data-act="build" ${sel.cost>p.money?'disabled':''}>${sel.cost>p.money?'Zu wenig Geld':'Hier bauen · '+sel.cost+' €'}</button></div>`;
+    h+=`<div class="selinfo"><div class="t">${c.name}</div><div class="calc">Platz ${sel.slot} € + Leitung ${sel.conn} € = <b>${sel.cost} €</b><br>${(()=>{const n=p.cities.length,cap=capacity(p),fu=fueledCap(p);const g=incomeFor(n+1,fu)-incomeFor(n,fu);return n>=cap?'<span class="nwarn">Über Kapazität: bringt erst mit größeren Kraftwerken Geld.</span>':g>0?'Danach '+(n+1)+' von '+cap+' versorgt · Einnahme +'+g+' €':'<span class="nwarn">Brennstoff reicht nicht: bringt diese Runde kein Geld.</span>'})()}</div><button type="button" class="btn pri" data-act="build" ${sel.cost>p.money?'disabled':''}>${sel.cost>p.money?'Zu wenig Geld':'Hier bauen · '+sel.cost+' €'}</button></div>`;
   }
   if(opts.length){
-    h+=`<div class="mkt-label"><span>Günstigste Städte</span><span>${p.cities.length} gebaut · Kapazität ${capacity(p)}</span></div><div class="opts">${opts.slice(0,5).map(o=>`<button type="button" class="opt${UI.buildSel===o.city?' sel':''}" data-act="bsel" data-city="${o.city}"><span><span class="nm">${CITY[o.city].name}</span> <span class="rg">${REGIONS[CITY[o.city].reg].name}</span></span><span class="cst">${o.cost} €</span></button>`).join('')}</div>`;
+    h+=`<div class="mkt-label"><span>Günstigste Städte</span><span>${p.money} € verfügbar</span></div><div class="opts">${opts.slice(0,5).map(o=>`<button type="button" class="opt${UI.buildSel===o.city?' sel':''}" data-act="bsel" data-city="${o.city}"><span><span class="nm">${CITY[o.city].name}</span> <span class="rg">${REGIONS[CITY[o.city].reg].name}</span></span><span class="cst">${o.cost} €</span></button>`).join('')}</div>`;
   }else h+=`<p class="hint">Keine Stadt ist für dich frei.</p>`;
-  if(S.turnBuilt.length)h+=`<p class="hint">Diesen Zug gebaut: ${S.turnBuilt.map(b=>CITY[b.city].name).join(', ')} (${S.turnBuilt.reduce((s,b)=>s+b.cost,0)} €)</p>`;
   if(p.cities.length+1>=END_AT&&!S.endTriggered)h+=`<p class="warn">Mit ${END_AT} Städten endet das Spiel nach dieser Runde.</p>`;
   h+=`<div class="row">${S.turnBuilt.length?'<button type="button" class="btn" data-act="breset">Zurücknehmen</button>':''}<button type="button" class="btn pri grow" data-act="bdone">Ausbau beenden</button></div></section>`;
   return h;
@@ -1752,6 +1791,15 @@ function renderStart(show){
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
+[/^1 Stadt über deiner Kapazität\. Sie bringen erst mit größeren Kraftwerken Geld\.$/u,'1 city over your capacity. It only pays off once you have bigger plants.'],
+[/^Brennstoff reicht nur für 1 Stadt\. Weitere Städte bringen erst mit mehr Brennstoff Geld\.$/u,'Fuel only covers 1 city. More cities only pay off with more fuel.'],
+[/^Noch 1 freier Platz im Netz\. Die nächste Stadt bringt \+(\d+) € Einnahme\.$/u,'1 free slot left in your network. The next city adds +$1 € income.'],
+[/^Diesen Zug: 1 Stadt für (\d+) € \((.+)\)$/u,'This turn: 1 city for $1 € ($2)'],
+[/^(\d+) (?:Stadt|Städte) über deiner Kapazität\. Sie bringen erst mit größeren Kraftwerken Geld\.$/u,'$1 cities over your capacity. They only pay off once you have bigger plants.'],
+[/^Brennstoff reicht nur für (\d+) (?:Stadt|Städte)\. Weitere Städte bringen erst mit mehr Brennstoff Geld\.$/u,'Fuel only covers $1 cities. More cities only pay off with more fuel.'],
+[/^Noch (\d+) freie[r]? Pl(?:atz|ätze) im Netz\. Die nächste Stadt bringt \+(\d+) € Einnahme\.$/u,'$1 free slots left in your network. The next city adds +$2 € income.'],
+[/^Diesen Zug: (\d+) (?:Stadt|Städte) für (\d+) € \((.+)\)$/u,'This turn: $1 cities for $2 € ($3)'],
+[/^Danach (\d+) von (\d+) versorgt · Einnahme \+(\d+) €$/u,'Then $1 of $2 powered · income +$3 €'],
 [/^(\d+) eigene Partien? aus diesem Gerät (?:ist|sind) noch nicht in der Rangliste\.$/u,'$1 of your games from this device are not on the leaderboard yet.'],[/^(.+): eingetragen\.$/u,'$1: added.'],[/^(\d+) Partien? eingetragen\.$/u,'$1 games added.'],
 [/^Atomausstieg: Kein Uran-Nachschub mehr, (\d+) Uran im Markt\.$/u,'Nuclear phase-out: no more uranium restocking, $1 uranium on the market.'],[/^Atomausstieg aktiv: Nach dem Kauf von (.+) kommt kein Uran mehr nach\.$/u,'Nuclear phase-out active: once $1 is bought, no more uranium is restocked.'],
 [/^Sobald jemand (.+) kauft, wird bis zum Spielende kein Uran mehr nachgefüllt\. Was noch im Markt liegt, kann weiter gekauft werden\.$/u,'As soon as someone buys $1, no more uranium is restocked until the end of the game. What is still on the market can still be bought.'],[/eines der Kraftwerke /u,'one of the plants '],[/^Kraftwerksdeck: /u,'Power plant deck: '],
@@ -1833,10 +1881,14 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'Kapazität voll. Weitere Städte bringen erst mit größeren Kraftwerken Geld.':'Capacity full. More cities only pay off once you have bigger plants.',
+'Über Kapazität: bringt erst mit größeren Kraftwerken Geld.':'Over capacity: only pays off once you have bigger plants.',
+'Brennstoff reicht nicht: bringt diese Runde kein Geld.':'Not enough fuel: earns nothing this round.',
+'Städte im Netz':'Cities in network','mit Brennstoff':'with fuel','Einnahme jetzt':'Income now','ohne Brennstoff':'no fuel','über Kapazität':'over capacity','neu gebaut':'just built','€ verfügbar':'€ available',
 'Rot markiert: Gegner mit mehr Geld als du. Bedarf ist der Brennstoff pro Lieferung. Tippe auf eine Zeile für die Kraftwerke.':'Red: opponents with more money than you. Needs is the fuel per delivery. Tap a row to see the plants.',
 'Bedarf aller Betriebe je Lieferung':'All companies need per delivery','plus flexibel (Hybrid)':'plus flexible (hybrid)','davon du':'of which you',
 'Märkte: Kraftwerke und Rohstoffpreise':'Markets: power plants and resource prices','Gegner: Geld, Kraftwerke und Lager':'Opponents: money, plants and storage',
-'reichster':'richest',
+'reichster':'richest','frei':'free','versorgt':'powered',
 'Lege dein Startgebot fest.':'Set your opening bid.',
 'Spieler insgesamt':'Total players','Alle Karten':'All maps','Deutschland':'Germany','Frankreich':'France','Italien':'Italy','Zentrum':'Centre','Nordwest':'Northwest','Nordost':'Northeast','Toskana':'Tuscany','Süden':'South','Sizilien':'Sicily',
 'Paris besteht aus drei Städten, untereinander ohne Leitungskosten. Viel Uran im Markt, Kraftwerk 11 liegt von Beginn an aus.':'Paris consists of three cities with free connections between them. Plenty of uranium on the market; plant 11 is available from the start.',
