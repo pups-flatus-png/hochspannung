@@ -780,6 +780,26 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .pdot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0}
 .pref td.up{color:#6fd08a}.pref td.down{color:#ff8a7a}
 .pref tr.sep td{padding:2px;border:none}
+.lastbox{background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 10%,var(--panel-2)),var(--panel-2));border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;margin-bottom:18px}
+.lbh{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;align-items:baseline}
+.lbt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.lbm{font-size:12px;color:var(--muted)}
+.lbv{display:flex;align-items:center;gap:12px}
+.lbv .place{font-size:26px;min-width:48px;height:48px}
+.lbv b{display:block;font-family:var(--display);font-size:26px;line-height:1.05}
+.lbv span{font-size:13px;color:var(--muted)}
+.lbs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px}
+.lbs div{display:flex;flex-direction:column;min-width:0}
+.lbs small{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lbs b{font-family:var(--display);font-size:22px;font-weight:700;line-height:1.1}
+.lbs em{font-style:normal;font-size:11px;color:var(--muted)}
+.lbs em.up{color:#6fd08a}.lbs em.down{color:#ff8a7a}
+.lbf{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:10px}
+.lbp{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.pchip{font-family:var(--display);font-size:13px;padding:2px 7px;border-radius:6px;background:var(--panel);border:1px solid var(--edge)}
+.lbfuel{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);margin-left:4px}
+.btn.sm{min-height:36px;padding:6px 14px;flex:none}
+.lthead{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:700}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1863,6 +1883,12 @@ function renderStart(show){
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
+[/^(\d+) Spieler$/u,'$1 players'],
+[/^Platz (\d+) von (\d+)$/u,'Place $1 of $2'],
+[/^(-?\d+) (?:Stadt|Städte) Vorsprung vor (.+)$/u,'$1 cities ahead of $2'],
+[/^(-?\d+) (?:Stadt|Städte) hinter (.+)$/u,'$1 cities behind $2'],
+[/^([+-]?[\d.,]+)( €)? ggü\. Ø$/u,'$1$2 vs. avg'],
+[/^Langfristig · (\d+) Partien?$/u,'Long-term · $1 games'],
 [/^Erste (\d+) Partien im Vergleich zu den letzten (\d+)\.$/u,'First $1 games compared with the last $2.'],
 [/^Niemand hat ein Kraftwerk gekauft\. Kraftwerk (.+) fällt weg\.$/u,'Nobody bought a power plant. Plant $1 is removed.'],
 [/^1 Stadt über deiner Kapazität\. Sie bringen erst mit größeren Kraftwerken Geld\.$/u,'1 city over your capacity. It only pays off once you have bigger plants.'],
@@ -1955,6 +1981,7 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'Letzte Partie':'Most recent game','Gewonnen':'Won','Geld am Ende':'Money at end','Langfristig':'Long-term',
 'Partien damit: Partien, in denen der Typ am Ende in deinem Park stand.':'Games with it: games in which you owned this type at the end.',
 'Strom: Anteil der versorgten Städte, den dieser Typ geliefert hat.':'Power: share of powered cities this type supplied.',
 'Hauptbrennstoff: der Rohstoff, von dem du in einer Partie am meisten gekauft hast.':'Main fuel: the resource you bought the most of in a game.',
@@ -2259,7 +2286,7 @@ function statsTotal(h){
   const rivalRows=Object.entries(rivals).sort((a,b)=>b[1]-a[1]).map(([n,v])=>({label:esc(n),v,color:'var(--edge)',text:v+(v===1?' Sieg':' Siege')}));
   const st2=avg(h.filter(g=>g.step2).map(g=>g.step2)),st3=avg(h.filter(g=>g.step3).map(g=>g.step3));
   const hist=h.map((g,i)=>({g,i})).reverse().map(({g,i})=>{const m=me_(g);const dd=new Date(g.date);return `<button type="button" class="hrow" data-act="statsSel" data-id="${g.id}">${placeBadge(m.place)}<span class="hd"><b>#${i+1} · ${dd.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'})}</b><small>${dd.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})}</small></span><span class="hm">${m.powered} versorgt · ${m.cities} Städte · ${fmt(m.money)} €</span><span class="hx">${g.rounds} R · ${AI_NAME[g.diff]||g.diff} · ${g.n} Sp.</span></button>`}).join('');
-  return `<div class="tiles">${tiles.map(([k,v])=>`<div class="tile"><small>${k}</small><b>${v}</b></div>`).join('')}</div>
+  return `${lastBox(h)}<h3 class="lthead">Langfristig · ${h.length} ${h.length===1?'Partie':'Partien'}</h3><div class="tiles">${tiles.map(([k,v])=>`<div class="tile"><small>${k}</small><b>${v}</b></div>`).join('')}</div>
   <div class="st-grid">
    <section class="card"><h3>Wirtschaft je Partie</h3><p class="hint">Durchschnitt über alle Partien.</p>${bars([{label:'Einnahmen',v:E('inc'),color:'#58b86a',text:fmt(E('inc'))+' €'},{label:'Kraftwerke',v:E('pl'),text:fmt(E('pl'))+' €'},{label:'Rohstoffe',v:E('res'),text:fmt(E('res'))+' €'},{label:'Netz',v:E('net'),text:fmt(E('net'))+' €'}])}<p class="hint">Vom Netz gingen Ø ${fmt(E('slot'))} € in Stadtplätze und ${fmt(E('conn'))} € in Leitungen.</p></section>
    <section class="card"><h3>Nach KI-Stärke</h3><div class="st-table"><table><thead><tr><th>Stärke</th><th>Partien</th><th>Siege</th><th>Quote</th><th>Ø versorgt</th></tr></thead><tbody>${diffRows.map(r=>`<tr><td>${AI_NAME[r.d]}</td><td>${r.gs.length}</td><td>${r.w}</td><td>${r.gs.length?Math.round(r.w/r.gs.length*100)+' %':'–'}</td><td>${r.gs.length?fmt1(avg(r.gs.map(g=>me_(g).powered))):'–'}</td></tr>`).join('')}</tbody></table></div>${rivalRows.length?`<h4>Wer dich am häufigsten schlägt</h4>${bars(rivalRows)}`:''}</section>
@@ -2271,6 +2298,23 @@ function statsTotal(h){
   ${prefCard(h,auAll,resTot)}
   <section class="card wide"><h3>Spielhistorie</h3><p class="hint">Tippe eine Partie an, um sie im Detail zu sehen.</p><div class="hist">${hist}</div></section>
   <div class="st-foot">${UI.statReset?`<span>Alle ${loadHist().length} Partien löschen?</span><button type="button" class="btn" data-act="statsResetNo">Abbrechen</button><button type="button" class="btn danger" data-act="statsResetYes">Endgültig löschen</button>`:`<button type="button" class="btn" data-act="statsReset">Statistik zurücksetzen</button>`}</div>`;
+}
+function lastBox(h){
+  const g=h[h.length-1];if(!g)return '';
+  const me_=x=>x.players.find(p=>p.human)||x.players[0];const m=me_(g);
+  const A=k=>avg(h.map(x=>me_(x)[k]||0));
+  const d=(v,a,u='',neutral)=>{if(h.length<2)return '';const x=u?Math.round(v-a):Math.round((v-a)*10)/10;return `<em class="${neutral?'':x>0?'up':x<0?'down':''}">${x>0?'+':''}${u?fmt(x):fmt1(x)}${u} ggü. Ø</em>`};
+  const win=g.players.slice().sort((a,b)=>a.place-b.place)[0];
+  const spent=(m.auc||[]).reduce((s,a)=>s+a.price,0)+Object.values(m.res||{}).reduce((s,x)=>s+x[1],0)+(m.slot||0)+(m.conn||0);
+  const fav=(()=>{const r=m.res||{};let b=null,bv=0;RES.forEach(k=>{const u=(r[k]||[0])[0];if(u>bv){bv=u;b=k}});return b})();
+  const dd=new Date(g.date);
+  const verdict=m.place===1?'Gewonnen':`Platz ${m.place} von ${g.players.length}`;
+  const by=m.place===1?(g.players.filter(p=>p!==m).sort((a,b)=>b.powered-a.powered)[0]):win;
+  const gap=m.place===1?`${m.powered-(by?by.powered:0)} ${Math.abs(m.powered-(by?by.powered:0))===1?'Stadt':'Städte'} Vorsprung vor ${esc(by?by.name:'')}`:`${(win.powered-m.powered)} ${Math.abs(win.powered-m.powered)===1?'Stadt':'Städte'} hinter ${esc(win.name)}`;
+  return `<section class="lastbox${m.place===1?' won':''}"><div class="lbh"><span class="lbt">Letzte Partie</span><span class="lbm">${dd.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})} · ${esc(MAPS[g.map||'de'].name)} · ${AI_NAME[g.diff]||''} · <span>${g.players.length} Spieler</span></span></div>
+  <div class="lbv">${placeBadge(m.place)}<div><b>${verdict}</b><span>${gap}</span></div></div>
+  <div class="lbs"><div><small>Versorgt</small><b>${m.powered}</b>${d(m.powered,A('powered'))}</div><div><small>Städte</small><b>${m.cities}</b>${d(m.cities,A('cities'))}</div><div><small>Geld am Ende</small><b>${fmt(m.money)} €</b>${d(m.money,A('money'),' €')}</div><div><small>Runden</small><b>${g.rounds}</b>${d(g.rounds,avg(h.map(x=>x.rounds)),'',true)}</div><div><small>Einnahmen</small><b>${fmt(m.income||0)} €</b>${d(m.income||0,A('income'),' €')}</div><div><small>Ausgaben</small><b>${fmt(spent)} €</b></div></div>
+  <div class="lbf"><span class="lbp">${(m.plants||[]).map(n=>`<span class="pchip">${PN(n)}</span>`).join('')}${fav?`<span class="lbfuel">${resIcon(fav)} ${RNAME[fav]}</span>`:''}</span><button type="button" class="btn sm" data-act="statsSel" data-id="${g.id}">Details</button></div></section>`;
 }
 function prefCard(h,auAll,resTot){
   const me_=g=>g.players.find(p=>p.human)||g.players[0];
