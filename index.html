@@ -1232,9 +1232,9 @@ function endGame(){
 }
 
 /* --- KI --- */
-const AI_LV={easy:{mul:.85,res:20,pass:.3,extra:0,stock:false,guard:false,max2:true},normal:{mul:1,res:15,pass:0,extra:0,stock:false,guard:false},hard:{mul:1,res:15,pass:0,extra:0,stock:true,guard:false,over:4,endgame:true},expert:{mul:1,res:20,pass:0,extra:0,stock:false,guard:false,over:1,endgame:true}};
+const AI_LV={easy:{mul:.85,res:20,pass:.3,extra:0,stock:false,guard:false,max2:true},normal:{mul:1,res:15,pass:0,extra:0,stock:false,guard:false},hard:{mul:1,res:15,pass:0,extra:0,stock:true,guard:false,endgame:true,smart:{g:0.4,b:0.8,e:1.2,f:0.8,d:0.4,lo:0.3,hi:1.7,jump:0.25,open:0.2}},expert:{mul:1,res:20,pass:0,extra:0,stock:false,guard:false,endgame:true,smart:{g:0.2,b:0.5,e:1,f:0.5,d:0.3,lo:0.3,hi:1.4,jump:0.15,open:0.12}}};
 const AI_NAME={easy:'Leicht',normal:'Normal',hard:'Schwer',expert:'Experte'};
-const AI_NOTE={easy:'Baut langsam und lässt sich oft Kraftwerke wegschnappen.',normal:'Solide Grundstrategie, bietet bei Kraftwerken gern zu viel.',hard:'Bietet maßvoll, deckt sich mit günstigen Rohstoffen ein und plant das Spielende.',expert:'Lässt sich kaum hochbieten, spart für den Netzausbau und beendet das Spiel nur, wenn sie dabei gewinnt.'};
+const AI_NOTE={easy:'Baut langsam und lässt sich oft Kraftwerke wegschnappen.',normal:'Solide Grundstrategie, bietet bei Kraftwerken gern zu viel.',hard:'Bietet je nach Lage mutig oder zurückhaltend, deckt sich mit günstigen Rohstoffen ein und plant das Spielende.',expert:'Wägt jedes Gebot nach Bedarf, Spielstand und Konkurrenz ab, spart für den Netzausbau und beendet das Spiel nur, wenn sie dabei gewinnt.'};
 function AIK(p){return (p&&p.ai)||S.ai||'normal'}
 function L(p){return AI_LV[AIK(p)]||AI_LV.normal}
 function aiPlantValue(p,num){
@@ -1249,9 +1249,29 @@ function aiPlantValue(p,num){
     if(S.noUranium){const left=S.resMarket.uranium+p.pool.uranium;v=left>=2*k?Math.round(v*0.45):-1}
     else v=Math.round(v*(S.step===1?0.9:0.75));
   }
+  if(L(p).smart&&v>=0){const sc=smartCeiling(p,num);return sc}
   if(v<0)return -1;v=Math.round(v*L(p).mul);if(L(p).over!=null)v=Math.min(v,num+L(p).over+(p.plants.length<3&&S.step===1&&p.plants.length===0?4:0));return v;
 }
 function aiReserve(p){return S.round===1?8:L(p).res}
+function capGain(q,num){const c=PLANTS[num][2],cur=capacity(q);if(q.plants.length<3)return c;return Math.max(0,c-Math.min(...q.plants.map(n=>PLANTS[n][2])))}
+function aiNoise(p,key){S.nz=S.nz||{};const k=key+':'+p.id;if(S.nz[k]==null){const sm=L(p).smart;S.nz[k]=sm.lo+Math.random()*(sm.hi-sm.lo)}return S.nz[k]}
+function smartCeiling(p,num){
+  const sm=L(p).smart,[t,k,c]=PLANTS[num];const gain=capGain(p,num);if(gain<=0)return -1;
+  const n=p.cities.length,cur=capacity(p),mx=Math.max(...S.players.map(q=>q.cities.length));
+  const block=Math.max(0,Math.min(3,n+2-cur));
+  const endNear=Math.max(0,Math.min(1,(mx-(END_AT-7))/7));
+  let prem=Math.min(gain,3)*sm.g+block*sm.b+endNear*Math.min(gain,4)*sm.e;
+  if(FREE(t))prem+=sm.f;
+  else{const rs=HYB[t]||[t];const stock=Math.max(...rs.map(r=>S.resMarket[r]));if(stock<2*k)prem-=2;else if(stock>=12)prem+=0.5}
+  if(t==='uranium'&&S.phaseOut)prem-=S.noUranium?6:2;
+  if(c>=6)prem+=1;
+  const rivals=S.players.filter(q=>q!==p&&q.money>=minBid(num)+2&&capGain(q,num)>=2&&(q.cities.length>=n||q.human));
+  prem+=Math.min(2,rivals.length)*sm.d;
+  const after=p.money-num-prem-aiReserve(p);if(after<0)prem+=after*0.5;
+  prem*=aiNoise(p,'a'+S.round+'-'+num);
+  prem+=(aiNoise(p,'j'+S.round+'-'+num)-1)*2;
+  return Math.max(minBid(num),Math.round(num+prem));
+}
 function aiChoose(p){
   let best=null,bs=-1e9;
   for(const num of buyable()){
@@ -1265,12 +1285,13 @@ function aiChoose(p){
     if(!best||(spare>=3&&p.plants.length>=2&&bs<22)||(p.plants.length===3&&bs<12))return doPass(p.id);
   }
   if(!best){const c=buyable().filter(n=>minBid(n)<=p.money);if(!c.length)return doPass(p.id);best=c[0]}
-  doOpen(p.id,best,minBid(best));
+  let ob=minBid(best);const sm=L(p).smart;if(sm&&S.round>1){const v=aiPlantValue(p,best);const room=Math.min(v,p.money-aiReserve(p))-ob;if(room>=3&&Math.random()<sm.open)ob+=1+Math.floor(Math.random()*Math.min(room-1,4))}
+  doOpen(p.id,best,ob);
 }
 function aiBid(p){
   const a=S.auc;const v=aiPlantValue(p,a.plant);let maxb=Math.min(v,p.money-aiReserve(p));
   if(L(p).outbid&&P(a.high).human&&v>0)maxb=Math.min(Math.round(v*1.1),p.money-aiReserve(p));
-  if(a.bid+1<=maxb)bidRaise(p.id,a.bid+1);else bidDrop(p.id);
+  if(a.bid+1<=maxb){let inc=1;const sm=L(p).smart;if(sm&&maxb-a.bid>=4&&Math.random()<sm.jump)inc=Math.min(maxb-a.bid,2+Math.floor(Math.random()*3));bidRaise(p.id,a.bid+inc)}else bidDrop(p.id);
 }
 function aiDiscard(p){
   const worst=p.plants.filter(x=>x!==S.newPlant).sort((a,b)=>PLANTS[a][2]-PLANTS[b][2]||a-b)[0];discardPlant(p.id,worst);
@@ -2045,8 +2066,8 @@ const TS=Object.entries({
 'Britische Inseln':'British Isles','Westeuropa':'Western Europe','Mitteleuropa':'Central Europe','Alpen & Italien':'Alps & Italy','Skandinavien':'Scandinavia','Osteuropa':'Eastern Europe','Balkan & Türkei':'Balkans & Turkey',
 'Baut langsam und lässt sich oft Kraftwerke wegschnappen.':'Builds slowly and often lets others grab the plants.',
 'Solide Grundstrategie, bietet bei Kraftwerken gern zu viel.':'Solid basic strategy, tends to overpay for plants.',
-'Bietet maßvoll, deckt sich mit günstigen Rohstoffen ein und plant das Spielende.':'Bids with restraint, stocks up on cheap resources and plans the endgame.',
-'Lässt sich kaum hochbieten, spart für den Netzausbau und beendet das Spiel nur, wenn sie dabei gewinnt.':'Hard to bid up, saves money for building and only ends the game when it wins.',
+'Bietet je nach Lage mutig oder zurückhaltend, deckt sich mit günstigen Rohstoffen ein und plant das Spielende.':'Bids boldly or cautiously depending on the situation, stocks up on cheap resources and plans the endgame.',
+'Wägt jedes Gebot nach Bedarf, Spielstand und Konkurrenz ab, spart für den Netzausbau und beendet das Spiel nur, wenn sie dabei gewinnt.':'Weighs every bid by need, game state and competition, saves money for building and only ends the game when it wins.',
 'Experte':'Expert',
 'Tippe auf „Auf claude.ai eintragen“. Hochspannung öffnet sich auf claude.ai, der Ergebnis-Link wird zusätzlich kopiert.':'Tap “Add on claude.ai”. Hochspannung opens on claude.ai, and the result link is also copied.',
 'Tippe dort auf „In Rangliste eintragen“. Kommt kein Fenster, öffne dort Statistik → Gemeinsame Rangliste und füge den Link bei „Ergebnis eintragen“ ein.':'Tap “Add to leaderboard” there. If no window appears, open Statistics → Shared leaderboard there and paste the link under “Add a result”.',
