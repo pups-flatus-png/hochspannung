@@ -775,6 +775,11 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .mgrp.dlx .seg{border-color:color-mix(in srgb,#e8b24a 55%,var(--edge))}
 .dlxdeck button{display:flex;align-items:center;justify-content:center;gap:8px;opacity:1!important;cursor:default}
 .dlxdeck button .dlxtag{background:#1b1406;color:#f5c451}
+.pref h4{margin:14px 0 6px}
+.pref .kv2 span{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.pdot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0}
+.pref td.up{color:#6fd08a}.pref td.down{color:#ff8a7a}
+.pref tr.sep td{padding:2px;border:none}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1147,14 +1152,15 @@ function bestPower(p){
   }
   return best.nums;
 }
-function payout(p,use,powered){
+function payout(p,use,powered,nums=[]){
   RES.forEach(r=>p.pool[r]-=use[r]);
+  {const sp=st().pl[p.id];sp.burn=sp.burn||{coal:0,oil:0,garbage:0,uranium:0};RES.forEach(r=>sp.burn[r]+=use[r]);sp.powT=sp.powT||{};let left=powered;nums.slice().sort((a,b)=>PLANTS[b][2]-PLANTS[a][2]).forEach(n=>{const c=Math.min(left,PLANTS[n][2]);if(c>0){const t=PLANTS[n][0];sp.powT[t]=(sp.powT[t]||0)+c;left-=c}})}
   const inc=PAY[Math.min(powered,20)];p.money+=inc;p.lastPowered=powered;const sp=st().pl[p.id];sp.income+=inc;sp.maxInc=Math.max(sp.maxInc,inc);
   log(p.name+' versorgt '+powered+(powered===1?' Stadt':' Städte')+' und verdient '+inc+' €.',p.id);
 }
 function applyPower(p,nums){
   const o=powerOptions(p,nums)||{use:{coal:0,oil:0,garbage:0,uranium:0},powered:0};
-  payout(p,o.use,o.powered);
+  payout(p,o.use,o.powered,nums);
 }
 function startBureau(){
   S.phase='bureau';S.bureauDone=false;
@@ -1857,6 +1863,7 @@ function renderStart(show){
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
+[/^Erste (\d+) Partien im Vergleich zu den letzten (\d+)\.$/u,'First $1 games compared with the last $2.'],
 [/^Niemand hat ein Kraftwerk gekauft\. Kraftwerk (.+) fällt weg\.$/u,'Nobody bought a power plant. Plant $1 is removed.'],
 [/^1 Stadt über deiner Kapazität\. Sie bringen erst mit größeren Kraftwerken Geld\.$/u,'1 city over your capacity. It only pays off once you have bigger plants.'],
 [/^Brennstoff reicht nur für 1 Stadt\. Weitere Städte bringen erst mit mehr Brennstoff Geld\.$/u,'Fuel only covers 1 city. More cities only pay off with more fuel.'],
@@ -1948,6 +1955,11 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'Partien damit: Partien, in denen der Typ am Ende in deinem Park stand.':'Games with it: games in which you owned this type at the end.',
+'Strom: Anteil der versorgten Städte, den dieser Typ geliefert hat.':'Power: share of powered cities this type supplied.',
+'Hauptbrennstoff: der Rohstoff, von dem du in einer Partie am meisten gekauft hast.':'Main fuel: the resource you bought the most of in a game.',
+'So ändern sich deine Vorlieben':'How your preferences change','Siege als Hauptbrennstoff':'wins as main fuel','Erfolgreichster Brennstoff':'Most successful fuel','Erfolgreichster Typ':'Most successful type',
+'Deine Vorlieben':'Your preferences','Kraftwerkstypen':'Power plant types','deiner Käufe':'of your purchases','der Einheiten':'of units','Siege mit':'wins with it','Partien damit':'Games with it','Hauptbrennstoff':'Main fuel','Siegquote':'Win rate','Verbrannt':'Burned','Ausgaben':'Spent','Früher':'Earlier','Zuletzt':'Recent','Veränderung':'Change','Müll/Gas':'Garbage/gas','Müll·Gas/Öl':'Garbage·gas/oil','Gas/Öl':'Gas/oil','Kohle/Öl':'Coal/oil','Müll/Öl':'Garbage/oil',
 'Gehört fest zum Deluxe-Plan. Die Karten entsprechen Set 2, der Startmarkt besteht nur aus den Kraftwerken 3 bis 15.':'Fixed for the Deluxe boards. The cards match Set 2, and the starting market only uses plants 3 to 15.',
 'Grundspiel & Erweiterungen':'Base game & expansions','Plan, Kraftwerke & Regeln der Deluxe-Edition':'Board, plants & rules of the Deluxe edition','Deluxe-Kraftwerke':'Deluxe power plants',
 'Deluxe-Plan: acht Kraftwerke im Markt mit Rabatt, Erdgas statt Müll. New York und Mexico City bestehen aus je zwei Städten ohne Leitungskosten.':'Deluxe board: eight plants in the market with a discount, gas instead of garbage. New York and Mexico City each consist of two cities with no connection cost.',
@@ -2062,7 +2074,7 @@ const TS=Object.entries({
 'Spielerreihenfolge':'Turn order','alle gleichzeitig':'all at once','vorwärts':'forward','rückwärts':'backward','am Zug':'to play','Dein Geld':'Your money','KI-Stärke':'AI difficulty','Karte des Stromnetzes':'Map of the power grid','Hineinzoomen':'Zoom in','Herauszoomen':'Zoom out','Karte einpassen':'Fit map','Gebot senken':'Lower bid','Gebot erhöhen':'Raise bid','Höchstgebot':'Highest bid',
 ' am Markt':' on market','im Korb':'in basket',
 });
-const TW=Object.entries({
+const TW=Object.entries({'Rohstoff':'Resource','Anteil':'Share',
 'Versteigerung':'Auction','Karte':'Map','Bieten':'Bid','Aussteigen':'Drop out','Kaufen':'Buy','Netzausbau':'Network building','Protokoll':'Log','Ergebnis':'Results','Menü':'Menu','Spielregeln':'Rules','Statistik':'Statistics','Schließen':'Close','Betriebe':'Companies','Gegner':'Opponents','Märkte':'Markets','Abbrechen':'Cancel','Einkommen':'Income','Netzgebiet':'Map area','Zufällig':'Random','Leicht':'Easy','Schwer':'Hard','Experte':'Expert','Rekorde':'Records',
 'Kraftwerke':'Plants','Kraftwerk':'Plant','Rohstoffe':'Resources','Lager':'Storage','leer':'empty','Kapazität':'Capacity','Effizienz':'Efficiency','Bedarf':'Needs','keiner':'none','Typ':'Type','Versorgt':'Powered','Leistung':'Output','Einheiten':'units','Vorrat':'supply','nächste':'next','Nachschub':'restock','kaufbar':'buyable',
 'Kohle':'Coal','Öl':'Oil','Müll':'Garbage','Uran':'Uranium','Öko':'Eco','Hybrid':'Hybrid',
@@ -2256,8 +2268,44 @@ function statsTotal(h){
    <section class="card"><h3>Rohstoffe</h3><p class="hint">Gekaufte Einheiten und Ø Preis je Einheit, alle Partien.</p>${bars(resRows)}</section>
    <section class="card"><h3>Netz</h3><h4>Am häufigsten gebaut</h4>${topCities.length?bars(topCities):'<p class="hint">Noch keine Städte gebaut.</p>'}<h4>Gespielte Regionen</h4>${bars(regRows)}${st2?`<p class="hint">Stufe 2 beginnt bei dir im Schnitt in Runde ${fmt1(st2)}${st3?', Stufe 3 in Runde '+fmt1(st3):''}.</p>`:''}</section>
   </div>
+  ${prefCard(h,auAll,resTot)}
   <section class="card wide"><h3>Spielhistorie</h3><p class="hint">Tippe eine Partie an, um sie im Detail zu sehen.</p><div class="hist">${hist}</div></section>
   <div class="st-foot">${UI.statReset?`<span>Alle ${loadHist().length} Partien löschen?</span><button type="button" class="btn" data-act="statsResetNo">Abbrechen</button><button type="button" class="btn danger" data-act="statsResetYes">Endgültig löschen</button>`:`<button type="button" class="btn" data-act="statsReset">Statistik zurücksetzen</button>`}</div>`;
+}
+function prefCard(h,auAll,resTot){
+  const me_=g=>g.players.find(p=>p.human)||g.players[0];
+  const gasMix=h.some(g=>MAPS[g.map||'de']&&MAPS[g.map||'de'].gas)&&h.some(g=>!(MAPS[g.map||'de']&&MAPS[g.map||'de'].gas));
+  const allGas=h.every(g=>MAPS[g.map||'de']&&MAPS[g.map||'de'].gas);
+  const TL={coal:'Kohle',oil:'Öl',garbage:gasMix?'Müll/Gas':allGas?'Gas':'Müll',uranium:'Uran',eco:'Öko',fusion:'Fusion',hybrid:'Kohle/Öl',gohybrid:gasMix?'Müll·Gas/Öl':allGas?'Gas/Öl':'Müll/Öl'};
+  const RL={coal:'Kohle',oil:'Öl',garbage:gasMix?'Müll/Gas':allGas?'Erdgas':'Müll',uranium:'Uran'};
+  const typ=n=>ALLPLANTS[n]?ALLPLANTS[n][0]:null;
+  const pct=(a,b)=>b?Math.round(a/b*100)+' %':'–';
+  const nAu=auAll.length;
+  const T=Object.keys(TCOL).filter(t=>t in TL).map(t=>{const au=auAll.filter(a=>typ(a.n)===t);const gs=h.filter(g=>(me_(g).plants||[]).some(n=>typ(n)===t));const w=gs.filter(g=>me_(g).place===1).length;const pw=h.reduce((s,g)=>s+((me_(g).powT||{})[t]||0),0);return{t,n:au.length,pr:avg(au.map(a=>a.price)),gs:gs.length,w,pw}}).filter(x=>x.n||x.gs).sort((a,b)=>b.n-a.n);
+  const pwTot=T.reduce((s,x)=>s+x.pw,0);
+  const uTot=RES.reduce((s,k)=>s+resTot[k][0],0);
+  const mainFuel=g=>{const r=me_(g).res||{};let b=null,bv=0;RES.forEach(k=>{const u=(r[k]||[0])[0];if(u>bv){bv=u;b=k}});return b};
+  const burnTot=RES.reduce((s,k)=>s+h.reduce((x,g)=>x+((me_(g).burn||{})[k]||0),0),0);
+  const R=RES.map(k=>{const gs=h.filter(g=>mainFuel(g)===k);const w=gs.filter(g=>me_(g).place===1).length;const bu=h.reduce((x,g)=>x+((me_(g).burn||{})[k]||0),0);return{k,u:resTot[k][0],c:resTot[k][1],gs:gs.length,w,bu}}).filter(x=>x.u||x.gs);
+  const dot=c=>`<i class="pdot" style="background:${c}"></i>`;
+  const ico=t=>useIcon('r-'+(t==='hybrid'?'coal':t==='gohybrid'?'garbage':t),'ri');
+  let html=`<section class="card wide pref"><h3>Deine Vorlieben</h3>`;
+  if(!T.length&&!R.length)return html+`<p class="hint">Noch keine Kraftwerke oder Rohstoffe gekauft.</p></section>`;
+  const favT=T[0],favR=R.slice().sort((a,b)=>b.u-a.u)[0];
+  const bestT=T.filter(x=>x.gs>=2).sort((a,b)=>b.w/b.gs-a.w/a.gs)[0],bestR=R.filter(x=>x.gs>=2).sort((a,b)=>b.w/b.gs-a.w/a.gs)[0];
+  html+=`<div class="kv2">${favT?`<div><small>Lieblingstyp</small><b>${TL[favT.t]}</b><span>${pct(favT.n,nAu)} deiner Käufe</span></div>`:''}${favR?`<div><small>Hauptbrennstoff</small><b>${RL[favR.k]}</b><span>${pct(favR.u,uTot)} der Einheiten</span></div>`:''}${bestT?`<div><small>Erfolgreichster Typ</small><b>${TL[bestT.t]}</b><span>${pct(bestT.w,bestT.gs)} Siege mit</span></div>`:''}${bestR?`<div><small>Erfolgreichster Brennstoff</small><b>${RL[bestR.k]}</b><span>${pct(bestR.w,bestR.gs)} Siege als Hauptbrennstoff</span></div>`:''}</div>`;
+  html+=`<h4>Kraftwerkstypen</h4><div class="st-table"><table><thead><tr><th>Typ</th><th>Gekauft</th><th>Anteil</th><th>Ø Preis</th><th>Partien damit</th><th>Siegquote</th>${pwTot?'<th>Strom</th>':''}</tr></thead><tbody>${T.map(x=>`<tr><td>${dot(TCOL[x.t])}${TL[x.t]}</td><td>${x.n}</td><td>${pct(x.n,nAu)}</td><td>${x.n?fmt1(x.pr)+' €':'–'}</td><td>${x.gs}</td><td>${pct(x.w,x.gs)}</td>${pwTot?`<td>${pct(x.pw,pwTot)}</td>`:''}</tr>`).join('')}</tbody></table></div>`;
+  html+=`<p class="hint">Partien damit: Partien, in denen der Typ am Ende in deinem Park stand. ${pwTot?'Strom: Anteil der versorgten Städte, den dieser Typ geliefert hat.':''}</p>`;
+  html+=`<h4>Rohstoffe</h4><div class="st-table"><table><thead><tr><th>Rohstoff</th><th>Gekauft</th><th>Anteil</th><th>Ø Preis</th><th>Ausgaben</th><th>Hauptbrennstoff</th><th>Siegquote</th>${burnTot?'<th>Verbrannt</th>':''}</tr></thead><tbody>${R.map(x=>`<tr><td>${resIcon(x.k)} ${RL[x.k]}</td><td>${fmt(x.u)}</td><td>${pct(x.u,uTot)}</td><td>${x.u?fmt1(x.c/x.u)+' €':'–'}</td><td>${fmt(x.c)} €</td><td>${x.gs}×</td><td>${pct(x.w,x.gs)}</td>${burnTot?`<td>${fmt(x.bu)}</td>`:''}</tr>`).join('')}</tbody></table></div>`;
+  html+=`<p class="hint">Hauptbrennstoff: der Rohstoff, von dem du in einer Partie am meisten gekauft hast.</p>`;
+  if(h.length>=4){
+    const half=Math.floor(h.length/2),A=h.slice(0,half),B=h.slice(half);
+    const shT=(gs,t)=>{const au=gs.flatMap(g=>me_(g).auc||[]);return au.length?au.filter(a=>typ(a.n)===t).length/au.length:0};
+    const shR=(gs,k)=>{let u=0,a=0;gs.forEach(g=>{const r=me_(g).res||{};RES.forEach(q=>{a+=(r[q]||[0])[0]});u+=(r[k]||[0])[0]});return a?u/a:0};
+    const row=(lab,col,a,b)=>{const d=Math.round((b-a)*100);return `<tr><td>${dot(col)}${lab}</td><td>${Math.round(a*100)} %</td><td>${Math.round(b*100)} %</td><td class="${d>2?'up':d<-2?'down':''}">${d>2?'▲ +'+d:d<-2?'▼ '+d:'±'+Math.abs(d)}</td></tr>`};
+    html+=`<h4>So ändern sich deine Vorlieben</h4><p class="hint">Erste ${half} Partien im Vergleich zu den letzten ${B.length}.</p><div class="st-table"><table><thead><tr><th></th><th>Früher</th><th>Zuletzt</th><th>Veränderung</th></tr></thead><tbody>${T.map(x=>row(TL[x.t],TCOL[x.t],shT(A,x.t),shT(B,x.t))).join('')}<tr class="sep"><td colspan="4"></td></tr>${R.map(x=>row(RL[x.k],TCOL[x.k],shR(A,x.k),shR(B,x.k))).join('')}</tbody></table></div>`;
+  }
+  return html+`</section>`;
 }
 function statsTrend(h){
   if(h.length<2)return `<div class="st-empty"><b>Noch zu wenig Partien</b><p>Spiel mindestens zwei Partien, um Entwicklungen zu sehen.</p></div>`;
@@ -2502,7 +2550,7 @@ const A={
   breset:()=>{if(!myTurn('build'))return;undoBuilds(H)},
   bdone:()=>{if(!myTurn('build'))return;if(!S.turnBuilt.length)log(me().name+' baut nicht aus.',H);UI.buildSel=null;nextSeq()},
   ptoggle:b=>{const n=+b.dataset.num;UI.power=UI.power.includes(n)?UI.power.filter(x=>x!==n):[...UI.power,n]},
-  power:()=>{if(S.phase!=='bureau')return;const p=me();const o=allocPower(p,UI.power);if(!o)return;for(const[n,got]of Object.entries(o.take))got.forEach(r=>{const a=p.alloc[n];a.splice(a.indexOf(r),1)});payout(p,o.use,o.powered);finishBureau();if(S.phase==='end')UI.sheet='results'},
+  power:()=>{if(S.phase!=='bureau')return;const p=me();const o=allocPower(p,UI.power);if(!o)return;for(const[n,got]of Object.entries(o.take))got.forEach(r=>{const a=p.alloc[n];a.splice(a.indexOf(r),1)});payout(p,o.use,o.powered,UI.power||[]);finishBureau();if(S.phase==='end')UI.sheet='results'},
 };
 function myTurn(kind){const a=actor();return a&&a.pid===H&&a.kind===kind}
 document.addEventListener('click',e=>{
