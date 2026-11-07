@@ -800,6 +800,34 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .lbfuel{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);margin-left:4px}
 .btn.sm{min-height:36px;padding:6px 14px;flex:none}
 .lthead{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:700}
+/* ---- v12: Gegner-Kraftwerke im Bedienpult ---- */
+.oppp{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:4px 10px 10px;margin:8px 0}
+.oppp.closed{padding-bottom:4px}
+.opph{display:flex;width:100%;justify-content:space-between;align-items:center;background:none;border:0;color:var(--muted);font:inherit;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:8px 0;cursor:pointer;min-height:36px}
+.opr{border-top:1px solid var(--line);padding:8px 0 2px}
+.opr:first-of-type{border-top:0}
+.oprh{display:flex;align-items:center;gap:4px 10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:6px}
+.oprh .dot{width:9px;height:9px;border-radius:50%;background:var(--pc);flex:none}
+.oprh b{color:var(--fg);font-size:13px}
+.oprh .ico{width:11px;height:11px}
+.opcap{color:var(--fg);display:inline-flex;align-items:center;gap:2px;font-weight:700}
+.opcap .ico{color:var(--accent)}
+.opfu{font-size:11px}
+.pmrow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.pm{position:relative;display:flex;flex-direction:column;gap:3px;align-items:flex-start;padding:5px 7px 6px;border-radius:8px;background:var(--cbg);border:1px solid color-mix(in srgb,var(--cacc) 55%,var(--cbg));color:#fff;text-align:left;font:inherit;cursor:pointer;min-width:0}
+.pmn{font-family:var(--display);font-size:20px;font-weight:700;line-height:1}
+.pmq{display:flex;align-items:center;gap:2px;font-size:12px;font-weight:700;white-space:nowrap}
+.pmq .ri{width:12px;height:12px}
+.pmq i{font-style:normal;opacity:.7;font-size:10px}
+.pma{opacity:.7;margin:0 1px}
+.pmq b{font-family:var(--display);font-size:14px}
+.pms{display:flex;flex-wrap:wrap;gap:1px;min-height:12px;align-items:center}
+.pms .ri{width:10px;height:10px}
+.pms small{font-size:9px;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.pms.low small{color:#ffb3a8;opacity:1}
+.pm.nw{box-shadow:0 0 0 2px var(--accent)}
+.pmt{position:absolute;top:-7px;right:-4px;background:var(--accent);color:#1b1406;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border-radius:5px}
+.pmnone{font-size:12px;color:var(--muted);grid-column:1/-1}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1749,6 +1777,21 @@ const ICO_OPP='<svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true
 const BOLT='<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M7 .8 2 7h3.2L4.6 11.2 10 4.8H6.7z" fill="currentColor"/></svg>';
 function fuelNeed(p){const d={};p.plants.forEach(n=>{const t=PLANTS[n][0],k=PLANTS[n][1];if(FREE(t)||!k)return;d[t]=(d[t]||0)+k});return d}
 function needChips(d){return Object.entries(d).map(([t,k])=>`<span class="nchip" title="${RNAME[t]}">${HYB[t]?resIcon(HYB[t][0])+'<i>/</i>'+resIcon(HYB[t][1]):resIcon(t)}<b>${k}</b></span>`).join('')}
+function oppPlantsHTML(){
+  if(!S||S.phase==='end')return '';
+  let open=true;try{open=localStorage.getItem('hochspannung-opp-open')!=='0'}catch(_){}
+  const opps=S.order.map(P).filter(p=>!p.human);
+  const head=`<button type="button" class="opph" data-act="oppToggle" aria-expanded="${open}"><span>Kraftwerke der Gegner</span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="transform:rotate(${open?180:0}deg)"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg></button>`;
+  if(!open)return `<div class="oppp closed">${head}</div>`;
+  const rows=opps.map(p=>{
+    const sv=normAlloc(p);const newN=(st().pl[p.id].auc||[]).filter(x=>x.r===S.round).map(x=>x.n);
+    const tiles=p.plants.slice().sort((a,b)=>a-b).map(n=>{const[t,k,c]=PLANTS[n];const stor=sv[n]||[];
+      const need=FREE(t)?resIcon(t):HYB[t]?`${k}${resIcon(HYB[t][0])}<i>/</i>${resIcon(HYB[t][1])}`:`${k}${resIcon(t)}`;
+      const ok=FREE(t)||stor.length>=k;
+      return `<button type="button" class="pm t-${t}${newN.includes(n)?' nw':''}" data-act="pinfo" data-num="${n}" aria-label="Kraftwerk ${PN(n)}, ${TYPE_NAME[t]}, versorgt ${c}, Lager ${stor.length}"><span class="pmn">${Math.floor(n)}</span><span class="pmq">${need}<span class="pma">→</span><b>${c}</b></span><span class="pms${ok?'':' low'}">${FREE(t)?'<small>frei</small>':stor.length?stor.map(r=>resIcon(r)).join(''):'<small>leer</small>'}</span>${newN.includes(n)?'<span class="pmt">neu</span>':''}</button>`}).join('')||'<span class="pmnone">Noch kein Kraftwerk</span>';
+    return `<div class="opr" ${pc(p.id)}><div class="oprh"><i class="dot"></i><b>${esc(p.name)}</b><span>${p.money} €</span><span>${p.cities.length}${HOUSE}</span><span class="opcap">${BOLT}${capacity(p)}</span><span class="opfu">Brennstoff für ${fueledCap(p)}</span></div><div class="pmrow">${tiles}</div></div>`}).join('');
+  return `<div class="oppp">${head}${rows}</div>`;
+}
 function qbarHTML(){
   const opps=S.players.filter(p=>!p.human);const rich=Math.max(...opps.map(p=>p.money)),cap=Math.max(...opps.map(capacity));
   const pr=RES.map(r=>{const np=nextPrice(r);return `<span class="qp${np==null?' out':''}" title="${RNAME[r]}">${resIcon(r)}<b>${np==null?'–':np}</b></span>`}).join('');
@@ -1764,7 +1807,7 @@ function marketDemand(r){
   return `<div class="dem"><span><span class="dl">Bedarf aller Betriebe je Lieferung</span><b>${all}</b></span>${flex?`<span><span class="dl">plus flexibel (Hybrid)</span><b>${flex}</b></span>`:''}<span><span class="dl">davon du</span><b>${mine}</b></span></div>`;
 }
 function renderPanel(){
-  const a=actor();let h=qbarHTML()+orderHTML(a)+turnLine(a);
+  const a=actor();let h=qbarHTML()+orderHTML(a)+oppPlantsHTML()+turnLine(a);
   switch(S.phase){
     case'auction':h+=panelAuction(a);break;
     case'resources':h+=panelResources(a);break;
@@ -1883,6 +1926,7 @@ function renderStart(show){
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
+[/^Brennstoff für (\d+)$/u,'fuel for $1'],
 [/^(\d+) Spieler$/u,'$1 players'],
 [/^Platz (\d+) von (\d+)$/u,'Place $1 of $2'],
 [/^(-?\d+) (?:Stadt|Städte) Vorsprung vor (.+)$/u,'$1 cities ahead of $2'],
@@ -1981,6 +2025,7 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'Kraftwerke der Gegner':'Opponents’ power plants','Noch kein Kraftwerk':'No power plant yet',
 'Letzte Partie':'Most recent game','Gewonnen':'Won','Geld am Ende':'Money at end','Langfristig':'Long-term',
 'Partien damit: Partien, in denen der Typ am Ende in deinem Park stand.':'Games with it: games in which you owned this type at the end.',
 'Strom: Anteil der versorgten Städte, den dieser Typ geliefert hat.':'Power: share of powered cities this type supplied.',
@@ -2017,7 +2062,7 @@ const TS=Object.entries({
 'Rot markiert: Gegner mit mehr Geld als du. Bedarf ist der Brennstoff pro Lieferung. Tippe auf eine Zeile für die Kraftwerke.':'Red: opponents with more money than you. Needs is the fuel per delivery. Tap a row to see the plants.',
 'Bedarf aller Betriebe je Lieferung':'All companies need per delivery','plus flexibel (Hybrid)':'plus flexible (hybrid)','davon du':'of which you',
 'Märkte: Kraftwerke und Rohstoffpreise':'Markets: power plants and resource prices','Gegner: Geld, Kraftwerke und Lager':'Opponents: money, plants and storage',
-'reichster':'richest','frei':'free','versorgt':'powered',
+'reichster':'richest','versorgt':'powered',
 'Lege dein Startgebot fest.':'Set your opening bid.',
 'Spieler insgesamt':'Total players','Alle Karten':'All maps','Deutschland':'Germany','Frankreich':'France','Italien':'Italy','Zentrum':'Centre','Nordwest':'Northwest','Nordost':'Northeast','Toskana':'Tuscany','Süden':'South','Sizilien':'Sicily',
 'Paris besteht aus drei Städten, untereinander ohne Leitungskosten. Viel Uran im Markt, Kraftwerk 11 liegt von Beginn an aus.':'Paris consists of three cities with free connections between them. Plenty of uranium on the market; plant 11 is available from the start.',
@@ -2101,9 +2146,9 @@ const TS=Object.entries({
 'Spielerreihenfolge':'Turn order','alle gleichzeitig':'all at once','vorwärts':'forward','rückwärts':'backward','am Zug':'to play','Dein Geld':'Your money','KI-Stärke':'AI difficulty','Karte des Stromnetzes':'Map of the power grid','Hineinzoomen':'Zoom in','Herauszoomen':'Zoom out','Karte einpassen':'Fit map','Gebot senken':'Lower bid','Gebot erhöhen':'Raise bid','Höchstgebot':'Highest bid',
 ' am Markt':' on market','im Korb':'in basket',
 });
-const TW=Object.entries({'Rohstoff':'Resource','Anteil':'Share',
+const TW=Object.entries({'leer':'empty','frei':'free','neu':'new','Rohstoff':'Resource','Anteil':'Share',
 'Versteigerung':'Auction','Karte':'Map','Bieten':'Bid','Aussteigen':'Drop out','Kaufen':'Buy','Netzausbau':'Network building','Protokoll':'Log','Ergebnis':'Results','Menü':'Menu','Spielregeln':'Rules','Statistik':'Statistics','Schließen':'Close','Betriebe':'Companies','Gegner':'Opponents','Märkte':'Markets','Abbrechen':'Cancel','Einkommen':'Income','Netzgebiet':'Map area','Zufällig':'Random','Leicht':'Easy','Schwer':'Hard','Experte':'Expert','Rekorde':'Records',
-'Kraftwerke':'Plants','Kraftwerk':'Plant','Rohstoffe':'Resources','Lager':'Storage','leer':'empty','Kapazität':'Capacity','Effizienz':'Efficiency','Bedarf':'Needs','keiner':'none','Typ':'Type','Versorgt':'Powered','Leistung':'Output','Einheiten':'units','Vorrat':'supply','nächste':'next','Nachschub':'restock','kaufbar':'buyable',
+'Kraftwerke':'Plants','Kraftwerk':'Plant','Rohstoffe':'Resources','Lager':'Storage','Kapazität':'Capacity','Effizienz':'Efficiency','Bedarf':'Needs','keiner':'none','Typ':'Type','Versorgt':'Powered','Leistung':'Output','Einheiten':'units','Vorrat':'supply','nächste':'next','Nachschub':'restock','kaufbar':'buyable',
 'Kohle':'Coal','Öl':'Oil','Müll':'Garbage','Uran':'Uranium','Öko':'Eco','Hybrid':'Hybrid',
 'Auktion':'Auction','Bauen':'Build','Strom':'Power','Stufe':'Step','Runde':'Round','Runden':'rounds','KI':'AI','Ende':'End','Du':'You','Stadt':'city','Städte':'cities','Städten':'cities','Platz':'Rank','Plätze':'slots','Netz':'Network','Geld':'Money','Betrieb':'Company','versorgt':'powered','Partie':'game','Partien':'games','Sieg':'win','Siege':'wins','Quote':'Rate','Stärke':'Difficulty','Gekauft':'Bought','bis':'up to',
 'Nord':'North','Ost':'East','Mitte':'Central','Südwest':'Southwest','Südost':'Southeast','NORD':'NORTH','OST':'EAST','MITTE':'CENTRAL','SÜDWEST':'SOUTHWEST','SÜDOST':'SOUTHEAST','Sp':'pl'
@@ -2558,7 +2603,7 @@ const A={
   statsReset:()=>{UI.statReset=true;renderStats();return'skip'},
   statsResetNo:()=>{UI.statReset=false;renderStats();return'skip'},
   statsResetYes:()=>{saveHist([]);try{localStorage.removeItem(STATS_KEY)}catch(_){}UI.statReset=false;renderStats();return'skip'},
-  menu:()=>UI.sheet='menu',close:()=>{UI.sheet=UI.back||null;UI.back=null},opp:()=>{UI.sheet=UI.sheet==='opp'&&isDock()?null:'opp'},oppjump:b=>{const el=document.getElementById('opp-'+b.dataset.pid);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return'skip'},log:()=>UI.sheet='log',rules:()=>UI.sheet='rules',
+  menu:()=>UI.sheet='menu',close:()=>{UI.sheet=UI.back||null;UI.back=null},opp:()=>{UI.sheet=UI.sheet==='opp'&&isDock()?null:'opp'},oppToggle:()=>{try{const o=localStorage.getItem('hochspannung-opp-open')!=='0';localStorage.setItem('hochspannung-opp-open',o?'0':'1')}catch(_){}},oppjump:b=>{const el=document.getElementById('opp-'+b.dataset.pid);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return'skip'},log:()=>UI.sheet='log',rules:()=>UI.sheet='rules',
   results:()=>UI.sheet='results',newgame:()=>UI.sheet='newgame',
   newyes:()=>{UI.sheet=null;clearTimeout(timer);renderSheet();renderStart(true);return'skip'},
   startrules:()=>{UI.sheet='rules';renderStart(false);return'rules'},
