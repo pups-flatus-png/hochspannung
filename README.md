@@ -1,6 +1,6 @@
 # Hochspannung
 
-Netzausbau-Strategiespiel für das Handy: Kraftwerke ersteigern, Rohstoffe kaufen und ein Stromnetz über Deutschland, Frankreich oder Italien bauen, gegen 2–5 KI-Gegner. Auf Deutsch und Englisch spielbar.
+Netzausbau-Strategiespiel für das Handy: Kraftwerke ersteigern, Rohstoffe kaufen und ein Stromnetz über Deutschland, Frankreich, Italien, Nordamerika oder Europa bauen, gegen 2–5 KI-Gegner. Auf Deutsch und Englisch spielbar.
 
 A grid-building strategy game for your phone, playable in English and German.
 
@@ -17,4 +17,6 @@ Spielstand und Statistik werden nur auf dem jeweiligen Gerät gespeichert.
 
 ## Quellen
 
-Städte, Regionen und Leitungskosten der Karten Frankreich und Italien sowie die Kartenwerte der Kraftwerksdecks Set 1 und Set 2 stammen aus dem MIT-lizenzierten Projekt [boardgamers/powergrid](https://github.com/boardgamers/powergrid).
+Städte, Regionen und Leitungskosten der Karten Frankreich, Italien, Nordamerika und Europa (Deluxe-Pläne), die Rohstoffmärkte und Nachschubtabellen der Deluxe-Pläne sowie die Kartenwerte der Kraftwerksdecks Set 1 und Set 2 stammen aus dem MIT-lizenzierten Projekt [boardgamers/powergrid](https://github.com/boardgamers/powergrid).
+
+Küstenlinien der Deluxe-Karten: [Natural Earth](https://www.naturalearthdata.com/) (gemeinfrei), über das npm-Paket world-atlas.
