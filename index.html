@@ -857,6 +857,32 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .fuelk b{font-family:var(--display);font-size:22px;line-height:1.15}
 .fuelk em{font-style:normal;font-size:11px;color:var(--muted)}
 .fuelk em.up,.fuel td.up{color:#6fd08a}.fuelk em.down,.fuel td.down{color:#ff8a7a}
+.kvx{display:block;font-size:11px;color:var(--muted);margin-top:2px;line-height:1.25}
+.barcap{display:flex;justify-content:space-between;gap:8px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 4px}
+/* ---- v14: eigenes Diagramm ---- */
+.cpick{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:end}
+.cpick .btn.sm{min-height:44px;padding:0 12px;font-size:18px}
+@media (max-width:520px){.cpick{grid-template-columns:1fr}.cpick .btn.sm{justify-self:center;transform:rotate(90deg)}}
+.cpre{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.chip{border:1px solid var(--edge);background:var(--panel);color:var(--muted);border-radius:999px;padding:6px 11px;font:inherit;font-size:12px;cursor:pointer;min-height:32px}
+.chip.on{border-color:var(--accent);color:var(--fg);background:color-mix(in srgb,var(--accent) 14%,var(--panel))}
+.scatter .cwrap svg{width:100%;height:auto}
+.scp{stroke:var(--panel);stroke-width:1.5;cursor:pointer}
+.scp.w{fill:#f2b33d}.scp.s{fill:#9fb3c8}.scp.o{fill:#5d6b7a}
+.scp.on{stroke:var(--fg);stroke-width:2.5}
+.ctrend{stroke:var(--accent);stroke-width:2;stroke-dasharray:6 4;opacity:.8}
+.cax{font-size:10px;fill:var(--muted);letter-spacing:.03em}
+.clegend i.lw,.clegend i.ls,.clegend i.lo{border-radius:50%;width:10px;height:10px}
+.clegend i.lw{background:#f2b33d}.clegend i.ls{background:#9fb3c8}.clegend i.lo{background:#5d6b7a}
+.clegend i.lt{height:2px;background:var(--accent);width:14px;border-radius:0}
+.cinfo{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:8px}
+.cinfo p{margin:4px 0 0;font-size:13px}
+.cr{font-family:var(--display);color:var(--muted);margin-left:6px}
+.cpoint{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--accent);border-radius:10px;padding:10px 12px;margin-top:8px}
+.cpoint>div{flex:1;display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:0}
+.cpoint>div>b{color:var(--fg);font-size:14px}
+.cpoint span b{color:var(--fg)}
+.st-empty-inline{color:var(--muted);font-size:13px}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -2058,6 +2084,8 @@ function renderStart(show){
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
+[/^Kraftwerke in (\d+) Partien?$/u,'plants in $1 games'],
+[/^Partie #(\d+) · Platz (\d+)$/u,'Game #$1 · place $2'],
 [/^Gegner Ø ([\d.,]+) €$/u,'Opponents avg $1 €'],
 [/^Ø ([\d.,]+) € je Einheit$/u,'avg $1 € per unit'],
 [/^1 Stadt bauen für (\d+) €$/u,'Build 1 city for $1 €'],
@@ -2189,6 +2217,19 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'Wähle zwei Werte. Jeder Punkt ist eine deiner Partien, so siehst du, ob die Werte zusammenhängen.':'Pick two measures. Each dot is one of your games, so you can see whether they are related.',
+'r reicht von −1 bis +1: 0 heißt kein Zusammenhang, ±1 ein perfekter. Ein Zusammenhang ist noch kein Beweis für Ursache und Wirkung.':'r ranges from −1 to +1: 0 means no relationship, ±1 a perfect one. A relationship is not proof of cause and effect.',
+'Der Aufpreis ist der Betrag über der Kraftwerksnummer, die das Mindestgebot ist. Rabattkäufe sind Kraftwerke, die du als kleinstes Kraftwerk ab 1 € bekommen hast; sie zählen nicht zum Aufpreis.':'The markup is the amount paid above the plant number, which is the minimum bid. Discount buys are plants you got as the smallest plant from 1 €; they don’t count towards the markup.',
+'Mit wenigen Partien ist das noch wackelig.':'With only a few games this is still shaky.','Tippe auf einen Punkt, um die Partie zu sehen.':'Tap a dot to see the game.',
+'Partie (zeitliche Reihenfolge)':'Game (in time order)','Platz (1 = Sieg)':'Place (1 = win)','Versorgte Städte am Ende':'Cities powered at end','Städte am Ende':'Cities at end','Einnahmen gesamt':'Total income','Höchste Einnahme einer Runde':'Highest income in a round','Ausgaben gesamt':'Total spending',
+'Gekaufte Kraftwerke':'Plants bought','Ø Kraftwerksnummer (Größe)':'Avg plant number (size)','Ø Aufpreis über Mindestgebot':'Avg markup over minimum bid','Ausgaben für Kraftwerke':'Spending on plants','Kapazität am Ende':'Capacity at end',
+'Anteil Öko- und Fusionskraftwerke':'Share of eco and fusion plants','Anteil Kohlekraftwerke':'Share of coal plants','Anteil Ölkraftwerke':'Share of oil plants','Anteil Müll-/Gaskraftwerke':'Share of garbage/gas plants','Anteil Atomkraftwerke':'Share of nuclear plants','Anteil Hybridkraftwerke':'Share of hybrid plants',
+'Brennstoffkosten gesamt':'Total fuel cost','Brennstoff in % der Einnahmen':'Fuel as % of income','Gekaufte Rohstoff-Einheiten':'Resource units bought','Anteil Kohle an Rohstoffen':'Coal share of resources','Anteil Öl an Rohstoffen':'Oil share of resources','Anteil Müll/Gas an Rohstoffen':'Garbage/gas share of resources','Anteil Uran an Rohstoffen':'Uranium share of resources',
+'Ausgaben für das Netz':'Network spending','Ø Kosten je gebauter Stadt':'Avg cost per city built','Anteil Leitungen an Netzkosten':'Connections share of network cost','Runde mit 7 Städten':'Round with 7 cities','Runden der Partie':'Rounds in the game','Spielerzahl':'Number of players',
+'Öko-Anteil ↔ Brennstoffpreis':'Eco share ↔ fuel price','Runden ↔ Brennstoffpreis':'Rounds ↔ fuel price','Aufpreis ↔ Platz':'Markup ↔ place','Brennstoff je Stadt ↔ versorgte Städte':'Fuel per city ↔ cities powered','Brennstoffpreis über die Zeit':'Fuel price over time','Kraftwerksgröße ↔ Platz':'Plant size ↔ place',
+'Gekaufte Kraftwerke je Typ':'Plants bought per type','Gekaufte Einheiten je Rohstoff':'Units bought per resource','Einheiten · Ø Preis je Einheit':'Units · avg price per unit','Anzahl · Anteil':'Count · share','über dem Mindestgebot':'above the minimum bid','ab 1 € ersteigert':'won from 1 €','am häufigsten gekauft':'bought most often',
+'Kaum ein Zusammenhang':'Hardly any relationship','Ein schwacher Zusammenhang':'A weak relationship','Ein deutlicher Zusammenhang':'A clear relationship','Ein starker Zusammenhang':'A strong relationship',
+'Zweiter Platz':'Second place','Waagerecht (X)':'Horizontal (X)','Senkrecht (Y)':'Vertical (Y)','Eigenes Diagramm':'Custom chart','weiter hinten':'further back','Trend':'Trend',
 'Was dich Kohle, Öl, Müll/Gas und Uran im Schnitt kosten, verglichen mit deinen Gegnern.':'What coal, oil, garbage/gas and uranium cost you on average, compared with your opponents.',
 'Grün: du kaufst günstiger ein als deine Gegner. Je versorgter Stadt zählt alle Rohstoffkäufe geteilt durch alle Städte, die du über die Partie versorgt hast.':'Green: you buy cheaper than your opponents. Per powered city divides all resource purchases by all cities you powered over the game.',
 'Brennstoffkosten je versorgter Stadt':'Fuel cost per powered city','Ø Brennstoffpreis je Einheit':'Avg fuel price per unit','Brennstoffkosten in €':'Fuel costs in €','je versorgter Stadt':'per powered city','Je versorgter Stadt':'Per powered city','Anteil an Einnahmen':'Share of income','Du Ø je Einheit':'You avg per unit','Brennstoffkosten':'Fuel costs','Je Einheit':'Per unit','je Einheit':'per unit','Je Runde':'Per round','Gegner Ø':'Opponents avg','Unterschied':'Difference',
@@ -2465,7 +2506,7 @@ function renderStats(){
   const view=UI.statView||'total';
   const gameIdx=h.findIndex(g=>g.id===UI.statSel);
   const sel=view==='last'?h[h.length-1]:view==='game'?(h[gameIdx]||h[h.length-1]):null;
-  const opts=`<option value="total" ${view==='total'?'selected':''}>Alle Partien (Durchschnitt)</option><option value="last" ${view==='last'?'selected':''}>Letzte Partie</option><option value="trend" ${view==='trend'?'selected':''}>Entwicklung über Zeit</option><option value="board" ${view==='board'?'selected':''}>Gemeinsame Rangliste</option><option disabled>── Einzelne Partie ──</option>${h.map((g,i)=>({g,i})).reverse().map(({g,i})=>`<option value="g:${g.id}" ${view==='game'&&sel&&sel.id===g.id?'selected':''}>${gameLabel(g,i)}</option>`).join('')}`;
+  const opts=`<option value="total" ${view==='total'?'selected':''}>Alle Partien (Durchschnitt)</option><option value="last" ${view==='last'?'selected':''}>Letzte Partie</option><option value="trend" ${view==='trend'?'selected':''}>Entwicklung über Zeit</option><option value="custom" ${view==='custom'?'selected':''}>Eigenes Diagramm</option><option value="board" ${view==='board'?'selected':''}>Gemeinsame Rangliste</option><option disabled>── Einzelne Partie ──</option>${h.map((g,i)=>({g,i})).reverse().map(({g,i})=>`<option value="g:${g.id}" ${view==='game'&&sel&&sel.id===g.id?'selected':''}>${gameLabel(g,i)}</option>`).join('')}`;
   const dOpts=[['all','Alle Stärken'],['easy',AI_NAME.easy],['normal',AI_NAME.normal],['hard',AI_NAME.hard],['expert',AI_NAME.expert]].map(([k,l])=>`<option value="${k}" ${(UI.statDiff||'all')===k?'selected':''}>${l}</option>`).join('');
   const head=`<div class="st-head"><button type="button" class="btn" data-act="statsBack">← Zurück</button><h2>Statistik</h2>${all.length?`<span class="st-n">${all.length} ${all.length===1?'Partie':'Partien'}</span>`:''}</div>`;
   if(!all.length&&view!=='board'){el.innerHTML=`<div class="st-inner">${head}<div class="st-empty"><b>Noch keine beendete Partie</b><p>Spiel eine Partie bis zur letzten Stromlieferung. Danach siehst du hier Siegquote, Rekorde, deine Ausgaben für Kraftwerke, Rohstoffe und Netz, die Verläufe von Geld und Städten und deine ganze Spielhistorie.</p>${LB.db?'<button type="button" class="btn" data-act="boardView">Gemeinsame Rangliste ansehen</button>':''}</div></div>`;el.hidden=false;return}
@@ -2474,12 +2515,14 @@ function renderStats(){
   if(view==='board')body=statsBoard();
   else if(!h.length)body=`<div class="st-empty"><b>Keine Partien mit dieser KI-Stärke</b><p>Wähle eine andere Stärke oder „Alle Stärken“.</p></div>`;
   else if(view==='trend')body=statsTrend(h);
+  else if(view==='custom')body=statsCustom(h);
   else if(view==='game'||view==='last')body=statsGame(sel,h.indexOf(sel),view==='last');
   else body=statsTotal(h);
   el.innerHTML=`<div class="st-inner"><div class="st-top">${head}${bar}</div>${body}</div>`;
   el.hidden=false;
 }
 document.addEventListener('change',e=>{
+  if(e.target.id==='cxSel'||e.target.id==='cySel'){UI[e.target.id==='cxSel'?'cx':'cy']=e.target.value;try{localStorage.setItem('hochspannung-'+(e.target.id==='cxSel'?'cx':'cy'),e.target.value)}catch(_){}renderStats();return}
   if(e.target.id==='stView'){const v=e.target.value;if(v.startsWith('g:')){UI.statView='game';UI.statSel=v.slice(2)}else UI.statView=v;renderStats();$('#stats').scrollTop=0}
   if(e.target.id==='stDiff'){UI.statDiff=e.target.value;renderStats()}
   if(e.target.id==='stMap'){UI.statMap=e.target.value;renderStats()}
@@ -2503,12 +2546,12 @@ function statsTotal(h){
   const eco=h.map(g=>{const m=me_(g);const res=Object.values(m.res||{}).reduce((s,x)=>s+x[1],0);return{inc:m.income||0,pl:(m.auc||[]).reduce((s,a)=>s+a.price,0),res,net:(m.slot||0)+(m.conn||0),slot:m.slot||0,conn:m.conn||0}});
   const E=k=>avg(eco.map(e=>e[k]));
   const typeCnt={};auAll.forEach(a=>{const t=ALLPLANTS[a.n][0];typeCnt[t]=(typeCnt[t]||0)+1});
-  const typeRows=Object.keys(TYPE_NAME).filter(t=>typeCnt[t]).sort((a,b)=>typeCnt[b]-typeCnt[a]).map(t=>({label:TYPE_SHORT[t],v:typeCnt[t],color:TCOL[t],icon:useIcon('r-'+(t==='hybrid'?'coal':t==='gohybrid'?'garbage':t),'ri')}));
+  const typeRows=Object.keys(TYPE_NAME).filter(t=>typeCnt[t]).sort((a,b)=>typeCnt[b]-typeCnt[a]).map(t=>({label:{hybrid:'Kohle/Öl',gohybrid:'Müll·Gas/Öl',garbage:'Müll/Gas'}[t]||TYPE_SHORT[t],v:typeCnt[t],text:`${typeCnt[t]}× · ${Math.round(typeCnt[t]/auAll.length*100)} %`,color:TCOL[t],icon:useIcon('r-'+(t==='hybrid'?'coal':t==='gohybrid'?'garbage':t),'ri')}));
   const over=avg(auAll.filter(a=>!a.disc).map(a=>a.price-a.min));
   const discN=auAll.filter(a=>a.disc).length;const favT=typeRows[0];
   const resTot={coal:[0,0],oil:[0,0],garbage:[0,0],uranium:[0,0]};
   h.forEach(g=>{const r=me_(g).res||{};RES.forEach(k=>{if(r[k]){resTot[k][0]+=r[k][0];resTot[k][1]+=r[k][1]}})});
-  const resRows=RES.map(k=>({label:RNAME[k],v:resTot[k][0],color:TCOL[k],icon:resIcon(k),text:`${fmt(resTot[k][0])} · Ø ${resTot[k][0]?fmt1(resTot[k][1]/resTot[k][0]):'–'} €`}));
+  const resRows=RES.map(k=>({label:k==='garbage'?'Müll/Gas':RNAME[k],v:resTot[k][0],color:TCOL[k],icon:resIcon(k),text:`${fmt(resTot[k][0])} · Ø ${resTot[k][0]?fmt1(resTot[k][1]/resTot[k][0]):'–'} €`}));
   const multiMap=new Set(h.map(g=>g.map||'de')).size>1;
   const cityCnt={};h.forEach(g=>(me_(g).built||[]).forEach(c=>{const k=(g.map||'de')+':'+c;cityCnt[k]=(cityCnt[k]||0)+1}));
   const topCities=Object.entries(cityCnt).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v])=>{const[m,c]=k.split(':');const ci=cityOf(m,c);return{label:esc(ci.name),v,color:ci.col}});
@@ -2524,8 +2567,8 @@ function statsTotal(h){
    <section class="card"><h3>Wirtschaft je Partie</h3><p class="hint">Durchschnitt über alle Partien.</p>${bars([{label:'Einnahmen',v:E('inc'),color:'#58b86a',text:fmt(E('inc'))+' €'},{label:'Kraftwerke',v:E('pl'),text:fmt(E('pl'))+' €'},{label:'Rohstoffe',v:E('res'),text:fmt(E('res'))+' €'},{label:'Netz',v:E('net'),text:fmt(E('net'))+' €'}])}<p class="hint">Vom Netz gingen Ø ${fmt(E('slot'))} € in Stadtplätze und ${fmt(E('conn'))} € in Leitungen.</p></section>
    <section class="card"><h3>Nach KI-Stärke</h3><div class="st-table"><table><thead><tr><th>Stärke</th><th>Partien</th><th>Siege</th><th>Quote</th><th>Ø versorgt</th></tr></thead><tbody>${diffRows.map(r=>`<tr><td>${AI_NAME[r.d]}</td><td>${r.gs.length}</td><td>${r.w}</td><td>${r.gs.length?Math.round(r.w/r.gs.length*100)+' %':'–'}</td><td>${r.gs.length?fmt1(avg(r.gs.map(g=>me_(g).powered))):'–'}</td></tr>`).join('')}</tbody></table></div>${rivalRows.length?`<h4>Wer dich am häufigsten schlägt</h4>${bars(rivalRows)}`:''}</section>
    <section class="card"><h3>Rekorde</h3><dl class="recs">${rec.map(([k,v,g])=>`<div><dt>${k}</dt><dd>${v}</dd><button type="button" class="linkbtn" data-act="statsSel" data-id="${g.id}">Partie vom ${new Date(g.date).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})}</button></div>`).join('')}</dl></section>
-   <section class="card"><h3>Kraftwerke</h3><div class="kv2"><div><small>Gekauft</small><b>${auAll.length}</b></div><div><small>Ø Aufpreis</small><b>+${fmt1(over||0)} €</b></div><div><small>Rabattkäufe</small><b>${discN}</b></div><div><small>Lieblingstyp</small><b>${favT?favT.label:'–'}</b></div></div>${typeRows.length?bars(typeRows):'<p class="hint">Noch keine Käufe.</p>'}</section>
-   <section class="card"><h3>Rohstoffe</h3><p class="hint">Gekaufte Einheiten und Ø Preis je Einheit, alle Partien.</p>${bars(resRows)}</section>
+   <section class="card"><h3>Kraftwerke</h3><div class="kv2"><div><small>Gekauft</small><b>${auAll.length}</b><span class="kvx">Kraftwerke in ${h.length} ${h.length===1?'Partie':'Partien'}</span></div><div><small>Ø Aufpreis</small><b>+${fmt1(over||0)} €</b><span class="kvx">über dem Mindestgebot</span></div><div><small>Rabattkäufe</small><b>${discN}</b><span class="kvx">ab 1 € ersteigert</span></div><div><small>Lieblingstyp</small><b>${favT?favT.label:'–'}</b><span class="kvx">am häufigsten gekauft</span></div></div>${typeRows.length?`<div class="barcap"><span>Gekaufte Kraftwerke je Typ</span><span>Anzahl · Anteil</span></div>${bars(typeRows)}`:'<p class="hint">Noch keine Käufe.</p>'}<p class="hint">Der Aufpreis ist der Betrag über der Kraftwerksnummer, die das Mindestgebot ist. Rabattkäufe sind Kraftwerke, die du als kleinstes Kraftwerk ab 1 € bekommen hast; sie zählen nicht zum Aufpreis.</p></section>
+   <section class="card"><h3>Rohstoffe</h3><div class="barcap"><span>Gekaufte Einheiten je Rohstoff</span><span>Einheiten · Ø Preis je Einheit</span></div>${bars(resRows)}</section>
    <section class="card"><h3>Netz</h3><h4>Am häufigsten gebaut</h4>${topCities.length?bars(topCities):'<p class="hint">Noch keine Städte gebaut.</p>'}<h4>Gespielte Regionen</h4>${bars(regRows)}${st2?`<p class="hint">Stufe 2 beginnt bei dir im Schnitt in Runde ${fmt1(st2)}${st3?', Stufe 3 in Runde '+fmt1(st3):''}.</p>`:''}</section>
   </div>
   ${prefCard(h,auAll,resTot)}
@@ -2597,6 +2640,90 @@ function prefCard(h,auAll,resTot){
     html+=`<h4>So ändern sich deine Vorlieben</h4><p class="hint">Erste ${half} Partien im Vergleich zu den letzten ${B.length}.</p><div class="st-table"><table><thead><tr><th></th><th>Früher</th><th>Zuletzt</th><th>Veränderung</th></tr></thead><tbody>${T.map(x=>row(TL[x.t],TCOL[x.t],shT(A,x.t),shT(B,x.t))).join('')}<tr class="sep"><td colspan="4"></td></tr>${R.map(x=>row(RL[x.k],TCOL[x.k],shR(A,x.k),shR(B,x.k))).join('')}</tbody></table></div>`;
   }
   return html+`</section>`;
+}
+const MGROUPS=[['Ergebnis','Ergebnis','Result'],['Kraftwerke','Kraftwerke','Power plants'],['Rohstoffe','Rohstoffe','Resources'],['Netz','Netz','Network'],['Partie','Partie','Game']];
+function metricDefs(){
+  const typ=n=>ALLPLANTS[n]?ALLPLANTS[n][0]:null;
+  const tShare=(t)=>(g,m)=>{const au=m.auc||[];return au.length?au.filter(a=>{const x=typ(a.n);return Array.isArray(t)?t.includes(x):x===t}).length/au.length*100:null};
+  const rShare=k=>(g,m)=>{const r=m.res||{};let u=0;RES.forEach(q=>u+=(r[q]||[0])[0]);return u?((r[k]||[0])[0])/u*100:null};
+  const spend=m=>(m.auc||[]).reduce((s,a)=>s+a.price,0)+Object.values(m.res||{}).reduce((s,x)=>s+x[1],0)+(m.slot||0)+(m.conn||0);
+  return [
+   {k:'game',g:'Partie',l:'Partie (zeitliche Reihenfolge)',u:'',f:(g,m,i)=>i+1,xOnly:true},
+   {k:'place',g:'Ergebnis',l:'Platz (1 = Sieg)',u:'',f:(g,m)=>m.place,inv:true},
+   {k:'powered',g:'Ergebnis',l:'Versorgte Städte am Ende',u:'',f:(g,m)=>m.powered},
+   {k:'cities',g:'Ergebnis',l:'Städte am Ende',u:'',f:(g,m)=>m.cities},
+   {k:'money',g:'Ergebnis',l:'Geld am Ende',u:' €',f:(g,m)=>m.money},
+   {k:'income',g:'Ergebnis',l:'Einnahmen gesamt',u:' €',f:(g,m)=>m.income||0},
+   {k:'maxInc',g:'Ergebnis',l:'Höchste Einnahme einer Runde',u:' €',f:(g,m)=>m.maxInc||0},
+   {k:'spend',g:'Ergebnis',l:'Ausgaben gesamt',u:' €',f:(g,m)=>spend(m)},
+   {k:'plants',g:'Kraftwerke',l:'Gekaufte Kraftwerke',u:'',f:(g,m)=>(m.auc||[]).length},
+   {k:'avgPlant',g:'Kraftwerke',l:'Ø Kraftwerksnummer (Größe)',u:'',f:(g,m)=>{const a=m.auc||[];return a.length?a.reduce((s,x)=>s+Math.floor(x.n),0)/a.length:null}},
+   {k:'markup',g:'Kraftwerke',l:'Ø Aufpreis über Mindestgebot',u:' €',f:(g,m)=>{const a=(m.auc||[]).filter(x=>!x.disc);return a.length?a.reduce((s,x)=>s+x.price-x.min,0)/a.length:null}},
+   {k:'plSpend',g:'Kraftwerke',l:'Ausgaben für Kraftwerke',u:' €',f:(g,m)=>(m.auc||[]).reduce((s,a)=>s+a.price,0)},
+   {k:'capEnd',g:'Kraftwerke',l:'Kapazität am Ende',u:'',f:(g,m)=>(m.plants||[]).reduce((s,n)=>s+(ALLPLANTS[n]?ALLPLANTS[n][2]:0),0)},
+   {k:'tEco',g:'Kraftwerke',l:'Anteil Öko- und Fusionskraftwerke',u:' %',f:tShare(['eco','fusion'])},
+   {k:'tCoal',g:'Kraftwerke',l:'Anteil Kohlekraftwerke',u:' %',f:tShare('coal')},
+   {k:'tOil',g:'Kraftwerke',l:'Anteil Ölkraftwerke',u:' %',f:tShare('oil')},
+   {k:'tGar',g:'Kraftwerke',l:'Anteil Müll-/Gaskraftwerke',u:' %',f:tShare('garbage')},
+   {k:'tUra',g:'Kraftwerke',l:'Anteil Atomkraftwerke',u:' %',f:tShare('uranium')},
+   {k:'tHyb',g:'Kraftwerke',l:'Anteil Hybridkraftwerke',u:' %',f:tShare(['hybrid','gohybrid'])},
+   {k:'fuelUnit',g:'Rohstoffe',l:'Ø Brennstoffpreis je Einheit',u:' €',f:(g,m)=>fuelOf(g,m).unit},
+   {k:'fuelCity',g:'Rohstoffe',l:'Brennstoffkosten je versorgter Stadt',u:' €',f:(g,m)=>fuelOf(g,m).city},
+   {k:'fuelTot',g:'Rohstoffe',l:'Brennstoffkosten gesamt',u:' €',f:(g,m)=>fuelOf(g,m).cost},
+   {k:'fuelInc',g:'Rohstoffe',l:'Brennstoff in % der Einnahmen',u:' %',f:(g,m)=>fuelOf(g,m).inc},
+   {k:'units',g:'Rohstoffe',l:'Gekaufte Rohstoff-Einheiten',u:'',f:(g,m)=>fuelOf(g,m).units},
+   {k:'rCoal',g:'Rohstoffe',l:'Anteil Kohle an Rohstoffen',u:' %',f:rShare('coal')},
+   {k:'rOil',g:'Rohstoffe',l:'Anteil Öl an Rohstoffen',u:' %',f:rShare('oil')},
+   {k:'rGar',g:'Rohstoffe',l:'Anteil Müll/Gas an Rohstoffen',u:' %',f:rShare('garbage')},
+   {k:'rUra',g:'Rohstoffe',l:'Anteil Uran an Rohstoffen',u:' %',f:rShare('uranium')},
+   {k:'netSpend',g:'Netz',l:'Ausgaben für das Netz',u:' €',f:(g,m)=>(m.slot||0)+(m.conn||0)},
+   {k:'cityCost',g:'Netz',l:'Ø Kosten je gebauter Stadt',u:' €',f:(g,m)=>{const b=(m.built||[]).length||m.cities;return b?((m.slot||0)+(m.conn||0))/b:null}},
+   {k:'connShare',g:'Netz',l:'Anteil Leitungen an Netzkosten',u:' %',f:(g,m)=>{const t=(m.slot||0)+(m.conn||0);return t?(m.conn||0)/t*100:null}},
+   {k:'r7',g:'Netz',l:'Runde mit 7 Städten',u:'',f:(g,m)=>{const i=g.players.indexOf(m);const r=(g.series||[]).find(x=>x.c[i]>=7);return r?r.r:null}},
+   {k:'rounds',g:'Partie',l:'Runden der Partie',u:'',f:g=>g.rounds},
+   {k:'nPl',g:'Partie',l:'Spielerzahl',u:'',f:g=>g.players.length},
+  ];
+}
+function niceAxis(lo,hi){if(lo===hi){lo-=1;hi+=1}const span=hi-lo;const raw=span/4;const p=Math.pow(10,Math.floor(Math.log10(raw)));const st=[1,2,2.5,5,10].map(x=>x*p).find(x=>x>=raw);const a=Math.floor(lo/st)*st,b=Math.ceil(hi/st)*st;const t=[];for(let v=a;v<=b+st/2;v+=st)t.push(+v.toFixed(6));return{a,b,t,st}}
+function fmtV(v){return Math.abs(v-Math.round(v))<1e-9?fmt(Math.round(v)):fmt1(v)}
+function statsCustom(h){
+  const D=metricDefs(),by=Object.fromEntries(D.map(d=>[d.k,d]));
+  let cx=UI.cx,cy=UI.cy;try{cx=cx||localStorage.getItem('hochspannung-cx');cy=cy||localStorage.getItem('hochspannung-cy')}catch(_){}
+  if(!by[cx])cx='tEco';if(!by[cy]||by[cy].xOnly)cy='fuelUnit';UI.cx=cx;UI.cy=cy;
+  const X=by[cx],Y=by[cy];
+  const sel=(id,cur,yAxis)=>`<select id="${id}">${MGROUPS.map(([gk,gl,ge])=>`<optgroup label="${LANG==='en'?ge:gl}">${D.filter(d=>d.g===gk&&!(yAxis&&d.xOnly)).map(d=>`<option value="${d.k}" ${d.k===cur?'selected':''}>${d.l}</option>`).join('')}</optgroup>`).join('')}</select>`;
+  const presets=[['tEco','fuelUnit','Öko-Anteil ↔ Brennstoffpreis'],['rounds','fuelUnit','Runden ↔ Brennstoffpreis'],['markup','place','Aufpreis ↔ Platz'],['fuelCity','powered','Brennstoff je Stadt ↔ versorgte Städte'],['game','fuelUnit','Brennstoffpreis über die Zeit'],['avgPlant','place','Kraftwerksgröße ↔ Platz']];
+  let h2=`<section class="card wide cbuild"><h3>Eigenes Diagramm</h3><p class="hint">Wähle zwei Werte. Jeder Punkt ist eine deiner Partien, so siehst du, ob die Werte zusammenhängen.</p>
+  <div class="cpick"><label class="stsel"><span>Waagerecht (X)</span>${sel('cxSel',cx,false)}</label><button type="button" class="btn sm" data-act="cSwap" aria-label="Achsen tauschen" ${X.xOnly?'disabled':''}>⇄</button><label class="stsel"><span>Senkrecht (Y)</span>${sel('cySel',cy,true)}</label></div>
+  <div class="cpre">${presets.map(([a,b,l])=>`<button type="button" class="chip${a===cx&&b===cy?' on':''}" data-act="cPreset" data-x="${a}" data-y="${b}">${l}</button>`).join('')}</div>`;
+  const pts=h.map((g,i)=>{const m=meOf(g);return{g,i,x:X.f(g,m,i),y:Y.f(g,m,i),pl:m.place}}).filter(p=>p.x!=null&&p.y!=null&&isFinite(p.x)&&isFinite(p.y));
+  if(pts.length<2)return h2+`<p class="st-empty-inline">${LANG==='en'?`Only ${pts.length} ${pts.length===1?'game has':'games have'} values for this combination so far. The chart appears from two games on.`:`Für diese Kombination gibt es erst ${pts.length} ${pts.length===1?'Partie':'Partien'} mit Werten. Ab zwei Partien erscheint das Diagramm.`}</p></section>`;
+  const W=360,Hh=250,L=44,R=12,T=12,B=42,pw=W-L-R,ph=Hh-T-B;
+  const ax=niceAxis(Math.min(...pts.map(p=>p.x)),Math.max(...pts.map(p=>p.x))),ay=niceAxis(Math.min(...pts.map(p=>p.y)),Math.max(...pts.map(p=>p.y)));
+  const sx=v=>L+(v-ax.a)/(ax.b-ax.a)*pw,sy=v=>T+ph-(v-ay.a)/(ay.b-ay.a)*ph;
+  let g='';
+  ay.t.forEach(v=>{const y=sy(v);g+=`<line x1="${L}" x2="${L+pw}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" class="cg"/><text x="${L-6}" y="${(y+3.5).toFixed(1)}" class="ct" text-anchor="end">${fmtV(v)}</text>`});
+  ax.t.forEach(v=>{const x=sx(v);g+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${T}" y2="${T+ph}" class="cg"/><text x="${x.toFixed(1)}" y="${T+ph+14}" class="ct" text-anchor="middle">${fmtV(v)}</text>`});
+  g+=`<text x="${L+pw/2}" y="${Hh-6}" class="cax" text-anchor="middle">${X.l}${X.u.trim()?' ('+X.u.trim()+')':''}</text>`;
+  // regression
+  const n=pts.length,mx=avg(pts.map(p=>p.x)),my=avg(pts.map(p=>p.y));let sxy=0,sxx=0,syy=0;pts.forEach(p=>{sxy+=(p.x-mx)*(p.y-my);sxx+=(p.x-mx)**2;syy+=(p.y-my)**2});
+  const r=sxx&&syy?sxy/Math.sqrt(sxx*syy):0,b1=sxx?sxy/sxx:0,b0=my-b1*mx;
+  if(n>=3&&sxx){const x1=ax.a,x2=ax.b;const cl=v=>Math.max(ay.a,Math.min(ay.b,v));g+=`<line x1="${sx(x1).toFixed(1)}" y1="${sy(cl(b0+b1*x1)).toFixed(1)}" x2="${sx(x2).toFixed(1)}" y2="${sy(cl(b0+b1*x2)).toFixed(1)}" class="ctrend"/>`}
+  if(X.k==='game'){const ps=pts.slice().sort((a,b)=>a.x-b.x).map(p=>`${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`).join(' ');g+=`<polyline points="${ps}" class="cl" style="stroke:var(--muted);opacity:.5"/>`}
+  const seen={};
+  pts.forEach((p,k)=>{const key=p.x+'|'+p.y;const o=seen[key]=(seen[key]||0)+1;const jx=(o-1)*4;const cls=p.pl===1?'w':p.pl===2?'s':'o';
+    g+=`<circle cx="${(sx(p.x)+jx).toFixed(1)}" cy="${sy(p.y).toFixed(1)}" r="${UI.cSel===p.g.id?7:5.5}" class="scp ${cls}${UI.cSel===p.g.id?' on':''}" data-act="cPoint" data-id="${p.g.id}"><title>Partie #${p.i+1} · Platz ${p.pl}</title></circle>`});
+  const yl=`${Y.l}${Y.u.trim()?' ('+Y.u.trim()+')':''}`;
+  h2+=`<figure class="chart scatter"><figcaption>${yl}</figcaption><div class="cwrap"><svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${yl} gegen ${X.l}">${g}</svg></div><div class="clegend"><span><i class="lw"></i>Sieg</span><span><i class="ls"></i>Zweiter Platz</span><span><i class="lo"></i>weiter hinten</span>${n>=3?'<span><i class="lt"></i>Trend</span>':''}</div></figure>`;
+  // interpretation
+  if(n>=3){const a=Math.abs(r);const str=a<0.2?'Kaum ein Zusammenhang':a<0.4?'Ein schwacher Zusammenhang':a<0.7?'Ein deutlicher Zusammenhang':'Ein starker Zusammenhang';
+    const xl=LANG==='en'?tr(X.l):X.l,yl2=LANG==='en'?tr(Y.l):Y.l;
+    const dir=a<0.2?'':LANG==='en'?(r>0?`The higher “${xl}”, the higher “${yl2}” tends to be.`:`The higher “${xl}”, the lower “${yl2}” tends to be.`):(r>0?`Je höher „${xl}“, desto höher meist „${yl2}“.`:`Je höher „${xl}“, desto niedriger meist „${yl2}“.`);
+    h2+=`<div class="cinfo"><b>${str}</b> <span class="cr">r = ${fmt1(r).replace('.',LANG==='en'?'.':',')}</span><p>${dir} ${n<8?'Mit wenigen Partien ist das noch wackelig.':''}</p><p class="hint">r reicht von −1 bis +1: 0 heißt kein Zusammenhang, ±1 ein perfekter. Ein Zusammenhang ist noch kein Beweis für Ursache und Wirkung.</p></div>`}
+  const sp=pts.find(p=>p.g.id===UI.cSel);
+  if(sp)h2+=`<div class="cpoint">${placeBadge(sp.pl)}<div><b>Partie #${sp.i+1}</b><span>${new Date(sp.g.date).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'})} · ${esc(MAPS[sp.g.map||'de'].name)} · ${AI_NAME[sp.g.diff]||''}</span><span>${X.l}: <b>${fmtV(sp.x)}${X.u}</b> · ${Y.l}: <b>${fmtV(sp.y)}${Y.u}</b></span></div><button type="button" class="btn sm" data-act="statsSel" data-id="${sp.g.id}">Details</button></div>`;
+  else h2+=`<p class="hint">Tippe auf einen Punkt, um die Partie zu sehen.</p>`;
+  return h2+`</section>`;
 }
 function statsTrend(h){
   if(h.length<2)return `<div class="st-empty"><b>Noch zu wenig Partien</b><p>Spiel mindestens zwei Partien, um Entwicklungen zu sehen.</p></div>`;
@@ -2796,6 +2923,9 @@ const A={
   advBuild:b=>{if(!myTurn('build'))return;for(const c of JSON.parse(b.dataset.cities)){if(!doBuild(H,c))break}UI.buildSel=null},
   advPower:b=>{UI.power=JSON.parse(b.dataset.nums)},
   vibToggle:()=>{UI.vib=!UI.vib;try{localStorage.setItem('hochspannung-vib',UI.vib?'1':'0')}catch(_){}},
+  cSwap:()=>{const a=UI.cx;UI.cx=UI.cy;UI.cy=a;try{localStorage.setItem('hochspannung-cx',UI.cx);localStorage.setItem('hochspannung-cy',UI.cy)}catch(_){}renderStats();return'skip'},
+  cPreset:b=>{UI.cx=b.dataset.x;UI.cy=b.dataset.y;try{localStorage.setItem('hochspannung-cx',UI.cx);localStorage.setItem('hochspannung-cy',UI.cy)}catch(_){}renderStats();return'skip'},
+  cPoint:b=>{UI.cSel=UI.cSel===b.dataset.id?null:b.dataset.id;renderStats();return'skip'},
   boardView:()=>{UI.statView='board';renderStats();return'skip'},
   lbSubmitLast:b=>{const nm=($('#lbn')?.value||'').trim();if(isDefaultName(nm)){UI.lbMsg=LB_MSG.name;renderSheet();if(!$('#stats').hidden)renderStats();return'skip'}setLbName(nm);const g=loadHist().find(x=>String(x.id)===b.dataset.id);const r=g&&recToResult(g,nm);lbSubmit(r,'app').then(st=>{UI.lbMsg=LB_MSG[st]||'';if(st==='ok')UI.lbDone=b.dataset.id;renderSheet();if(!$('#stats').hidden)renderStats()});return'skip'},
   lbOpen:b=>{const nm=($('#lbn')?.value||'').trim();if(isDefaultName(nm)){UI.lbMsg=LB_MSG.name;renderSheet();if(!$('#stats').hidden)renderStats();return'skip'}setLbName(nm);const g=loadHist().find(x=>String(x.id)===b.dataset.id);const r=g&&recToResult(g,nm);if(!r)return'skip';const url=shareLink(r);
