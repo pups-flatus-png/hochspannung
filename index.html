@@ -883,6 +883,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .cpoint>div>b{color:var(--fg);font-size:14px}
 .cpoint span b{color:var(--fg)}
 .st-empty-inline{color:var(--muted);font-size:13px}
+.goalnote{margin:-4px 0 14px}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -2084,6 +2085,9 @@ function renderStart(show){
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
+[/^ Alle diese Partien hatten das Ziel (\d+): Ø ([\d.,]+) versorgte Städte\.$/u,' All these games had a goal of $1: Ø $2 cities powered.'],
+[/^Versorgt · Ziel (\d+)$/u,'Powered · goal $1'],
+[/^(\d+) % \((\d+) von (\d+)\)$/u,'$1 % ($2 of $3)'],
 [/^Kraftwerke in (\d+) Partien?$/u,'plants in $1 games'],
 [/^Partie #(\d+) · Platz (\d+)$/u,'Game #$1 · place $2'],
 [/^Gegner Ø ([\d.,]+) €$/u,'Opponents avg $1 €'],
@@ -2217,6 +2221,9 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'Zielerreichung: versorgte Städte am Ende geteilt durch das Spielziel der Partie (17 Städte bei 3 und 4 Spielern, 15 bei 5, 14 bei 6), damit Partien mit unterschiedlicher Spielerzahl vergleichbar sind.':'Goal reached: cities powered at the end divided by the game’s goal (17 cities with 3 and 4 players, 15 with 5, 14 with 6), so games with different player counts are comparable.',
+'Zielerreichung (versorgt ÷ Spielziel)':'Goal reached (powered ÷ game goal)','Städte in % des Spielziels':'Cities as % of game goal','Versorgte Städte am Ende (absolut)':'Cities powered at end (absolute)','Städte am Ende (absolut)':'Cities at end (absolute)',
+'Brennstoff je Stadt ↔ Zielerreichung':'Fuel per city ↔ goal reached','Zielerreichung je Partie in %':'Goal reached per game in %','Ø Zielerreichung':'Ø goal reached','Beste Zielerreichung':'Best goal reached','Zielerreichung':'Goal reached','Ziel erreicht':'Goal reached','Bestes Ziel':'Best goal','Ø Ziel':'Ø goal',
 'Wähle zwei Werte. Jeder Punkt ist eine deiner Partien, so siehst du, ob die Werte zusammenhängen.':'Pick two measures. Each dot is one of your games, so you can see whether they are related.',
 'r reicht von −1 bis +1: 0 heißt kein Zusammenhang, ±1 ein perfekter. Ein Zusammenhang ist noch kein Beweis für Ursache und Wirkung.':'r ranges from −1 to +1: 0 means no relationship, ±1 a perfect one. A relationship is not proof of cause and effect.',
 'Der Aufpreis ist der Betrag über der Kraftwerksnummer, die das Mindestgebot ist. Rabattkäufe sind Kraftwerke, die du als kleinstes Kraftwerk ab 1 € bekommen hast; sie zählen nicht zum Aufpreis.':'The markup is the amount paid above the plant number, which is the minimum bid. Discount buys are plants you got as the smallest plant from 1 €; they don’t count towards the markup.',
@@ -2485,6 +2492,8 @@ function bars(rows,unit=''){
 const TCOL={coal:'#c88a55',oil:'#7ea9d6',garbage:'#d9c13f',uranium:'#ef6a5e',eco:'#66cc7d',fusion:'#5fd4f0',hybrid:'#b9a088',gohybrid:'#a8a060'};
 function placeBadge(pl,n){return `<span class="place p${pl}">${pl}.</span>`}
 function meOf(g){return g.players.find(p=>p.human)||g.players[0]}
+function goalOf(g){return(RULES_N[(g.players&&g.players.length)||g.n]||RULES_N[4]).end}
+function goalPct(g,m){return m.powered/goalOf(g)*100}
 function fuelOf(g,pl){const i=g.players.indexOf(pl);const r=pl.res||{};let cost=0,units=0;RES.forEach(k=>{const x=r[k]||[0,0];units+=x[0];cost+=x[1]});const pw=(g.series||[]).reduce((s,x)=>s+((x.p||[])[i]||0),0);return{cost,units,pw,unit:units?cost/units:null,city:pw?cost/pw:null,round:g.rounds?cost/g.rounds:0,inc:pl.income?cost/pl.income*100:null}}
 function gameMetrics(g){
   const m=meOf(g),mi=g.players.indexOf(m);
@@ -2493,7 +2502,7 @@ function gameMetrics(g){
   const fam={fossil:0,garbage:0,uranium:0,eco:0,fusion:0};au.forEach(a=>{const t=ALLPLANTS[a.n][0];fam[t==='coal'||t==='oil'||t==='hybrid'||t==='gohybrid'?'fossil':t]++});
   const nb=au.length||1;
   const r7=(g.series||[]).find(x=>x.c[mi]>=7);
-  return{powered:m.powered,place:m.place,win:m.place===1,money:m.money,rounds:g.rounds,
+  return{powered:m.powered,goal:Math.round(goalPct(g,m)),place:m.place,win:m.place===1,money:m.money,rounds:g.rounds,
     plPct:Math.round(pl/tot*100),resPct:Math.round(res/tot*100),netPct:Math.round(net/tot*100),
     markup:nd.length?nd.reduce((s,a)=>s+a.price-a.min,0)/nd.length:0,
     fossil:Math.round(fam.fossil/nb*100),garbage:Math.round(fam.garbage/nb*100),uranium:Math.round(fam.uranium/nb*100),eco:Math.round(fam.eco/nb*100),fusion:Math.round(fam.fusion/nb*100),
@@ -2532,10 +2541,11 @@ function statsTotal(h){
   const wins=h.filter(g=>me_(g).place===1);
   const tiles=[
     ['Partien',fmt(h.length)],['Siege',fmt(wins.length)],['Siegquote',Math.round(wins.length/h.length*100)+' %'],
-    ['Ø Platz',fmt1(avg(h.map(g=>me_(g).place)))],['Ø versorgt',fmt1(avg(h.map(g=>me_(g).powered)))+' Städte'],['Ø Runden',fmt1(avg(h.map(g=>g.rounds)))]];
+    ['Ø Platz',fmt1(avg(h.map(g=>me_(g).place)))],['Ø Zielerreichung',Math.round(avg(h.map(g=>goalPct(g,me_(g)))))+' %'],['Ø Runden',fmt1(avg(h.map(g=>g.rounds)))]];
+  const goals=[...new Set(h.map(goalOf))].sort((a,b)=>b-a);
   const rec=[];
   const best=(f,arr=h)=>arr.reduce((b,g)=>f(g)>f(b)?g:b,arr[0]);
-  const bp=best(g=>me_(g).powered);rec.push(['Meiste versorgte Städte',me_(bp).powered,bp]);
+  const bp=best(g=>goalPct(g,me_(g)));rec.push(['Beste Zielerreichung',`${Math.round(goalPct(bp,me_(bp)))} % (${me_(bp).powered} von ${goalOf(bp)})`,bp]);
   const bi=best(g=>me_(g).maxInc||0);rec.push(['Höchstes Einkommen in einer Runde',fmt(me_(bi).maxInc||0)+' €',bi]);
   const bm=best(g=>me_(g).money);rec.push(['Meiste Elektro am Ende',fmt(me_(bm).money)+' €',bm]);
   if(wins.length){const fw=wins.reduce((b,g)=>g.rounds<b.rounds?g:b,wins[0]);rec.push(['Schnellster Sieg',fw.rounds+' Runden',fw])}
@@ -2561,11 +2571,12 @@ function statsTotal(h){
   const rivalRows=Object.entries(rivals).sort((a,b)=>b[1]-a[1]).map(([n,v])=>({label:esc(n),v,color:'var(--edge)',text:v+(v===1?' Sieg':' Siege')}));
   const st2=avg(h.filter(g=>g.step2).map(g=>g.step2)),st3=avg(h.filter(g=>g.step3).map(g=>g.step3));
   const hist=h.map((g,i)=>({g,i})).reverse().map(({g,i})=>{const m=me_(g);const dd=new Date(g.date);return `<button type="button" class="hrow" data-act="statsSel" data-id="${g.id}">${placeBadge(m.place)}<span class="hd"><b>#${i+1} · ${dd.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'})}</b><small>${dd.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})}</small></span><span class="hm">${m.powered} versorgt · ${m.cities} Städte · ${fmt(m.money)} €</span><span class="hx">${g.rounds} R · ${AI_NAME[g.diff]||g.diff} · ${g.n} Sp.</span></button>`}).join('');
-  return `${lastBox(h)}<h3 class="lthead">Langfristig · ${h.length} ${h.length===1?'Partie':'Partien'}</h3><div class="tiles">${tiles.map(([k,v])=>`<div class="tile"><small>${k}</small><b>${v}</b></div>`).join('')}</div>
+  const goalNote=`<p class="hint goalnote">Zielerreichung: versorgte Städte am Ende geteilt durch das Spielziel der Partie (17 Städte bei 3 und 4 Spielern, 15 bei 5, 14 bei 6), damit Partien mit unterschiedlicher Spielerzahl vergleichbar sind.${goals.length===1?`<span> Alle diese Partien hatten das Ziel ${goals[0]}: Ø ${fmt1(avg(h.map(g=>me_(g).powered)))} versorgte Städte.</span>`:''}</p>`;
+  return `${lastBox(h)}<h3 class="lthead">Langfristig · ${h.length} ${h.length===1?'Partie':'Partien'}</h3><div class="tiles">${tiles.map(([k,v])=>`<div class="tile"><small>${k}</small><b>${v}</b></div>`).join('')}</div>${goalNote}
   <div class="st-grid">
    ${fuelCard(h)}
    <section class="card"><h3>Wirtschaft je Partie</h3><p class="hint">Durchschnitt über alle Partien.</p>${bars([{label:'Einnahmen',v:E('inc'),color:'#58b86a',text:fmt(E('inc'))+' €'},{label:'Kraftwerke',v:E('pl'),text:fmt(E('pl'))+' €'},{label:'Rohstoffe',v:E('res'),text:fmt(E('res'))+' €'},{label:'Netz',v:E('net'),text:fmt(E('net'))+' €'}])}<p class="hint">Vom Netz gingen Ø ${fmt(E('slot'))} € in Stadtplätze und ${fmt(E('conn'))} € in Leitungen.</p></section>
-   <section class="card"><h3>Nach KI-Stärke</h3><div class="st-table"><table><thead><tr><th>Stärke</th><th>Partien</th><th>Siege</th><th>Quote</th><th>Ø versorgt</th></tr></thead><tbody>${diffRows.map(r=>`<tr><td>${AI_NAME[r.d]}</td><td>${r.gs.length}</td><td>${r.w}</td><td>${r.gs.length?Math.round(r.w/r.gs.length*100)+' %':'–'}</td><td>${r.gs.length?fmt1(avg(r.gs.map(g=>me_(g).powered))):'–'}</td></tr>`).join('')}</tbody></table></div>${rivalRows.length?`<h4>Wer dich am häufigsten schlägt</h4>${bars(rivalRows)}`:''}</section>
+   <section class="card"><h3>Nach KI-Stärke</h3><div class="st-table"><table><thead><tr><th>Stärke</th><th>Partien</th><th>Siege</th><th>Quote</th><th>Ø Ziel</th></tr></thead><tbody>${diffRows.map(r=>`<tr><td>${AI_NAME[r.d]}</td><td>${r.gs.length}</td><td>${r.w}</td><td>${r.gs.length?Math.round(r.w/r.gs.length*100)+' %':'–'}</td><td>${r.gs.length?Math.round(avg(r.gs.map(g=>goalPct(g,me_(g)))))+' %':'–'}</td></tr>`).join('')}</tbody></table></div>${rivalRows.length?`<h4>Wer dich am häufigsten schlägt</h4>${bars(rivalRows)}`:''}</section>
    <section class="card"><h3>Rekorde</h3><dl class="recs">${rec.map(([k,v,g])=>`<div><dt>${k}</dt><dd>${v}</dd><button type="button" class="linkbtn" data-act="statsSel" data-id="${g.id}">Partie vom ${new Date(g.date).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})}</button></div>`).join('')}</dl></section>
    <section class="card"><h3>Kraftwerke</h3><div class="kv2"><div><small>Gekauft</small><b>${auAll.length}</b><span class="kvx">Kraftwerke in ${h.length} ${h.length===1?'Partie':'Partien'}</span></div><div><small>Ø Aufpreis</small><b>+${fmt1(over||0)} €</b><span class="kvx">über dem Mindestgebot</span></div><div><small>Rabattkäufe</small><b>${discN}</b><span class="kvx">ab 1 € ersteigert</span></div><div><small>Lieblingstyp</small><b>${favT?favT.label:'–'}</b><span class="kvx">am häufigsten gekauft</span></div></div>${typeRows.length?`<div class="barcap"><span>Gekaufte Kraftwerke je Typ</span><span>Anzahl · Anteil</span></div>${bars(typeRows)}`:'<p class="hint">Noch keine Käufe.</p>'}<p class="hint">Der Aufpreis ist der Betrag über der Kraftwerksnummer, die das Mindestgebot ist. Rabattkäufe sind Kraftwerke, die du als kleinstes Kraftwerk ab 1 € bekommen hast; sie zählen nicht zum Aufpreis.</p></section>
    <section class="card"><h3>Rohstoffe</h3><div class="barcap"><span>Gekaufte Einheiten je Rohstoff</span><span>Einheiten · Ø Preis je Einheit</span></div>${bars(resRows)}</section>
@@ -2603,7 +2614,7 @@ function lastBox(h){
   const gap=m.place===1?`${m.powered-(by?by.powered:0)} ${Math.abs(m.powered-(by?by.powered:0))===1?'Stadt':'Städte'} Vorsprung vor ${esc(by?by.name:'')}`:`${(win.powered-m.powered)} ${Math.abs(win.powered-m.powered)===1?'Stadt':'Städte'} hinter ${esc(win.name)}`;
   return `<section class="lastbox${m.place===1?' won':''}"><div class="lbh"><span class="lbt">Letzte Partie</span><span class="lbm">${dd.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})} · ${esc(MAPS[g.map||'de'].name)} · ${AI_NAME[g.diff]||''} · <span>${g.players.length} Spieler</span></span></div>
   <div class="lbv">${placeBadge(m.place)}<div><b>${verdict}</b><span>${gap}</span></div></div>
-  <div class="lbs"><div><small>Versorgt</small><b>${m.powered}</b>${d(m.powered,A('powered'))}</div><div><small>Städte</small><b>${m.cities}</b>${d(m.cities,A('cities'))}</div><div><small>Geld am Ende</small><b>${fmt(m.money)} €</b>${d(m.money,A('money'),' €')}</div><div><small>Runden</small><b>${g.rounds}</b>${d(g.rounds,avg(h.map(x=>x.rounds)),'',true)}</div><div><small>Einnahmen</small><b>${fmt(m.income||0)} €</b>${d(m.income||0,A('income'),' €')}</div><div><small>Ausgaben</small><b>${fmt(spent)} €</b></div></div>
+  <div class="lbs"><div><small>Versorgt · Ziel ${goalOf(g)}</small><b>${m.powered}</b>${d(m.powered,avg(h.map(x=>me_(x).powered/goalOf(x)))*goalOf(g))}</div><div><small>Städte</small><b>${m.cities}</b>${d(m.cities,avg(h.map(x=>me_(x).cities/goalOf(x)))*goalOf(g))}</div><div><small>Geld am Ende</small><b>${fmt(m.money)} €</b>${d(m.money,A('money'),' €')}</div><div><small>Runden</small><b>${g.rounds}</b>${d(g.rounds,avg(h.map(x=>x.rounds)),'',true)}</div><div><small>Einnahmen</small><b>${fmt(m.income||0)} €</b>${d(m.income||0,A('income'),' €')}</div><div><small>Ausgaben</small><b>${fmt(spent)} €</b></div></div>
   <div class="lbf"><span class="lbp">${(m.plants||[]).map(n=>`<span class="pchip">${PN(n)}</span>`).join('')}${fav?`<span class="lbfuel">${resIcon(fav)} ${RNAME[fav]}</span>`:''}${fuelOf(g,m).unit!=null?`<span class="lbfuel">Ø ${fmt1(fuelOf(g,m).unit)} € je Einheit</span>`:''}</span><button type="button" class="btn sm" data-act="statsSel" data-id="${g.id}">Details</button></div></section>`;
 }
 function prefCard(h,auAll,resTot){
@@ -2650,8 +2661,10 @@ function metricDefs(){
   return [
    {k:'game',g:'Partie',l:'Partie (zeitliche Reihenfolge)',u:'',f:(g,m,i)=>i+1,xOnly:true},
    {k:'place',g:'Ergebnis',l:'Platz (1 = Sieg)',u:'',f:(g,m)=>m.place,inv:true},
-   {k:'powered',g:'Ergebnis',l:'Versorgte Städte am Ende',u:'',f:(g,m)=>m.powered},
-   {k:'cities',g:'Ergebnis',l:'Städte am Ende',u:'',f:(g,m)=>m.cities},
+   {k:'goalPct',g:'Ergebnis',l:'Zielerreichung (versorgt ÷ Spielziel)',u:' %',f:(g,m)=>goalPct(g,m)},
+   {k:'cityPct',g:'Ergebnis',l:'Städte in % des Spielziels',u:' %',f:(g,m)=>m.cities/goalOf(g)*100},
+   {k:'powered',g:'Ergebnis',l:'Versorgte Städte am Ende (absolut)',u:'',f:(g,m)=>m.powered},
+   {k:'cities',g:'Ergebnis',l:'Städte am Ende (absolut)',u:'',f:(g,m)=>m.cities},
    {k:'money',g:'Ergebnis',l:'Geld am Ende',u:' €',f:(g,m)=>m.money},
    {k:'income',g:'Ergebnis',l:'Einnahmen gesamt',u:' €',f:(g,m)=>m.income||0},
    {k:'maxInc',g:'Ergebnis',l:'Höchste Einnahme einer Runde',u:' €',f:(g,m)=>m.maxInc||0},
@@ -2692,7 +2705,7 @@ function statsCustom(h){
   if(!by[cx])cx='tEco';if(!by[cy]||by[cy].xOnly)cy='fuelUnit';UI.cx=cx;UI.cy=cy;
   const X=by[cx],Y=by[cy];
   const sel=(id,cur,yAxis)=>`<select id="${id}">${MGROUPS.map(([gk,gl,ge])=>`<optgroup label="${LANG==='en'?ge:gl}">${D.filter(d=>d.g===gk&&!(yAxis&&d.xOnly)).map(d=>`<option value="${d.k}" ${d.k===cur?'selected':''}>${d.l}</option>`).join('')}</optgroup>`).join('')}</select>`;
-  const presets=[['tEco','fuelUnit','Öko-Anteil ↔ Brennstoffpreis'],['rounds','fuelUnit','Runden ↔ Brennstoffpreis'],['markup','place','Aufpreis ↔ Platz'],['fuelCity','powered','Brennstoff je Stadt ↔ versorgte Städte'],['game','fuelUnit','Brennstoffpreis über die Zeit'],['avgPlant','place','Kraftwerksgröße ↔ Platz']];
+  const presets=[['tEco','fuelUnit','Öko-Anteil ↔ Brennstoffpreis'],['rounds','fuelUnit','Runden ↔ Brennstoffpreis'],['markup','place','Aufpreis ↔ Platz'],['fuelCity','goalPct','Brennstoff je Stadt ↔ Zielerreichung'],['game','fuelUnit','Brennstoffpreis über die Zeit'],['avgPlant','place','Kraftwerksgröße ↔ Platz']];
   let h2=`<section class="card wide cbuild"><h3>Eigenes Diagramm</h3><p class="hint">Wähle zwei Werte. Jeder Punkt ist eine deiner Partien, so siehst du, ob die Werte zusammenhängen.</p>
   <div class="cpick"><label class="stsel"><span>Waagerecht (X)</span>${sel('cxSel',cx,false)}</label><button type="button" class="btn sm" data-act="cSwap" aria-label="Achsen tauschen" ${X.xOnly?'disabled':''}>⇄</button><label class="stsel"><span>Senkrecht (Y)</span>${sel('cySel',cy,true)}</label></div>
   <div class="cpre">${presets.map(([a,b,l])=>`<button type="button" class="chip${a===cx&&b===cy?' on':''}" data-act="cPreset" data-x="${a}" data-y="${b}">${l}</button>`).join('')}</div>`;
@@ -2737,7 +2750,7 @@ function statsTrend(h){
     const n=Math.floor(h.length/2),A=M.slice(0,n),Z=M.slice(-n);
     const av=(arr,k)=>avg(arr.filter(x=>x[k]!=null).map(x=>x[k]));
     const rows=[
-      ['Versorgte Städte','powered','',1],['Siegquote','win','%',100],['Ø Platz','place','',1],
+      ['Zielerreichung','goal','%',1],['Siegquote','win','%',100],['Ø Platz','place','',1],
       ['Anteil Kraftwerke an Ausgaben','plPct','%',1],['Anteil Rohstoffe an Ausgaben','resPct','%',1],['Anteil Netz an Ausgaben','netPct','%',1],
       [`Runde mit 7 Städten`,'r7','',1],['Ø Aufpreis je Kraftwerk','markup',' €',1],['Ø Brennstoffpreis je Einheit','fuelUnit',' €',1],['Brennstoffkosten je versorgter Stadt','fuelCity',' €',1],['Ø Kraftwerksnummer','avgPlant','',1],['Anteil Öko-Kraftwerke','eco','%',1]];
     summary=`<section class="card wide"><h3>Was sich verändert hat</h3><p class="hint">Deine ersten ${n} Partien im Vergleich zu deinen letzten ${n}.</p><div class="st-table"><table class="delta"><thead><tr><th>Kennzahl</th><th>Früher</th><th>Zuletzt</th><th>Veränderung</th></tr></thead><tbody>${rows.map(([lab,k,u,mul])=>{const a=av(A,k)*mul,z=av(Z,k)*mul;const pct=u==='%'||k==='win';const d=pct?Math.round(z)-Math.round(a):Math.round((z-a)*10)/10;const f=v=>k==='win'||u==='%'?Math.round(v)+' %':fmt1(v)+u;const dd=d===0?'=':(d>0?'↑ ':'↓ ')+(u==='%'||k==='win'?Math.round(Math.abs(d))+' Pkt.':fmt1(Math.abs(d))+u);return `<tr><td>${lab}</td><td>${f(a)}</td><td>${f(z)}</td><td><span class="dchip ${d>0?'up':d<0?'down':''}">${dd}</span></td></tr>`}).join('')}</tbody></table></div></section>`;
@@ -2745,7 +2758,7 @@ function statsTrend(h){
   const r7xs=xs.filter(x=>x.r7!=null);
   return `${summary}<p class="hint">Jeder Punkt ist eine Partie, die älteste links. Tippe auf ein Diagramm für die Werte.</p>
   <div class="charts">
-   ${mk('t1','Versorgte Städte je Partie','',[ser('Versorgt','#f2b33d','powered')])}
+   ${mk('t1','Zielerreichung je Partie in %',' %',[ser('Ziel erreicht','#f2b33d','goal')],{min:100})}
    ${mk('t2','Ausgabenmix in %',' %',[ser('Kraftwerke','#f2b33d','plPct'),ser('Rohstoffe','#4f9dff','resPct'),ser('Netz','#4fd6c4','netPct')],{min:50})}
    ${mk('t3','Gekaufte Kraftwerkstypen in %',' %',[ser('Fossil','#c88a55','fossil'),ser('Müll','#d9c13f','garbage'),ser('Uran','#ef6a5e','uranium'),ser('Öko','#66cc7d','eco'),ser('Fusion','#5fd4f0','fusion')],{min:50})}
    ${mk('t4','Ø Aufpreis je Kraftwerk in €',' €',[ser('Aufpreis','#f2b33d','markup')])}
@@ -2857,14 +2870,14 @@ function statsBoard(){
   if(UI.statDiff&&UI.statDiff!=='all')docs=docs.filter(r=>r.diff===UI.statDiff);
   if(UI.statMap&&UI.statMap!=='all')docs=docs.filter(r=>r.map===UI.statMap);
   const by={};
-  docs.forEach(r=>{const h=lbHuman(r);const k=h.name.trim().toLowerCase();const e=by[k]??={name:h.name,g:0,w:0,pl:[],pw:[],best:0};e.g++;if(h.place===1)e.w++;e.pl.push(h.place);e.pw.push(h.powered);e.best=Math.max(e.best,h.powered)});
+  docs.forEach(r=>{const h=lbHuman(r);const k=h.name.trim().toLowerCase();const e=by[k]??={name:h.name,g:0,w:0,pl:[],pw:[],best:0};e.g++;if(h.place===1)e.w++;const gl=(RULES_N[r.n]||RULES_N[4]).end;e.pl.push(h.place);e.pw.push(h.powered/gl*100);e.best=Math.max(e.best,Math.round(h.powered/gl*100))});
   const rows=Object.values(by).sort((a,b)=>(b.w/b.g)-(a.w/a.g)||b.w-a.w||avg(b.pw)-avg(a.pw));
   const writer=LB.canWrite!==false;
   const localIds=new Set((LB.docs||[]).map(r=>r.id));
   const missing=loadHist().filter(g=>!localIds.has(String(g.id).replace(/[^0-9A-Za-z-]/g,'-'))&&g.players&&g.players.some(p=>p.human));
   let h=`<section class="card wide"><h3>Gemeinsame Rangliste</h3>`;
   if(!rows.length)h+=`<p class="hint">Noch keine Ergebnisse${docs.length!==(LB.docs||[]).length?' mit diesem Filter':''}. Beende eine Partie und trag sie ein, oder füge unten einen Ergebnis-Link ein.</p>`;
-  else h+=`<div class="st-table"><table class="lbt"><thead><tr><th>#</th><th>Name</th><th>Partien</th><th>Siege</th><th>Quote</th><th>Ø Platz</th><th>Ø versorgt</th><th>Bestwert</th></tr></thead><tbody>${rows.map((e,i)=>`<tr><td>${i+1}.</td><td class="lbn">${esc(e.name)}</td><td>${e.g}</td><td>${e.w}</td><td>${Math.round(e.w/e.g*100)} %</td><td>${fmt1(avg(e.pl))}</td><td>${fmt1(avg(e.pw))}</td><td>${e.best}</td></tr>`).join('')}</tbody></table></div>`;
+  else h+=`<div class="st-table"><table class="lbt"><thead><tr><th>#</th><th>Name</th><th>Partien</th><th>Siege</th><th>Quote</th><th>Ø Platz</th><th>Ø Ziel</th><th>Bestes Ziel</th></tr></thead><tbody>${rows.map((e,i)=>`<tr><td>${i+1}.</td><td class="lbn">${esc(e.name)}</td><td>${e.g}</td><td>${e.w}</td><td>${Math.round(e.w/e.g*100)} %</td><td>${fmt1(avg(e.pl))}</td><td>${Math.round(avg(e.pw))} %</td><td>${e.best} %</td></tr>`).join('')}</tbody></table></div>`;
   h+=`</section>`;
   if(docs.length){
     h+=`<section class="card wide"><h3>Letzte Ergebnisse</h3><div class="hist">${docs.slice(0,20).map(r=>{const x=lbHuman(r);const d=new Date(r.date);
