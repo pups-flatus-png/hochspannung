@@ -1190,7 +1190,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .order.v3.stuck .ot{grid-template-columns:auto minmax(0,1fr) auto}.order.v3.stuck .ot .nm{display:none}.order.v3.stuck .ot .ost{grid-row:1;grid-column:3}.order.v3.stuck .ot .chk{position:static;align-self:center}}
 @media (prefers-reduced-motion:reduce){.order.v3 .ot.act .n{animation:none}}
 /* ---- expansions: picker, rule panel, badges ---- */
-.mcard .xn{position:absolute;top:7px;right:7px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--panel-2);border:1px solid var(--line);font-size:10.5px;font-weight:700;color:var(--muted);display:grid;place-items:center}
+.mcard .xn{position:absolute;top:7px;right:7px;min-width:18px;height:18px;padding:0 7px;white-space:nowrap;border-radius:9px;background:var(--panel-2);border:1px solid var(--line);font-size:10.5px;font-weight:700;color:var(--muted);display:grid;place-items:center}
 .mcard.on .xn{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .xpick{margin-top:10px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,var(--panel-2),var(--panel));overflow:hidden}
 .xhead{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:10px;padding:12px 14px;cursor:pointer}
@@ -1201,6 +1201,8 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .xpick.open .xchev{transform:rotate(-135deg)}
 .xboxes{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:10px;padding:0 12px 12px}
 .xbox{display:flex;flex-direction:column;gap:6px;padding:9px;border-radius:12px;background:color-mix(in srgb,var(--bg) 55%,transparent);border:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.xbh{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:0 2px}
+.xbt{font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.01em}
 .xbn{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-left:2px}
 .xbox .mcard svg{height:52px}
 .xtag{display:inline-block;padding:2px 6px;border-radius:5px;background:color-mix(in srgb,var(--accent) 22%,var(--panel-2));color:var(--accent-text);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
@@ -2713,7 +2715,7 @@ function uraniumTrapWarn(){
 }
 const MAP_NOTE={na:'Deluxe-Plan: acht Kraftwerke im Markt mit Rabatt, Erdgas statt Müll. New York und Mexico City bestehen aus je zwei Städten ohne Leitungskosten.',eu:'Deluxe-Plan: neun Kraftwerke im Markt, kein Rabatt. Kauft niemand ein Kraftwerk, fällt das kleinste weg. Erdgas statt Müll.',de:'Das Basisspiel.',fr:'Paris besteht aus drei Städten, untereinander ohne Leitungskosten. Viel Uran im Markt, Kraftwerk 11 liegt von Beginn an aus.',it:'Atomausstieg: Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt kein Uran mehr nach.'};
 function rName(r,M){const R=(M?M.regions:REGIONS)[r];return R?(LANG==='en'&&R.en?R.en:tr(R.name)):r}
-const XBOX={2:'Erweiterung 2',4:'Erweiterung 4',5:'Erweiterung 5',6:'Erweiterung 6',7:'Erweiterung 7',8:'Erweiterung 8',9:'Erweiterung 9'};
+const XBOX={2:['Herz Europas','Heart of Europe'],4:['Ferner Osten','Far East'],5:['Iberien & Südamerika','Iberia & South America'],6:['Von Moskau bis Tokio','From Moscow to Tokyo'],7:['Nordlichter','Northern Lights'],8:['Zwei Provinzen','Two Provinces'],9:['Down Under & Subkontinent','Down Under & Subcontinent']};
 const RICON={
  plant:'<path d="M2 14V7l4 2.5V7l4 2.5V4h4v10z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>',
  deck:'<rect x="3" y="4" width="8" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 2.5h6.5a1.5 1.5 0 0 1 1.5 1.5v8" fill="none" stroke="currentColor" stroke-width="1.5"/>',
@@ -2775,14 +2777,14 @@ function xpickHTML(mapCard){
   const by={};Object.entries(MAPS).filter(([,m])=>m.exp).forEach(e=>(by[e[1].exp]??=[]).push(e));
   const n=Object.values(by).flat().length;if(!n)return '';
   const open=UI.xopen||MAPS[UI.map].exp;
-  return `<div class="xpick${open?' open':''}"><button type="button" class="xhead" data-act="xToggle" aria-expanded="${!!open}"><span class="xht">Erweiterungen</span><span class="xhs">${n} Spielpläne mit eigenen Regeln</span><span class="xchev" aria-hidden="true"></span></button>${open?`<div class="xboxes">${Object.entries(by).map(([b,ms])=>`<div class="xbox"><span class="xbn">${XBOX[b]||'Erweiterung '+b}</span><div class="mcards two">${ms.map(mapCard).join('')}</div></div>`).join('')}</div>`:''}</div>`;
+  return `<div class="xpick${open?' open':''}"><button type="button" class="xhead" data-act="xToggle" aria-expanded="${!!open}"><span class="xht">Erweiterungen</span><span class="xhs">${n} Spielpläne · je Karte die Zahl ihrer Sonderregeln</span><span class="xchev" aria-hidden="true"></span></button>${open?`<div class="xboxes">${Object.entries(by).map(([b,ms])=>`<div class="xbox"><div class="xbh"><span class="xbt">${XBOX[b]?XBOX[b][LANG==='en'?1:0]:''}</span><span class="xbn">${LANG==='en'?'Expansion':'Erweiterung'} ${b}</span></div><div class="mcards two">${ms.map(mapCard).join('')}</div></div>`).join('')}</div>`:''}</div>`;
 }
 function renderStart(show){
   if(!show){start.hidden=true;return}
   UI.map=UI.map||'de';loadMap(UI.map);
   start.hidden=false;start.classList.add('v2');
   const M=MAPS[UI.map],nP=UI.nAI+1,games=loadHist().length;
-  const mapCard=([k,m])=>`<button type="button" class="mcard${UI.map===k?' on':''}" data-act="mapSel" data-m="${k}" aria-pressed="${UI.map===k}">${mapThumb(k)}<span class="mcn">${m.name}</span>${m.deluxe?'<span class="dlxtag">Deluxe</span>':''}${m.exp&&m.rtxt?`<span class="xn" title="${m.rtxt.length} Sonderregeln">${m.rtxt.length}</span>`:''}</button>`;
+  const mapCard=([k,m])=>`<button type="button" class="mcard${UI.map===k?' on':''}" data-act="mapSel" data-m="${k}" aria-pressed="${UI.map===k}">${mapThumb(k)}<span class="mcn">${m.name}</span>${m.deluxe?'<span class="dlxtag">Deluxe</span>':''}${m.exp&&m.rtxt?`<span class="xn" title="${m.rtxt.length} Sonderregeln">${m.rtxt.length} ${LANG==='en'?(m.rtxt.length===1?'rule':'rules'):(m.rtxt.length===1?'Regel':'Regeln')}</span>`:''}</button>`;
   const resume=S&&S.phase!=='end'?`<div class="resume"><div><b>Laufende Partie</b><span>Runde ${S.round} auf ${esc(MAPS[S.map||'de'].name)}</span></div><button type="button" class="btn pri" data-act="cont">Weiterspielen</button></div>`:'';
   start.innerHTML=`<section class="hero"><div class="hero-top"><div class="sbrand"><h1>Hochspannung</h1><p>Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über ${esc(M.name)}. Wer am Ende die meisten Städte versorgt, gewinnt.</p></div></div>
    <div class="hero-map">${heroMap()}</div>
@@ -2803,7 +2805,7 @@ function renderStart(show){
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
-[/^(\d+) Spielpläne mit eigenen Regeln$/u,'$1 boards with their own rules'],
+[/^(\d+) Spielpläne · je Karte die Zahl ihrer Sonderregeln$/u,'$1 boards · each card shows how many special rules it has'],
 [/^Erweiterung (\d+)$/u,'Expansion $1'],
 [/^Platz (\d+) € \+ freier Sprung 0 € = $/u,'Slot $1 € + free jump 0 € = '],
 [/^Platz (\d+) € \+ Insel-Aufpreis (\d+) € = $/u,'Slot $1 € + island surcharge $2 € = '],
