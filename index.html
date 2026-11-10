@@ -1282,6 +1282,19 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .toggle.sellt{margin:8px 0}
 .toggle.sellt.on{border-color:color-mix(in srgb,#e8d27a 50%,var(--line));background:linear-gradient(180deg,rgba(232,210,122,.08),transparent)}
 .toggle.sellt.on .swt{background:#c9ab22}
+.plant.promo{border:1.5px dashed #e8b24a!important;box-shadow:0 0 0 2px rgba(232,178,74,.18),0 2px 6px -2px rgba(0,0,0,.5)}
+.plant .promotag{position:absolute!important;left:4px;bottom:5px;z-index:3;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:900;background:#e8b24a;color:#1b1406;box-shadow:0 0 0 2px var(--cbg)}
+.plant.promo .out .arr{visibility:hidden}
+.plant .req .anyres{display:inline-grid;grid-template-columns:repeat(2,9px);gap:1px;vertical-align:middle}
+.plant .req .anyres .ri{width:9px;height:9px}
+.prc{position:relative;overflow:hidden}
+.prc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--pc2)}
+.pt-plant{--pc2:#c9a8ff}.pt-auc{--pc2:#e8b24a}.pt-ev{--pc2:#7ea9d6}.pt-perm{--pc2:#6fd08a}
+.prc .prt small{color:var(--pc2)}
+[data-theme="light"] .pt-plant{--pc2:#6a4bb5}[data-theme="light"] .pt-auc{--pc2:#9a6400}[data-theme="light"] .pt-ev{--pc2:#2f6aa3}[data-theme="light"] .pt-perm{--pc2:#2f8a46}
+.xauc .xcard{border-style:dashed;border-width:1.5px}
+.xct{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-text)}
+.pchip2{border-style:dashed}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1341,15 +1354,16 @@ loadDeck(deckKeys('std'));
 const FREE=t=>t==='eco'||t==='fusion'||t==='mine';
 const STEP3=99;
 const FLUX=33.34;ALLPLANTS[FLUX]=['flux',3,6];
-const PROMOS={flux:{id:FLUX,y:2008,de:['Flux-Generator','Kraftwerk 33⅓: verbrennt und lagert alle vier Rohstoffe, 3 Einheiten für 6 Städte. Beim Aufdecken fliegt das kleinste Kraftwerk raus.'],en:['Flux generator','Plant 33⅓: burns and stores all four resources, 3 units for 6 cities. When revealed, the smallest plant leaves.']},
- sub:{id:101,y:2009,x:1,de:['Umspannwerk','Zusatzversteigerung ab 10 €. Das Kraftwerk, an dem es hängt, versorgt eine Stadt mehr.'],en:['Substation','Extra auction from 10 €. The plant it is attached to powers one more city.']},
- store:{id:104,y:2010,x:1,de:['Lagerhalle','Zusatzversteigerung ab 10 €. Drei Lagerplätze für beliebige Rohstoffe.'],en:['Warehouse','Extra auction from 10 €. Three storage spaces for any resources.']},
- surplus:{id:107,y:2010,de:['Rohstoffüberschuss','Beim Aufdecken kommen drei Einheiten der teuersten Sorte zusätzlich in den Markt (Uran: eine).'],en:['Resource surplus','When revealed, three units of the most expensive resource are added to the market (uranium: one).']},
- short:{id:106,y:2010,de:['Rohstoffmangel','Beim Aufdecken verschwinden die drei günstigsten Einheiten aus dem Markt (Uran: eine).'],en:['Resource shortage','When revealed, the three cheapest units leave the market (uranium: one).']},
- park:{id:102,y:2011,x:1,de:['Freizeitpark','Zusatzversteigerung ab 10 €. Zählt als eigene Stadt, die Strom braucht, ohne Anschlusskosten.'],en:['Amusement park','Extra auction from 10 €. Counts as one of your cities that needs power, with no connection cost.']},
- contract:{id:103,y:2011,x:1,de:['Liefervertrag','Zusatzversteigerung ab 10 €. Der Besitzer rückt in der Spielerreihenfolge dauerhaft einen Platz nach hinten.'],en:['Supply contract','Extra auction from 10 €. The owner moves one place back in turn order for good.']},
- spy:{y:2012,de:['Industriespionage','Ab Runde 2 darf der Letzte der Reihenfolge die oberste Stapelkarte sehen. Kauft er ein Kraftwerk, wandert die Karte einen Platz nach vorne.'],en:['Industrial espionage','From round 2 the last player may look at the top card of the deck. When they buy a plant, the card moves one seat forward.']},
- tax:{id:105,y:2013,de:['Steuern','Ab Stufe 2 zahlt jeder einmal 20 % seines Bargelds, zu Beginn der Bürokratie vor dem Einkommen.'],en:['Taxes','From Step 2 everyone pays 20 % of their cash once, at the start of bureaucracy before income.']}};
+const PROMOS={flux:{id:FLUX,y:2008,t:'plant',de:['Flux-Generator','Kraftwerk 33⅓, Mindestgebot 33 €. Verbrennt 3 Rohstoffe in beliebiger Mischung und versorgt 6 Städte. Wird es aufgedeckt, fällt das kleinste Kraftwerk aus dem Markt.'],en:['Flux generator','Plant 33⅓, minimum bid 33 €. Burns 3 resources in any mix and powers 6 cities. When it is revealed, the smallest plant leaves the market.']},
+ sub:{id:101,y:2009,x:1,t:'auc',de:['Umspannwerk','Wird an dein stärkstes Kraftwerk gehängt. Liefert dieses Strom, versorgt es eine Stadt mehr.'],en:['Substation','Attached to your strongest plant. When that plant produces power, it supplies one more city.']},
+ store:{id:104,y:2010,x:1,t:'auc',de:['Lagerhalle','Drei zusätzliche Lagerplätze für beliebige Rohstoffe, auch für solche, die keines deiner Kraftwerke nutzt.'],en:['Warehouse','Three extra storage spaces for any resource, even ones none of your plants can use.']},
+ surplus:{id:107,y:2010,t:'ev',de:['Rohstoffüberschuss','Drei Einheiten der gerade teuersten Sorte kommen aus dem Vorrat in den Markt, bei Uran eine.'],en:['Resource surplus','Three units of the currently most expensive resource move from the supply into the market, one for uranium.']},
+ short:{id:106,y:2010,t:'ev',de:['Rohstoffmangel','Die drei günstigsten Einheiten der gerade billigsten Sorte verschwinden aus dem Markt, bei Uran eine.'],en:['Resource shortage','The three cheapest units of the currently cheapest resource leave the market, one for uranium.']},
+ park:{id:102,y:2011,x:1,t:'auc',de:['Freizeitpark','Zählt als eine deiner Städte, die Strom braucht. Kein Haus auf dem Plan, keine Anschlusskosten.'],en:['Amusement park','Counts as one of your cities that needs power. No house on the board, no connection cost.']},
+ contract:{id:103,y:2011,x:1,t:'auc',de:['Liefervertrag','Du rückst in der Spielerreihenfolge dauerhaft einen Platz nach hinten und kommst so früher an Rohstoffe und Bauplätze.'],en:['Supply contract','You move one place back in turn order for good, so you get to resources and building spaces earlier.']},
+ spy:{y:2012,t:'perm',de:['Industriespionage','Ab Runde 2 sieht der Letzte der Reihenfolge die oberste Karte des Stapels. Kauft er ein Kraftwerk, geht die Spionage an den Spieler vor ihm.'],en:['Industrial espionage','From round 2 the last player in turn order sees the top card of the deck. When they buy a plant, the espionage passes to the player before them.']},
+ tax:{id:105,y:2013,t:'ev',de:['Steuern','Wird die Karte ab Stufe 2 aufgedeckt, zahlt jeder einmalig 20 % seines Bargelds, zu Beginn der nächsten Bürokratie vor dem Einkommen. In Stufe 1 wandert sie unter den Stapel.'],en:['Taxes','If revealed from Step 2 on, everyone pays 20 % of their cash once, at the start of the next bureaucracy before income. In Step 1 it goes under the deck.']}};
+const PTYPE={plant:['Kraftwerk','Power plant'],auc:['Zusatzversteigerung ab 10 €','Extra auction from 10 €'],ev:['Ereignis','Event'],perm:['Läuft dauerhaft','Always active']};
 const PROMO_BY_ID={};Object.entries(PROMOS).forEach(([k,v])=>{if(v.id)PROMO_BY_ID[v.id]=k});
 const HYBX={flux:['coal','oil','garbage','uranium']};
 const PAY=[10,22,33,44,54,64,73,82,90,98,105,112,118,124,129,134,138,142,145,148,150];
@@ -2039,10 +2053,10 @@ function plantCard(num,o={}){
   if(num===STEP3)return `<div class="plant step3"><b class="pn">III</b><span class="pl">Stufe 3</span></div>`;
   const[t,k,c]=PLANTS[num];
   const label=`Kraftwerk ${PN(num)}, ${TYPE_NAME[t]}, ${FREE(t)?'ohne Rohstoffe':k+' '+RNAME[t]}, versorgt ${c}`;
-  const cls=`plant t-${t}${o.disc?' disc':''}${o.lg?' lg':o.sm?' sm':''}${o.sel?' sel':''}${o.on?' on':''}${o.off?' off':''}${o.inauc?' inauc':''}`;
+  const cls=`plant t-${t}${num===FLUX?' promo':''}${o.disc?' disc':''}${o.lg?' lg':o.sm?' sm':''}${o.sel?' sel':''}${o.on?' on':''}${o.off?' off':''}${o.inauc?' inauc':''}`;
   let store='';
   if(o.store){store=`<div class="store">${FREE(t)?'<span class="none">kein Lager</span>':Array.from({length:STO(num)},(_,i)=>o.store[i]?resIcon(o.store[i]):'<i></i>').join('')}</div>`}
-  const inner=`${useIcon('b-'+t,'wm')}${o.disc?'<span class="dtag" title="Rabatt: ab 1 €">1 €</span>':''}${o.nb?`<span class="nbtag" title="Für dich gesperrt: Atomkraft nur mit passendem Netz"><svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">${RICON.nuke}</svg></span>`:''}<div class="top"><div class="nw"><b class="pn">${Math.floor(num)}${num%1?`<sup class="dk">${SRC(num)==='d1'?'S1':'S2'}</sup>`:''}</b><span class="tl">${TYPE_SHORT[t]}</span></div>${useIcon('b-'+t,'bi')}</div><div class="req">${reqHTML(t,k)}</div><div class="out"><span class="arr">→</span><span class="cty">${c}${useIcon('i-house','ico')}</span></div>${store}`;
+  const inner=`${num===FLUX?'<span class="promotag" title="Promokarte">P</span>':''}${useIcon('b-'+t,'wm')}${o.disc?'<span class="dtag" title="Rabatt: ab 1 €">1 €</span>':''}${o.nb?`<span class="nbtag" title="Für dich gesperrt: Atomkraft nur mit passendem Netz"><svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">${RICON.nuke}</svg></span>`:''}<div class="top"><div class="nw"><b class="pn">${Math.floor(num)}${num===FLUX?'<sup class="dk">⅓</sup>':num%1?`<sup class="dk">${SRC(num)==='d1'?'S1':'S2'}</sup>`:''}</b><span class="tl">${TYPE_SHORT[t]}</span></div>${useIcon('b-'+t,'bi')}</div><div class="req">${reqHTML(t,k)}</div><div class="out"><span class="arr">→</span><span class="cty">${c}${useIcon('i-house','ico')}</span></div>${store}`;
   if(o.act)return `<button type="button" class="${cls}" data-act="${o.act}" data-num="${num}" ${o.dis?'disabled':''} aria-label="${label}">${inner}</button>`;
   return `<div class="${cls}" aria-label="${label}">${inner}</div>`;
 }
@@ -2505,7 +2519,7 @@ function panelBureau(){
 function promoName(k){return PROMOS[k][LANG==='en'?'en':'de'][0]}
 function panelX(a){const x=S.xauc,k=PROMO_BY_ID[x.card],en=LANG==='en';const mine=a&&a.pid===H;
   if(mine&&UI.xKey!==x.card+'-'+x.bid){UI.xKey=x.card+'-'+x.bid;UI.xbid=Math.max(10,x.bid+1)}
-  let h=`<section class="sec xauc"><h3>${en?'Extra auction':'Zusatzversteigerung'}</h3><div class="xcard"><span class="xcn">${promoName(k)}</span><span class="xcd">${PROMOS[k][en?'en':'de'][1]}</span></div><div class="bidbox xb"><div><div class="big">${x.high==null?(en?'from 10 €':'ab 10 €'):x.bid+' €'}</div><div class="who">${x.high==null?(en?'No bid yet':'Noch kein Gebot'):(en?'Highest bid: ':'Höchstgebot: ')+esc(P(x.high).name)}</div><div class="bidders">${x.all.map(id=>`<span ${pc(id)} class="${x.bidders.includes(id)?'':'out'}">${esc(P(id).name)}</span>`).join('')}</div></div></div>`;
+  let h=`<section class="sec xauc"><h3>${en?'Extra auction':'Zusatzversteigerung'}</h3><div class="xcard"><span class="xct">Promo · ${PTYPE.auc[en?1:0]}</span><span class="xcn">${promoName(k)}</span><span class="xcd">${PROMOS[k][en?'en':'de'][1]}</span></div><div class="bidbox xb"><div><div class="big">${x.high==null?(en?'from 10 €':'ab 10 €'):x.bid+' €'}</div><div class="who">${x.high==null?(en?'No bid yet':'Noch kein Gebot'):(en?'Highest bid: ':'Höchstgebot: ')+esc(P(x.high).name)}</div><div class="bidders">${x.all.map(id=>`<span ${pc(id)} class="${x.bidders.includes(id)?'':'out'}">${esc(P(id).name)}</span>`).join('')}</div></div></div>`;
   if(mine){const can=me().money>=Math.max(10,x.bid+1);
     h+=can?`<div class="row"><div class="stepper"><button type="button" data-act="xbm" ${UI.xbid<=Math.max(10,x.bid+1)?'disabled':''} aria-label="−">−</button><output>${UI.xbid} €</output><button type="button" data-act="xbp" ${UI.xbid>=me().money?'disabled':''} aria-label="+">+</button></div><button type="button" class="btn pri grow" data-act="xraise">${en?'Bid':'Bieten'}</button></div>`:'';
     h+=`<button type="button" class="btn" data-act="xdrop">${x.high==null?(en?'Pass':'Passen'):(en?'Drop out':'Aussteigen')}</button>`}
@@ -2772,7 +2786,7 @@ function heroMap(){
   return `<svg class="heromap" viewBox="${MAPVB}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Spielplan ${esc(MAPS[UI.map].name)}: tippe Regionen an, um das Netzgebiet zu wählen">${g}</svg>`;
 }
 function promoBlock(){const on=UI.promos||[],en=LANG==='en';const ks=Object.keys(PROMOS);
-  return `<div class="promos"><div class="prh"><div><b>${en?'Promo cards':'Promokarten'}</b><span>${on.length?(en?`${on.length} of ${ks.length} active`:`${on.length} von ${ks.length} aktiv`):(en?'Optional extras from 2008 to 2013':'Optionale Extras von 2008 bis 2013')}</span></div><div class="seg sm"><button type="button" data-act="promoAll" data-v="none" class="${!on.length?'on':''}">${en?'None':'Keine'}</button><button type="button" data-act="promoAll" data-v="all" class="${on.length===ks.length?'on':''}">${en?'All':'Alle'}</button></div></div><div class="prl">${ks.map(k=>{const P_=PROMOS[k],a=on.includes(k);return `<button type="button" class="prc${a?' on':''}" data-act="promo" data-k="${k}" aria-pressed="${a}"><span class="prk" aria-hidden="true"></span><span class="prt"><b>${P_[en?'en':'de'][0]}</b><small>${P_.y}${P_.x?' · '+(en?'extra auction':'Zusatzversteigerung'):''}</small><span>${P_[en?'en':'de'][1]}</span></span></button>`}).join('')}</div><p class="hint">${en?'Cards with an extra auction and the event cards are shuffled into the plant deck; plant 13 stays on top. The robot rules on the cards do not apply.':'Karten mit Zusatzversteigerung und die Ereigniskarten werden in den Kraftwerksstapel gemischt, die 13 bleibt oben. Roboter-Hinweise auf den Karten entfallen.'}</p></div>`}
+  return `<div class="promos"><div class="prh"><div><b>${en?'Promo cards':'Promokarten'}</b><span>${on.length?(en?`${on.length} of ${ks.length} active`:`${on.length} von ${ks.length} aktiv`):(en?'Optional extras from 2008 to 2013':'Optionale Extras von 2008 bis 2013')}</span></div><div class="seg sm"><button type="button" data-act="promoAll" data-v="none" class="${!on.length?'on':''}">${en?'None':'Keine'}</button><button type="button" data-act="promoAll" data-v="all" class="${on.length===ks.length?'on':''}">${en?'All':'Alle'}</button></div></div><div class="prl">${ks.map(k=>{const P_=PROMOS[k],a=on.includes(k);return `<button type="button" class="prc pt-${P_.t}${a?' on':''}" data-act="promo" data-k="${k}" aria-pressed="${a}"><span class="prk" aria-hidden="true"></span><span class="prt"><b>${P_[en?'en':'de'][0]}</b><small>${PTYPE[P_.t][en?1:0]} · ${P_.y}</small><span>${P_[en?'en':'de'][1]}</span></span></button>`}).join('')}</div><p class="hint">${en?'Cards with an extra auction and the event cards are shuffled into the plant deck; plant 13 stays on top. The robot rules on the cards do not apply.':'Karten mit Zusatzversteigerung und die Ereigniskarten werden in den Kraftwerksstapel gemischt, die 13 bleibt oben. Roboter-Hinweise auf den Karten entfallen.'}</p></div>`}
 function xpickHTML(mapCard){
   const by={};Object.entries(MAPS).filter(([,m])=>m.exp).forEach(e=>(by[e[1].exp]??=[]).push(e));
   const n=Object.values(by).flat().length;if(!n)return '';
