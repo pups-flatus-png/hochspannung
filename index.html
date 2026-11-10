@@ -1330,6 +1330,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .kr-r.nd{background:color-mix(in srgb,var(--fg) 6%,transparent)}.kr-r:not(.nd){opacity:.55}.kr-r.none{opacity:.4}
 .kr-f{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:10.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:5px;margin-top:2px}.kr-f span{display:inline-flex;align-items:center;gap:2px;color:var(--fg)}
 .kr-n{margin:6px 0 0}
+.wastew{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.wastew span{flex:1 1 220px}
 .prl[hidden]{display:none!important}.prtog{width:100%;justify-content:flex-start;text-align:left;margin-top:8px;white-space:normal;line-height:1.35}
 .plant .regtag{position:absolute!important;right:4px;bottom:5px;z-index:3;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:900;background:#4fd6c4;color:#06201c;box-shadow:0 0 0 2px var(--cbg)}
 .plant .subtag{position:absolute!important;right:4px;top:30px;z-index:3;padding:1px 5px;border-radius:9px;font-size:10px;font-weight:900;background:#e8b24a;color:#1b1406;box-shadow:0 0 0 2px var(--cbg)}
@@ -2658,6 +2659,11 @@ function panelBureau(){
     h+=`<div class="hybrow"><span>Kraftwerk ${PN(n)} verbrennt zuerst</span><div class="seg sm">${[ha,hb].map(r=>`<button type="button" data-act="hyb" data-n="${n}" data-r="${r}" class="${pref===r?'on':''}">${resIcon(r)} ${RNAME[r]}</button>`).join('')}</div></div>`;
   }
   if(!o)h+=`<p class="warn">Mindestens ein gewähltes Kraftwerk hat zu wenig Rohstoffe auf Lager. Verteile dein Lager neu oder wähle anders.</p>`;
+  if(o){const en=LANG==='en';const pw=UI.power;let bs=null;
+    for(let m=1;m<(1<<pw.length);m++){const nums=pw.filter((_,i)=>m&(1<<i));const r=allocPower(p,nums);if(!r||r.powered<o.powered)continue;const u=RES.reduce((a,x)=>a+r.use[x],0);if(!bs||u<bs.u||(u===bs.u&&nums.length<bs.nums.length))bs={nums,u,use:r.use}}
+    const drop=bs?pw.filter(n=>!bs.nums.includes(n)&&!FREE(PLANTS[n][0])):[];
+    if(drop.length){const sv=RES.filter(r=>o.use[r]>bs.use[r]).map(r=>(o.use[r]-bs.use[r])+' '+(en?{coal:'coal',oil:'oil',garbage:'garbage',uranium:'uranium'}[r]:RNAME[r])).join(', ');const cc=cityCount(p);
+      h+=`<div class="warn wastew"><span>${en?`You only have ${cc} ${cc===1?'city':'cities'}, so you don't need every plant. Without plant ${drop.map(PN).join(' and ')} you power just as many and save ${sv}.`:`Du hast nur ${cc} ${cc===1?'Stadt':'Städte'} und brauchst nicht alle Kraftwerke. Ohne Kraftwerk ${drop.map(PN).join(' und ')} versorgst du genauso viele und sparst ${sv}.`}</span><button type="button" class="btn sm" data-act="advPower" data-nums='${JSON.stringify(bs.nums)}'>${en?'Leave it off':'Abschalten'}</button></div>`}}
   const mustMax=MR().india&&o&&(()=>{const b=allocPower(p,bestAllocPower(p));return b&&b.powered>o.powered})();
   if(mustMax)h+=`<p class="warn">${LANG==='en'?'India: you must power as many cities as possible.':'Indien: Du musst so viele Städte wie möglich versorgen.'}</p>`;
   if(S.outage)h+=`<p class="warn">${LANG==='en'?`Power outage this round: −3 € per city (${p.cities.length} cities).`:`Stromausfall in dieser Runde: −3 € pro Stadt (${p.cities.length} Städte).`}</p>`;
