@@ -1092,6 +1092,32 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 [data-theme="light"] .terr{opacity:.16}
 [data-theme="light"] .hm-land{fill:#f3e7c9;stroke:#cdb98f}
 [data-theme="light"] body{background-image:radial-gradient(rgba(120,90,40,.035) 1px,transparent 1px);background-size:6px 6px}
+/* ---- stats rework ---- */
+.insights{margin:4px 0 16px}
+.ins-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:10px}
+.ins{position:relative;display:flex;flex-direction:column;gap:4px;padding:13px 14px 14px;border-radius:14px;border:1px solid var(--line);background:linear-gradient(160deg,var(--panel-2),var(--panel));overflow:hidden}
+.ins::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+.ins.good::before{background:var(--good)}.ins.bad::before{background:var(--bad)}
+.ins b{font-family:var(--display);font-size:30px;line-height:1;font-weight:700;letter-spacing:.01em}
+.ins.good b{color:var(--t6fd08a)}.ins.bad b{color:var(--tff8a7a)}
+.ins span{font-size:13px;line-height:1.35;color:var(--muted)}
+.mixbar.big{display:flex;height:16px;border-radius:8px;overflow:hidden;gap:2px;margin:8px 0}
+.mixbar.big i{display:block;min-width:3px}
+.mixleg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.mixleg span{display:inline-flex;align-items:center;gap:5px}
+.mixleg i{width:9px;height:9px;border-radius:3px}
+.mixleg b{color:var(--fg);font-weight:600}
+.effbar{display:inline-block;width:56px;height:6px;border-radius:3px;background:var(--line);margin-right:6px;vertical-align:middle;overflow:hidden}
+.effbar i{display:block;height:100%}
+.netd{padding:0}
+.netd>summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;flex-direction:column;gap:2px;position:relative}
+.netd>summary::-webkit-details-marker{display:none}
+.netd>summary::after{content:"";position:absolute;right:18px;top:20px;width:8px;height:8px;border:solid var(--muted);border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .2s}
+.netd[open]>summary::after{transform:rotate(-135deg)}
+.netd>summary h3{margin:0}
+.netd-b{padding:0 16px 14px}
+#stats .lthead{margin-top:18px}
+@media(max-width:600px){.ins-grid{grid-template-columns:1fr 1fr;gap:8px}.ins{padding:11px 11px 12px}.ins b{font-size:24px}.ins span{font-size:12px}}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -2418,6 +2444,7 @@ const TP=[
 [/^(-?\d+) (?:Stadt|Städte) hinter (.+)$/u,'$1 cities behind $2'],
 [/^([+-]?[\d.,]+)( €)? ggü\. Ø$/u,'$1$2 vs. avg'],
 [/^Langfristig · (\d+) Partien?$/u,'Long-term · $1 games'],
+[/^Auf einen Blick · (\d+) Partien?$/u,'At a glance · $1 games'],
 [/^Erste (\d+) Partien im Vergleich zu den letzten (\d+)\.$/u,'First $1 games compared with the last $2.'],
 [/^Niemand hat ein Kraftwerk gekauft\. Kraftwerk (.+) fällt weg\.$/u,'Nobody bought a power plant. Plant $1 is removed.'],
 [/^1 Stadt über deiner Kapazität\. Sie bringen erst mit größeren Kraftwerken Geld\.$/u,'1 city over your capacity. It only pays off once you have bigger plants.'],
@@ -2510,6 +2537,7 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'Auf einen Blick':'At a glance','Brennstoff & Strom':'Fuel & power','Auktion, Geld & Gegner':'Auctions, money & opponents','Dein Strommix':'Your power mix','Gekauft und verbrannt':'Bought and burned','Netz & Regionen':'Network & regions','Städte und Regionen, in denen du am häufigsten gebaut hast':'Cities and regions where you built most often','Genutzt: Anteil der gekauften Einheiten, die du tatsächlich für Strom verbrannt hast. Der Rest lag bei Spielende ungenutzt im Lager.':'Used: share of the units you bought that you actually burned for power. The rest sat unused in storage at the end.','Verbrannt':'Burned','Genutzt':'Used',
 'Automatisch':'Automatic','Dunkles Design':'Dark theme','Helles Design':'Light theme',
 'Jede KI zieht zufällig einen der vier Spielstile. Mehrere KIs können denselben Stil haben.':'Each AI draws one of the four play styles at random. Several AIs can share a style.',
 'Städte lösen Stufe 2 aus':'cities trigger Step 2','Städte beenden das Spiel':'cities end the game','Regionen im Spiel':'regions in play','KI-Gegner':'AI opponents','Selbst wählen':'Choose','Netzgebiet steht.':'Map area is set.',
@@ -2874,19 +2902,62 @@ function statsTotal(h){
   const st2=avg(h.filter(g=>g.step2).map(g=>g.step2)),st3=avg(h.filter(g=>g.step3).map(g=>g.step3));
   const hist=h.map((g,i)=>({g,i})).reverse().map(({g,i})=>{const m=me_(g);const dd=new Date(g.date);return `<button type="button" class="hrow" data-act="statsSel" data-id="${g.id}">${placeBadge(m.place)}<span class="hd"><b>#${i+1} · ${dd.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'})}</b><small>${dd.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})}</small></span><span class="hm">${m.powered} versorgt · ${m.cities} Städte · ${fmt(m.money)} €</span><span class="hx">${g.rounds} R · ${AI_NAME[g.diff]||g.diff} · ${g.n} Sp.</span></button>`}).join('');
   const goalNote=`<p class="hint goalnote">Zielerreichung: versorgte Städte am Ende geteilt durch das Spielziel der Partie (17 Städte bei 3 und 4 Spielern, 15 bei 5, 14 bei 6), damit Partien mit unterschiedlicher Spielerzahl vergleichbar sind.${goals.length===1?`<span> Alle diese Partien hatten das Ziel ${goals[0]}: Ø ${fmt1(avg(h.map(g=>me_(g).powered)))} versorgte Städte.</span>`:''}</p>`;
-  return `${lastBox(h)}<h3 class="lthead">Langfristig · ${h.length} ${h.length===1?'Partie':'Partien'}</h3><div class="tiles">${tiles.map(([k,v])=>`<div class="tile"><small>${k}</small><b>${v}</b></div>`).join('')}</div>${goalNote}
+  return `${lastBox(h)}${insightsCard(h,auAll)}<h3 class="lthead">Langfristig · ${h.length} ${h.length===1?'Partie':'Partien'}</h3><div class="tiles">${tiles.map(([k,v])=>`<div class="tile"><small>${k}</small><b>${v}</b></div>`).join('')}</div>${goalNote}
+  <h3 class="lthead">Brennstoff &amp; Strom</h3>
+  ${fuelCard(h)}
+  ${mixCard(h)}
+  ${prefCard(h,auAll,resTot)}
+  <h3 class="lthead">Auktion, Geld &amp; Gegner</h3>
   <div class="st-grid">
-   ${fuelCard(h)}
+   <section class="card"><h3>Kraftwerke</h3><div class="kv2"><div><small>Gekauft</small><b>${auAll.length}</b><span class="kvx">Kraftwerke in ${h.length} ${h.length===1?'Partie':'Partien'}</span></div><div><small>Ø Aufpreis</small><b>+${fmt1(over||0)} €</b><span class="kvx">über dem Mindestgebot</span></div><div><small>Rabattkäufe</small><b>${discN}</b><span class="kvx">ab 1 € ersteigert</span></div><div><small>Lieblingstyp</small><b>${favT?favT.label:'–'}</b><span class="kvx">am häufigsten gekauft</span></div></div>${typeRows.length?`<div class="barcap"><span>Gekaufte Kraftwerke je Typ</span><span>Anzahl · Anteil</span></div>${bars(typeRows)}`:'<p class="hint">Noch keine Käufe.</p>'}<p class="hint">Der Aufpreis ist der Betrag über der Kraftwerksnummer, die das Mindestgebot ist. Rabattkäufe sind Kraftwerke, die du als kleinstes Kraftwerk ab 1 € bekommen hast; sie zählen nicht zum Aufpreis.</p></section>
    <section class="card"><h3>Wirtschaft je Partie</h3><p class="hint">Durchschnitt über alle Partien.</p>${bars([{label:'Einnahmen',v:E('inc'),color:'#58b86a',text:fmt(E('inc'))+' €'},{label:'Kraftwerke',v:E('pl'),text:fmt(E('pl'))+' €'},{label:'Rohstoffe',v:E('res'),text:fmt(E('res'))+' €'},{label:'Netz',v:E('net'),text:fmt(E('net'))+' €'}])}<p class="hint">Vom Netz gingen Ø ${fmt(E('slot'))} € in Stadtplätze und ${fmt(E('conn'))} € in Leitungen.</p></section>
    <section class="card"><h3>Nach KI-Stärke</h3><div class="st-table"><table><thead><tr><th>Stärke</th><th>Partien</th><th>Siege</th><th>Quote</th><th>Ø Ziel</th></tr></thead><tbody>${diffRows.map(r=>`<tr><td>${AI_NAME[r.d]}</td><td>${r.gs.length}</td><td>${r.w}</td><td>${r.gs.length?Math.round(r.w/r.gs.length*100)+' %':'–'}</td><td>${r.gs.length?Math.round(avg(r.gs.map(g=>goalPct(g,me_(g)))))+' %':'–'}</td></tr>`).join('')}</tbody></table></div>${rivalRows.length?`<h4>Wer dich am häufigsten schlägt</h4>${bars(rivalRows)}`:''}</section>
    <section class="card"><h3>Rekorde</h3><dl class="recs">${rec.map(([k,v,g])=>`<div><dt>${k}</dt><dd>${v}</dd><button type="button" class="linkbtn" data-act="statsSel" data-id="${g.id}">Partie vom ${new Date(g.date).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})}</button></div>`).join('')}</dl></section>
-   <section class="card"><h3>Kraftwerke</h3><div class="kv2"><div><small>Gekauft</small><b>${auAll.length}</b><span class="kvx">Kraftwerke in ${h.length} ${h.length===1?'Partie':'Partien'}</span></div><div><small>Ø Aufpreis</small><b>+${fmt1(over||0)} €</b><span class="kvx">über dem Mindestgebot</span></div><div><small>Rabattkäufe</small><b>${discN}</b><span class="kvx">ab 1 € ersteigert</span></div><div><small>Lieblingstyp</small><b>${favT?favT.label:'–'}</b><span class="kvx">am häufigsten gekauft</span></div></div>${typeRows.length?`<div class="barcap"><span>Gekaufte Kraftwerke je Typ</span><span>Anzahl · Anteil</span></div>${bars(typeRows)}`:'<p class="hint">Noch keine Käufe.</p>'}<p class="hint">Der Aufpreis ist der Betrag über der Kraftwerksnummer, die das Mindestgebot ist. Rabattkäufe sind Kraftwerke, die du als kleinstes Kraftwerk ab 1 € bekommen hast; sie zählen nicht zum Aufpreis.</p></section>
-   <section class="card"><h3>Rohstoffe</h3><div class="barcap"><span>Gekaufte Einheiten je Rohstoff</span><span>Einheiten · Ø Preis je Einheit</span></div>${bars(resRows)}</section>
-   <section class="card"><h3>Netz</h3><h4>Am häufigsten gebaut</h4>${topCities.length?bars(topCities):'<p class="hint">Noch keine Städte gebaut.</p>'}<h4>Gespielte Regionen</h4>${bars(regRows)}${st2?`<p class="hint">Stufe 2 beginnt bei dir im Schnitt in Runde ${fmt1(st2)}${st3?', Stufe 3 in Runde '+fmt1(st3):''}.</p>`:''}</section>
   </div>
-  ${prefCard(h,auAll,resTot)}
+  <details class="card wide netd"><summary><h3>Netz &amp; Regionen</h3><span class="hint">Städte und Regionen, in denen du am häufigsten gebaut hast</span></summary><div class="netd-b"><h4>Am häufigsten gebaut</h4>${topCities.length?bars(topCities):'<p class="hint">Noch keine Städte gebaut.</p>'}<h4>Gespielte Regionen</h4>${bars(regRows)}${st2?`<p class="hint">Stufe 2 beginnt bei dir im Schnitt in Runde ${fmt1(st2)}${st3?', Stufe 3 in Runde '+fmt1(st3):''}.</p>`:''}</div></details>
   <section class="card wide"><h3>Spielhistorie</h3><p class="hint">Tippe eine Partie an, um sie im Detail zu sehen.</p><div class="hist">${hist}</div></section>
   <div class="st-foot">${UI.statReset?`<span>Alle ${loadHist().length} Partien löschen?</span><button type="button" class="btn" data-act="statsResetNo">Abbrechen</button><button type="button" class="btn danger" data-act="statsResetYes">Endgültig löschen</button>`:`<button type="button" class="btn" data-act="statsReset">Statistik zurücksetzen</button>`}</div>`;
+}
+
+const LX=(de,en)=>LANG==='en'?en:de;
+function fuelTotals(h){
+  const F=h.map(g=>fuelOf(g,meOf(g))),O=h.flatMap(g=>g.players.filter(p=>p!==meOf(g)).map(p=>fuelOf(g,p)));
+  const sum=(a,k)=>a.reduce((s,x)=>s+(x[k]||0),0);
+  return{mU:sum(F,'units')?sum(F,'cost')/sum(F,'units'):null,oU:sum(O,'units')?sum(O,'cost')/sum(O,'units'):null,mC:sum(F,'pw')?sum(F,'cost')/sum(F,'pw'):null,oC:sum(O,'pw')?sum(O,'cost')/sum(O,'pw'):null,mI:avg(F.filter(x=>x.inc!=null).map(x=>x.inc)),cost:sum(F,'cost')};
+}
+function powMix(h){const t={};let tot=0;h.forEach(g=>{const pt=meOf(g).powT||{};Object.entries(pt).forEach(([k,v])=>{t[k]=(t[k]||0)+v;tot+=v})});return{t,tot}}
+const TLAB=()=>LANG==='en'?{coal:'Coal',oil:'Oil',garbage:'Garbage',uranium:'Uranium',eco:'Eco',fusion:'Fusion',hybrid:'Coal/oil',gohybrid:'Garbage/oil'}:{coal:'Kohle',oil:'Öl',garbage:'Müll',uranium:'Uran',eco:'Öko',fusion:'Fusion',hybrid:'Kohle/Öl',gohybrid:'Müll/Öl'};
+function insightsCard(h,auAll){
+  const T=fuelTotals(h),out=[],pc=x=>Math.round(Math.abs(x)*100)+' %',RL=TLAB();
+  if(T.mU!=null&&T.oU){const d=(T.mU-T.oU)/T.oU;if(Math.abs(d)>=.03)out.push({s:20+Math.abs(d)*120,ic:'fuel',good:d<0,big:pc(d),t:d<0?LX('günstiger kaufst du Brennstoff ein als deine Gegner','cheaper: what you pay for fuel compared with your opponents'):LX('mehr zahlst du je Brennstoffeinheit als deine Gegner','more per unit of fuel than your opponents pay')})}
+  if(T.mC!=null&&T.oC){const d=(T.mC-T.oC)/T.oC;if(Math.abs(d)>=.05)out.push({s:18+Math.abs(d)*90,ic:'city',good:d<0,big:fmt1(T.mC)+' €',t:LX(`Brennstoff je versorgter Stadt, Gegner zahlen ${fmt1(T.oC)} €`,`fuel per city powered, opponents pay ${fmt1(T.oC)} €`)})}
+  const M=powMix(h);if(M.tot){const f=((M.t.eco||0)+(M.t.fusion||0))/M.tot;out.push({s:16+f*60,ic:'eco',good:f>=.25?true:undefined,big:Math.round(f*100)+' %',t:LX('deines Stroms kam aus Öko- und Fusionskraftwerken, ganz ohne Brennstoff','of your power came from eco and fusion plants, with no fuel at all')});
+    const top=Object.entries(M.t).sort((a,b)=>b[1]-a[1])[0];if(top&&top[1]/M.tot>=.35)out.push({s:14+top[1]/M.tot*25,ic:'mix',big:Math.round(top[1]/M.tot*100)+' %',t:LX(`deiner versorgten Städte liefen über ${RL[top[0]]}`,`of the cities you powered ran on ${RL[top[0]].toLowerCase()}`)})}
+  if(!isNaN(T.mI)&&T.mI>0)out.push({s:15+Math.max(0,T.mI-25)*.8,ic:'coin',good:T.mI<30,big:Math.round(T.mI)+' %',t:LX('deiner Einnahmen gehen im Schnitt wieder für Brennstoff drauf','of your income goes straight back into fuel')});
+  let bought=0,burned=0;h.forEach(g=>{const m=meOf(g);if(!m.burn)return;RES.forEach(k=>{bought+=((m.res||{})[k]||[0])[0];burned+=m.burn[k]||0})});
+  if(bought>=10){const u=Math.max(0,bought-burned)/bought;if(u>=.08)out.push({s:12+u*80,ic:'stock',good:false,big:Math.round(u*100)+' %',t:LX('der gekauften Brennstoffe hast du nie verbrannt, sie lagen bei Spielende noch im Lager','of the fuel you bought was never burned and was still in storage at the end')})}
+  const wr=h.filter(g=>meOf(g).place===1).length/h.length;
+  const main=g=>{const r=meOf(g).res||{};let b=null,bv=0;RES.forEach(k=>{const u=(r[k]||[0])[0];if(u>bv){bv=u;b=k}});return b};
+  RES.forEach(k=>{const gs=h.filter(g=>main(g)===k);if(gs.length<2)return;const w=gs.filter(g=>meOf(g).place===1).length/gs.length;if(Math.abs(w-wr)>=.15)out.push({s:20+Math.abs(w-wr)*60,ic:'win',good:w>wr,big:Math.round(w*100)+' %',t:LX(`Siegquote, wenn ${RL[k]} dein Hauptbrennstoff ist (insgesamt ${Math.round(wr*100)} %)`,`win rate when ${RL[k].toLowerCase()} is your main fuel (overall ${Math.round(wr*100)} %)`)})});
+  const pr=RES.map(k=>{let u=0,c=0;h.forEach(g=>{const x=(meOf(g).res||{})[k];if(x){u+=x[0];c+=x[1]}});return{k,p:u>=4?c/u:null}}).filter(x=>x.p!=null).sort((a,b)=>b.p-a.p);
+  if(pr.length>=2&&pr[0].p/pr[pr.length-1].p>=1.8){const a=pr[0],b=pr[pr.length-1];out.push({s:13,ic:'fuel',big:fmt1(a.p)+' €',t:LX(`zahlst du im Schnitt je ${RL[a.k]}-Einheit, für ${RL[b.k]} nur ${fmt1(b.p)} €`,`is your average price per unit of ${RL[a.k].toLowerCase()}, ${RL[b.k].toLowerCase()} costs you only ${fmt1(b.p)} €`)})}
+  const nd=auAll.filter(a=>!a.disc);if(nd.length>=3){const o=avg(nd.map(a=>a.price-a.min));out.push({s:8+o*1.5,ic:'bid',good:o<4,big:'+'+fmt1(o)+' €',t:LX('zahlst du im Schnitt über dem Mindestgebot für ein Kraftwerk','is what you pay above the minimum bid for a plant on average')})}
+  if(!out.length)return '';
+  const IC={fuel:'r-oil',city:'i-house',eco:'b-eco',mix:'b-coal',coin:'r-coal',stock:'r-garbage',win:'i-house',bid:'b-oil'};
+  const top=out.sort((a,b)=>b.s-a.s).slice(0,6);
+  return `<section class="insights"><h3 class="lthead">Auf einen Blick · ${h.length} ${h.length===1?'Partie':'Partien'}</h3><div class="ins-grid">${top.map(x=>`<div class="ins${x.good===true?' good':x.good===false?' bad':''}"><b>${x.big}</b><span>${x.t}</span></div>`).join('')}</div></section>`;
+}
+function mixCard(h){
+  const M=powMix(h),RL=TLAB();
+  let bought={},burned={},hasBurn=false;h.forEach(g=>{const m=meOf(g);RES.forEach(k=>{bought[k]=(bought[k]||0)+((m.res||{})[k]||[0])[0]});if(m.burn){hasBurn=true;RES.forEach(k=>burned[k]=(burned[k]||0)+(m.burn[k]||0))}});
+  if(!M.tot&&!hasBurn)return '';
+  const order=Object.entries(M.t).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+  const seg=order.map(([k,v])=>`<i style="flex:${v};background:${TCOL[k]}" title="${RL[k]} ${Math.round(v/M.tot*100)} %"></i>`).join('');
+  const leg=order.map(([k,v])=>`<span><i style="background:${TCOL[k]}"></i>${RL[k]} <b>${Math.round(v/M.tot*100)} %</b></span>`).join('');
+  const free=M.tot?Math.round(((M.t.eco||0)+(M.t.fusion||0))/M.tot*100):0;
+  const rows=RES.filter(k=>bought[k]).map(k=>{const b=bought[k],u=burned[k]||0,eff=b?Math.min(100,Math.round(u/b*100)):0;return `<tr><td>${resIcon(k)} ${RL[k]}</td><td>${fmt(b)}</td><td>${hasBurn?fmt(u):'–'}</td><td>${hasBurn?`<span class="effbar"><i style="width:${eff}%;background:${TCOL[k]}"></i></span>${eff} %`:'–'}</td></tr>`}).join('');
+  return `<section class="card wide mix"><h3>Dein Strommix</h3>${M.tot?`<p class="hint">${LX(`Welche Kraftwerkstypen deine Städte versorgt haben, über alle Partien. ${fmt(M.tot)} versorgte Städte, davon ${free} % ohne Brennstoff.`,`Which plant types powered your cities, across all games. ${fmt(M.tot)} cities powered, ${free} % of them without fuel.`)}</p><div class="mixbar big">${seg}</div><div class="mixleg">${leg}</div>`:''}
+  ${rows?`<h4>Gekauft und verbrannt</h4><div class="st-table"><table><thead><tr><th>Rohstoff</th><th>Gekauft</th><th>Verbrannt</th><th>Genutzt</th></tr></thead><tbody>${rows}</tbody></table></div><p class="hint">Genutzt: Anteil der gekauften Einheiten, die du tatsächlich für Strom verbrannt hast. Der Rest lag bei Spielende ungenutzt im Lager.</p>`:''}</section>`;
 }
 function fuelCard(h){
   const me_=g=>g.players.find(p=>p.human)||g.players[0];
