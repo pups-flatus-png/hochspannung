@@ -884,6 +884,80 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .cpoint span b{color:var(--fg)}
 .st-empty-inline{color:var(--muted);font-size:13px}
 .goalnote{margin:-4px 0 14px}
+/* ---- v15: Startbildschirm "Leitstelle bei Nacht" ---- */
+#start.v2{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,440px);align-items:stretch;justify-content:stretch;padding:0;overflow:hidden;background:#070b0e}
+#start.v2 .hero{position:relative;display:flex;flex-direction:column;min-height:0;overflow:hidden;
+  background:radial-gradient(120% 90% at 40% 55%,#0f1b23 0%,#0a1117 55%,#06090c 100%)}
+#start.v2 .hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(6,9,12,.85) 0%,rgba(6,9,12,0) 26%,rgba(6,9,12,0) 78%,rgba(6,9,12,.8) 100%)}
+.hero-top{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:max(26px,calc(env(safe-area-inset-top,0px) + 14px)) 28px 0 max(28px,env(safe-area-inset-left,0px))}
+.sbrand h1{margin:0;font-family:var(--display);font-weight:700;font-size:clamp(46px,6.4vw,92px);line-height:.86;letter-spacing:.075em;text-transform:uppercase;color:#f4f6f7;
+  text-shadow:0 0 28px rgba(242,179,61,.18)}
+.sbrand{display:block;min-width:0}
+.sbrand p{margin:14px 0 0;max-width:36ch;color:#a9b6bf;font-size:15px;line-height:1.5;text-transform:none;letter-spacing:0;white-space:normal;font-family:var(--body)}
+.hero-foot .seg.lang{flex:none;width:auto;margin-left:auto;background:rgba(18,26,32,.7);backdrop-filter:blur(6px)}
+.hero-foot .seg.lang button{min-width:44px;padding:6px 10px;font-size:12px;letter-spacing:.06em}
+.hero-map{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:150px 28px 70px}
+.heromap{width:100%;height:100%;overflow:visible}
+.hm-land{fill:#0e1820;stroke:#24343f;stroke-width:2.5;stroke-linejoin:round}
+.hm-riv{fill:none;stroke:#1b3b52;stroke-width:2.5;opacity:.6}
+.hm-terr{fill:var(--rc);fill-opacity:.05;stroke:var(--rc);stroke-opacity:.18;stroke-width:2;stroke-linejoin:round;cursor:pointer;transition:fill-opacity .25s}
+.hm-terr.on{fill-opacity:.13;stroke-opacity:.5}
+.hm-e{stroke:#2c3d49;stroke-width:2}
+.hm-e.on{stroke:#55493a;stroke-width:2.6}
+.hm-p{stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-dasharray:4 46;animation:hmflow 2.4s linear infinite;filter:drop-shadow(0 0 4px rgba(242,179,61,.9));pointer-events:none}
+@keyframes hmflow{to{stroke-dashoffset:-50}}
+.hm-c{fill:#1a252d;stroke:var(--rc);stroke-width:2;stroke-opacity:.5;cursor:pointer}
+.hm-c.on{fill:var(--rc);stroke:#06090c;stroke-width:3;stroke-opacity:1;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--rc) 70%,transparent))}
+@media (prefers-reduced-motion:reduce){.hm-p{animation:none;stroke-dasharray:none;opacity:.35}}
+.hero-foot{position:relative;z-index:2;margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:0 28px max(24px,calc(env(safe-area-inset-bottom,0px) + 14px)) max(28px,env(safe-area-inset-left,0px))}
+.hm-hint{font-size:13px;color:#7f909c}
+.resume{display:flex;align-items:center;gap:14px;background:rgba(18,26,32,.82);backdrop-filter:blur(8px);border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:14px;padding:10px 10px 10px 16px}
+.resume b{display:block;font-family:var(--display);font-size:18px;letter-spacing:.02em}
+.resume span{font-size:12px;color:var(--muted)}
+.resume .btn{min-height:42px;padding:0 16px}
+#start.v2 .setup{position:relative;display:flex;flex-direction:column;min-height:0;background:#0e151b;border-left:1px solid #1d2a33}
+.setup-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:28px 26px 18px;display:flex;flex-direction:column;gap:30px}
+.sgroup{display:flex;flex-direction:column;gap:10px}
+.sgroup h2{margin:0 0 2px;font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.02em;color:#f1f4f6}
+.sgroup .gl.sub{font-size:13px;color:#9aa9b4;letter-spacing:0;text-transform:none;margin-top:6px;font-weight:600}
+.fld{display:flex;flex-direction:column;gap:6px}
+.fld span{font-size:13px;color:#9aa9b4;font-weight:600}
+.fld input{background:#141e25;border:1px solid #2a3944;border-radius:10px;padding:12px 14px;color:var(--fg);font:inherit;font-size:16px}
+.fld input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.mcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mcards.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.mcard{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 8px 9px;border-radius:12px;border:1px solid #26343e;background:#121b22;cursor:pointer;color:var(--fg);transition:border-color .2s,background .2s}
+.mcard svg{width:100%;height:58px}
+.mt-land{fill:#1d2a33;stroke:#3a4b58;stroke-width:5}
+.mt-c{fill:#4c5d69;opacity:.7}
+.mcard .mcn{font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.02em}
+.mcard .dlxtag{position:absolute;top:7px;right:7px;font-size:9px;padding:1px 5px}
+.mcard.on{border-color:var(--accent);background:linear-gradient(180deg,rgba(242,179,61,.12),rgba(242,179,61,.03))}
+.mcard.on .mt-land{fill:#3a2f18;stroke:var(--accent)}
+.mcard.on .mt-c{fill:var(--accent)}
+.mcard:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rpick.v2{display:block}
+.slinks{display:flex;gap:8px;flex-wrap:wrap;padding-top:4px;border-top:1px solid #1d2a33;padding-top:16px}
+.btn.ghost{background:transparent;border:1px solid #2a3944;color:#c4cfd6;min-height:40px;flex:1}
+.startbar{display:flex;align-items:center;gap:14px;padding:14px 26px max(14px,calc(env(safe-area-inset-bottom,0px) + 10px));background:rgba(10,15,19,.94);backdrop-filter:blur(10px);border-top:1px solid #1d2a33}
+.sb-sum{flex:1;min-width:0;display:flex;flex-direction:column}
+.sb-sum b{font-family:var(--display);font-size:19px;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-sum span{font-size:12px;color:var(--muted)}
+.startbar .btn.pri{min-height:50px;padding:0 26px;font-size:16px;font-family:var(--display);letter-spacing:.06em;font-weight:700;box-shadow:0 6px 24px -8px rgba(242,179,61,.6)}
+/* Hochformat / schmal: Karte oben, Einstellungen darunter, Startleiste unten fixiert */
+@media (max-width:860px),(orientation:portrait){
+  #start.v2{display:block;overflow-y:auto;overscroll-behavior:contain}
+  #start.v2 .hero{height:min(72vh,680px);min-height:500px}
+  .hero-map{padding:160px 10px 78px}
+  #start.v2 .setup{border-left:0;border-top:1px solid #1d2a33;min-height:auto}
+  .setup-body{overflow:visible;padding:24px max(18px,env(safe-area-inset-left,0px)) 18px}
+  .startbar{position:sticky;bottom:0;z-index:5;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+  .hero-top{padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:20px}
+  .hero-foot{padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:20px}
+  .sbrand p{font-size:14px;max-width:32ch}
+}
+@media (max-width:440px){.sbrand h1{font-size:clamp(34px,10.4vw,44px);letter-spacing:.05em}.sbrand p{font-size:13.5px}}
+@media (orientation:portrait) and (min-width:700px){#start.v2 .hero{height:58vh}.setup-body{max-width:640px;margin:0 auto;width:100%}.startbar{justify-content:center}.startbar .sb-sum{max-width:420px}}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -2062,7 +2136,7 @@ function regionPicker(){
   else if(!regionsValid(sel,n)){hint=regionsAdjacent(sel)?'In dieser Auswahl wäre eine Stadt nicht erreichbar. Wähle andere Regionen.':'Die Regionen müssen aneinandergrenzen.';bad=true}
   else if(MAPS[MAPID].mustRegion&&!sel.includes(MAPS[MAPID].mustRegion)){hint='Frankreich wird immer mit der Region Zentrum (Paris) gespielt.';bad=true}
   else hint='Netzgebiet steht.';
-  return `<div class="rpick"><svg viewBox="${MAPVB}" role="img" aria-label="Regionen auswählen">${dots}</svg><div class="rp-side"><div class="rp-list">${btns}<button type="button" data-act="regrand" class="${rand?'on':''}" style="--rc:var(--accent)">Zufällig</button></div><div class="rp-hint${bad?' bad':''}">${hint}</div></div></div>`;
+  return `<div class="rpick v2"><div class="rp-side"><div class="rp-list">${btns}<button type="button" data-act="regrand" class="${rand?'on':''}" style="--rc:var(--accent)">Zufällig</button></div><div class="rp-hint${bad?' bad':''}">${hint}</div></div></div>`;
 }
 function hasSave(){try{return !!localStorage.getItem(SAVE_KEY)}catch(_){return false}}
 const DECK_NOTE={std:'Die Kraftwerke aus dem Grundspiel.',d1:'„Die neuen Kraftwerke“, Set 1: Nummern 1 bis 50, mehr kleine und günstige Kraftwerke, Fusion bei 44, großes Uran-Kraftwerk 50.',d2:'Set 2: neue Müll-Öl-Hybride, viele Kohle- und Müllkraftwerke, großes Uran-Kraftwerk 50.',mix:'Alle drei Decks in einem Stapel, rund 126 Kraftwerke. Die Stufe-3-Karte liegt nach 34 Karten, sonst käme sie praktisch nie.',mix1:'Für jede Nummer zufällig eine Karte aus einem der drei Decks, ein normaler Stapel mit 42 Kraftwerken.'};
@@ -2072,19 +2146,52 @@ function uraniumTrapWarn(){
   return '';
 }
 const MAP_NOTE={na:'Deluxe-Plan: acht Kraftwerke im Markt mit Rabatt, Erdgas statt Müll. New York und Mexico City bestehen aus je zwei Städten ohne Leitungskosten.',eu:'Deluxe-Plan: neun Kraftwerke im Markt, kein Rabatt. Kauft niemand ein Kraftwerk, fällt das kleinste weg. Erdgas statt Müll.',de:'Das Basisspiel.',fr:'Paris besteht aus drei Städten, untereinander ohne Leitungskosten. Viel Uran im Markt, Kraftwerk 11 liegt von Beginn an aus.',it:'Atomausstieg: Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt kein Uran mehr nach.'};
+function mapThumb(k){
+  const M=MAPS[k],[l0,a0,sx,sy]=M.proj,pj=(lon,lat)=>[(lon-l0)*sx,(a0-lat)*sy];
+  const pts=M.cities.map(c=>pj(c[4],c[3])),xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),pad=24;
+  const vb=`${(Math.min(...xs)-pad).toFixed(0)} ${(Math.min(...ys)-pad).toFixed(0)} ${(Math.max(...xs)-Math.min(...xs)+2*pad).toFixed(0)} ${(Math.max(...ys)-Math.min(...ys)+2*pad).toFixed(0)}`;
+  const land=M.land.map(pl=>pl.map((q,i)=>{const[x,y]=pj(q[0],q[1]);return(i?'L':'M')+x.toFixed(0)+' '+y.toFixed(0)}).join('')+'Z').join('');
+  return `<svg viewBox="${vb}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path class="mt-land" d="${land}"/>${pts.map(p=>`<circle cx="${p[0].toFixed(0)}" cy="${p[1].toFixed(0)}" r="9" class="mt-c"/>`).join('')}</svg>`;
+}
+function heroMap(){
+  const sel=UI.regions,rand=!sel.length,inA=c=>rand||sel.includes(CITY[c].reg);
+  const[vx,vy,vw,vh]=MAPVB.split(' ').map(Number),ex=Math.max(vw,vh)*.12;
+  let g=`<defs><radialGradient id="hmG" cx="50%" cy="50%" r="50%"><stop offset="40%" stop-color="#fff"/><stop offset="88%" stop-color="#000"/></radialGradient><mask id="hmFade" maskUnits="userSpaceOnUse" x="${vx-ex}" y="${vy-ex}" width="${vw+2*ex}" height="${vh+2*ex}"><rect x="${vx-ex}" y="${vy-ex}" width="${vw+2*ex}" height="${vh+2*ex}" fill="url(#hmG)"/></mask></defs><g mask="url(#hmFade)"><path class="hm-land" d="${GEO_LAND}"/>`;
+  g+=GEO_RIV.map(d=>`<path class="hm-riv" d="${d}"/>`).join('')+'</g>';
+  g+=Object.entries(TERR).map(([k,d])=>`<path class="hm-terr${!rand&&sel.includes(k)?' on':''}" d="${d}" style="--rc:${REGIONS[k].col}" data-act="reg" data-r="${k}"/>`).join('');
+  let live=0;
+  EDGE_LIST.forEach((e,i)=>{const a=CITY[e.a],b=CITY[e.b];const on=inA(e.a)&&inA(e.b);g+=`<line class="hm-e${on?' on':''}" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}"/>`;
+    if(on&&(i*7)%3===0&&live<60){live++;g+=`<line class="hm-p" style="animation-delay:-${((i*0.37)%2.4).toFixed(2)}s" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}"/>`}});
+  g+=CITIES.map(([id,,rg])=>{const c=CITY[id];const on=inA(id);return `<circle class="hm-c${on?' on':''}" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${on?9:6}" style="--rc:${REGIONS[rg].col}" data-act="reg" data-r="${rg}"/>`}).join('');
+  return `<svg class="heromap" viewBox="${MAPVB}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Spielplan ${esc(MAPS[UI.map].name)}: tippe Regionen an, um das Netzgebiet zu wählen">${g}</svg>`;
+}
 function renderStart(show){
   if(!show){start.hidden=true;return}
   UI.map=UI.map||'de';loadMap(UI.map);
-  start.hidden=false;
-  start.innerHTML=`<svg class="wires" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path d="M-20 120H180L260 200H520L600 120H820"/><path d="M-20 470H140L230 380H470L560 470H820"/><path d="M260 200V380M520 200V380"/><circle cx="180" cy="120" r="7"/><circle cx="260" cy="200" r="7"/><circle cx="520" cy="200" r="7"/><circle cx="600" cy="120" r="7"/><circle cx="230" cy="380" r="7"/><circle cx="470" cy="380" r="7"/></svg>
-  <div class="startbox"><div class="title"><h1>Hoch<wbr><em>span</em>nung</h1><p>Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über Deutschland. Wer am Ende die meisten Städte versorgt, gewinnt.</p><span class="volt">380 kV · 3–6 Betriebe</span></div>
-  <div class="form"><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><label for="nm">Dein Firmenname<input id="nm" maxlength="18" value="${esc(UI.name||(LANG==='en'?'You':'Du'))}"></label><div class="gl">Karte</div>${[['Grundspiel & Erweiterungen',false],['Plan, Kraftwerke & Regeln der Deluxe-Edition',true]].map(([lab,dl])=>`<div class="mgrp${dl?' dlx':''}"><div class="mgl">${dl?'<span class="dlxtag">Deluxe</span>':''}<span>${lab}</span></div><div class="seg${dl?'':' wrap3'}">${Object.entries(MAPS).filter(([,m])=>!!m.deluxe===dl).map(([k,m])=>`<button type="button" data-act="mapSel" data-m="${k}" class="${UI.map===k?'on':''}">${m.name}</button>`).join('')}</div></div>`).join('')}<div class="nhint">${MAP_NOTE[UI.map]}</div>${MAPS[UI.map].phaseOutOpt?`<div class="gl">Atomausstieg (Recharged-Regel)</div><div class="seg">${[[true,'Mit Atomausstieg'],[false,'Ohne']].map(([v,l])=>`<button type="button" data-act="atom" data-v="${v}" class="${(UI.deAtom!==false)===v?'on':''}">${l}</button>`).join('')}</div><div class="nhint">${UI.deAtom!==false?'Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt bis Spielende kein Uran mehr nach.':'Uran wird wie im Basisspiel nachgefüllt.'}</div>`:''}${MAPS[UI.map].deluxe?`<div class="gl">Kraftwerksdeck</div><div class="seg dlxdeck"><button type="button" class="on" disabled><span class="dlxtag">Deluxe</span>Deluxe-Kraftwerke</button></div><div class="nhint">Gehört fest zum Deluxe-Plan. Die Karten entsprechen Set 2, der Startmarkt besteht nur aus den Kraftwerken 3 bis 15.</div>`:`<div class="gl">Kraftwerksdeck</div><div class="seg wrap3">${Object.entries(DECKS).map(([k,d])=>{const dis=MAPS[UI.map].paris&&(k==='mix'||k==='mix1');return `<button type="button" data-act="deckSel" data-d="${k}" class="${(UI.deck||'std')===k?'on':''}" ${dis?'disabled':''}>${d.name}</button>`}).join('')}</div><div class="nhint">${DECK_NOTE[UI.deck||'std']}${MAPS[UI.map].paris?' Frankreich verteilt feste Kraftwerksnummern, darum gibt es hier keine gemischten Decks.':''}</div>${uraniumTrapWarn()}`}<div class="gl">Spieler insgesamt</div><div class="seg">${[2,3,4,5].map(k=>`<button type="button" data-act="nai" data-n="${k}" class="${UI.nAI===k?'on':''}">${k+1}</button>`).join('')}</div><div class="nhint">${UI.nAI+1} Spieler: du und ${UI.nAI} KI · ${regionCount(UI.nAI+1)} Regionen · Stufe 2 ab ${RULES_N[UI.nAI+1].s2} Städten · Ende bei ${RULES_N[UI.nAI+1].end} Städten</div><div class="gl">KI-Stärke</div><div class="seg">${['easy','normal','hard','expert'].map(d=>`<button type="button" data-act="diff" data-d="${d}" class="${UI.diff===d?'on':''}">${AI_NAME[d]}</button>`).join('')}</div><p class="hint dnote">${AI_NOTE[UI.diff]||''}</p><div class="gl">KI-Persönlichkeiten</div><div class="seg">${[['mix','Gemischt'],['off','Alle ausgewogen']].map(([k,l])=>`<button type="button" data-act="styleSel" data-s="${k}" class="${(UI.styles||'mix')===k?'on':''}">${l}</button>`).join('')}</div><p class="hint dnote">${(UI.styles||'mix')==='mix'?'Jede KI bekommt einen Spielstil: Baulöwe, Sparfuchs, Ökostromer oder Blockierer.':'Alle KIs spielen ohne besonderen Stil.'}</p><div class="gl">Netzgebiet</div>${regionPicker()}<button type="button" class="btn pri" data-act="start" ${regionsOk()?'':'disabled'}>Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn" data-act="cont">Weiterspielen</button>':''}<button type="button" class="btn" data-act="startrules">Spielregeln</button><button type="button" class="btn" data-act="stats">Statistik${(()=>{const n=loadHist().length;return n?' · '+n+(n===1?' Partie':' Partien'):''})()}</button></div></div>`;
+  start.hidden=false;start.classList.add('v2');
+  const M=MAPS[UI.map],nP=UI.nAI+1,games=loadHist().length;
+  const mapCard=([k,m])=>`<button type="button" class="mcard${UI.map===k?' on':''}" data-act="mapSel" data-m="${k}" aria-pressed="${UI.map===k}">${mapThumb(k)}<span class="mcn">${m.name}</span>${m.deluxe?'<span class="dlxtag">Deluxe</span>':''}</button>`;
+  const resume=S&&S.phase!=='end'?`<div class="resume"><div><b>Laufende Partie</b><span>Runde ${S.round} auf ${esc(MAPS[S.map||'de'].name)}</span></div><button type="button" class="btn pri" data-act="cont">Weiterspielen</button></div>`:'';
+  start.innerHTML=`<section class="hero"><div class="hero-top"><div class="sbrand"><h1>Hochspannung</h1><p>Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über ${esc(M.name)}. Wer am Ende die meisten Städte versorgt, gewinnt.</p></div></div>
+   <div class="hero-map">${heroMap()}</div>
+   <div class="hero-foot"><span class="hm-hint">${UI.regions.length?'Tippe Regionen an, um dein Netzgebiet zu ändern.':'Tippe Regionen an, um dein Netzgebiet selbst zu wählen.'}</span>${resume}<div class="seg lang">${[['de','DE'],['en','EN']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}" aria-label="${k==='de'?'Deutsch':'English'}">${l}</button>`).join('')}</div></div></section>
+  <section class="setup"><div class="setup-body">
+   <div class="sgroup"><h2>Dein Betrieb</h2><label class="fld" for="nm"><span>Firmenname</span><input id="nm" maxlength="18" value="${esc(UI.name||(LANG==='en'?'You':'Du'))}"></label></div>
+   <div class="sgroup"><h2>Spielplan</h2><div class="mcards">${Object.entries(MAPS).filter(([,m])=>!m.deluxe).map(mapCard).join('')}</div><div class="mcards two">${Object.entries(MAPS).filter(([,m])=>m.deluxe).map(mapCard).join('')}</div><div class="nhint">${MAP_NOTE[UI.map]}</div>${MAPS[UI.map].phaseOutOpt?`<div class="gl sub">Atomausstieg (Recharged-Regel)</div><div class="seg">${[[true,'Mit Atomausstieg'],[false,'Ohne']].map(([v,l])=>`<button type="button" data-act="atom" data-v="${v}" class="${(UI.deAtom!==false)===v?'on':''}">${l}</button>`).join('')}</div><div class="nhint">${UI.deAtom!==false?'Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt bis Spielende kein Uran mehr nach.':'Uran wird wie im Basisspiel nachgefüllt.'}</div>`:''}${MAPS[UI.map].deluxe?`<div class="gl sub">Kraftwerksdeck</div><div class="seg dlxdeck"><button type="button" class="on" disabled><span class="dlxtag">Deluxe</span>Deluxe-Kraftwerke</button></div><div class="nhint">Gehört fest zum Deluxe-Plan. Die Karten entsprechen Set 2, der Startmarkt besteht nur aus den Kraftwerken 3 bis 15.</div>`:`<div class="gl sub">Kraftwerksdeck</div><div class="seg wrap3">${Object.entries(DECKS).map(([k,d])=>{const dis=MAPS[UI.map].paris&&(k==='mix'||k==='mix1');return `<button type="button" data-act="deckSel" data-d="${k}" class="${(UI.deck||'std')===k?'on':''}" ${dis?'disabled':''}>${d.name}</button>`}).join('')}</div><div class="nhint">${DECK_NOTE[UI.deck||'std']}${MAPS[UI.map].paris?' Frankreich verteilt feste Kraftwerksnummern, darum gibt es hier keine gemischten Decks.':''}</div>${uraniumTrapWarn()}`}</div>
+   <div class="sgroup"><h2>Netzgebiet</h2>${regionPicker()}</div>
+   <div class="sgroup"><h2>Gegner</h2><div class="gl sub">Spielerzahl</div><div class="seg">${[2,3,4,5].map(k=>`<button type="button" data-act="nai" data-n="${k}" class="${UI.nAI===k?'on':''}">${k+1}</button>`).join('')}</div><div class="nhint">${UI.nAI+1} Spieler: du und ${UI.nAI} KI · ${regionCount(UI.nAI+1)} Regionen · Stufe 2 ab ${RULES_N[UI.nAI+1].s2} Städten · Ende bei ${RULES_N[UI.nAI+1].end} Städten</div><div class="gl sub">KI-Stärke</div><div class="seg">${['easy','normal','hard','expert'].map(d=>`<button type="button" data-act="diff" data-d="${d}" class="${UI.diff===d?'on':''}">${AI_NAME[d]}</button>`).join('')}</div><p class="hint dnote">${AI_NOTE[UI.diff]||''}</p><div class="gl sub">KI-Persönlichkeiten</div><div class="seg">${[['mix','Gemischt'],['off','Alle ausgewogen']].map(([k,l])=>`<button type="button" data-act="styleSel" data-s="${k}" class="${(UI.styles||'mix')===k?'on':''}">${l}</button>`).join('')}</div><p class="hint dnote">${(UI.styles||'mix')==='mix'?'Jede KI bekommt einen Spielstil: Baulöwe, Sparfuchs, Ökostromer oder Blockierer.':'Alle KIs spielen ohne besonderen Stil.'}</p></div>
+   <div class="slinks"><button type="button" class="btn ghost" data-act="startrules">Spielregeln</button><button type="button" class="btn ghost" data-act="stats">Statistik${games?` · ${games} ${games===1?'Partie':'Partien'}`:''}</button></div>
+  </div>
+  <div class="startbar"><div class="sb-sum"><b>${esc(M.name)}</b><span>${nP} Spieler · KI ${AI_NAME[UI.diff]}</span></div><button type="button" class="btn pri" data-act="start" ${regionsOk()?'':'disabled'}>Neues Spiel</button></div></section>`;
 }
 
 /* --- Sprache --- */
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
+[/^Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über (.+)\. Wer am Ende die meisten Städte versorgt, gewinnt\.$/u,'Win power plants at auction, buy fuel on the market and spread your network across $1. Whoever powers the most cities at the end wins.'],
+[/^Runde (\d+) auf (.+)$/u,'Round $1 on $2'],
+[/^(\d+) Spieler · KI (.+)$/u,'$1 players · $2 AI'],
 [/^ Alle diese Partien hatten das Ziel (\d+): Ø ([\d.,]+) versorgte Städte\.$/u,' All these games had a goal of $1: Ø $2 cities powered.'],
 [/^Versorgt · Ziel (\d+)$/u,'Powered · goal $1'],
 [/^(\d+) % \((\d+) von (\d+)\)$/u,'$1 % ($2 of $3)'],
@@ -2221,6 +2328,8 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'Tippe Regionen an, um dein Netzgebiet zu ändern.':'Tap regions to change your play area.','Tippe Regionen an, um dein Netzgebiet selbst zu wählen.':'Tap regions to pick your play area yourself.',
+'Laufende Partie':'Game in progress','Dein Betrieb':'Your company','Firmenname':'Company name','Spielplan':'Board','Spielerzahl':'Number of players',
 'Zielerreichung: versorgte Städte am Ende geteilt durch das Spielziel der Partie (17 Städte bei 3 und 4 Spielern, 15 bei 5, 14 bei 6), damit Partien mit unterschiedlicher Spielerzahl vergleichbar sind.':'Goal reached: cities powered at the end divided by the game’s goal (17 cities with 3 and 4 players, 15 with 5, 14 with 6), so games with different player counts are comparable.',
 'Zielerreichung (versorgt ÷ Spielziel)':'Goal reached (powered ÷ game goal)','Städte in % des Spielziels':'Cities as % of game goal','Versorgte Städte am Ende (absolut)':'Cities powered at end (absolute)','Städte am Ende (absolut)':'Cities at end (absolute)',
 'Brennstoff je Stadt ↔ Zielerreichung':'Fuel per city ↔ goal reached','Zielerreichung je Partie in %':'Goal reached per game in %','Ø Zielerreichung':'Ø goal reached','Beste Zielerreichung':'Best goal reached','Zielerreichung':'Goal reached','Ziel erreicht':'Goal reached','Bestes Ziel':'Best goal','Ø Ziel':'Ø goal',
