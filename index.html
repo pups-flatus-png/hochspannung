@@ -1241,7 +1241,10 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .nbtag{position:absolute;left:3px;bottom:22px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;background:#1a0f0d;color:#ff7a6d;border:1px solid #e0483d;z-index:2}
 .city .cost.jump rect{fill:#b48cff;stroke:#b48cff}
 .city .cstar{font-size:12px;fill:var(--accent);font-weight:700}
-.city .ctrans{font-size:9px;fill:#b48cff;font-weight:800}
+.city .ctrans rect{fill:#2a1f45;stroke:#b48cff;stroke-width:1}.city .ctrans text{font-size:8.5px;fill:#d9c8ff;font-weight:800;text-anchor:middle}.city .ctrans.lk rect{stroke-dasharray:2 1.5}
+.city .cwien rect{fill:#3a3410;stroke:#d9c13f;stroke-width:1}.city .cwien text{font-size:8.5px;fill:#f2e28a;font-weight:800;text-anchor:middle}
+.nnmark{color:#ef6a5e;pointer-events:none}.nnmark rect{fill:color-mix(in srgb,#ef6a5e 16%,var(--panel));stroke:color-mix(in srgb,#ef6a5e 55%,transparent);stroke-width:1}.nnmark text{font-size:10.5px;font-weight:800;fill:#ef6a5e;letter-spacing:.04em}
+[data-theme="light"] .nnmark,[data-theme="light"] .nnmark text{color:#b8352a;fill:#b8352a}[data-theme="light"] .city .ctrans rect{fill:#efe6ff;stroke:#6a4bb5}[data-theme="light"] .city .ctrans text{fill:#4a2f95}[data-theme="light"] .city .cwien rect{fill:#fbf3c4;stroke:#a68a00}[data-theme="light"] .city .cwien text{fill:#6b5800}
 .brule{border-left:3px solid #b48cff;padding-left:9px}
 .mk-x{margin-top:6px}
 .track .pg.capped{opacity:.35;filter:grayscale(.6)}
@@ -1303,6 +1306,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .kr-r.nd{background:color-mix(in srgb,var(--fg) 6%,transparent)}.kr-r:not(.nd){opacity:.55}.kr-r.none{opacity:.4}
 .kr-f{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:10.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:5px;margin-top:2px}.kr-f span{display:inline-flex;align-items:center;gap:2px;color:var(--fg)}
 .kr-n{margin:6px 0 0}
+.plant .regtag{position:absolute!important;right:4px;bottom:5px;z-index:3;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:900;background:#4fd6c4;color:#06201c;box-shadow:0 0 0 2px var(--cbg)}
 .plant .subtag{position:absolute!important;right:4px;top:30px;z-index:3;padding:1px 5px;border-radius:9px;font-size:10px;font-weight:900;background:#e8b24a;color:#1b1406;box-shadow:0 0 0 2px var(--cbg)}
 .parkc{position:relative;width:62px;height:86px;flex:none;border-radius:7px;border:1.5px dashed #e8b24a;background:linear-gradient(160deg,#3b2a12,#231a0c);color:#f2c96e;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:5px 4px 6px;box-shadow:0 0 0 2px rgba(232,178,74,.18)}
 .parkc.lg{width:82px;height:120px;padding:7px 5px 8px}
@@ -2113,7 +2117,7 @@ function plantCard(num,o={}){
   const cls=`plant t-${t}${num===FLUX?' promo':''}${o.disc?' disc':''}${o.lg?' lg':o.sm?' sm':''}${o.sel?' sel':''}${o.on?' on':''}${o.off?' off':''}${o.inauc?' inauc':''}`;
   let store='';
   if(o.store){store=`<div class="store">${FREE(t)?'<span class="none">kein Lager</span>':Array.from({length:STO(num)},(_,i)=>o.store[i]?resIcon(o.store[i]):'<i></i>').join('')}</div>`}
-  const inner=`${o.sub?`<span class="subtag" title="${LX('Umspannwerk: versorgt eine Stadt mehr','Substation: powers one more city')}">+1</span>`:''}${num===FLUX?'<span class="promotag" title="Promokarte">P</span>':''}${useIcon('b-'+t,'wm')}${o.disc?'<span class="dtag" title="Rabatt: ab 1 €">1 €</span>':''}${o.nb?`<span class="nbtag" title="Für dich gesperrt: Atomkraft nur mit passendem Netz"><svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">${RICON.nuke}</svg></span>`:''}<div class="top"><div class="nw"><b class="pn">${Math.floor(num)}${num===FLUX?'<sup class="dk">⅓</sup>':num%1?`<sup class="dk">${SRC(num)==='d1'?'S1':'S2'}</sup>`:''}</b><span class="tl">${TYPE_SHORT[t]}</span></div>${useIcon('b-'+t,'bi')}</div><div class="req">${reqHTML(t,k)}</div><div class="out"><span class="arr">→</span><span class="cty">${c}${useIcon('i-house','ico')}</span></div>${store}`;
+  const reg=S&&S.plantOv&&S.plantOv[num]&&MAPS[S.map].regional;const inner=`${reg?`<span class="regtag" title="${LX('Regionale Variante dieser Karte','Regional variant on this board')}">R</span>`:''}${o.sub?`<span class="subtag" title="${LX('Umspannwerk: versorgt eine Stadt mehr','Substation: powers one more city')}">+1</span>`:''}${num===FLUX?'<span class="promotag" title="Promokarte">P</span>':''}${useIcon('b-'+t,'wm')}${o.disc?'<span class="dtag" title="Rabatt: ab 1 €">1 €</span>':''}${o.nb?`<span class="nbtag" title="Für dich gesperrt: Atomkraft nur mit passendem Netz"><svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">${RICON.nuke}</svg></span>`:''}<div class="top"><div class="nw"><b class="pn">${Math.floor(num)}${num===FLUX?'<sup class="dk">⅓</sup>':num%1?`<sup class="dk">${SRC(num)==='d1'?'S1':'S2'}</sup>`:''}</b><span class="tl">${TYPE_SHORT[t]}</span></div>${useIcon('b-'+t,'bi')}</div><div class="req">${reqHTML(t,k)}</div><div class="out"><span class="arr">→</span><span class="cty">${c}${useIcon('i-house','ico')}</span></div>${store}`;
   if(o.act)return `<button type="button" class="${cls}" data-act="${o.act}" data-num="${num}" ${o.dis?'disabled':''} aria-label="${label}">${inner}</button>`;
   return `<div class="${cls}" aria-label="${label}">${inner}</div>`;
 }
@@ -2236,6 +2240,7 @@ function renderMap(){
     const cs=CITIES.filter(c=>c[2]===rk).map(c=>CITY[c[0]]);
     const x=cs.reduce((s,c)=>s+c.x,0)/cs.length,y=cs.reduce((s,c)=>s+c.y,0)/cs.length;
     g+=`<text class="rlabel${S.regions.includes(rk)?'':' off'}" x="${x.toFixed(0)}" y="${(y+10).toFixed(0)}">${rName(rk).toUpperCase()}</text>`;
+    if(S.regions.includes(rk)&&(MAPS[S.map].noNuke||[]).includes(rk))g+=`<g class="nnmark" transform="translate(${(x-11).toFixed(0)},${(y+16).toFixed(0)})"><title>${LX('Atomfreie Region','Nuclear-free region')}</title><rect x="-3" y="-3" width="${LANG==='en'?82:76}" height="22" rx="11"/><svg x="0" y="0" width="16" height="16" viewBox="0 0 16 16">${RICON.nuke}<path d="M2.5 13.5 13.5 2.5" stroke="currentColor" stroke-width="1.8"/></svg><text x="20" y="12">${LX('atomfrei','no nuclear')}</text></g>`;
   }
   let labels='';
   for(const e of EDGE_LIST){
@@ -2263,7 +2268,7 @@ function renderMap(){
       else sl+=`<circle class="sl ${i<cr.max?'open':'lock'}" cx="${sx}" cy="${sy}" r="4.5"/>`;
     });
     const o=opts[id],sel=building&&UI.buildSel===id;
-    g+=`<g class="city${o?' can':''}${sel?' sel':''}" data-city="${id}" transform="translate(${c.x.toFixed(1)},${c.y.toFixed(1)})"><circle class="halo" r="24"/><circle class="cshadow" r="20"/><circle class="body" r="17" style="stroke:${REGIONS[c.reg].col}"/><circle class="inner" r="13.5"/>${sl}<text class="cname" y="32">${c.name}</text>${o?`<g class="cost${o.jump?' jump':''}" transform="translate(0,-25)"><rect x="${o.jump?-21:-15}" y="-8" width="${o.jump?42:30}" height="15" rx="7.5"/><text y="3.5">${o.jump?'↷ ':''}${o.cost}</text></g>`:''}${MAPS[S.map].startCities&&MAPS[S.map].startCities.includes(id)?'<text class="cstar" x="15" y="-12">★</text>':''}${cr.trans?'<text class="ctrans" x="-16" y="-12">2+</text>':''}</g>`;
+    g+=`<g class="city${o?' can':''}${sel?' sel':''}" data-city="${id}" transform="translate(${c.x.toFixed(1)},${c.y.toFixed(1)})"><circle class="halo" r="24"/><circle class="cshadow" r="20"/><circle class="body" r="17" style="stroke:${REGIONS[c.reg].col}"/><circle class="inner" r="13.5"/>${sl}<text class="cname" y="32">${c.name}</text>${o?`<g class="cost${o.jump?' jump':''}" transform="translate(0,-25)"><rect x="${o.jump?-21:-15}" y="-8" width="${o.jump?42:30}" height="15" rx="7.5"/><text y="3.5">${o.jump?'↷ ':''}${o.cost}</text></g>`:''}${MAPS[S.map].startCities&&MAPS[S.map].startCities.includes(id)?'<text class="cstar" x="15" y="-12">★</text>':''}${cr.trans?`<g class="ctrans${S.step<2?' lk':''}" transform="translate(-27,-21)"><title>${LX('Jenseits der Grenze: erst ab Stufe 2 bebaubar','Across the border: buildable from step 2')}</title><rect width="${S.step<2?30:22}" height="13" rx="6.5"/><text x="${S.step<2?15:11}" y="9.5">${S.step<2?LX('ab II','from II'):'II'}</text></g>`:''}${MR().wien===id?`<g class="cwien" transform="translate(12,-23)"><title>${LX('Wien: Müll 1 € billiger für Spieler mit Stadt hier','Vienna: garbage 1 € cheaper for players with a city here')}</title><rect width="34" height="13" rx="6.5"/><text x="17" y="9.5">${LX('Müll −1','Garb. −1')}</text></g>`:''}</g>`;
   }
   svg.innerHTML=g;
   if(!UI.vb)fitMap();
@@ -2382,7 +2387,7 @@ function advisorHTML(a){
   const ap=r.apply?`<button type="button" class="btn sm pri" data-act="${r.apply.act}" ${r.apply.num!=null?`data-num="${r.apply.num}"`:''} ${r.apply.bid!=null?`data-bid="${r.apply.bid}"`:''} ${r.apply.buy?`data-buy='${JSON.stringify(r.apply.buy)}'`:''} ${r.apply.cities?`data-cities='${JSON.stringify(r.apply.cities)}'`:''} ${r.apply.nums?`data-nums='${JSON.stringify(r.apply.nums)}'`:''}>${r.apply.act==='advBuild'?'Bauen':'Übernehmen'}</button>`:'';
   return `<div class="advcard"><div class="advh"><span class="advl">Empfehlung</span></div><div class="advt"><b>${r.title}</b>${r.sub?`<span>${r.sub}</span>`:''}</div>${chips}${cities}<ul>${r.lines.map(x=>`<li>${x}</li>`).join('')}</ul>${ap?`<div class="advf">${ap}</div>`:''}</div>`;
 }
-const MR_PH={bx:'a|p',ce:'a|r',cn:'a|a|ap|a',kr:'r|r',br:'|',es:'a|a',ru:'a|a|a',jp:'b|b|b',ne:'a|a',uk:'b|a|',qc:'a',bw:'a|a|b|b|a',au:'ap|p|b',ind:'r|bp|rp'};
+const MR_PH={bx:'a|p',ce:'a|r',cn:'a|a|ap|a',kr:'r|r',br:'|',es:'a|a',ru:'a|a|a',jp:'b|b|b',ne:'a|a',uk:'b|a|',qc:'a',bw:'a|a|b|b|a',au:'ap|rp|b',ind:'r|bp|rp'};
 function phaseRuleItems(){
   const M=MAPS[S.map],en=LANG==='en',ph={auction:'a',resources:'r',build:'b',bureau:'p'}[S.phase],out=[];if(!ph)return out;const p=me(),R=MR();
   if(M.exp&&M.rtxt){const sp=(MR_PH[S.map]||'').split('|');M.rtxt.forEach((x,i)=>{if((sp[i]||'').includes(ph))out.push({ic:x[0],t:en?x[3]:x[1],d:en?x[4]:x[2]})})}
@@ -2395,6 +2400,12 @@ function phaseRuleItems(){
     if(R.india&&ph==='r'&&x.ic==='res')x.st=(en?'Open up to ':'Offen bis ')+(priceCap()===Infinity?(en?'all':'alles'):priceCap()+' €');
     if(R.india&&x.ic==='cycle'){const b=S.builtRound||0;x.st=(en?'New cities this round: ':'Neue Städte diese Runde: ')+b+(en?' · outage from ':' · Stromausfall ab ')+(2*S.n+1)+(S.outage?(en?' · outage!':' · Stromausfall!'):'')}
     if(R.russia&&ph==='a'&&x.ic==='cycle')x.st=S.passedOnce?(en?'Already happened this round':'Diese Runde schon passiert'):(en?'Still open this round':'Diese Runde noch offen');
+    if(R.wien&&x.ic==='res'&&ph==='r')x.st=p.cities.includes(R.wien)?(en?'You have Vienna: garbage −1 € per unit':'Du hast Wien: Müll −1 € pro Einheit'):(en?'No city in Vienna yet: no discount':'Noch keine Stadt in Wien: kein Rabatt');
+    if(R.hold&&x.ic==='deck'&&ph==='a')x.st=S.step<2?(en?'Set aside: ':'Beiseite: ')+R.hold.filter(k=>PLANTS[k]).map(PN).join(', ')+(en?' · come with step 2':' · kommen mit Stufe 2'):(en?'Already on the deck':'Schon im Stapel');
+    if(R.ecoSlot&&x.ic==='plant'&&ph==='a')x.st=buyN()===5?(en?'Active now: 5 plants buyable':'Gerade aktiv: 5 Kraftwerke kaufbar'):(en?'Not active right now':'Gerade nicht aktiv');
+    if(R.orderAfterAuction&&x.ic==='order')x.st=en?'Bidding uses last round\'s order':'Versteigert wird in der Reihenfolge der Vorrunde';
+    if(R.regionalPlants&&x.ic==='plant'&&ph==='a'){const ks=Object.keys(S.plantOv||{});if(ks.length)x.st=(en?'In this game: ':'In dieser Partie: ')+ks.map(k=>PN(+k)).join(', ')+(en?' (marked R)':' (mit R markiert)')}
+    if(R.islands&&x.ic==='city'&&ph==='b'){const is=new Set(p.cities.map(islandOf).filter(Boolean));x.st=is.size===0?(en?'No network yet':'Noch kein Netz'):is.size===2?(en?'You are on both islands':'Du bist auf beiden Inseln'):(en?'Your network: ':'Dein Netz: ')+([...is][0]==='ie'?(en?'Ireland':'Irland'):(en?'Great Britain':'Großbritannien'))}
     if(R.japan&&x.ic==='jump')x.st=p.jumpUsed?(en?'Jump used':'Sprung verbraucht'):(en?'Jump still available':'Sprung noch verfügbar');
     if(R.korea&&x.ic==='res')x.st=(en?'You buy in the ':'Du kaufst im ')+((UI.kside||'south')==='north'?(en?'North':'Norden'):(en?'South':'Süden'));
     if(S.umk&&x.ic==='res'&&ph==='p'){const ms=mineSale(p,true);if(ms)x.st=(en?'Sale now: ':'Verkauf jetzt: ')+ms.price+' €'}
@@ -2424,7 +2435,7 @@ function marketHTML(mode){
   if(S.step===3||MR().china)return `<div class="sec"><div class="mkt-label"><span>${MR().china&&S.step<3?'Markt · Planwirtschaft':'Markt · alle kaufbar'}</span>${MR().china&&S.step<3?`<span>${S.deck.length} im Stapel</span>`:''}</div><div class="cards">${S.market.map(card).join('')}</div>${MR().china&&S.step<3?'<p class="hint mk-x">Gekaufte Kraftwerke werden erst am Rundenende ersetzt.</p>':''}</div>`;
   const bn=buyN(),now=S.market.slice(0,bn),fut=S.market.slice(bn);
   const spy=S.spy===H&&S.deck.length?`<div class="spy"><span>${LANG==='en'?'Industrial espionage · top card of the deck':'Industriespionage · oberste Karte im Stapel'}</span>${S.deck[0]===STEP3?plantCard(STEP3):S.deck[0]>=100?`<b class="spyev">${promoName(PROMO_BY_ID[S.deck[0]])}</b>`:plantCard(S.deck[0],{sm:true,act:'pinfo'})}</div>`:'';
-  return `<div class="sec"><div class="mkt-label"><span>Aktueller Markt</span><span>kaufbar</span></div><div class="cards">${now.map(card).join('')}</div><div class="mkt-label"><span>Zukünftiger Markt</span><span>${S.deck.length} im Stapel</span></div><div class="cards">${fut.map(n=>plantCard(n,{act:'pinfo'})).join('')}${S.step3Pending?plantCard(STEP3):''}</div>${spy}</div>`;
+  return `<div class="sec"><div class="mkt-label"><span>Aktueller Markt</span><span>kaufbar</span></div><div class="cards">${now.map(card).join('')}</div>${bn===5?`<p class="hint mk-x">${LX('Benelux: Das Öko-Kraftwerk vorne im zukünftigen Markt ist zusätzlich kaufbar.','Benelux: the eco plant at the front of the future market is also buyable.')}</p>`:''}<div class="mkt-label"><span>Zukünftiger Markt</span><span>${S.deck.length} im Stapel</span></div><div class="cards">${fut.map(n=>plantCard(n,{act:'pinfo'})).join('')}${S.step3Pending?plantCard(STEP3):''}</div>${spy}</div>`;
 }
 function panelAuction(a){
   let h='';
