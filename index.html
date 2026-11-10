@@ -958,6 +958,42 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 }
 @media (max-width:440px){.sbrand h1{font-size:clamp(34px,10.4vw,44px);letter-spacing:.05em}.sbrand p{font-size:13.5px}}
 @media (orientation:portrait) and (min-width:700px){#start.v2 .hero{height:58vh}.setup-body{max-width:640px;margin:0 auto;width:100%}.startbar{justify-content:center}.startbar .sb-sum{max-width:420px}}
+/* ---- v16: Kraftwerksdeck & Atomausstieg ---- */
+.dcards{display:flex;flex-direction:column;gap:8px}
+.dcard{display:flex;flex-direction:column;gap:7px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid #26343e;background:#121b22;color:var(--fg);cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
+.dcard:disabled{opacity:.45;cursor:not-allowed}
+.dcard:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.dch{display:flex;align-items:center;gap:10px}
+.dcn{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:.02em;flex:1}
+.dcm{font-size:12px;color:#8a9aa6;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dcs{font-size:13px;color:#a9b6bf;line-height:1.4}
+.radio{width:18px;height:18px;border-radius:50%;border:2px solid #4a5b67;flex:none;display:grid;place-items:center}
+.dcard.on{border-color:var(--accent);background:linear-gradient(180deg,rgba(242,179,61,.10),rgba(242,179,61,.02))}
+.dcard.on .radio{border-color:var(--accent)}
+.dcard.on .radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.dcard.locked{cursor:default}
+.dcard.locked .dch .dlxtag{position:static}
+.mixbar{display:flex;height:7px;border-radius:4px;overflow:hidden;gap:1px;background:#0b1116}
+.mixbar i{display:block;min-width:2px}
+.dcard:not(.on) .mixbar{opacity:.65}
+.mixleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:#8a9aa6;margin-top:2px}
+.mixleg span{display:inline-flex;align-items:center;gap:5px}
+.mixleg i{width:9px;height:9px;border-radius:2px}
+.toggle{display:flex;align-items:flex-start;gap:14px;padding:14px;border-radius:12px;border:1px solid #26343e;background:#121b22;margin-top:6px}
+.toggle.on{border-color:color-mix(in srgb,var(--uranium) 55%,#26343e);background:linear-gradient(180deg,rgba(224,72,61,.08),rgba(224,72,61,.02))}
+.tgt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.tgt b{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:.02em}
+.tgt span{font-size:13px;color:#a9b6bf;line-height:1.4}
+.tgt small{font-size:11.5px;color:#6f808c}
+.swt{flex:none;width:50px;height:30px;border-radius:999px;border:0;background:#2a3944;position:relative;cursor:pointer;padding:0;margin-top:1px;transition:background .2s}
+.swt span{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#e3eaee;box-shadow:0 2px 6px rgba(0,0,0,.4);transition:transform .2s}
+.toggle.on .swt{background:var(--uranium)}
+.toggle.on .swt span{transform:translateX(20px)}
+.swt:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.swt,.swt span{transition:none}}
+.callout{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:10px;background:rgba(242,179,61,.08);border:1px solid rgba(242,179,61,.35);color:#f2c96e}
+.callout svg{flex:none;margin-top:1px}
+.callout p{margin:0;font-size:13px;line-height:1.45;color:#e6d3a6}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -2140,9 +2176,28 @@ function regionPicker(){
 }
 function hasSave(){try{return !!localStorage.getItem(SAVE_KEY)}catch(_){return false}}
 const DECK_NOTE={std:'Die Kraftwerke aus dem Grundspiel.',d1:'„Die neuen Kraftwerke“, Set 1: Nummern 1 bis 50, mehr kleine und günstige Kraftwerke, Fusion bei 44, großes Uran-Kraftwerk 50.',d2:'Set 2: neue Müll-Öl-Hybride, viele Kohle- und Müllkraftwerke, großes Uran-Kraftwerk 50.',mix:'Alle drei Decks in einem Stapel, rund 126 Kraftwerke. Die Stufe-3-Karte liegt nach 34 Karten, sonst käme sie praktisch nie.',mix1:'Für jede Nummer zufällig eine Karte aus einem der drei Decks, ein normaler Stapel mit 42 Kraftwerken.'};
+const DECK_SHORT={std:'Die 42 Kraftwerke aus dem Grundspiel.',d1:'Mehr kleine, günstige Kraftwerke, Fusion bei 44.',d2:'Müll-Öl-Hybride, viele Kohle- und Müllkraftwerke.',mix:'Alle drei Decks in einem Stapel, Stufe 3 nach 34 Karten.',mix1:'Je Nummer zufällig eine Karte aus einem der drei Decks.'};
+const TYPE_ORDER=['coal','hybrid','oil','gohybrid','garbage','uranium','eco','fusion'];
+function deckMix(k){const keys=deckKeys(k==='mix1'?'mix':k);const c={};keys.forEach(x=>{const t=ALLPLANTS[x][0];c[t]=(c[t]||0)+1});const n=k==='mix1'?new Set(keys.map(Math.floor)).size:keys.length;const nums=keys.map(Math.floor);return{c,tot:keys.length,n,lo:Math.min(...nums),hi:Math.max(...nums)}}
+function mixBar(m){return `<span class="mixbar" aria-hidden="true">${TYPE_ORDER.filter(t=>m.c[t]).map(t=>`<i style="flex:${m.c[t]};background:${TCOL[t]}"></i>`).join('')}</span>`}
+function rulesBlock(){
+  const M=MAPS[UI.map],d=UI.deck||'std';let h='';
+  if(M.deluxe){const m=deckMix('d2');
+    h+=`<div class="dcards"><div class="dcard on locked"><div class="dch"><span class="dcn">Deluxe-Kraftwerke</span><span class="dlxtag">Deluxe</span></div><span class="dcs">Gehört fest zum Deluxe-Plan. Startmarkt nur aus den Kraftwerken 3 bis 15.</span>${mixBar(m)}<span class="dcm">${m.n} Kraftwerke · Nr. ${m.lo}–${m.hi}</span></div></div>`;
+  }else{
+    h+=`<div class="dcards" role="radiogroup" aria-label="Kraftwerksdeck">${Object.entries(DECKS).map(([k,dk])=>{const dis=M.paris&&(k==='mix'||k==='mix1');const m=deckMix(k);const on=d===k;
+      return `<button type="button" class="dcard${on?' on':''}" role="radio" aria-checked="${on}" data-act="deckSel" data-d="${k}" ${dis?'disabled':''}><div class="dch"><span class="radio"></span><span class="dcn">${dk.name}</span><span class="dcm">${m.n} · Nr. ${m.lo}–${m.hi}</span></div><span class="dcs">${dis?'Auf dem Frankreich-Plan nicht möglich: Frankreich verteilt feste Kraftwerksnummern.':DECK_SHORT[k]}</span>${mixBar(m)}</button>`}).join('')}</div>`;
+  }
+  h+=`<div class="mixleg">${TYPE_ORDER.map(t=>`<span><i style="background:${TCOL[t]}"></i>${{coal:'Kohle',hybrid:'Kohle/Öl',gohybrid:M.gas?'Gas/Öl':'Müll/Öl',oil:'Öl',garbage:M.gas?'Gas':'Müll',uranium:'Uran',eco:'Öko',fusion:'Fusion'}[t]}</span>`).join('')}</div>`;
+  if(M.phaseOutOpt||M.phaseOut39){const on=M.phaseOut39||UI.deAtom!==false;const trig=M.deluxe?'':{std:'39',d1:'38',d2:'37',mix:'39, 38 oder 37',mix1:'39, 38 oder 37'}[d];
+    h+=`<div class="toggle${on?' on':''}${M.phaseOut39?' fixed':''}">${M.phaseOut39?'':`<button type="button" class="swt" role="switch" aria-checked="${on}" data-act="atom" data-v="${!on}" aria-label="Atomausstieg"><span></span></button>`}<div class="tgt"><b>Atomausstieg</b><span>${M.phaseOut39?'<span>Gehört fest zum Italien-Plan.</span> ':''}<span>${on?`Sobald das große Uran-Kraftwerk ${trig?'('+trig+') ':''}gekauft ist, kommt kein Uran mehr nach.`:'Uran wird wie im Grundspiel nachgefüllt.'}</span></span>${M.phaseOut39?'':'<small>Regel aus Funkenschlag Recharged</small>'}</div></div>`;
+    h+=uraniumTrapWarn();
+  }
+  return h;
+}
 function uraniumTrapWarn(){
   const d=UI.deck||'std',po=MAPS[UI.map].phaseOut39||(MAPS[UI.map].phaseOutOpt&&UI.deAtom!==false);
-  if(po&&(d==='d1'||d==='d2'||d==='mix1'))return '<div class="nhint warnhint">Achtung: In diesem Deck ist das größte Kraftwerk (50) ein Uran-Kraftwerk. Mit Atomausstieg geht das Uran oft aus, dann steht es still. Für ein ausgewogenes Spiel Basisdeck wählen oder ohne Atomausstieg spielen.</div>';
+  if(po&&(d==='d1'||d==='d2'||d==='mix1'))return '<div class="callout"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1.5 17 16H1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 7v4M9 13.2v.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><p>In diesem Deck ist das größte Kraftwerk (50) ein Uran-Kraftwerk. Mit Atomausstieg geht das Uran oft aus, dann steht es still. Für ein ausgewogenes Spiel das Basisdeck wählen oder ohne Atomausstieg spielen.</p></div>';
   return '';
 }
 const MAP_NOTE={na:'Deluxe-Plan: acht Kraftwerke im Markt mit Rabatt, Erdgas statt Müll. New York und Mexico City bestehen aus je zwei Städten ohne Leitungskosten.',eu:'Deluxe-Plan: neun Kraftwerke im Markt, kein Rabatt. Kauft niemand ein Kraftwerk, fällt das kleinste weg. Erdgas statt Müll.',de:'Das Basisspiel.',fr:'Paris besteht aus drei Städten, untereinander ohne Leitungskosten. Viel Uran im Markt, Kraftwerk 11 liegt von Beginn an aus.',it:'Atomausstieg: Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt kein Uran mehr nach.'};
@@ -2177,7 +2232,8 @@ function renderStart(show){
    <div class="hero-foot"><span class="hm-hint">${UI.regions.length?'Tippe Regionen an, um dein Netzgebiet zu ändern.':'Tippe Regionen an, um dein Netzgebiet selbst zu wählen.'}</span>${resume}<div class="seg lang">${[['de','DE'],['en','EN']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}" aria-label="${k==='de'?'Deutsch':'English'}">${l}</button>`).join('')}</div></div></section>
   <section class="setup"><div class="setup-body">
    <div class="sgroup"><h2>Dein Betrieb</h2><label class="fld" for="nm"><span>Firmenname</span><input id="nm" maxlength="18" value="${esc(UI.name||(LANG==='en'?'You':'Du'))}"></label></div>
-   <div class="sgroup"><h2>Spielplan</h2><div class="mcards">${Object.entries(MAPS).filter(([,m])=>!m.deluxe).map(mapCard).join('')}</div><div class="mcards two">${Object.entries(MAPS).filter(([,m])=>m.deluxe).map(mapCard).join('')}</div><div class="nhint">${MAP_NOTE[UI.map]}</div>${MAPS[UI.map].phaseOutOpt?`<div class="gl sub">Atomausstieg (Recharged-Regel)</div><div class="seg">${[[true,'Mit Atomausstieg'],[false,'Ohne']].map(([v,l])=>`<button type="button" data-act="atom" data-v="${v}" class="${(UI.deAtom!==false)===v?'on':''}">${l}</button>`).join('')}</div><div class="nhint">${UI.deAtom!==false?'Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt bis Spielende kein Uran mehr nach.':'Uran wird wie im Basisspiel nachgefüllt.'}</div>`:''}${MAPS[UI.map].deluxe?`<div class="gl sub">Kraftwerksdeck</div><div class="seg dlxdeck"><button type="button" class="on" disabled><span class="dlxtag">Deluxe</span>Deluxe-Kraftwerke</button></div><div class="nhint">Gehört fest zum Deluxe-Plan. Die Karten entsprechen Set 2, der Startmarkt besteht nur aus den Kraftwerken 3 bis 15.</div>`:`<div class="gl sub">Kraftwerksdeck</div><div class="seg wrap3">${Object.entries(DECKS).map(([k,d])=>{const dis=MAPS[UI.map].paris&&(k==='mix'||k==='mix1');return `<button type="button" data-act="deckSel" data-d="${k}" class="${(UI.deck||'std')===k?'on':''}" ${dis?'disabled':''}>${d.name}</button>`}).join('')}</div><div class="nhint">${DECK_NOTE[UI.deck||'std']}${MAPS[UI.map].paris?' Frankreich verteilt feste Kraftwerksnummern, darum gibt es hier keine gemischten Decks.':''}</div>${uraniumTrapWarn()}`}</div>
+   <div class="sgroup"><h2>Spielplan</h2><div class="mcards">${Object.entries(MAPS).filter(([,m])=>!m.deluxe).map(mapCard).join('')}</div><div class="mcards two">${Object.entries(MAPS).filter(([,m])=>m.deluxe).map(mapCard).join('')}</div><div class="nhint">${MAP_NOTE[UI.map]}</div></div>
+   <div class="sgroup"><h2 class="h-rules">Kraftwerke & Regeln</h2>${rulesBlock()}</div>
    <div class="sgroup"><h2>Netzgebiet</h2>${regionPicker()}</div>
    <div class="sgroup"><h2>Gegner</h2><div class="gl sub">Spielerzahl</div><div class="seg">${[2,3,4,5].map(k=>`<button type="button" data-act="nai" data-n="${k}" class="${UI.nAI===k?'on':''}">${k+1}</button>`).join('')}</div><div class="nhint">${UI.nAI+1} Spieler: du und ${UI.nAI} KI · ${regionCount(UI.nAI+1)} Regionen · Stufe 2 ab ${RULES_N[UI.nAI+1].s2} Städten · Ende bei ${RULES_N[UI.nAI+1].end} Städten</div><div class="gl sub">KI-Stärke</div><div class="seg">${['easy','normal','hard','expert'].map(d=>`<button type="button" data-act="diff" data-d="${d}" class="${UI.diff===d?'on':''}">${AI_NAME[d]}</button>`).join('')}</div><p class="hint dnote">${AI_NOTE[UI.diff]||''}</p><div class="gl sub">KI-Persönlichkeiten</div><div class="seg">${[['mix','Gemischt'],['off','Alle ausgewogen']].map(([k,l])=>`<button type="button" data-act="styleSel" data-s="${k}" class="${(UI.styles||'mix')===k?'on':''}">${l}</button>`).join('')}</div><p class="hint dnote">${(UI.styles||'mix')==='mix'?'Jede KI bekommt einen Spielstil: Baulöwe, Sparfuchs, Ökostromer oder Blockierer.':'Alle KIs spielen ohne besonderen Stil.'}</p></div>
    <div class="slinks"><button type="button" class="btn ghost" data-act="startrules">Spielregeln</button><button type="button" class="btn ghost" data-act="stats">Statistik${games?` · ${games} ${games===1?'Partie':'Partien'}`:''}</button></div>
@@ -2189,6 +2245,9 @@ function renderStart(show){
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
+[/^Sobald das große Uran-Kraftwerk (?:\((.+)\) )?gekauft ist, kommt kein Uran mehr nach\.$/u,(m,a)=>a?`Once the big uranium plant (${a.replace(' oder ',' or ')}) is bought, no more uranium is restocked.`:'Once the big uranium plant is bought, no more uranium is restocked.'],
+[/^(\d+) · Nr\. (\d+)–(\d+)$/u,'$1 · no. $2–$3'],
+[/^(\d+) Kraftwerke · Nr\. (\d+)–(\d+)$/u,'$1 plants · no. $2–$3'],
 [/^Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über (.+)\. Wer am Ende die meisten Städte versorgt, gewinnt\.$/u,'Win power plants at auction, buy fuel on the market and spread your network across $1. Whoever powers the most cities at the end wins.'],
 [/^Runde (\d+) auf (.+)$/u,'Round $1 on $2'],
 [/^(\d+) Spieler · KI (.+)$/u,'$1 players · $2 AI'],
@@ -2328,6 +2387,12 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'In diesem Deck ist das größte Kraftwerk (50) ein Uran-Kraftwerk. Mit Atomausstieg geht das Uran oft aus, dann steht es still. Für ein ausgewogenes Spiel das Basisdeck wählen oder ohne Atomausstieg spielen.':'In this deck the biggest plant (50) is a uranium plant. With the phase-out, uranium often runs out and the plant stands idle. For a balanced game, pick the base deck or play without the phase-out.',
+'Auf dem Frankreich-Plan nicht möglich: Frankreich verteilt feste Kraftwerksnummern.':'Not available on the France board: France uses fixed plant numbers.',
+'Gehört fest zum Deluxe-Plan. Startmarkt nur aus den Kraftwerken 3 bis 15.':'Fixed for the Deluxe boards. The starting market only uses plants 3 to 15.',
+'Alle drei Decks in einem Stapel, Stufe 3 nach 34 Karten.':'All three decks in one pile, Step 3 after 34 cards.','Je Nummer zufällig eine Karte aus einem der drei Decks.':'For each number, one random card from one of the three decks.',
+'Mehr kleine, günstige Kraftwerke, Fusion bei 44.':'More small, cheap plants, fusion at 44.','Müll-Öl-Hybride, viele Kohle- und Müllkraftwerke.':'Garbage-oil hybrids, many coal and garbage plants.','Die 42 Kraftwerke aus dem Grundspiel.':'The 42 plants from the base game.',
+'Uran wird wie im Grundspiel nachgefüllt.':'Uranium is restocked as in the base game.','Gehört fest zum Italien-Plan.':'Always on for the Italy board.','Regel aus Funkenschlag Recharged':'Rule from Power Grid Recharged','Atomausstieg':'Nuclear phase-out','Kraftwerke & Regeln':'Power plants & rules',
 'Tippe Regionen an, um dein Netzgebiet zu ändern.':'Tap regions to change your play area.','Tippe Regionen an, um dein Netzgebiet selbst zu wählen.':'Tap regions to pick your play area yourself.',
 'Laufende Partie':'Game in progress','Dein Betrieb':'Your company','Firmenname':'Company name','Spielplan':'Board','Spielerzahl':'Number of players',
 'Zielerreichung: versorgte Städte am Ende geteilt durch das Spielziel der Partie (17 Städte bei 3 und 4 Spielern, 15 bei 5, 14 bei 6), damit Partien mit unterschiedlicher Spielerzahl vergleichbar sind.':'Goal reached: cities powered at the end divided by the game’s goal (17 cities with 3 and 4 players, 15 with 5, 14 with 6), so games with different player counts are comparable.',
