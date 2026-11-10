@@ -1031,6 +1031,9 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .dnote2{margin:0;font-size:13px;color:var(--ta9b6bf);line-height:1.45}
 .toggle.pers.on{border-color:color-mix(in srgb,var(--accent) 50%,var(--t26343e));background:linear-gradient(180deg,rgba(242,179,61,.07),rgba(242,179,61,.01))}
 .toggle.pers.on .swt{background:var(--accent)}
+.toggle.disc.on{border-color:color-mix(in srgb,#4fbf6a 55%,var(--t26343e));background:linear-gradient(180deg,rgba(79,191,106,.09),rgba(79,191,106,.02))}
+.toggle.disc.on .swt{background:#3fae5c}
+[data-theme="light"] .toggle.disc.on{border-color:color-mix(in srgb,#2f8a46 50%,transparent);background:linear-gradient(180deg,rgba(47,138,70,.1),rgba(47,138,70,.02))}[data-theme="light"] .toggle.disc.on .swt{background:#2f8a46}
 .stylist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;margin-top:8px}
 .stylist div{display:flex;flex-direction:column;gap:1px}
 .stylist b{font-size:13px;font-family:var(--body);font-weight:700;color:var(--fg);letter-spacing:0}
@@ -2844,7 +2847,7 @@ function rulesBlock(){
     h+=uraniumTrapWarn();
   }
   {const nd=M.noDiscount,on=!nd&&UI.disc!=='orig';
-    h+=`<div class="toggle${on?' on':''}${nd?' fixed':''}">${nd?'':`<button type="button" class="swt" role="switch" aria-checked="${on}" data-act="discTog" aria-label="Rabatt-Regel"><span></span></button>`}<div class="tgt"><b>${on?'Rabatt (Recharged)':'Originalregel: ohne Rabatt'}</b><span>${nd?'Dieser Plan spielt ohne Rabatt: Kauft niemand ein Kraftwerk, fällt das kleinste weg.':on?'Das kleinste Kraftwerk im Markt ist jede Runde ab 1 € zu haben. Kauft es niemand, fällt es am Ende der Versteigerung weg.':'Kein Rabatt. Kauft in einer Runde niemand ein Kraftwerk, fällt das kleinste aus dem Spiel und wird ersetzt.'}</span><small>${on?'Regel aus Funkenschlag Recharged':'Regel aus dem Original-Funkenschlag'}</small></div></div>`}
+    h+=`<div class="toggle disc${on?' on':''}${nd?' fixed':''}">${nd?'':`<button type="button" class="swt" role="switch" aria-checked="${on}" data-act="discTog" aria-label="Rabatt-Regel"><span></span></button>`}<div class="tgt"><b>${on?'Rabatt (Recharged)':'Originalregel: ohne Rabatt'}</b><span>${nd?'Dieser Plan spielt ohne Rabatt: Kauft niemand ein Kraftwerk, fällt das kleinste weg.':on?'Das kleinste Kraftwerk im Markt ist jede Runde ab 1 € zu haben. Kauft es niemand, fällt es am Ende der Versteigerung weg.':'Kein Rabatt. Kauft in einer Runde niemand ein Kraftwerk, fällt das kleinste aus dem Spiel und wird ersetzt.'}</span><small>${on?'Regel aus Funkenschlag Recharged':'Regel aus dem Original-Funkenschlag'}</small></div></div>`}
   return h;
 }
 function uraniumTrapWarn(){
