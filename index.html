@@ -1398,7 +1398,7 @@ const SRC=k=>{const f=Math.round((k%1)*10);return f===1?'d1':f===2?'d2':'std'};
 const PN=k=>{const f=Math.round((k%1)*10);return Math.floor(k)+(f===1?'′':f===2?'″':'')};
 const HYB={hybrid:['coal','oil'],gohybrid:['garbage','oil'],flux:['coal','oil','garbage','uranium']};
 function deckKeys(deck){
-  const ks=Object.keys(ALLPLANTS).map(Number);
+  const ks=Object.keys(ALLPLANTS).map(Number).filter(k=>k!==33.34);
   if(DECKS[deck]&&DECKS[deck].off!==undefined){const o=DECKS[deck].off;return ks.filter(k=>Math.abs((k%1)-o)<0.05)}
   if(deck==='mix')return ks;
   if(deck==='mix1'){const by={};ks.forEach(k=>(by[Math.floor(k)]??=[]).push(k));return Object.values(by).map(a=>a[Math.floor(Math.random()*a.length)])}
@@ -1715,7 +1715,7 @@ function startStep3(){
   S.step=3;if(MR().australia&&!S.co2){S.co2=true;applyGameMods();log('CO₂-Abgabe: Die Rohstofffelder für 1 und 2 € schließen, alle Preise steigen um 2 €.')}S.step3Pending=false;st().step3=S.round;
   S.deck=shuffle(S.deck.filter(x=>x!==STEP3));
   const tgt=MR().step3Size||6;const low=S.market.shift();while(S.market.length>tgt)S.market.shift();
-  log('Stufe 3 beginnt. Kraftwerk '+PN(low)+' fällt weg, alle Marktkraftwerke sind kaufbar.');
+  log(low!=null?'Stufe 3 beginnt. Kraftwerk '+PN(low)+' fällt weg, alle Marktkraftwerke sind kaufbar.':'Stufe 3 beginnt. Alle Marktkraftwerke sind kaufbar.');
   let g=0;while(S.market.length<tgt&&S.deck.length&&g++<10)drawToMarket();
 }
 function removeLowCities(){
@@ -1767,7 +1767,7 @@ function discardPlant(pid,num){
 function endAuctionPhase(){
   if(S.discount!=null&&S.market.includes(S.discount)){const x=S.discount;S.discGone=true;S.market=S.market.filter(y=>y!==x);log('Das Rabatt-Kraftwerk '+PN(x)+' wurde nicht gekauft und fällt weg.');drawToMarket();removeLowCities()}
   S.discount=null;
-  if((MAPS[S.map].allPassRemove||(S.origDisc&&!MR().allPassTwo))&&!S.boughtAny&&S.round>1&&S.market.length){const x=S.market.shift();log('Niemand hat ein Kraftwerk gekauft. Kraftwerk '+PN(x)+' fällt weg.');drawToMarket();removeLowCities()}
+  if((MAPS[S.map].allPassRemove||(S.origDisc&&!MR().allPassTwo))&&!S.boughtAny&&S.round>1&&S.market.length){const x=S.market.shift();S.discGone=true;log('Niemand hat ein Kraftwerk gekauft. Kraftwerk '+PN(x)+' fällt weg.');drawToMarket();removeLowCities()}
   if(MR().allPassTwo&&!S.boughtAny&&S.round>1&&S.market.length){const xs=S.market.splice(0,2);log('Niemand hat ein Kraftwerk gekauft. Kraftwerke '+xs.map(PN).join(' und ')+' fallen weg.');xs.forEach(()=>drawToMarket());removeLowCities()}
   if(S.step3Pending)startStep3();
   if(MR().orderAfterAuction){determineOrder();log('Neue Spielerreihenfolge nach der Versteigerung.')}
@@ -1901,7 +1901,7 @@ function finishBureau(){
 }
 function endGame(){
   S.phase='end';
-  S.ranking=S.players.map(p=>p.id).sort((a,b)=>P(b).lastPowered-P(a).lastPowered||P(b).money-P(a).money||P(b).cities.length-P(a).cities.length);
+  S.ranking=S.players.map(p=>p.id).sort((a,b)=>P(b).lastPowered-P(a).lastPowered||P(b).money-P(a).money||cityCount(P(b))-cityCount(P(a)));
   log(P(S.ranking[0]).name+' gewinnt mit '+P(S.ranking[0]).lastPowered+' versorgten Städten.',S.ranking[0]);
   st().end=Date.now();if(typeof onGameEnd==='function')onGameEnd();
 }
@@ -2173,7 +2173,7 @@ function seqForPhase(){return(S.phase==='resources'||S.phase==='build')?[...S.or
 function isDone(id){switch(S.phase){case'auction':return P(id).done;case'resources':case'build':return S.seq.indexOf(id)<S.seqIdx;case'bureau':return !P(id).human;default:return true}}
 function floatText(el,text,color){
   if(!el)return;const r=el.getBoundingClientRect();if(!r.width)return;
-  const f=document.createElement('div');f.className='float';f.textContent=text;f.style.color=color;f.style.left=(r.left+r.width/2)+'px';f.style.top=(r.top+r.height-6)+'px';
+  const key=Math.round(r.left)+':'+Math.round(r.top);document.querySelectorAll('.float').forEach(o=>{if(o.dataset.k===key)o.remove()});const f=document.createElement('div');f.className='float';f.dataset.k=key;f.textContent=text;f.style.color=color;f.style.left=(r.left+r.width/2)+'px';f.style.top=(r.top+r.height-6)+'px';
   document.body.appendChild(f);setTimeout(()=>f.remove(),1500);
 }
 function orderHTML(a){
@@ -2184,7 +2184,7 @@ function orderHTML(a){
     let st='';
     if(au&&au.all.includes(id)){if(au.high===id)st=`<span class="ost hi" title="${LX('Höchstgebot','Highest bid')}">${au.bid} €</span>`;else if(au.bidders.includes(id))st=`<span class="ost in">${LX('dabei','in')}</span>`;else st=`<span class="ost out">${LX('raus','out')}</span>`}
     const out=au&&au.all.includes(id)&&!au.bidders.includes(id);
-    return `<button type="button" class="ot${act?' act':''}${done?' done':''}${out?' out':''}${p.human?' me':''}" ${pc(id)} data-act="opp" data-pid="${id}" aria-label="${esc(p.name)}: Platz ${S.order.indexOf(id)+1}, ${p.money} Euro, ${p.cities.length} Städte${act?', am Zug':''}">${act?'<span class="tag">am Zug</span>':''}${done&&!st?'<span class="chk" aria-hidden="true"><svg viewBox="0 0 12 12" width="9" height="9"><path d="M2.2 6.4 4.9 9 9.8 3.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>':''}<span class="n">${S.order.indexOf(id)+1}</span><span class="who"><span class="nm">${p.human?'Du':esc(p.name)}</span><span class="mv"><b>${p.money}</b> € <i></i> ${cityCount(p)}${HOUSE}</span></span>${st}<span class="mps">${p.plants.map(n=>`<span class="mp t-${PLANTS[n][0]}" title="Kraftwerk ${PN(n)}, ${TYPE_SHORT[PLANTS[n][0]]}, ${PLANTS[n][2]} Städte">${PN(n)}</span>`).join('')||'<span class="mp none">–</span>'}</span></button>`}).join('');
+    return `<button type="button" class="ot${act?' act':''}${done?' done':''}${out?' out':''}${p.human?' me':''}" ${pc(id)} data-act="opp" data-pid="${id}" aria-label="${esc(p.name)}: Platz ${S.order.indexOf(id)+1}, ${p.money} Euro, ${cityCount(p)} Städte${act?', am Zug':''}">${act?'<span class="tag">am Zug</span>':''}${done&&!st?'<span class="chk" aria-hidden="true"><svg viewBox="0 0 12 12" width="9" height="9"><path d="M2.2 6.4 4.9 9 9.8 3.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>':''}<span class="n">${S.order.indexOf(id)+1}</span><span class="who"><span class="nm">${p.human?'Du':esc(p.name)}</span><span class="mv"><b>${p.money}</b> € <i></i> ${cityCount(p)}${HOUSE}</span></span>${st}<span class="mps">${p.plants.map(n=>`<span class="mp t-${PLANTS[n][0]}" title="Kraftwerk ${PN(n)}, ${TYPE_SHORT[PLANTS[n][0]]}, ${PLANTS[n][2]} Städte">${PN(n)}</span>`).join('')||'<span class="mp none">–</span>'}</span></button>`}).join('');
   return `<div class="osent" aria-hidden="true"></div><div class="order v3${S.phase==='auction'?' pin':''}${S.n>=5?' wrap':''}" style="--cols:${S.n>=5?3:S.n};--n6:${S.n}"><div class="ord-h"><span>Spielerreihenfolge</span><span class="odir">${PS[S.phase]||'Ende'} <em>${dir}</em></span></div><div class="ord${rev?' rev':''}">${toks}</div></div>`;
 }
 function orderPin(){
@@ -2580,7 +2580,7 @@ function panelBuild(a){
   if(opts.length){
     h+=`<div class="mkt-label"><span>Günstigste Städte</span><span>${p.money} € verfügbar</span></div><div class="opts">${opts.slice(0,5).map(o=>`<button type="button" class="opt${UI.buildSel===o.city?' sel':''}" data-act="bsel" data-city="${o.city}"><span><span class="nm">${CITY[o.city].name}</span> <span class="rg">${REGIONS[CITY[o.city].reg].name}</span></span><span class="cst">${o.cost} €</span></button>`).join('')}</div>`;
   }else h+=`<p class="hint">Keine Stadt ist für dich frei.</p>`;
-  if(p.cities.length+1>=END_AT&&!S.endTriggered)h+=`<p class="warn">Mit ${END_AT} Städten endet das Spiel nach dieser Runde.</p>`;
+  if(cityCount(p)+1>=END_AT&&!S.endTriggered)h+=`<p class="warn">Mit ${END_AT} Städten endet das Spiel nach dieser Runde.</p>`;
   h+=`<div class="row">${S.turnBuilt.length?'<button type="button" class="btn" data-act="breset">Zurücknehmen</button>':''}<button type="button" class="btn pri grow" data-act="bdone">Ausbau beenden</button></div></section>`;
   return h;
 }
@@ -2622,7 +2622,7 @@ function panelBureau(){
   if(S.outage)h+=`<p class="warn">${LANG==='en'?`Power outage this round: −3 € per city (${p.cities.length} cities).`:`Stromausfall in dieser Runde: −3 € pro Stadt (${p.cities.length} Städte).`}</p>`;
   {const ms=mineSale(p,true);if(ms){if(UI.sellKey!==S.round){UI.sellKey=S.round;UI.sell=true}const en=LANG==='en';
     h+=`<div class="toggle${UI.sell?' on':''} sellt"><button type="button" class="swt" role="switch" aria-checked="${UI.sell}" data-act="sellToggle" aria-label="${en?'Sell uranium':'Uran verkaufen'}"><span></span></button><div class="tgt"><b>${en?'Sell uranium from your mines':'Uran aus deinen Minen verkaufen'}</b><span>${ms.price?(UI.sell?(en?`${ms.c} × ${ms.price} € = ${ms.inc} € at round end. ${ms.n===1?'Your token then fills the highest free space.':'Your '+ms.n+' tokens then fill the highest free spaces.'}`:`${ms.c} × ${ms.price} € = ${ms.inc} € am Rundenende. Danach ${ms.n===1?'belegt dein Marker das höchste freie Feld':'belegen deine '+ms.n+' Marker die höchsten freien Felder'}.`):(en?'You keep the market prices high for a later sale and earn nothing from your mines this round.':'Du hältst die Preise für später hoch und verdienst diese Runde nichts mit deinen Minen.')):(en?'The uranium market is full: no sale possible this round.':'Der Uranmarkt ist voll: Diese Runde ist kein Verkauf möglich.')}</span></div></div>`}}
-  h+=`<div class="income"><span>${powered} von ${p.cities.length} Städten versorgt</span><b>+${roundIncome(p,powered)} €</b></div>`;
+  h+=`<div class="income"><span>${powered} von ${cityCount(p)} Städten versorgt</span><b>+${roundIncome(p,powered)} €</b></div>`;
   h+=`<div class="row"><button type="button" class="btn" data-act="realloc">Lager neu verteilen</button><button type="button" class="btn pri grow" data-act="power" ${o&&!mustMax?'':'disabled'}>Strom liefern</button></div></section>`;
   const nx=S.players.filter(x=>!x.human);
   h+=`<p class="hint">Die Gegner haben bereits geliefert: ${nx.map(x=>esc(x.name)+' '+x.lastPowered).join(', ')} Städte.</p>`;
@@ -2738,7 +2738,7 @@ function renderSheet(){
     h=head('Menü')+`<div class="menu"><div class="mgl">Karte bei Auktion und Rohstoffkauf</div><div class="seg">${[['auto','Verkleinern'],['always','Immer groß']].map(([k,l])=>`<button type="button" data-act="mapMode" data-m="${k}" class="${MAPMODE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Sprache · Language</div><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Vibration beim Überbieten</div><div class="seg">${[[true,LANG==='en'?'On':'An'],[false,LANG==='en'?'Off':'Aus']].map(([k,l])=>`<button type="button" data-act="vibToggle" class="${!!UI.vib===k?'on':''}" ${!!UI.vib===k?'disabled':''}>${l}</button>`).join('')}</div><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button><div class="mgl">Darstellung</div><div class="seg">${[['dark','Dunkel'],['light','Hell'],['auto','Automatisch']].map(([k,l])=>`<button type="button" data-act="theme" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div></div>`;
   }else if(UI.sheet==='opp'){
     h=head('Gegner und Betriebe','opp')+oppCompare()+S.order.map(id=>{const p=P(id);const sv=storeOf(p);const pool=RES.filter(r=>p.pool[r]>0).map(r=>`<span class="stock">${resIcon(r)}${p.pool[r]}</span>`).join('')||'<span class="hint">leer</span>';
-      return `<div class="opp" id="opp-${id}" ${pc(id)}><div class="h"><b>${esc(p.name)}</b>${p.style&&STYLES[p.style]?`<span class="stag">${STYLES[p.style].name}</span><span class="hint">${STYLES[p.style].note}</span>`:''}<span>${p.money} €</span><span>${p.cities.length} Städte</span><span>Kapazität ${capacity(p)}</span>${p.lastPowered?`<span>zuletzt ${p.lastPowered} versorgt</span>`:''}</div><div class="cards">${p.plants.map(n=>plantCard(n,{lg:true,store:sv[n]||[],act:'pinfo'})).join('')||'<span class="hint">noch keine Kraftwerke</span>'}</div><div class="stock-row"><span class="lbl">Lager</span>${pool}</div></div>`}).join('');
+      return `<div class="opp" id="opp-${id}" ${pc(id)}><div class="h"><b>${esc(p.name)}</b>${p.style&&STYLES[p.style]?`<span class="stag">${STYLES[p.style].name}</span><span class="hint">${STYLES[p.style].note}</span>`:''}<span>${p.money} €</span><span>${cityCount(p)} Städte</span><span>Kapazität ${capacity(p)}</span>${p.lastPowered?`<span>zuletzt ${p.lastPowered} versorgt</span>`:''}</div><div class="cards">${p.plants.map(n=>plantCard(n,{lg:true,store:sv[n]||[],act:'pinfo'})).join('')||'<span class="hint">noch keine Kraftwerke</span>'}</div><div class="stock-row"><span class="lbl">Lager</span>${pool}</div></div>`}).join('');
   }else if(UI.sheet==='plant'){
     h=head('Kraftwerk '+PN(UI.pnum))+plantInfo(UI.pnum);
   }else if(UI.sheet==='markets'){
@@ -2767,7 +2767,7 @@ ${S&&(S.promos||[]).length?`<div class="rdiff ig"><div class="rd-h"><div><span c
       else h+=`<p class="hint">Öffne diesen Link in der claude.ai-Version von Hochspannung, um das Ergebnis einzutragen.</p>`;}
     if(UI.lbMsg)h+=`<p class="hint lbmsg">${esc(UI.lbMsg)}</p>`;
   }else if(UI.sheet==='results'){
-    h=head('Ergebnis')+`<div class="rank">${S.ranking.map((id,i)=>{const p=P(id);return `<div ${pc(id)}><span class="pl">${i+1}</span><span class="dot"></span><b>${esc(p.name)}</b><span class="v">${p.lastPowered} versorgt · ${p.cities.length} Städte<br>${p.money} €</span></div>`}).join('')}</div>${lbBoxHTML(loadHist().slice(-1)[0])}<div class="row"><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn pri grow" data-act="newyes">Neues Spiel</button></div>`;
+    h=head('Ergebnis')+`<div class="rank">${S.ranking.map((id,i)=>{const p=P(id);return `<div ${pc(id)}><span class="pl">${i+1}</span><span class="dot"></span><b>${esc(p.name)}</b><span class="v">${p.lastPowered} versorgt · ${cityCount(p)} Städte<br>${p.money} €</span></div>`}).join('')}</div>${lbBoxHTML(loadHist().slice(-1)[0])}<div class="row"><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn pri grow" data-act="newyes">Neues Spiel</button></div>`;
   }
   const dock=isDock(),old=sheet.querySelector('.sheet'),keep=dock&&old&&sheet.dataset.s===UI.sheet?old.scrollTop:0;
   sheet.innerHTML=`<div class="sheet" role="dialog" aria-modal="${dock?'false':'true'}">${h}</div>`;sheet.hidden=false;sheet.dataset.s=UI.sheet;
@@ -2951,6 +2951,7 @@ const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const REG_EN={};for(const m of Object.values(MAPS))for(const r of Object.values(m.regions))if(r.en&&r.en!==r.name)REG_EN[r.name]=r.en;
 const TP=[
 [/^Neues Spiel\. Netzgebiet: (.+)\. KI-Stärke: (.+)\.$/u,(m,a,b)=>'New game. Map area: '+a.split(', ').map(x=>REG_EN[x]||x).join(', ')+'. AI difficulty: '+b+'.'],
+[/^Stufe 3 beginnt\. Alle Marktkraftwerke sind kaufbar\.$/u,'Step 3 begins. All market plants can be bought.'],
 [/^Stufe 3 beginnt\. Kraftwerk (\d+[′″]?) fällt weg, alle Marktkraftwerke sind kaufbar\.$/u,'Step 3 begins. Plant $1 is removed; all market plants can be bought.'],
 [/^(.+) kauft (.+) für (\d+) €\. \(Nordmarkt\)$/u,'$1 buys $2 for $3 € (North market).'],
 [/^(.+) baut in (.+) \((\d+) €\) mit dem freien Sprung\.$/u,'$1 builds in $2 ($3 €) using the free jump.'],
