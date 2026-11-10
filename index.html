@@ -1750,6 +1750,7 @@ function startAuctionPhase(){S.phase='auction';S.players.forEach(p=>p.done=false
 function nextChooser(){
   const next=S.order.find(id=>!P(id).done);
   if(next===undefined)return endAuctionPhase();
+  if(!buyable().length&&S.round>1){if(!S.noPlantsLogged||S.noPlantsLogged!==S.round){S.noPlantsLogged=S.round;log(S.boughtAny?'Keine Kraftwerke mehr im Markt. Die übrigen Spieler können nichts mehr ersteigern.':'Keine Kraftwerke mehr im Markt. Die Versteigerung entfällt in dieser Runde.')}S.players.forEach(p=>p.done=true);return endAuctionPhase()}
   S.auc={mode:'choose',chooser:next};
 }
 function doPass(pid){P(pid).done=true;log(P(pid).name+' verzichtet auf ein Kraftwerk.',pid);
@@ -2991,6 +2992,8 @@ const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const REG_EN={};for(const m of Object.values(MAPS))for(const r of Object.values(m.regions))if(r.en&&r.en!==r.name)REG_EN[r.name]=r.en;
 const TP=[
 [/^Neues Spiel\. Netzgebiet: (.+)\. KI-Stärke: (.+)\.$/u,(m,a,b)=>'New game. Map area: '+a.split(', ').map(x=>REG_EN[x]||x).join(', ')+'. AI difficulty: '+b+'.'],
+[/^Keine Kraftwerke mehr im Markt\. Die Versteigerung entfällt in dieser Runde\.$/u,'No plants left in the market. There is no auction this round.'],
+[/^Keine Kraftwerke mehr im Markt\. Die übrigen Spieler können nichts mehr ersteigern\.$/u,'No plants left in the market. The remaining players cannot buy anything.'],
 [/^Stufe 3 beginnt\. Alle Marktkraftwerke sind kaufbar\.$/u,'Step 3 begins. All market plants can be bought.'],
 [/^Stufe 3 beginnt\. Kraftwerk (\d+[′″]?) fällt weg, alle Marktkraftwerke sind kaufbar\.$/u,'Step 3 begins. Plant $1 is removed; all market plants can be bought.'],
 [/^(.+) kauft (.+) für (\d+) €\. \(Nordmarkt\)$/u,'$1 buys $2 for $3 € (North market).'],
