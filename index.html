@@ -2787,7 +2787,8 @@ function regionsValid(sel,n){
 function regionsOk(){const m=MAPS[MAPID].mustRegion;return !UI.regions.length||(regionsValid(UI.regions,regionCount(UI.nAI+1))&&(!m||UI.regions.includes(m)))}
 function coInitials(n){const w=String(n||'').trim().split(/[\s&\-]+/).filter(Boolean);if(!w.length)return '?';return (w.length>1?w[0][0]+w[1][0]:w[0].slice(0,2)).toUpperCase()}
 const CO_NAMES=['Spreestrom','Elbwatt','Alpenvolt','Funkenwerk','Hansestrom AG','Mainvolt','Werk Kreuzberg','Ampere & Söhne','Grünfunk','Kesselhaus Energie','Ohm & Partner','Volta Union','Moorstrom','Turbinenhof','Neckarnetz','Kupfer & Kabel'];
-document.addEventListener('input',e=>{if(e.target&&e.target.id==='nm'){const el=document.getElementById('coIni');if(el)el.textContent=coInitials(e.target.value)}});
+function saveName(v){try{const t=String(v||'').trim();if(t)localStorage.setItem('hochspannung-name',t.slice(0,40));else localStorage.removeItem('hochspannung-name')}catch(_){}}
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='nm'){saveName(e.target.value);const el=document.getElementById('coIni');if(el)el.textContent=coInitials(e.target.value)}});
 function regionVB(){const cs=Object.values(CITY),xs=cs.map(c=>c.x),ys=cs.map(c=>c.y),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),pd=Math.max(x1-x0,y1-y0)*.08;return `${x0-pd} ${y0-pd} ${x1-x0+2*pd} ${y1-y0+2*pd}`}
 function regionThumb(k,vb){
   return `<svg viewBox="${vb}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path class="rt-land" d="${GEO_LAND}"/>${Object.entries(TERR).map(([rk,d])=>`<path d="${d}" class="rt-terr${rk===k?' me':''}" style="--rc:${REGIONS[rk].col}"/>`).join('')}</svg>`;
@@ -3920,6 +3921,7 @@ function schedule(){
 function after(){save();render();schedule()}
 try{UI.promos=JSON.parse(localStorage.getItem('hochspannung-promos')||'[]').filter(k=>PROMOS[k])}catch(_){UI.promos=[]}
 try{UI.disc=localStorage.getItem('hochspannung-disc')||'rech'}catch(_){UI.disc='rech'}
+try{const n=localStorage.getItem('hochspannung-name');if(n&&!UI.name)UI.name=n}catch(_){}
 try{UI.adv=localStorage.getItem('hochspannung-adv')==='1';UI.vib=localStorage.getItem('hochspannung-vib')!=='0'}catch(_){UI.vib=true}
 function buzz(){if(!UI.vib)return;try{if(navigator.vibrate&&navigator.vibrate([45,35,45]))return}catch(_){}
   try{const l=document.createElement('label');l.style.cssText='position:fixed;opacity:0;pointer-events:none;width:1px;height:1px';const i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');l.appendChild(i);document.body.appendChild(l);l.click();setTimeout(()=>l.remove(),50)}catch(_){}}
@@ -3955,7 +3957,7 @@ const A={
   mapSel:b=>{UI.map=b.dataset.m;if(MAPS[UI.map].paris&&(UI.deck==='mix'||UI.deck==='mix1'))UI.deck='std';UI.regions=[];UI.name=$('#nm').value;renderStart(true);return'skip'},
   mapPeek:()=>{UI.peek=!UI.peek;UI.peekKey=S.round+S.phase},
   theme:b=>{setTheme(b.dataset.t)},
-  coRand:()=>{const cur=$('#nm').value;const pool=CO_NAMES.filter(n=>n!==cur);UI.name=pool[Math.floor(Math.random()*pool.length)];renderStart(true);const i=$('#nm');if(i){i.classList.add('co-flash');setTimeout(()=>i.classList.remove('co-flash'),500)}return'skip'},
+  coRand:()=>{const cur=$('#nm').value;const pool=CO_NAMES.filter(n=>n!==cur);UI.name=pool[Math.floor(Math.random()*pool.length)];saveName(UI.name);renderStart(true);const i=$('#nm');if(i){i.classList.add('co-flash');setTimeout(()=>i.classList.remove('co-flash'),500)}return'skip'},
   xToggle:()=>{if(MAPS[UI.map].exp)return'skip';UI.xopen=!UI.xopen;UI.name=$('#nm').value;renderStart(true);return'skip'},
   themeSel:b=>{setTheme(b.dataset.t);UI.name=$('#nm').value;renderStart(true);return'skip'},
   mapMode:b=>{MAPMODE=b.dataset.m==='always'?'always':'auto';try{localStorage.setItem('hochspannung-map',MAPMODE)}catch(_){}},
@@ -3979,7 +3981,7 @@ const A={
   regpick:()=>{if(!UI.regions.length){const n=regionCount(UI.nAI+1);const ks=Object.keys(REGIONS);for(let t=0;t<200;t++){const c=shuffle(ks).slice(0,n);if(regionsValid(c,n)&&(!MAPS[MAPID].mustRegion||c.includes(MAPS[MAPID].mustRegion))){UI.regions=c;break}}}UI.name=$('#nm').value;renderStart(true);return'skip'},
   markets:()=>{UI.sheet=UI.sheet==='markets'&&isDock()?null:'markets'},
   pinfo:b=>{UI.back=isDock()?UI.sheet:null;UI.pnum=+b.dataset.num;UI.sheet='plant'},
-  start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();newGame(UI.name||(LANG==='en'?'Your company':'Dein Betrieb'),UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false)},
+  start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();saveName(UI.name);newGame(UI.name||(LANG==='en'?'Your company':'Dein Betrieb'),UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false)},
   cont:()=>{loadMap(S.map||'de');loadDeck(S.deckKeys||deckKeys('std'));applyPlantOv();applyMapN(S.n);applyGameMods();UI.vb=null;renderStart(false)},
   zin:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.3);return'skip'},
   zout:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.3);return'skip'},
