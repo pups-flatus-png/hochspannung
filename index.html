@@ -2017,16 +2017,17 @@ function aiPlan(p){
     const[t,k,c]=PLANTS[num];if(FREE(t)){powered+=c;continue}
     let req=k;const take=r=>{const x=Math.min(avail[r],req);avail[r]-=x;req-=x};
     const HT=hybFor(t,p);if(HT)HT.forEach(take);else take(t);
-    const mk2={...mk},tb={coal:0,oil:0,garbage:0,uranium:0};let cost=0;
+    const mk2={...mk},tb={coal:0,oil:0,garbage:0,uranium:0};let cost=0,pc=0,short=false;
     for(let i=0;i<req;i++){
       let r=t;
       if(HT){let bp=Infinity;for(const q of HT){const pq=mk2[q]>0&&CAP[q]?slotPrice(q,CAP[q]-mk2[q]):Infinity;if(pq<bp){bp=pq;r=q}}if(bp===Infinity)r=HT[0]}
-      if(mk2[r]<=0||slotPrice(r,CAP[r]-mk2[r])>priceCap()){cost=Infinity;break}
+      if(mk2[r]<=0||slotPrice(r,CAP[r]-mk2[r])>priceCap()){short=mk2[r]<=0&&req<k+1;pc=cost;cost=Infinity;break}
       cost+=unitPrice(r,CAP[r]-mk2[r],p);mk2[r]--;tb[r]++;
     }
     const limit=powered<fuelTo?p.money-spent-(fuelTo>cityCount&&powered>=cityCount?reserve*0.5:0):p.money-spent-reserve;
     const np={};RES.forEach(r=>np[r]=p.pool[r]+buy[r]+tb[r]);
     if(cost<=limit&&canHold(p,np)){spent+=cost;RES.forEach(r=>buy[r]+=tb[r]);mk=mk2;powered+=c}
+    else if(cost===Infinity&&short&&pc>0&&powered<fuelTo&&pc<=p.money-spent-reserve&&canHold(p,np)){spent+=pc;RES.forEach(r=>buy[r]+=tb[r]);mk=mk2}
   }
   if(L(p).stock){
     const np={};RES.forEach(r=>np[r]=p.pool[r]+buy[r]);
