@@ -994,6 +994,39 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .callout{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:10px;background:rgba(242,179,61,.08);border:1px solid rgba(242,179,61,.35);color:#f2c96e}
 .callout svg{flex:none;margin-top:1px}
 .callout p{margin:0;font-size:13px;line-height:1.45;color:#e6d3a6}
+/* ---- v17: Gegner ---- */
+.pcards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.pcard{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 6px 11px;border-radius:12px;border:1px solid #26343e;background:#121b22;color:var(--fg);cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
+.pcard b{font-family:var(--display);font-size:30px;font-weight:700;line-height:1}
+.seats{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;max-width:52px}
+.seats i{width:9px;height:9px;border-radius:50%;opacity:.45}
+.seats i.you{box-shadow:0 0 0 1.5px #0e151b,0 0 0 2.5px #f2b33d}
+.pcard.on{border-color:var(--accent);background:linear-gradient(180deg,rgba(242,179,61,.12),rgba(242,179,61,.02))}
+.pcard.on b{color:var(--accent)}
+.pcard.on .seats i{opacity:1}
+.pcard:focus-visible,.dlv:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pfacts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;border-radius:12px;overflow:hidden;background:#1d2a33;border:1px solid #1d2a33}
+.pfacts div{background:#0f171d;padding:9px 10px;display:flex;flex-direction:column;gap:2px}
+.pfacts b{font-family:var(--display);font-size:20px;line-height:1}
+.pfacts span{font-size:11.5px;color:#8a9aa6;line-height:1.25}
+@media (max-width:420px){.pfacts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.dlevels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.dlv{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:12px 11px 11px;border-radius:12px;border:1px solid #26343e;background:#121b22;color:var(--fg);cursor:pointer;font:inherit;text-align:left;min-width:0;transition:border-color .2s,background .2s}
+.dlv .sigbars{display:flex;flex-direction:row;align-items:flex-end;gap:3px;height:22px;margin-bottom:3px}
+.dlv .sigbars i{display:block;width:6px;border-radius:2px;background:#2a3944}
+.dlv .sigbars i.f{background:#6f808c}
+.dlv b{font-family:var(--display);font-size:16px;font-weight:600;letter-spacing:.02em}
+.dlv small{font-size:11.5px;color:#8a9aa6;line-height:1.25}
+.dlv.on{border-color:var(--accent);background:linear-gradient(180deg,rgba(242,179,61,.12),rgba(242,179,61,.02))}
+.dlv.on .sigbars i.f{background:var(--accent);box-shadow:0 0 6px rgba(242,179,61,.5)}
+@media (max-width:440px){.dlevels{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.dnote2{margin:0;font-size:13px;color:#a9b6bf;line-height:1.45}
+.toggle.pers.on{border-color:color-mix(in srgb,var(--accent) 50%,#26343e);background:linear-gradient(180deg,rgba(242,179,61,.07),rgba(242,179,61,.01))}
+.toggle.pers.on .swt{background:var(--accent)}
+.stylist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;margin-top:8px}
+.stylist div{display:flex;flex-direction:column;gap:1px}
+.stylist b{font-size:13px;font-family:var(--body);font-weight:700;color:var(--fg);letter-spacing:0}
+.stylist span{font-size:12px;color:#8a9aa6}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -2180,6 +2213,18 @@ const DECK_SHORT={std:'Die 42 Kraftwerke aus dem Grundspiel.',d1:'Mehr kleine, g
 const TYPE_ORDER=['coal','hybrid','oil','gohybrid','garbage','uranium','eco','fusion'];
 function deckMix(k){const keys=deckKeys(k==='mix1'?'mix':k);const c={};keys.forEach(x=>{const t=ALLPLANTS[x][0];c[t]=(c[t]||0)+1});const n=k==='mix1'?new Set(keys.map(Math.floor)).size:keys.length;const nums=keys.map(Math.floor);return{c,tot:keys.length,n,lo:Math.min(...nums),hi:Math.max(...nums)}}
 function mixBar(m){return `<span class="mixbar" aria-hidden="true">${TYPE_ORDER.filter(t=>m.c[t]).map(t=>`<i style="flex:${m.c[t]};background:${TCOL[t]}"></i>`).join('')}</span>`}
+const SEATCOL=['#f2b33d','#ff5fa2','#b48cff','#4fd6c4','#ff9f43','#c6e05a'];
+const DIFF_SHORT={easy:'Zum Kennenlernen',normal:'Solide Gegner',hard:'Mutig und planvoll',expert:'Spielt auf Sieg'};
+function oppBlock(){
+  const n=UI.nAI+1,R=RULES_N[n],st=(UI.styles||'mix')==='mix';
+  const seats=k=>`<span class="seats">${Array.from({length:k+1},(_,i)=>`<i style="background:${SEATCOL[i]}"${i===0?' class="you"':''}></i>`).join('')}</span>`;
+  let h=`<div class="gl sub">Spielerzahl</div><div class="pcards" role="radiogroup" aria-label="Spielerzahl">${[2,3,4,5].map(k=>`<button type="button" class="pcard${UI.nAI===k?' on':''}" role="radio" aria-checked="${UI.nAI===k}" data-act="nai" data-n="${k}"><b>${k+1}</b>${seats(k)}</button>`).join('')}</div>
+  <div class="pfacts"><div><b>${n}</b><span>Spieler: du und ${UI.nAI} KI</span></div><div><b>${regionCount(n)}</b><span>Regionen</span></div><div><b>${R.s2}</b><span>Städte bis Stufe 2</span></div><div><b>${R.end}</b><span>Städte bis Spielende</span></div></div>`;
+  const lv=['easy','normal','hard','expert'];
+  h+=`<div class="gl sub">KI-Stärke</div><div class="dlevels" role="radiogroup" aria-label="KI-Stärke">${lv.map((d,i)=>`<button type="button" class="dlv${UI.diff===d?' on':''}" role="radio" aria-checked="${UI.diff===d}" data-act="diff" data-d="${d}"><span class="sigbars" aria-hidden="true">${lv.map((_,j)=>`<i class="${j<=i?'f':''}" style="height:${7+j*5}px"></i>`).join('')}</span><b>${AI_NAME[d]}</b><small>${DIFF_SHORT[d]}</small></button>`).join('')}</div><p class="dnote2">${AI_NOTE[UI.diff]||''}</p>`;
+  h+=`<div class="toggle pers${st?' on':''}"><button type="button" class="swt" role="switch" aria-checked="${st}" data-act="styleSel" data-s="${st?'off':'mix'}" aria-label="KI-Persönlichkeiten"><span></span></button><div class="tgt"><b>KI-Persönlichkeiten</b><span>${st?'Jede KI bekommt einen eigenen Spielstil.':'Alle KIs spielen ausgewogen, ohne besonderen Stil.'}</span>${st?`<div class="stylist">${Object.values(STYLES).map(x=>`<div><b>${x.name}</b><span>${x.note}</span></div>`).join('')}</div>`:''}</div></div>`;
+  return h;
+}
 function rulesBlock(){
   const M=MAPS[UI.map],d=UI.deck||'std';let h='';
   if(M.deluxe){const m=deckMix('d2');
@@ -2235,7 +2280,7 @@ function renderStart(show){
    <div class="sgroup"><h2>Spielplan</h2><div class="mcards">${Object.entries(MAPS).filter(([,m])=>!m.deluxe).map(mapCard).join('')}</div><div class="mcards two">${Object.entries(MAPS).filter(([,m])=>m.deluxe).map(mapCard).join('')}</div><div class="nhint">${MAP_NOTE[UI.map]}</div></div>
    <div class="sgroup"><h2 class="h-rules">Kraftwerke & Regeln</h2>${rulesBlock()}</div>
    <div class="sgroup"><h2>Netzgebiet</h2>${regionPicker()}</div>
-   <div class="sgroup"><h2>Gegner</h2><div class="gl sub">Spielerzahl</div><div class="seg">${[2,3,4,5].map(k=>`<button type="button" data-act="nai" data-n="${k}" class="${UI.nAI===k?'on':''}">${k+1}</button>`).join('')}</div><div class="nhint">${UI.nAI+1} Spieler: du und ${UI.nAI} KI · ${regionCount(UI.nAI+1)} Regionen · Stufe 2 ab ${RULES_N[UI.nAI+1].s2} Städten · Ende bei ${RULES_N[UI.nAI+1].end} Städten</div><div class="gl sub">KI-Stärke</div><div class="seg">${['easy','normal','hard','expert'].map(d=>`<button type="button" data-act="diff" data-d="${d}" class="${UI.diff===d?'on':''}">${AI_NAME[d]}</button>`).join('')}</div><p class="hint dnote">${AI_NOTE[UI.diff]||''}</p><div class="gl sub">KI-Persönlichkeiten</div><div class="seg">${[['mix','Gemischt'],['off','Alle ausgewogen']].map(([k,l])=>`<button type="button" data-act="styleSel" data-s="${k}" class="${(UI.styles||'mix')===k?'on':''}">${l}</button>`).join('')}</div><p class="hint dnote">${(UI.styles||'mix')==='mix'?'Jede KI bekommt einen Spielstil: Baulöwe, Sparfuchs, Ökostromer oder Blockierer.':'Alle KIs spielen ohne besonderen Stil.'}</p></div>
+   <div class="sgroup"><h2>Gegner</h2>${oppBlock()}</div>
    <div class="slinks"><button type="button" class="btn ghost" data-act="startrules">Spielregeln</button><button type="button" class="btn ghost" data-act="stats">Statistik${games?` · ${games} ${games===1?'Partie':'Partien'}`:''}</button></div>
   </div>
   <div class="startbar"><div class="sb-sum"><b>${esc(M.name)}</b><span>${nP} Spieler · KI ${AI_NAME[UI.diff]}</span></div><button type="button" class="btn pri" data-act="start" ${regionsOk()?'':'disabled'}>Neues Spiel</button></div></section>`;
@@ -2245,6 +2290,7 @@ function renderStart(show){
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
+[/^Spieler: du und (\d+) KI$/u,'players: you and $1 AI'],
 [/^Sobald das große Uran-Kraftwerk (?:\((.+)\) )?gekauft ist, kommt kein Uran mehr nach\.$/u,(m,a)=>a?`Once the big uranium plant (${a.replace(' oder ',' or ')}) is bought, no more uranium is restocked.`:'Once the big uranium plant is bought, no more uranium is restocked.'],
 [/^(\d+) · Nr\. (\d+)–(\d+)$/u,'$1 · no. $2–$3'],
 [/^(\d+) Kraftwerke · Nr\. (\d+)–(\d+)$/u,'$1 plants · no. $2–$3'],
@@ -2387,6 +2433,8 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'Alle KIs spielen ausgewogen, ohne besonderen Stil.':'All AIs play balanced, without a particular style.','Jede KI bekommt einen eigenen Spielstil.':'Each AI gets its own play style.',
+'Städte bis Spielende':'cities to end the game','Städte bis Stufe 2':'cities to Step 2','Zum Kennenlernen':'To learn the game','Solide Gegner':'Solid opponents','Mutig und planvoll':'Bold and planned','Spielt auf Sieg':'Plays to win',
 'In diesem Deck ist das größte Kraftwerk (50) ein Uran-Kraftwerk. Mit Atomausstieg geht das Uran oft aus, dann steht es still. Für ein ausgewogenes Spiel das Basisdeck wählen oder ohne Atomausstieg spielen.':'In this deck the biggest plant (50) is a uranium plant. With the phase-out, uranium often runs out and the plant stands idle. For a balanced game, pick the base deck or play without the phase-out.',
 'Auf dem Frankreich-Plan nicht möglich: Frankreich verteilt feste Kraftwerksnummern.':'Not available on the France board: France uses fixed plant numbers.',
 'Gehört fest zum Deluxe-Plan. Startmarkt nur aus den Kraftwerken 3 bis 15.':'Fixed for the Deluxe boards. The starting market only uses plants 3 to 15.',
@@ -2554,7 +2602,7 @@ const TS=Object.entries({
 'Spielerreihenfolge':'Turn order','alle gleichzeitig':'all at once','vorwärts':'forward','rückwärts':'backward','am Zug':'to play','Dein Geld':'Your money','KI-Stärke':'AI difficulty','Karte des Stromnetzes':'Map of the power grid','Hineinzoomen':'Zoom in','Herauszoomen':'Zoom out','Karte einpassen':'Fit map','Gebot senken':'Lower bid','Gebot erhöhen':'Raise bid','Höchstgebot':'Highest bid',
 ' am Markt':' on market','im Korb':'in basket',
 });
-const TW=Object.entries({'leer':'empty','frei':'free','neu':'new','Rohstoff':'Resource','Anteil':'Share',
+const TW=Object.entries({'Regionen':'regions','leer':'empty','frei':'free','neu':'new','Rohstoff':'Resource','Anteil':'Share',
 'Versteigerung':'Auction','Karte':'Map','Bieten':'Bid','Aussteigen':'Drop out','Kaufen':'Buy','Netzausbau':'Network building','Protokoll':'Log','Ergebnis':'Results','Menü':'Menu','Spielregeln':'Rules','Statistik':'Statistics','Schließen':'Close','Betriebe':'Companies','Gegner':'Opponents','Märkte':'Markets','Abbrechen':'Cancel','Einkommen':'Income','Netzgebiet':'Map area','Zufällig':'Random','Leicht':'Easy','Schwer':'Hard','Experte':'Expert','Rekorde':'Records',
 'Kraftwerke':'Plants','Kraftwerk':'Plant','Rohstoffe':'Resources','Lager':'Storage','Kapazität':'Capacity','Effizienz':'Efficiency','Bedarf':'Needs','keiner':'none','Typ':'Type','Versorgt':'Powered','Leistung':'Output','Einheiten':'units','Vorrat':'supply','nächste':'next','Nachschub':'restock','kaufbar':'buyable',
 'Kohle':'Coal','Öl':'Oil','Müll':'Garbage','Uran':'Uranium','Öko':'Eco','Hybrid':'Hybrid',
