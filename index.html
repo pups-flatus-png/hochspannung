@@ -2001,6 +2001,11 @@ function aiChoose(p){
 function aiBid(p){
   const a=S.auc;const v=aiPlantValue(p,a.plant);let maxb=Math.min(v,p.money-aiReserve(p));
   if(L(p).outbid&&P(a.high).human&&v>0)maxb=Math.min(Math.round(v*1.1),p.money-aiReserve(p));
+  if(L(p).smart&&v>0&&a.high!=null&&P(a.high).human){
+    // contest the human: worth paying extra to keep a good plant away, not only its own value
+    const hg=capGain(P(a.high),a.plant),og=capGain(p,a.plant);
+    if(og>0){const n=aiNoise(p,'h'+S.round+'-'+a.plant);const den=Math.round((1.5+Math.min(hg,4)*1.1+Math.min(og,4)*0.8+(FREE(PLANTS[a.plant][0])?1.5:0))*n);
+      if(n>0.45)maxb=Math.max(maxb,Math.min(Math.floor(a.plant)+den,p.money-aiReserve(p)))}}
   if(a.bid+1<=maxb){let inc=1;const sm=L(p).smart;if(sm&&maxb-a.bid>=4&&Math.random()<sm.jump)inc=Math.min(maxb-a.bid,2+Math.floor(Math.random()*3));bidRaise(p.id,a.bid+inc)}else bidDrop(p.id);
 }
 function aiDiscard(p){
