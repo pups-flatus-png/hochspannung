@@ -1250,6 +1250,33 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .umk{margin-top:6px;border-top:1px dashed var(--line);padding-top:10px}
 .t-mine{--cbg:#2a2614;--cacc:#e8d27a}
 .plant .req .sell{font-family:var(--display);font-weight:700;color:var(--cacc);margin-left:2px}
+/* promos */
+.promos{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:12px}
+.prh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.prh b{display:block;font-family:var(--display);font-size:17px;font-weight:600}
+.prh span{font-size:12px;color:var(--muted)}
+.prh .seg{width:auto;flex:none}.prh .seg button{padding:6px 12px;font-size:12.5px}
+.prl{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:7px}
+.prc{all:unset;box-sizing:border-box;display:grid;grid-template-columns:22px minmax(0,1fr);gap:9px;padding:10px;border-radius:11px;border:1px solid var(--line);background:var(--panel);cursor:pointer;color:var(--fg)}
+.prc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.prk{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--edge);margin-top:1px;position:relative}
+.prc.on{border-color:color-mix(in srgb,var(--accent) 60%,var(--line));background:linear-gradient(180deg,rgba(242,179,61,.10),rgba(242,179,61,.02))}
+.prc.on .prk{background:var(--accent);border-color:var(--accent)}
+.prc.on .prk::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid var(--accent-ink);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.prt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.prt b{font-size:13.5px;font-weight:650}
+.prt small{font-size:10.5px;color:var(--accent-text);letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+.prt span{font-size:12px;color:var(--muted);line-height:1.35}
+.xauc .xcard{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:12px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));background:linear-gradient(160deg,rgba(242,179,61,.12),transparent);margin-bottom:10px}
+.xcn{font-family:var(--display);font-size:19px;font-weight:700}
+.xcd{font-size:12.5px;color:var(--muted);line-height:1.4}
+.bidbox.xb{grid-template-columns:1fr}
+.pchips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
+.pchip2{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:color-mix(in srgb,var(--accent) 15%,var(--panel-2));color:var(--accent-text);border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line))}
+.spy{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px 10px;border-radius:10px;border:1px dashed var(--edge);font-size:12px;color:var(--muted)}
+.spyev{color:var(--accent-text);font-size:13px}
+.anyres{display:inline-flex;gap:0}.anyres .ri{width:9px!important;height:9px!important}
+.t-flux{--cbg:#2b1d3d;--cacc:#c9a8ff}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1265,7 +1292,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 <symbol id="b-hybrid" viewBox="0 0 20 16"><path d="M1 15V8.5l4 2.4V8.5l4 2.4V3h3v12Z" fill="currentColor"/><rect x="13" y="7.5" width="6" height="7.5" rx="1.2" fill="currentColor"/><path d="M13 10.3h6" stroke="var(--panel)" stroke-width=".8"/></symbol>
 <symbol id="b-oil" viewBox="0 0 20 16"><path d="M1.5 15V7.5c0-1.4 1.8-2.5 4-2.5s4 1.1 4 2.5V15Z" fill="currentColor"/><rect x="11" y="3" width="7" height="12" rx="1.5" fill="currentColor"/><path d="M11 7h7M11 11h7" stroke="var(--panel)" stroke-width=".9"/></symbol>
 <symbol id="b-garbage" viewBox="0 0 20 16"><path d="M1 15V7h9l3-3v11Z" fill="currentColor"/><rect x="14" y="1" width="3" height="14" fill="currentColor"/><path d="M4.5 13c-1.3-1-1-2.4 0-3.4.1 1 .8 1.2 1 .3.9.8 1 2.3 0 3.1Z" fill="var(--panel)"/></symbol>
-<symbol id="b-mine" viewBox="0 0 20 16"><path d="M3 15 12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 3c4-1.6 8 .2 9 2-2-.6-5.5-.2-8.5 2.2z" fill="currentColor"/><path d="M1 15h18" stroke="currentColor" stroke-width="1.4"/></symbol><symbol id="b-uranium" viewBox="0 0 20 16"><path d="M3 15c1-4 1-8.5-.8-12.5h8.6C9 6.5 9 11 10 15Z" fill="currentColor"/><path d="M13 15c.7-3 .7-6-.5-9h5.4c-1.2 3-1.2 6-.5 9Z" fill="currentColor"/><path d="M5 1.6c.8-.8 2.2-.8 3 0" stroke="currentColor" fill="none" stroke-width="1" stroke-linecap="round"/></symbol>
+<symbol id="b-flux" viewBox="0 0 20 16"><circle cx="10" cy="8" r="2" fill="currentColor"/><ellipse cx="10" cy="8" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.2"/><ellipse cx="10" cy="8" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.2" transform="rotate(60 10 8)"/><ellipse cx="10" cy="8" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.2" transform="rotate(-60 10 8)"/></symbol><symbol id="b-mine" viewBox="0 0 20 16"><path d="M3 15 12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 3c4-1.6 8 .2 9 2-2-.6-5.5-.2-8.5 2.2z" fill="currentColor"/><path d="M1 15h18" stroke="currentColor" stroke-width="1.4"/></symbol><symbol id="b-uranium" viewBox="0 0 20 16"><path d="M3 15c1-4 1-8.5-.8-12.5h8.6C9 6.5 9 11 10 15Z" fill="currentColor"/><path d="M13 15c.7-3 .7-6-.5-9h5.4c-1.2 3-1.2 6-.5 9Z" fill="currentColor"/><path d="M5 1.6c.8-.8 2.2-.8 3 0" stroke="currentColor" fill="none" stroke-width="1" stroke-linecap="round"/></symbol>
 <symbol id="b-eco" viewBox="0 0 20 16"><path d="M9.4 6.5h1.2l.7 8.5H8.7Z" fill="currentColor"/><circle cx="10" cy="5.6" r="1.2" fill="currentColor"/><path d="M10 5.6 9.4.6h1.2ZM10 5.6l4.6 2.2-.6 1ZM10 5.6 5.4 7.8l.6 1Z" fill="currentColor"/><path d="M14 15h5M1 15h5" stroke="currentColor" stroke-width="1.2"/></symbol>
 <symbol id="i-house" viewBox="0 0 12 12"><path d="M1 6.2 6 1.6l5 4.6V11H7.4V8.2H4.6V11H1z" fill="currentColor"/></symbol>
 </defs></svg>
@@ -1296,7 +1323,7 @@ const DECKS={std:{name:'Basis',off:0},d1:{name:'Set 1',off:0.1},d2:{name:'Set 2'
 const DECK_RULES={std:{top:13,frRemove:13,frMarket:11,lastPlug:15,phase:39},d1:{top:11.1,frRemove:10.1,frMarket:8.1,lastPlug:16.1,phase:38.1},d2:{top:13.2,frRemove:11.2,frMarket:13.2,lastPlug:15.2,phase:37.2}};
 const SRC=k=>{const f=Math.round((k%1)*10);return f===1?'d1':f===2?'d2':'std'};
 const PN=k=>{const f=Math.round((k%1)*10);return Math.floor(k)+(f===1?'′':f===2?'″':'')};
-const HYB={hybrid:['coal','oil'],gohybrid:['garbage','oil']};
+const HYB={hybrid:['coal','oil'],gohybrid:['garbage','oil'],flux:['coal','oil','garbage','uranium']};
 function deckKeys(deck){
   const ks=Object.keys(ALLPLANTS).map(Number);
   if(DECKS[deck]&&DECKS[deck].off!==undefined){const o=DECKS[deck].off;return ks.filter(k=>Math.abs((k%1)-o)<0.05)}
@@ -1308,6 +1335,18 @@ function loadDeck(keys){for(const k in PLANTS)delete PLANTS[k];keys.forEach(k=>P
 loadDeck(deckKeys('std'));
 const FREE=t=>t==='eco'||t==='fusion'||t==='mine';
 const STEP3=99;
+const FLUX=33.34;ALLPLANTS[FLUX]=['flux',3,6];
+const PROMOS={flux:{id:FLUX,y:2008,de:['Flux-Generator','Kraftwerk 33⅓: verbrennt und lagert alle vier Rohstoffe, 3 Einheiten für 6 Städte. Beim Aufdecken fliegt das kleinste Kraftwerk raus.'],en:['Flux generator','Plant 33⅓: burns and stores all four resources, 3 units for 6 cities. When revealed, the smallest plant leaves.']},
+ sub:{id:101,y:2009,x:1,de:['Umspannwerk','Zusatzversteigerung ab 10 €. Das Kraftwerk, an dem es hängt, versorgt eine Stadt mehr.'],en:['Substation','Extra auction from 10 €. The plant it is attached to powers one more city.']},
+ store:{id:104,y:2010,x:1,de:['Lagerhalle','Zusatzversteigerung ab 10 €. Drei Lagerplätze für beliebige Rohstoffe.'],en:['Warehouse','Extra auction from 10 €. Three storage spaces for any resources.']},
+ surplus:{id:107,y:2010,de:['Rohstoffüberschuss','Beim Aufdecken kommen drei Einheiten der teuersten Sorte zusätzlich in den Markt (Uran: eine).'],en:['Resource surplus','When revealed, three units of the most expensive resource are added to the market (uranium: one).']},
+ short:{id:106,y:2010,de:['Rohstoffmangel','Beim Aufdecken verschwinden die drei günstigsten Einheiten aus dem Markt (Uran: eine).'],en:['Resource shortage','When revealed, the three cheapest units leave the market (uranium: one).']},
+ park:{id:102,y:2011,x:1,de:['Freizeitpark','Zusatzversteigerung ab 10 €. Zählt als eigene Stadt, die Strom braucht, ohne Anschlusskosten.'],en:['Amusement park','Extra auction from 10 €. Counts as one of your cities that needs power, with no connection cost.']},
+ contract:{id:103,y:2011,x:1,de:['Liefervertrag','Zusatzversteigerung ab 10 €. Der Besitzer rückt in der Spielerreihenfolge dauerhaft einen Platz nach hinten.'],en:['Supply contract','Extra auction from 10 €. The owner moves one place back in turn order for good.']},
+ spy:{y:2012,de:['Industriespionage','Ab Runde 2 darf der Letzte der Reihenfolge die oberste Stapelkarte sehen. Kauft er ein Kraftwerk, wandert die Karte einen Platz nach vorne.'],en:['Industrial espionage','From round 2 the last player may look at the top card of the deck. When they buy a plant, the card moves one seat forward.']},
+ tax:{id:105,y:2013,de:['Steuern','Ab Stufe 2 zahlt jeder einmal 20 % seines Bargelds, zu Beginn der Bürokratie vor dem Einkommen.'],en:['Taxes','From Step 2 everyone pays 20 % of their cash once, at the start of bureaucracy before income.']}};
+const PROMO_BY_ID={};Object.entries(PROMOS).forEach(([k,v])=>{if(v.id)PROMO_BY_ID[v.id]=k});
+const HYBX={flux:['coal','oil','garbage','uranium']};
 const PAY=[10,22,33,44,54,64,73,82,90,98,105,112,118,124,129,134,138,142,145,148,150];
 const CAP={coal:24,oil:24,garbage:24,uranium:12},TOT={...CAP},PRICES={},PRICES_N={},CAP_N={coal:0,oil:0,garbage:0,uranium:0};
 const UP=[1,2,3,4,5,6,7,8,10,12,14,16];
@@ -1476,15 +1515,16 @@ function chinaRebuild(){
 }
 function activeIds(){return CITIES.filter(c=>S.regions.includes(c[2])).map(c=>c[0])}
 function capacity(p){return p.plants.reduce((s,n)=>s+(PLANTS[n][0]==='mine'?0:PLANTS[n][2]),0)}
-function maxCities(){return Math.max(0,...S.players.map(p=>p.cities.length))}
+function cityCount(p){return p.cities.length+(p.park?1:0)}
+function maxCities(){return Math.max(0,...S.players.map(cityCount))}
 function slotPrice(r,i){return PRICES[r][i]}
 function RSUP(r){const t=(MAPS[S.map]&&MAPS[S.map].market&&MAPS[S.map].market.resupply)||RESUPPLY;return(t[S.n]||RESUPPLY[S.n])[r][S.step-1]}
 function nextPrice(r,skip=0){const n=S.resMarket[r]-skip;return n>0?slotPrice(r,CAP[r]-n):null}
 function buyCost(r,k,mk=S.resMarket,p=null){let n=mk[r],c=0;const cap=priceCap();for(let i=0;i<k;i++){if(n<=0)return Infinity;const v=unitPrice(r,CAP[r]-n,p);if(slotPrice(r,CAP[r]-n)>cap)return Infinity;c+=v;n--}return c}
 function supply(r){return TOT[r]-S.resMarket[r]-(S.resNorth?S.resNorth[r]||0:0)-S.players.reduce((s,p)=>s+p.pool[r],0)}
-function caps(p){const c={coal:0,oil:0,garbage:0,uranium:0,hybrid:0,gohybrid:0};p.plants.forEach(n=>{const[t]=PLANTS[n];if(!FREE(t))c[t]+=STO(n)});return c}
-function canHold(p,pool){const c=caps(p);if(pool.uranium>c.uranium)return false;const ec=Math.max(0,pool.coal-c.coal),eg=Math.max(0,pool.garbage-c.garbage),eo=Math.max(0,pool.oil-c.oil);if(ec>c.hybrid||eg>c.gohybrid)return false;return eo<=(c.hybrid-ec)+(c.gohybrid-eg)}
-function clampPool(p){let g=0;while(!canHold(p,p.pool)&&g++<300){const c=caps(p),q=p.pool;const ec=q.coal-c.coal,eg=q.garbage-c.garbage,eo=q.oil-c.oil;if(q.uranium>c.uranium)q.uranium--;else if(ec>c.hybrid)q.coal--;else if(eg>c.gohybrid)q.garbage--;else if(eo>0&&q.oil>0)q.oil--;else if(ec>0&&q.coal>0)q.coal--;else if(eg>0&&q.garbage>0)q.garbage--;else break}}
+function caps(p){const c={coal:0,oil:0,garbage:0,uranium:0,hybrid:0,gohybrid:0,any:p.store||0};p.plants.forEach(n=>{const[t]=PLANTS[n];if(FREE(t))return;if(t==='flux')c.any+=STO(n);else c[t]+=STO(n)});return c}
+function canHold(p,pool){const c=caps(p);let ec=Math.max(0,pool.coal-c.coal),eg=Math.max(0,pool.garbage-c.garbage),eo=Math.max(0,pool.oil-c.oil),eu=Math.max(0,pool.uranium-c.uranium);let hy=c.hybrid,gh=c.gohybrid;let x=Math.min(ec,hy);ec-=x;hy-=x;x=Math.min(eg,gh);eg-=x;gh-=x;x=Math.min(eo,hy+gh);eo-=x;return ec+eg+eo+eu<=c.any}
+function clampPool(p){let g=0;while(!canHold(p,p.pool)&&g++<300){const c=caps(p),q=p.pool;const ov=r=>q[r]-c[r];const r=RES.filter(r=>q[r]>0).sort((a,b)=>ov(b)-ov(a))[0];if(!r)break;q[r]--}}
 function regIsland(r){const cx=MAPS[MAPID].cityx||{};const c=CITIES.find(c=>c[2]===r&&cx[c[0]]&&cx[c[0]].isl);return c?cx[c[0]].isl:'_'}
 function regGroups(set){const R=MAPS[MAPID].rules||{};if(R.regionsAny)return set.map(r=>[r]);if(!R.islands)return[set];const g={};set.forEach(r=>(g[regIsland(r)]??=[]).push(r));return Object.values(g)}
 function citiesConnected(set){if((MAPS[MAPID].rules||{}).regionsAny)return true;return regGroups(set).every(grp=>{const act=new Set(CITIES.filter(c=>grp.includes(c[2])).map(c=>c[0]));const st=[...act][0],seen=new Set([st]),q=[st];while(q.length){const u=q.shift();for(const{to}of ADJ[u])if(act.has(to)&&!seen.has(to)){seen.add(to);q.push(to)}}return seen.size===act.size})}
@@ -1530,6 +1570,9 @@ function newGame(name,nAI,diff,regions,mapId,opts={}){
   const phaseSet=keys.filter(k=>[39,38.1,37.2].includes(k));
   S={v:1,n,players,deck,market,deckId,deckKeys:keys,phaseSet,step3Early:!!opts.step3Early,map:MAPID,noUranium:false,phaseOut:!!(MP.phaseOut39||(MP.phaseOutOpt&&opts.phaseOut)),resMarket:{...MP.start},owners:{},regions:(regions&&regions.length===RN.regions)?regions.slice():pickRegions(RN.regions),ai:diff||'normal',
      round:1,step:1,phase:null,order:shuffle(players.map(p=>p.id)),log:[],step3Pending:false,endTriggered:false,turnBuilt:[],auc:null,discard:null,seq:[],seqIdx:0,boughtAny:false,ranking:null};
+  S.promos=(opts.promos||[]).filter(k=>PROMOS[k]);
+  {const ids=S.promos.map(k=>PROMOS[k].id).filter(Boolean);if(ids.includes(FLUX)){PLANTS[FLUX]=ALLPLANTS[FLUX];S.deckKeys=[...keys,FLUX]}
+   ids.forEach(id=>{const lo=1,hi=Math.max(lo,S.deck.length-(S.deck[S.deck.length-1]===STEP3?1:0));S.deck.splice(lo+rnd(hi-lo+1),0,id)})}
   S.plantOv=regionalOv(MP,S.regions);
   if(MP.north)S.resNorth={coal:0,oil:0,garbage:0,uranium:0,...MP.north.start};
   if(MP.rules&&MP.rules.australia){S.umk=[2,2,2,2,2,2];keys.forEach(k=>{const d=PLANTS[k];if(d&&d[0]==='uranium')S.plantOv[k]=['mine',0,d[2],0]})}
@@ -1542,12 +1585,15 @@ function newGame(name,nAI,diff,regions,mapId,opts={}){
   startAuctionPhase();
 }
 
-function determineOrder(){S.order=S.players.map(p=>p.id).sort((a,b)=>{const A=P(a),B=P(b);return B.cities.length-A.cities.length||Math.max(0,...B.plants)-Math.max(0,...A.plants)})}
+function determineOrder(){S.order=S.players.map(p=>p.id).sort((a,b)=>{const A=P(a),B=P(b);return cityCount(B)-cityCount(A)||Math.max(0,...B.plants)-Math.max(0,...A.plants)});contractShift()}
+function contractShift(){const c=S.players.find(p=>p.contract);if(!c)return;const i=S.order.indexOf(c.id);if(i>=0&&i<S.order.length-1){S.order.splice(i,1);S.order.splice(i+1,0,c.id)}}
 function buyN(){const m=S.market,R=MR();if(R.china)return m.length;if(R.russia)return S.step===3?Math.min(4,m.length):3;if(S.step===3)return m.length;if(R.ecoSlot&&m.length>4&&PLANTS[m[4]]&&PLANTS[m[4]][0]==='eco')return 5;return 4}
 function buyable(){return S.market.slice(0,buyN())}
 function drawToMarket(){
   if(!S.deck.length)return;
   const c=S.deck.shift();
+  if(c>=100&&c<STEP3+50&&c!==STEP3){promoEvent(c);return drawToMarket()}
+  if(c===FLUX){S.market.push(c);S.market.sort((a,b)=>a-b);const x=S.market.shift();log(x===FLUX?'Der Flux-Generator ist aufgedeckt, aber das kleinste Kraftwerk im Markt: Er scheidet sofort aus.':'Der Flux-Generator ist aufgedeckt. Das kleinste Kraftwerk '+PN(x)+' fällt aus dem Markt.');if(x===S.discount)S.discount=null;return drawToMarket()}
   if(c===STEP3){
     if(S.phase==='auction'){S.step3Pending=true;log('Die Stufe-3-Karte ist aufgetaucht. Nach der Versteigerung beginnt Stufe 3.')}
     else startStep3();
@@ -1555,6 +1601,32 @@ function drawToMarket(){
   }
   S.market.push(c);S.market.sort((a,b)=>a-b);
 }
+function promoEvent(c){
+  const k=PROMO_BY_ID[c],nm=PROMOS[k].de[0];
+  if(k==='tax'){if(S.step===1){S.deck.push(c);log('Steuern aufgedeckt in Stufe 1: Die Karte kommt unter den Stapel.')}else{S.taxAt=S.phase==='bureau'?S.round+1:S.round;log('Steuern! Zu Beginn der nächsten Bürokratie zahlt jeder 20 % seines Bargelds.')}return}
+  if(k==='short'||k==='surplus'){
+    const order=['coal','oil','garbage','uranium'].filter(r=>CAP[r]);
+    if(k==='short'){const cand=order.filter(r=>S.resMarket[r]>0);if(!cand.length)return;const r=cand.reduce((b,r)=>nextPrice(r)<nextPrice(b)?r:b,cand[0]);const n=Math.min(r==='uranium'?1:3,S.resMarket[r]);S.resMarket[r]-=n;log('Rohstoffmangel: '+n+' '+RNAME[r]+' verschwinden aus dem Markt.')}
+    else{const val=r=>S.resMarket[r]>0?nextPrice(r):PRICES[r][CAP[r]-1];const r=order.reduce((b,r)=>val(r)>val(b)?r:b,order[0]);const n=Math.min(r==='uranium'?1:3,supply(r),CAP[r]-S.resMarket[r]);S.resMarket[r]+=n;log('Rohstoffüberschuss: '+n+' '+RNAME[r]+' kommen zusätzlich in den Markt.')}
+    return}
+  (S.xq??=[]).push(c);log(nm+' aufgedeckt: Es gibt eine Zusatzversteigerung ab 10 €.');startXAuc();
+}
+function startXAuc(){if(S.xauc||!S.xq||!S.xq.length)return;const c=S.xq.shift();const bidders=S.order.filter(id=>P(id).money>=10);if(!bidders.length){log(PROMOS[PROMO_BY_ID[c]].de[0]+': Niemand kann mitbieten.');return startXAuc()}S.xauc={card:c,bid:9,high:null,bidders,all:bidders.slice(),turn:0}}
+function xRaise(pid,amt){const a=S.xauc;a.bid=Math.max(10,amt);a.high=pid;log(P(pid).name+' bietet '+a.bid+' € für '+PROMOS[PROMO_BY_ID[a.card]].de[0]+'.',pid);if(a.bidders.length===1)return xAward();a.turn=(a.turn+1)%a.bidders.length;if(a.bidders[a.turn]===a.high)a.turn=(a.turn+1)%a.bidders.length}
+function xDrop(pid){const a=S.xauc;const i=a.bidders.indexOf(pid);a.bidders.splice(i,1);
+  if(!a.bidders.length){log('Niemand ersteigert '+PROMOS[PROMO_BY_ID[a.card]].de[0]+'. Die Karte ist aus dem Spiel.');S.xauc=null;return startXAuc()}
+  if(a.bidders.length===1&&a.high!=null)return xAward();
+  if(a.turn>=a.bidders.length)a.turn=0;if(a.high!=null&&a.bidders[a.turn]===a.high)a.turn=(a.turn+1)%a.bidders.length}
+function xAward(){const a=S.xauc,p=P(a.high),k=PROMO_BY_ID[a.card];p.money-=a.bid;S.xauc=null;
+  if(k==='sub'){const best=heldPlants(p).filter(n=>!FREE(PLANTS[n][0])||true).sort((x,y)=>PLANTS[y][2]-PLANTS[x][2])[0];p.sub=best??null;log(p.name+' ersteigert das Umspannwerk für '+a.bid+' €'+(best!=null?' und hängt es an Kraftwerk '+PN(best)+'.':'.'),p.id)}
+  else if(k==='park'){p.park=1;log(p.name+' ersteigert den Freizeitpark für '+a.bid+' €. Er zählt als weitere Stadt.',p.id)}
+  else if(k==='contract'){p.contract=true;contractShift();log(p.name+' ersteigert den Liefervertrag für '+a.bid+' € und rückt in der Reihenfolge nach hinten.',p.id)}
+  else if(k==='store'){p.store=3;log(p.name+' ersteigert die Lagerhalle für '+a.bid+' €: drei zusätzliche Lagerplätze.',p.id)}
+  startXAuc()}
+function aiXBid(p){const a=S.xauc,k=PROMO_BY_ID[a.card],left=Math.max(1,(S.endTriggered?1:12-S.round));
+  let v={sub:10+Math.min(left,6)*2+(capacity(p)<=p.cities.length?4:0),park:12+Math.min(left,5)+(maxCities()>=END_AT-4?6:0),contract:S.step===1?13:10,store:11+(p.plants.some(n=>!FREE(PLANTS[n][0]))?2:-6)}[k]||10;
+  v=Math.round(v*(L(p).smart?aiNoise(p,'x'+a.card):1));const max=Math.min(v,p.money-aiReserve(p));
+  if(a.high!==p.id&&a.bid+1<=max&&max>=10)xRaise(p.id,a.bid+1);else xDrop(p.id)}
 function startStep3(){
   S.step=3;if(MR().australia&&!S.co2){S.co2=true;applyGameMods();log('CO₂-Abgabe: Die Rohstofffelder für 1 und 2 € schließen, alle Preise steigen um 2 €.')}S.step3Pending=false;st().step3=S.round;
   S.deck=shuffle(S.deck.filter(x=>x!==STEP3));
@@ -1569,7 +1641,7 @@ function removeLowCities(){
 
 /* --- Versteigerung --- */
 function minBid(n){return S.phase==='auction'&&S.discount===n?1:Math.floor(n)}
-function startAuctionPhase(){S.phase='auction';S.players.forEach(p=>p.done=false);S.boughtAny=false;S.discard=null;S.discount=MAPS[S.map].noDiscount?null:(S.market[0]??null);S.passedOnce=false;S.discGone=false;if(S.discount!=null)log('Rabatt: Das kleinste Kraftwerk '+PN(S.discount)+' ist diese Runde ab 1 € zu haben.');nextChooser()}
+function startAuctionPhase(){S.phase='auction';S.players.forEach(p=>p.done=false);S.boughtAny=false;S.discard=null;S.discount=MAPS[S.map].noDiscount?null:(S.market[0]??null);S.passedOnce=false;S.discGone=false;if((S.promos||[]).includes('spy')&&S.round===2&&S.spy==null){S.spy=S.order[S.order.length-1];log(P(S.spy).name+' bekommt die Industriespionage und darf die oberste Stapelkarte sehen.',S.spy)}if(S.discount!=null)log('Rabatt: Das kleinste Kraftwerk '+PN(S.discount)+' ist diese Runde ab 1 € zu haben.');nextChooser()}
 function nextChooser(){
   const next=S.order.find(id=>!P(id).done);
   if(next===undefined)return endAuctionPhase();
@@ -1596,6 +1668,7 @@ function award(pid){
   const a=S.auc,p=P(pid);
   p.money-=a.bid;p.plants.push(a.plant);p.plants.sort((x,y)=>x-y);
   if(S.phaseOut&&(S.phaseSet||[39]).includes(a.plant)&&!S.noUranium){S.noUranium=true;log('Atomausstieg: Kraftwerk '+PN(a.plant)+' ist gekauft. Ab jetzt wird kein Uran mehr nachgefüllt.')}
+  if(S.spy===pid){const i=S.order.indexOf(pid);S.spy=S.order[(i-1+S.order.length)%S.order.length];log('Die Industriespionage geht an '+P(S.spy).name+'.',S.spy)}
   st().pl[pid].auc.push({n:a.plant,price:a.bid,min:a.plant===S.discount?1:a.plant,r:S.round,disc:a.plant===S.discount});
   S.market=S.market.filter(x=>x!==a.plant);p.done=true;S.boughtAny=true;if(a.plant===S.discount)S.discount=null;
   log(p.name+' kauft Kraftwerk '+PN(a.plant)+' für '+a.bid+' €.',pid);
@@ -1605,7 +1678,7 @@ function award(pid){
 }
 function discardPlant(pid,num){
   const p=P(pid);if(num===S.newPlant&&heldPlants(p).length>3){const old=heldPlants(p).filter(x=>x!==S.newPlant);num=old.sort((a,b)=>PLANTS[a][2]-PLANTS[b][2]||a-b)[0]}
-  p.plants=p.plants.filter(x=>x!==num);clampPool(p);
+  p.plants=p.plants.filter(x=>x!==num);if(p.sub===num){p.sub=null;log(p.name+' verliert mit dem Kraftwerk auch das Umspannwerk.',pid)}clampPool(p);
   log(p.name+' legt Kraftwerk '+PN(num)+' still.',pid);S.discard=null;S.newPlant=null;nextChooser();
 }
 function endAuctionPhase(){
@@ -1691,13 +1764,14 @@ function endBuild(){
 
 /* --- Bürokratie --- */
 function powerOptions(p,nums,pool=p.pool){
-  const need={coal:0,oil:0,garbage:0,uranium:0};let h1=0,h2=0,cities=0;
-  for(const n of nums){const[t,k,c]=PLANTS[n];if(t==='mine')continue;cities+=c;if(FREE(t))continue;if(t==='hybrid')h1+=k;else if(t==='gohybrid')h2+=k;else need[t]+=k}
+  const need={coal:0,oil:0,garbage:0,uranium:0};let h1=0,h2=0,hf=0,cities=0;
+  for(const n of nums){const[t,k,c]=PLANTS[n];if(t==='mine')continue;cities+=c+(p.sub===n?1:0);if(FREE(t))continue;if(t==='hybrid')h1+=k;else if(t==='gohybrid')h2+=k;else if(t==='flux')hf+=k;else need[t]+=k}
   if(need.coal>pool.coal||need.oil>pool.oil||need.garbage>pool.garbage||need.uranium>pool.uranium)return null;
   const lc=pool.coal-need.coal,lo=pool.oil-need.oil,lg=pool.garbage-need.garbage;
   const uc=Math.min(h1,lc),ug=Math.min(h2,lg),uo=(h1-uc)+(h2-ug);if(uo>lo)return null;
   const use={...need};use.coal+=uc;use.garbage+=ug;use.oil+=uo;
-  return{use,cities,powered:Math.min(cities,p.cities.length)};
+  if(hf){const rem={coal:lc-uc,oil:lo-uo,garbage:lg-ug,uranium:pool.uranium-need.uranium};let f=hf;for(const r of ['coal','garbage','oil','uranium']){const x=Math.min(f,rem[r]);use[r]+=x;f-=x}if(f>0)return null}
+  return{use,cities,powered:Math.min(cities,cityCount(p))};
 }
 function bestPower(p){
   let best={nums:[],powered:0,used:0};const pl=p.plants;
@@ -1720,7 +1794,7 @@ function applyPower(p,nums){
   payout(p,o.use,o.powered,nums);
 }
 function startBureau(){
-  S.phase='bureau';S.bureauDone=false;S.outage=!!(MR().india&&(S.builtRound||0)>2*S.n);if(S.outage)log('Stromausfall! '+S.builtRound+' neue Städte in einer Runde sind mehr als doppelt so viele wie Spieler. Jeder zahlt 3 € pro Stadt von seinem Einkommen.');
+  S.phase='bureau';S.bureauDone=false;if(S.taxAt!=null&&S.round>=S.taxAt){S.taxAt=null;S.players.forEach(p=>{const t=Math.floor(p.money/5);p.money-=t;log(p.name+' zahlt '+t+' € Steuern.',p.id)})}S.outage=!!(MR().india&&(S.builtRound||0)>2*S.n);if(S.outage)log('Stromausfall! '+S.builtRound+' neue Städte in einer Runde sind mehr als doppelt so viele wie Spieler. Jeder zahlt 3 € pro Stadt von seinem Einkommen.');
   S.players.filter(p=>!p.human).forEach(p=>applyPower(p,bestPower(p)));
   if(!S.players.some(p=>p.human))finishBureau();
 }
@@ -1838,11 +1912,11 @@ function aiPlan(p){
   for(const num of plants){
     const[t,k,c]=PLANTS[num];if(FREE(t)){powered+=c;continue}
     let req=k;const take=r=>{const x=Math.min(avail[r],req);avail[r]-=x;req-=x};
-    if(HYB[t]){const[a,b]=HYB[t];take(a);take(b)}else take(t);
+    if(HYB[t])HYB[t].forEach(take);else take(t);
     const mk2={...mk},tb={coal:0,oil:0,garbage:0,uranium:0};let cost=0;
     for(let i=0;i<req;i++){
       let r=t;
-      if(HYB[t]){const[a,b]=HYB[t];const pa=mk2[a]>0?slotPrice(a,CAP[a]-mk2[a]):Infinity,pb=mk2[b]>0?slotPrice(b,CAP[b]-mk2[b]):Infinity;r=pa<=pb?a:b}
+      if(HYB[t]){let bp=Infinity;for(const q of HYB[t]){const pq=mk2[q]>0&&CAP[q]?slotPrice(q,CAP[q]-mk2[q]):Infinity;if(pq<bp){bp=pq;r=q}}if(bp===Infinity)r=HYB[t][0]}
       if(mk2[r]<=0||slotPrice(r,CAP[r]-mk2[r])>priceCap()){cost=Infinity;break}
       cost+=unitPrice(r,CAP[r]-mk2[r],p);mk2[r]--;tb[r]++;
     }
@@ -1906,11 +1980,12 @@ function aiBuild(p){
 function storageView(p){
   const pool={...p.pool},out={};const pl=[...p.plants].sort((a,b)=>PLANTS[b][2]-PLANTS[a][2]);
   for(const n of pl){const[t,k]=PLANTS[n];if(FREE(t)||HYB[t])continue;const x=Math.min(pool[t],STO(n));out[n]=Array(x).fill(t);pool[t]-=x}
-  for(const n of pl){const[t,k]=PLANTS[n];if(!HYB[t])continue;const[a,b]=HYB[t];const arr=[];while(arr.length<STO(n)&&(pool[a]||pool[b])){if(pool[a]){arr.push(a);pool[a]--}else{arr.push(b);pool[b]--}}out[n]=arr}
+  for(const n of pl){const[t,k]=PLANTS[n];if(!HYB[t])continue;const arr=[];let g=0;while(arr.length<STO(n)&&g++<40){const r=HYB[t].find(r=>pool[r]>0);if(!r)break;arr.push(r);pool[r]--}out[n]=arr}
   return out;
 }
 function actor(){
   if(!S)return null;
+  if(S.xauc&&S.phase!=='end')return{pid:S.xauc.bidders[S.xauc.turn],kind:'xbid'};
   switch(S.phase){
     case'auction':if(S.discard!=null)return{pid:S.discard,kind:'discard'};if(S.auc.mode==='choose')return{pid:S.auc.chooser,kind:'choose'};return{pid:S.auc.bidders[S.auc.turn],kind:'bid'};
     case'resources':return{pid:S.seq[S.seqIdx],kind:'buy'};
@@ -1922,6 +1997,7 @@ function actor(){
 function aiAct(a){
   const p=P(a.pid);
   switch(a.kind){
+    case'xbid':aiXBid(p);break;
     case'choose':aiChoose(p);break;
     case'bid':aiBid(p);break;
     case'discard':aiDiscard(p);break;
@@ -1941,15 +2017,16 @@ const LEAF='<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M1.
 const me=()=>P(H);
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function isMine(a){return a&&a.pid===H}
-const TYPE_SHORT={mine:'Mine',gohybrid:'Hybrid',coal:'Kohle',oil:'Öl',garbage:'Müll',uranium:'Uran',eco:'Öko',fusion:'Fusion',hybrid:'Hybrid'};
+const TYPE_SHORT={flux:'Flux',mine:'Mine',gohybrid:'Hybrid',coal:'Kohle',oil:'Öl',garbage:'Müll',uranium:'Uran',eco:'Öko',fusion:'Fusion',hybrid:'Hybrid'};
 function setGasLabels(g){TYPE_SHORT.garbage=g?'Gas':'Müll';TYPE_NAME.garbage=g?'Gaskraftwerk':'Müllverbrennung';TYPE_NAME.gohybrid=g?'Gas-Öl-Hybrid':'Müll-Öl-Hybrid';
   const sy=document.getElementById('r-garbage');if(sy){sy.dataset.orig??=sy.innerHTML;sy.innerHTML=g?'<path d="M6.3.9c.5 2-1.6 3-2.4 4.8-.8 1.8.1 4.9 2.5 4.9 2.5 0 3.6-2.2 2.9-4.3-.4-1.3-1.5-1.8-1.6-3.3-.9.6-1.2 1.7-1 2.6C6 4.4 5.9 2.3 6.3.9Z" fill="#c9ab22" stroke="#fff1a0" stroke-width="1" stroke-linejoin="round"/><path d="M6 10.2c-1 0-1.6-.8-1.4-1.7.2-.8.9-1.2 1-2 .6.5 1.9 1.4 1.7 2.4-.1.8-.6 1.3-1.3 1.3Z" fill="#5e4f08"/>':sy.dataset.orig}}
-const TYPE_NAME={mine:'Uranmine',gohybrid:'Müll-Öl-Hybrid',fusion:'Fusionsreaktor',coal:'Kohlekraftwerk',oil:'Ölkraftwerk',garbage:'Müllverbrennung',uranium:'Kernkraftwerk',eco:'Öko-Kraftwerk',hybrid:'Hybridkraftwerk'};
+const TYPE_NAME={flux:'Flux-Generator',mine:'Uranmine',gohybrid:'Müll-Öl-Hybrid',fusion:'Fusionsreaktor',coal:'Kohlekraftwerk',oil:'Ölkraftwerk',garbage:'Müllverbrennung',uranium:'Kernkraftwerk',eco:'Öko-Kraftwerk',hybrid:'Hybridkraftwerk'};
 function useIcon(id,cls){return `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`}
 function resIcon(r){return useIcon('r-'+r,'ri')}
 function reqHTML(t,k){
   if(t==='mine')return resIcon('uranium')+'<span class="sell">€</span>';
   if(FREE(t))return resIcon(t);
+  if(t==='flux')return `${k}×<span class="anyres">${RES.map(resIcon).join('')}</span>`;
   if(HYB[t])return `${k}×${resIcon(HYB[t][0])}<span class="slash">/</span>${resIcon(HYB[t][1])}`;
   return Array.from({length:k},()=>resIcon(t)).join('');
 }
@@ -1967,8 +2044,8 @@ function plantCard(num,o={}){
 function fuelCost(t,k){
   if(FREE(t))return 0;
   if(!HYB[t])return buyCost(t,k);
-  const[a,b]=HYB[t];const mk={...S.resMarket};let c=0;
-  for(let i=0;i<k;i++){const pa=mk[a]>0?slotPrice(a,CAP[a]-mk[a]):Infinity,pb=mk[b]>0?slotPrice(b,CAP[b]-mk[b]):Infinity;if(pa===Infinity&&pb===Infinity)return Infinity;if(pa<=pb){c+=pa;mk[a]--}else{c+=pb;mk[b]--}}
+  const mk={...S.resMarket};let c=0;
+  for(let i=0;i<k;i++){let bp=Infinity,br=null;for(const q of HYB[t]){const pq=mk[q]>0&&CAP[q]?slotPrice(q,CAP[q]-mk[q]):Infinity;if(pq<bp){bp=pq;br=q}}if(br===null)return Infinity;c+=bp;mk[br]--}
   return c;
 }
 function atomNote(t){if(t!=='uranium'||!S||!S.phaseOut)return '';return S.noUranium?`<div class="warn">Atomausstieg: Kein Uran-Nachschub mehr, ${S.resMarket.uranium} Uran im Markt.</div>`:'<div class="hint">Atomausstieg aktiv: Nach dem Kauf von '+(S.phaseSet||[39]).map(PN).join(' / ')+' kommt kein Uran mehr nach.</div>'}
@@ -2005,7 +2082,7 @@ function floatText(el,text,color){
 function orderHTML(a){
   const seq=seqForPhase();const rev=seq!==S.order;
   const dir={auction:'vorwärts →',resources:'rückwärts ←',build:'rückwärts ←',bureau:'alle gleichzeitig',end:'Spiel beendet'}[S.phase];
-  const au=S.phase==='auction'&&S.auc&&S.auc.mode==='bid'?S.auc:null;
+  const au=S.phase==='auction'&&!S.xauc&&S.auc&&S.auc.mode==='bid'?S.auc:null;
   const toks=seq.map((id,i)=>{const p=P(id);const act=a&&a.pid===id&&S.phase!=='bureau'&&S.phase!=='end';const done=!act&&S.phase!=='end'&&isDone(id);
     let st='';
     if(au&&au.all.includes(id)){if(au.high===id)st=`<span class="ost hi" title="${LX('Höchstgebot','Highest bid')}">${au.bid} €</span>`;else if(au.bidders.includes(id))st=`<span class="ost in">${LX('dabei','in')}</span>`;else st=`<span class="ost out">${LX('raus','out')}</span>`}
@@ -2209,7 +2286,7 @@ function advise(a){
   return null;
 }
 function advisorHTML(a){
-  if(!UI.adv||!a)return '';if(!(a.pid===H||S.phase==='bureau'))return '';
+  if(!UI.adv||!a||a.kind==='xbid')return '';if(!(a.pid===H||S.phase==='bureau'))return '';
   let r;try{r=advise(a)}catch(e){console.error(e);return ''}if(!r)return '';
   const chips=r.chips?`<div class="advchips">${Object.entries(r.chips).map(([k,v])=>`<span>${v}${resIcon(k)}</span>`).join('')}</div>`:'';
   const cities=r.cities&&r.cities.length?`<div class="advcities">${r.cities.map(esc).join(' · ')}</div>`:'';
@@ -2232,7 +2309,8 @@ function marketHTML(mode){
   const card=n=>plantCard(n,mode==='pick'?{act:'pick',sel:UI.sel===n,dis:!buy.has(n)||minBid(n)>m.money||plantBlocked(m,n),disc:n===dc,nb:plantBlocked(m,n)}:{act:'pinfo',inauc:n===ia,disc:n===dc,nb:plantBlocked(m,n)&&buy.has(n)});
   if(S.step===3||MR().china)return `<div class="sec"><div class="mkt-label"><span>${MR().china&&S.step<3?'Markt · Planwirtschaft':'Markt · alle kaufbar'}</span>${MR().china&&S.step<3?`<span>${S.deck.length} im Stapel</span>`:''}</div><div class="cards">${S.market.map(card).join('')}</div>${MR().china&&S.step<3?'<p class="hint mk-x">Gekaufte Kraftwerke werden erst am Rundenende ersetzt.</p>':''}</div>`;
   const bn=buyN(),now=S.market.slice(0,bn),fut=S.market.slice(bn);
-  return `<div class="sec"><div class="mkt-label"><span>Aktueller Markt</span><span>kaufbar</span></div><div class="cards">${now.map(card).join('')}</div><div class="mkt-label"><span>Zukünftiger Markt</span><span>${S.deck.length} im Stapel</span></div><div class="cards">${fut.map(n=>plantCard(n,{act:'pinfo'})).join('')}${S.step3Pending?plantCard(STEP3):''}</div></div>`;
+  const spy=S.spy===H&&S.deck.length?`<div class="spy"><span>${LANG==='en'?'Industrial espionage · top card of the deck':'Industriespionage · oberste Karte im Stapel'}</span>${S.deck[0]===STEP3?plantCard(STEP3):S.deck[0]>=100?`<b class="spyev">${promoName(PROMO_BY_ID[S.deck[0]])}</b>`:plantCard(S.deck[0],{sm:true,act:'pinfo'})}</div>`:'';
+  return `<div class="sec"><div class="mkt-label"><span>Aktueller Markt</span><span>kaufbar</span></div><div class="cards">${now.map(card).join('')}</div><div class="mkt-label"><span>Zukünftiger Markt</span><span>${S.deck.length} im Stapel</span></div><div class="cards">${fut.map(n=>plantCard(n,{act:'pinfo'})).join('')}${S.step3Pending?plantCard(STEP3):''}</div>${spy}</div>`;
 }
 function panelAuction(a){
   let h='';
@@ -2302,7 +2380,7 @@ function suggestCart(){
     let need=Math.max(0,k-(p.alloc[n]||[]).length),g=0;
     while(need>0&&g++<10){
       let r=t;
-      if(HYB[t]){const[a,b]=HYB[t];const pa=nextPrice(a,cartTot(a)),pb=nextPrice(b,cartTot(b));r=(pa??99)<=(pb??99)?a:b;if(!canAddP(n,r))r=r===a?b:a}
+      if(HYB[t]){const cand=HYB[t].filter(q=>CAP[q]&&canAddP(n,q)).sort((a,b)=>(nextPrice(a,cartTot(a))??99)-(nextPrice(b,cartTot(b))??99));r=cand[0]||HYB[t][0]}
       if(!canAddP(n,r))break;addP(n,r);need--;
     }
   }
@@ -2376,15 +2454,16 @@ function panelBuild(a){
   return h;
 }
 function allocPower(p,nums){
-  const use=Z(),take={};let cities=0;
+  const use=Z(),take={},xtake={};let cities=0;const spare={...p.pool};Object.values(p.alloc||{}).forEach(a=>a.forEach(r=>spare[r]--));
   for(const n of nums){
-    const[t,k,c]=PLANTS[n];cities+=c;if(FREE(t))continue;
+    const[t,k,c]=PLANTS[n];if(t==='mine')continue;cities+=c+(p.sub===n?1:0);if(FREE(t))continue;
     const arr=[...(p.alloc[n]||[])],got=[];
-    const order=HYB[t]?((UI.hyb[n]||HYB[t][0])===HYB[t][0]?HYB[t]:[...HYB[t]].reverse()):[t];
+    const order=HYB[t]?(HYB[t].length===2&&(UI.hyb[n]||HYB[t][0])!==HYB[t][0]?[...HYB[t]].reverse():HYB[t]):[t];
     for(const r of order)while(got.length<k&&arr.includes(r)){arr.splice(arr.indexOf(r),1);got.push(r)}
-    if(got.length<k)return null;take[n]=got;got.forEach(r=>use[r]++);
+    if(got.length<k){for(const r of order)while(got.length<k&&spare[r]>0){spare[r]--;got.push(r);(xtake[n]??=[]).push(r)}}
+    if(got.length<k)return null;take[n]=got.filter((r,i)=>i<got.length-((xtake[n]||[]).length));got.forEach(r=>use[r]++);
   }
-  return{use,take,cities,powered:Math.min(cities,p.cities.length)};
+  return{use,take,cities,powered:Math.min(cities,cityCount(p))};
 }
 function bestAllocPower(p){
   let best={nums:[],powered:0,used:0};const pl=p.plants;
@@ -2401,7 +2480,7 @@ function panelBureau(){
   const o=allocPower(p,UI.power);const powered=o?o.powered:0;
   let h=`<section class="sec"><h3>Strom liefern</h3><p class="hint">Tippe Kraftwerke an oder ab. Jedes verbraucht die Rohstoffe, die auf ihm lagern.</p><div class="cards">${p.plants.map(n=>plantCard(n,{lg:true,store:p.alloc[n]||[],act:'ptoggle',on:UI.power.includes(n),off:!UI.power.includes(n)})).join('')||'<p class="hint">Du hast keine Kraftwerke.</p>'}</div>`;
   for(const n of UI.power){
-    const[t,k]=PLANTS[n];if(!HYB[t])continue;const st=p.alloc[n]||[];const[ha,hb]=HYB[t];
+    const[t,k]=PLANTS[n];if(!HYB[t]||HYB[t].length!==2)continue;const st=p.alloc[n]||[];const[ha,hb]=HYB[t];
     if(!st.includes(ha)||!st.includes(hb))continue;
     const pref=UI.hyb[n]||ha;
     h+=`<div class="hybrow"><span>Kraftwerk ${PN(n)} verbrennt zuerst</span><div class="seg sm">${[ha,hb].map(r=>`<button type="button" data-act="hyb" data-n="${n}" data-r="${r}" class="${pref===r?'on':''}">${resIcon(r)} ${RNAME[r]}</button>`).join('')}</div></div>`;
@@ -2417,6 +2496,16 @@ function panelBureau(){
   h+=`<p class="hint">Die Gegner haben bereits geliefert: ${nx.map(x=>esc(x.name)+' '+x.lastPowered).join(', ')} Städte.</p>`;
   return h;
 }
+function promoName(k){return PROMOS[k][LANG==='en'?'en':'de'][0]}
+function panelX(a){const x=S.xauc,k=PROMO_BY_ID[x.card],en=LANG==='en';const mine=a&&a.pid===H;
+  if(mine&&UI.xKey!==x.card+'-'+x.bid){UI.xKey=x.card+'-'+x.bid;UI.xbid=Math.max(10,x.bid+1)}
+  let h=`<section class="sec xauc"><h3>${en?'Extra auction':'Zusatzversteigerung'}</h3><div class="xcard"><span class="xcn">${promoName(k)}</span><span class="xcd">${PROMOS[k][en?'en':'de'][1]}</span></div><div class="bidbox xb"><div><div class="big">${x.high==null?(en?'from 10 €':'ab 10 €'):x.bid+' €'}</div><div class="who">${x.high==null?(en?'No bid yet':'Noch kein Gebot'):(en?'Highest bid: ':'Höchstgebot: ')+esc(P(x.high).name)}</div><div class="bidders">${x.all.map(id=>`<span ${pc(id)} class="${x.bidders.includes(id)?'':'out'}">${esc(P(id).name)}</span>`).join('')}</div></div></div>`;
+  if(mine){const can=me().money>=Math.max(10,x.bid+1);
+    h+=can?`<div class="row"><div class="stepper"><button type="button" data-act="xbm" ${UI.xbid<=Math.max(10,x.bid+1)?'disabled':''} aria-label="−">−</button><output>${UI.xbid} €</output><button type="button" data-act="xbp" ${UI.xbid>=me().money?'disabled':''} aria-label="+">+</button></div><button type="button" class="btn pri grow" data-act="xraise">${en?'Bid':'Bieten'}</button></div>`:'';
+    h+=`<button type="button" class="btn" data-act="xdrop">${x.high==null?(en?'Pass':'Passen'):(en?'Drop out':'Aussteigen')}</button>`}
+  else h+=`<p class="hint">${esc(P(a.pid).name)} ${en?'is deciding.':'überlegt.'}</p>`;
+  return h+`</section>`}
+function promoChips(p){const en=LANG==='en',c=[];if(p.sub!=null)c.push((en?'Substation on ':'Umspannwerk an ')+PN(p.sub));if(p.park)c.push(en?'Amusement park':'Freizeitpark');if(p.contract)c.push(en?'Supply contract':'Liefervertrag');if(p.store)c.push((en?'Warehouse':'Lagerhalle')+' 3');if(S.spy===p.id)c.push(en?'Industrial espionage':'Industriespionage');return c.length?`<div class="pchips">${c.map(x=>`<span class="pchip2">${x}</span>`).join('')}</div>`:''}
 function panelMine(){
   const p=me();
   const sv=storeOf(p);
@@ -2432,7 +2521,7 @@ const ICO_MKT='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true
 const ICO_OPP='<svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><circle cx="6" cy="5" r="2.8" fill="currentColor"/><circle cx="12.5" cy="5.6" r="2.3" fill="currentColor" opacity=".7"/><path d="M.8 14.5c.4-3 2.6-4.7 5.2-4.7s4.8 1.7 5.2 4.7z" fill="currentColor"/><path d="M12 14.5c-.2-1.7-.8-3-1.8-3.9.7-.4 1.5-.6 2.3-.6 2.2 0 3.9 1.5 4.3 4.5z" fill="currentColor" opacity=".7"/></svg>';
 const BOLT='<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M7 .8 2 7h3.2L4.6 11.2 10 4.8H6.7z" fill="currentColor"/></svg>';
 function fuelNeed(p){const d={};p.plants.forEach(n=>{const t=PLANTS[n][0],k=PLANTS[n][1];if(FREE(t)||!k)return;d[t]=(d[t]||0)+k});return d}
-function needChips(d){return Object.entries(d).map(([t,k])=>`<span class="nchip" title="${RNAME[t]}">${HYB[t]?resIcon(HYB[t][0])+'<i>/</i>'+resIcon(HYB[t][1]):resIcon(t)}<b>${k}</b></span>`).join('')}
+function needChips(d){return Object.entries(d).map(([t,k])=>`<span class="nchip" title="${RNAME[t]}">${t==='flux'?'<span class="anyres">'+RES.map(resIcon).join('')+'</span>':HYB[t]?resIcon(HYB[t][0])+'<i>/</i>'+resIcon(HYB[t][1]):resIcon(t)}<b>${k}</b></span>`).join('')}
 function oppPlantsHTML(){
   if(!S||S.phase==='end')return '';
   let open=true;try{open=localStorage.getItem('hochspannung-opp-open')!=='0'}catch(_){}
@@ -2442,10 +2531,10 @@ function oppPlantsHTML(){
   const rows=opps.map(p=>{
     const sv=normAlloc(p);const newN=(st().pl[p.id].auc||[]).filter(x=>x.r===S.round).map(x=>x.n);
     const tiles=p.plants.slice().sort((a,b)=>a-b).map(n=>{const[t,k,c]=PLANTS[n];const stor=sv[n]||[];
-      const need=FREE(t)?resIcon(t):HYB[t]?`${k}${resIcon(HYB[t][0])}<i>/</i>${resIcon(HYB[t][1])}`:`${k}${resIcon(t)}`;
+      const need=FREE(t)?resIcon(t):t==='flux'?`${k}★`:HYB[t]?`${k}${resIcon(HYB[t][0])}<i>/</i>${resIcon(HYB[t][1])}`:`${k}${resIcon(t)}`;
       const ok=FREE(t)||stor.length>=k;
       return `<button type="button" class="pm t-${t}${newN.includes(n)?' nw':''}" data-act="pinfo" data-num="${n}" aria-label="Kraftwerk ${PN(n)}, ${TYPE_NAME[t]}, versorgt ${c}, Lager ${stor.length}"><span class="pmn">${Math.floor(n)}</span><span class="pmq">${need}<span class="pma">→</span><b>${c}</b></span><span class="pms${ok?'':' low'}">${FREE(t)?'<small>frei</small>':stor.length?stor.map(r=>resIcon(r)).join(''):'<small>leer</small>'}</span>${newN.includes(n)?'<span class="pmt">neu</span>':''}</button>`}).join('')||'<span class="pmnone">Noch kein Kraftwerk</span>';
-    return `<div class="opr" ${pc(p.id)}><div class="oprh"><i class="dot"></i><b>${esc(p.name)}</b>${p.style&&STYLES[p.style]?`<span class="stag" title="${STYLES[p.style].note}">${STYLES[p.style].name}</span>`:''}<span>${p.money} €</span><span>${p.cities.length}${HOUSE}</span><span class="opcap">${BOLT}${capacity(p)}</span><span class="opfu">Brennstoff für ${fueledCap(p)}</span></div><div class="pmrow">${tiles}</div></div>`}).join('');
+    return `<div class="opr" ${pc(p.id)}>${promoChips(p)}<div class="oprh"><i class="dot"></i><b>${esc(p.name)}</b>${p.style&&STYLES[p.style]?`<span class="stag" title="${STYLES[p.style].note}">${STYLES[p.style].name}</span>`:''}<span>${p.money} €</span><span>${p.cities.length}${HOUSE}</span><span class="opcap">${BOLT}${capacity(p)}</span><span class="opfu">Brennstoff für ${fueledCap(p)}</span></div><div class="pmrow">${tiles}</div></div>`}).join('');
   return `<div class="oppp">${head}${rows}</div>`;
 }
 function qbarHTML(){
@@ -2464,6 +2553,7 @@ function marketDemand(r){
 }
 function renderPanel(){
   const a=actor();let h=qbarHTML()+orderHTML(a)+oppPlantsHTML()+turnLine(a);
+  if(S.xauc){h+=panelX(a)}else
   switch(S.phase){
     case'auction':h+=panelAuction(a);break;
     case'resources':h+=panelResources(a);break;
@@ -2516,7 +2606,7 @@ function renderSheet(){
 <h4>3 · Rohstoffe kaufen</h4><p>Kohle, Öl, Müll und Uran werden teurer, je knapper sie sind. Jedes Kraftwerk lagert das Doppelte seines Bedarfs. Öko-Kraftwerke brauchen nichts.</p>
 <h4>4 · Netz ausbauen</h4><p>Die erste Stadt kostet 10 €. Jede weitere kostet den Platz plus die günstigste Leitung zu deinem Netz. In Stufe 2 öffnet der zweite Platz einer Stadt (15 €), in Stufe 3 der dritte (20 €).</p>
 <h4>5 · Strom liefern</h4><p>Du verdienst Geld für jede Stadt, die du mit deinen Kraftwerken versorgst. Danach füllt sich der Rohstoffmarkt auf und der Kraftwerksmarkt rückt nach.</p>
-${S&&MAPS[S.map].exp?mapRulesHTML(S.map,S.regions,true):''}${S&&MAPS[S.map].deluxe?'<h4>Deluxe-Regeln ('+MAPS[S.map].name+')</h4><p>Gespielt wird mit den Deluxe-Kraftwerken. Der Startmarkt besteht nur aus Kraftwerken von 3 bis 15. Statt Müll gibt es Erdgas. Alle Rohstoffe kosten höchstens 9 €, der Markt ist anders gestaffelt als im Basisspiel.</p>'+(S.map==='na'?'<p>Nordamerika: Acht Kraftwerke liegen aus, das kleinste ist jede Runde ab 1 € zu haben. New York und Mexico City bestehen aus je zwei Städten ohne Leitungskosten. Die Spielerreihenfolge der ersten Runde bleibt zufällig. Zu Beginn von Stufe 2 fällt das kleinste Kraftwerk weg und wird ersetzt.</p>':'<p>Europa: Neun Kraftwerke liegen aus (vier aktuell, fünf zukünftig), einen Rabatt gibt es nicht. Kauft in einer Runde niemand ein Kraftwerk, fällt das kleinste weg. Zu Beginn von Stufe 2 fällt das kleinste Kraftwerk ersatzlos weg, danach liegen acht aus.</p>'):''}${S&&S.map==='fr'?'<h4>Frankreich</h4><p>Paris besteht aus drei Städten. Leitungen zwischen ihnen kosten nichts, du zahlst nur den Platz. Uran ist reichlich vorhanden, Kraftwerk 11 liegt schon zu Beginn im Markt und Kraftwerk 13 ist nicht im Spiel.</p>':''}${S&&S.deckId&&S.deckId!=='std'?'<h4>Kraftwerksdeck: '+DECKS[S.deckId].name+'</h4><p>'+DECK_NOTE[S.deckId]+'</p>':''}${S&&S.phaseOut?'<h4>Atomausstieg</h4><p>Sobald jemand '+((S.phaseSet||[39]).length>1?'eines der Kraftwerke '+(S.phaseSet||[39]).map(PN).join(', '):'Kraftwerk '+PN((S.phaseSet||[39])[0]))+' kauft, wird bis zum Spielende kein Uran mehr nachgefüllt. Was noch im Markt liegt, kann weiter gekauft werden.</p>':''}<h4>Stufen und Ende</h4><p>Stufe 2 beginnt, sobald ein Netz ${STEP2_AT} Städte hat. Stufe 3 beginnt, wenn ihre Karte aus dem Stapel kommt. Erreicht jemand ${END_AT} Städte, folgt eine letzte Lieferung: Es gewinnt, wer dann die meisten Städte versorgt. Bei Gleichstand zählt das Geld.</p>
+${S&&(S.promos||[]).length?`<div class="rdiff ig"><div class="rd-h"><div><span class="rd-k">${LANG==='en'?'In this game':'In dieser Partie'}</span><b class="rd-t">${LANG==='en'?'Promo cards':'Promokarten'}</b></div></div><ul class="rd-list">${S.promos.map(k=>`<li class="rd-i c-plant"><span class="rd-ic"><svg viewBox="0 0 16 16" width="16" height="16">${RICON.deck}</svg></span><div class="rd-tx"><b>${promoName(k)}</b><span>${PROMOS[k][LANG==='en'?'en':'de'][1]}</span></div></li>`).join('')}</ul></div>`:''}${S&&MAPS[S.map].exp?mapRulesHTML(S.map,S.regions,true):''}${S&&MAPS[S.map].deluxe?'<h4>Deluxe-Regeln ('+MAPS[S.map].name+')</h4><p>Gespielt wird mit den Deluxe-Kraftwerken. Der Startmarkt besteht nur aus Kraftwerken von 3 bis 15. Statt Müll gibt es Erdgas. Alle Rohstoffe kosten höchstens 9 €, der Markt ist anders gestaffelt als im Basisspiel.</p>'+(S.map==='na'?'<p>Nordamerika: Acht Kraftwerke liegen aus, das kleinste ist jede Runde ab 1 € zu haben. New York und Mexico City bestehen aus je zwei Städten ohne Leitungskosten. Die Spielerreihenfolge der ersten Runde bleibt zufällig. Zu Beginn von Stufe 2 fällt das kleinste Kraftwerk weg und wird ersetzt.</p>':'<p>Europa: Neun Kraftwerke liegen aus (vier aktuell, fünf zukünftig), einen Rabatt gibt es nicht. Kauft in einer Runde niemand ein Kraftwerk, fällt das kleinste weg. Zu Beginn von Stufe 2 fällt das kleinste Kraftwerk ersatzlos weg, danach liegen acht aus.</p>'):''}${S&&S.map==='fr'?'<h4>Frankreich</h4><p>Paris besteht aus drei Städten. Leitungen zwischen ihnen kosten nichts, du zahlst nur den Platz. Uran ist reichlich vorhanden, Kraftwerk 11 liegt schon zu Beginn im Markt und Kraftwerk 13 ist nicht im Spiel.</p>':''}${S&&S.deckId&&S.deckId!=='std'?'<h4>Kraftwerksdeck: '+DECKS[S.deckId].name+'</h4><p>'+DECK_NOTE[S.deckId]+'</p>':''}${S&&S.phaseOut?'<h4>Atomausstieg</h4><p>Sobald jemand '+((S.phaseSet||[39]).length>1?'eines der Kraftwerke '+(S.phaseSet||[39]).map(PN).join(', '):'Kraftwerk '+PN((S.phaseSet||[39])[0]))+' kauft, wird bis zum Spielende kein Uran mehr nachgefüllt. Was noch im Markt liegt, kann weiter gekauft werden.</p>':''}<h4>Stufen und Ende</h4><p>Stufe 2 beginnt, sobald ein Netz ${STEP2_AT} Städte hat. Stufe 3 beginnt, wenn ihre Karte aus dem Stapel kommt. Erreicht jemand ${END_AT} Städte, folgt eine letzte Lieferung: Es gewinnt, wer dann die meisten Städte versorgt. Bei Gleichstand zählt das Geld.</p>
 <h4>Einkommen</h4><p>${PAY.slice(0,11).map((v,i)=>i+'→'+v).join(' · ')} · … bis 20→150 €</p></div>`;
   }else if(UI.sheet==='newgame'){
     h=head('Neues Spiel?')+`<p class="hint">Das laufende Spiel wird beendet.</p><div class="row"><button type="button" class="btn" data-act="close">Abbrechen</button><button type="button" class="btn pri grow" data-act="newyes">Neues Spiel einrichten</button></div>`;
@@ -2675,6 +2765,8 @@ function heroMap(){
   g+=CITIES.map(([id,,rg])=>{const c=CITY[id];const on=inA(id);return `<circle class="hm-c${on?' on':''}" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${on?9:6}" style="--rc:${REGIONS[rg].col}" data-act="reg" data-r="${rg}"/>`}).join('');
   return `<svg class="heromap" viewBox="${MAPVB}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Spielplan ${esc(MAPS[UI.map].name)}: tippe Regionen an, um das Netzgebiet zu wählen">${g}</svg>`;
 }
+function promoBlock(){const on=UI.promos||[],en=LANG==='en';const ks=Object.keys(PROMOS);
+  return `<div class="promos"><div class="prh"><div><b>${en?'Promo cards':'Promokarten'}</b><span>${on.length?(en?`${on.length} of ${ks.length} active`:`${on.length} von ${ks.length} aktiv`):(en?'Optional extras from 2008 to 2013':'Optionale Extras von 2008 bis 2013')}</span></div><div class="seg sm"><button type="button" data-act="promoAll" data-v="none" class="${!on.length?'on':''}">${en?'None':'Keine'}</button><button type="button" data-act="promoAll" data-v="all" class="${on.length===ks.length?'on':''}">${en?'All':'Alle'}</button></div></div><div class="prl">${ks.map(k=>{const P_=PROMOS[k],a=on.includes(k);return `<button type="button" class="prc${a?' on':''}" data-act="promo" data-k="${k}" aria-pressed="${a}"><span class="prk" aria-hidden="true"></span><span class="prt"><b>${P_[en?'en':'de'][0]}</b><small>${P_.y}${P_.x?' · '+(en?'extra auction':'Zusatzversteigerung'):''}</small><span>${P_[en?'en':'de'][1]}</span></span></button>`}).join('')}</div><p class="hint">${en?'Cards with an extra auction and the event cards are shuffled into the plant deck; plant 13 stays on top. The robot rules on the cards do not apply.':'Karten mit Zusatzversteigerung und die Ereigniskarten werden in den Kraftwerksstapel gemischt, die 13 bleibt oben. Roboter-Hinweise auf den Karten entfallen.'}</p></div>`}
 function xpickHTML(mapCard){
   const by={};Object.entries(MAPS).filter(([,m])=>m.exp).forEach(e=>(by[e[1].exp]??=[]).push(e));
   const n=Object.values(by).flat().length;if(!n)return '';
@@ -2694,7 +2786,7 @@ function renderStart(show){
   <section class="setup"><div class="setup-body">
    <div class="sgroup"><h2>Dein Betrieb</h2><div class="cocard"><div class="co-emb" aria-hidden="true"><svg class="co-bolt" viewBox="0 0 24 24"><path d="M13.5 2 5 13.2h5.6L9.4 22 19 9.8h-5.7z"/></svg><span id="coIni">${coInitials(UI.name||(LANG==='en'?'You':'Du'))}</span></div><div class="co-main"><label class="co-lbl" for="nm">Firmenname</label><div class="co-in"><input id="nm" maxlength="18" autocomplete="off" spellcheck="false" value="${esc(UI.name||(LANG==='en'?'You':'Du'))}"><button type="button" class="co-dice" data-act="coRand" aria-label="Zufälliger Firmenname" title="Zufälliger Firmenname"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/></svg></button></div><div class="co-sub">So heißt dein Energieversorger auf dem Spielplan, im Protokoll und in der Statistik.</div></div></div></div>
    <div class="sgroup"><h2>Spielplan</h2><div class="mcards">${Object.entries(MAPS).filter(([,m])=>!m.deluxe&&!m.exp).map(mapCard).join('')}</div><div class="mcards two">${Object.entries(MAPS).filter(([,m])=>m.deluxe).map(mapCard).join('')}</div>${xpickHTML(mapCard)}${M.exp?mapRulesHTML(UI.map,UI.regions):`<div class="nhint">${MAP_NOTE[UI.map]||''}</div>`}</div>
-   <div class="sgroup"><h2 class="h-rules">Kraftwerke & Regeln</h2>${rulesBlock()}</div>
+   <div class="sgroup"><h2 class="h-rules">Kraftwerke & Regeln</h2>${rulesBlock()}${promoBlock()}</div>
    <div class="sgroup"><h2>Netzgebiet</h2>${regionPicker()}</div>
    <div class="sgroup"><h2>Gegner</h2>${oppBlock()}</div>
    <div class="slinks"><button type="button" class="btn ghost" data-act="startrules">Spielregeln</button><button type="button" class="btn ghost" data-act="stats">Statistik${games?` · ${games} ${games===1?'Partie':'Partien'}`:''}</button></div>
@@ -2859,6 +2951,7 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'Zusatzversteigerung':'Extra auction','Flux-Generator':'Flux generator',
 'Passen (für diese Runde fertig)':'Pass (done for this round)','1 Einheit kaufen':'Buy 1 unit','Rohstoffe · Süd':'Resources · South','Rohstoffe · Nord':'Resources · North','Uranmine':'Uranium mine',
 'Gehört fest zu den Erweiterungsplänen, weil deren Regeln feste Kraftwerksnummern nennen.':'Fixed for expansion boards because their rules name specific plant numbers.','Gekaufte Kraftwerke werden erst am Rundenende ersetzt.':'Bought plants are only replaced at the end of the round.','Markt · Planwirtschaft':'Market · planned economy','Basis-Kraftwerke':'Base power plants','Erweiterungen':'Expansions',
 'Spanien & Portugal':'Spain & Portugal','Mitteleuropa':'Central Europe','Nordeuropa':'Northern Europe','UK & Irland':'UK & Ireland','Brasilien':'Brazil','Russland':'Russia','Australien':'Australia','Indien':'India',
@@ -3145,7 +3238,7 @@ function bars(rows,unit=''){
   const max=Math.max(1,...rows.map(r=>r.v));
   return `<div class="bars">${rows.map(r=>`<div class="br"><span class="bl">${r.icon||''}${r.label}</span><span class="bt"><i style="width:${(r.v/max*100).toFixed(1)}%;background:${r.color||'var(--accent)'}"></i></span><span class="bv">${r.text??fmt(r.v)+unit}</span></div>`).join('')}</div>`;
 }
-const TCOL={mine:'#e8d27a',coal:'#c88a55',oil:'#7ea9d6',garbage:'#d9c13f',uranium:'#ef6a5e',eco:'#66cc7d',fusion:'#5fd4f0',hybrid:'#b9a088',gohybrid:'#a8a060'};
+const TCOL={flux:'#c9a8ff',mine:'#e8d27a',coal:'#c88a55',oil:'#7ea9d6',garbage:'#d9c13f',uranium:'#ef6a5e',eco:'#66cc7d',fusion:'#5fd4f0',hybrid:'#b9a088',gohybrid:'#a8a060'};
 function placeBadge(pl,n){return `<span class="place p${pl}">${pl}.</span>`}
 function meOf(g){return g.players.find(p=>p.human)||g.players[0]}
 function goalOf(g){return(RULES_N[(g.players&&g.players.length)||g.n]||RULES_N[4]).end}
@@ -3626,6 +3719,7 @@ function schedule(){
     after()},a.kind==="bid"?(window.__fast?20:650):(window.__fast?20:950));
 }
 function after(){save();render();schedule()}
+try{UI.promos=JSON.parse(localStorage.getItem('hochspannung-promos')||'[]').filter(k=>PROMOS[k])}catch(_){UI.promos=[]}
 try{UI.adv=localStorage.getItem('hochspannung-adv')==='1';UI.vib=localStorage.getItem('hochspannung-vib')!=='0'}catch(_){UI.vib=true}
 function buzz(){if(!UI.vib)return;try{if(navigator.vibrate&&navigator.vibrate([45,35,45]))return}catch(_){}
   try{const l=document.createElement('label');l.style.cssText='position:fixed;opacity:0;pointer-events:none;width:1px;height:1px';const i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');l.appendChild(i);document.body.appendChild(l);l.click();setTimeout(()=>l.remove(),50)}catch(_){}}
@@ -3684,7 +3778,7 @@ const A={
   regpick:()=>{if(!UI.regions.length){const n=regionCount(UI.nAI+1);const ks=Object.keys(REGIONS);for(let t=0;t<200;t++){const c=shuffle(ks).slice(0,n);if(regionsValid(c,n)&&(!MAPS[MAPID].mustRegion||c.includes(MAPS[MAPID].mustRegion))){UI.regions=c;break}}}UI.name=$('#nm').value;renderStart(true);return'skip'},
   markets:()=>{UI.sheet=UI.sheet==='markets'&&isDock()?null:'markets'},
   pinfo:b=>{UI.back=isDock()?UI.sheet:null;UI.pnum=+b.dataset.num;UI.sheet='plant'},
-  start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();newGame(UI.name||(LANG==='en'?'You':'Du'),UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off'});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false)},
+  start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();newGame(UI.name||(LANG==='en'?'You':'Du'),UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[]});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false)},
   cont:()=>{loadMap(S.map||'de');loadDeck(S.deckKeys||deckKeys('std'));applyPlantOv();applyMapN(S.n);applyGameMods();UI.vb=null;renderStart(false)},
   zin:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.3);return'skip'},
   zout:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.3);return'skip'},
@@ -3699,6 +3793,12 @@ const A={
   dopen:()=>{UI.sheet=null},
   dconfirm:()=>{if(!myTurn('discard')||UI.discSel==null)return;const n=UI.discSel;UI.discSel=null;discardPlant(H,n)},
   cartp:b=>{const n=+b.dataset.n,r=b.dataset.r;withSide(UI.kside||'south',()=>{if(canAddP(n,r))addP(n,r)})},
+  xbm:()=>{UI.xbid=Math.max(Math.max(10,S.xauc.bid+1),UI.xbid-1)},
+  xbp:()=>{UI.xbid=Math.min(me().money,UI.xbid+1)},
+  xraise:()=>{const a=actor();if(!a||a.kind!=='xbid'||a.pid!==H)return'skip';xRaise(H,Math.max(UI.xbid,S.xauc.bid+1,10))},
+  xdrop:()=>{const a=actor();if(!a||a.kind!=='xbid'||a.pid!==H)return'skip';xDrop(H)},
+  promo:b=>{const k=b.dataset.k;UI.promos=UI.promos.includes(k)?UI.promos.filter(x=>x!==k):[...UI.promos,k];try{localStorage.setItem('hochspannung-promos',JSON.stringify(UI.promos))}catch(_){}UI.name=$('#nm').value;renderStart(true);return'skip'},
+  promoAll:b=>{UI.promos=b.dataset.v==='all'?Object.keys(PROMOS):[];try{localStorage.setItem('hochspannung-promos',JSON.stringify(UI.promos))}catch(_){}UI.name=$('#nm').value;renderStart(true);return'skip'},
   kSide:b=>{UI.kside=b.dataset.s;UI.pcart={}},
   cartm:b=>{const n=+b.dataset.n,r=b.dataset.r;const c=UI.pcart[n];if(c&&c[r]>0)c[r]--},
   suggest:()=>withSide(UI.kside||'south',()=>suggestCart()),
