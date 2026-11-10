@@ -1027,6 +1027,37 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .stylist div{display:flex;flex-direction:column;gap:1px}
 .stylist b{font-size:13px;font-family:var(--body);font-weight:700;color:var(--fg);letter-spacing:0}
 .stylist span{font-size:12px;color:#8a9aa6}
+/* ---- v18: Netzgebiet & Regelbox ---- */
+.rhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.rmode{width:auto;flex:none}
+.rmode button{padding:7px 14px;font-size:13px}
+.rslots{display:inline-flex;align-items:center;gap:4px}
+.rslots i{width:10px;height:10px;border-radius:50%;border:1.5px solid #4a5b67}
+.rslots i.f{background:var(--accent);border-color:var(--accent)}
+.rslots em{font-style:normal;font-size:12px;color:#8a9aa6;margin-left:5px;font-variant-numeric:tabular-nums}
+.rtiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(min-width:700px){.rtiles{gap:10px}.rtile svg{height:96px}}
+.rtile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:8px 9px 9px;border-radius:12px;border:1px solid #26343e;background:#121b22;color:var(--fg);cursor:pointer;font:inherit;text-align:left;transition:border-color .2s,background .2s}
+.rtile svg{width:100%;height:76px;margin-bottom:4px}
+.rt-land{fill:#151f26;stroke:#26343e;stroke-width:1;vector-effect:non-scaling-stroke}
+.rt-terr{fill:#2a3a45;stroke:#121b22;stroke-width:2;vector-effect:non-scaling-stroke}
+.rt-terr.me{fill:var(--rc);fill-opacity:.6;stroke:var(--rc);stroke-width:1.5}
+.rtile.on .rt-terr.me{fill-opacity:.95}
+.rtn{display:flex;align-items:center;gap:6px;font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.02em;line-height:1.1}
+.rtn i{width:8px;height:8px;border-radius:50%;background:var(--rc);flex:none}
+.rtc{font-size:11.5px;color:#8a9aa6}
+.rtile.on{border-color:var(--rc);background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 16%,#121b22),#121b22)}
+.rtchk{position:absolute;top:7px;right:7px;width:18px;height:18px;border-radius:50%;background:var(--rc)}
+.rtchk::after{content:"";position:absolute;left:6px;top:3px;width:4px;height:8px;border:solid #0b1014;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.rtiles.rand .rtile{opacity:.72}
+.rtile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rstatus{font-size:13px;color:#a9b6bf;padding:9px 12px;border-radius:10px;background:#0f171d;border:1px solid #1d2a33}
+.rstatus.ok{color:#9fe0b0;border-color:rgba(88,184,106,.4);background:rgba(88,184,106,.06)}
+.rstatus.bad{color:#ffb3a8;border-color:rgba(224,72,61,.45);background:rgba(224,72,61,.07)}
+.rulebox{border-radius:12px;border:1px solid #1d2a33;background:#0f171d;overflow:hidden}
+.rbh{display:flex;align-items:center;gap:7px;padding:9px 12px;font-size:12.5px;color:#a9b6bf;border-bottom:1px solid #1d2a33;background:#111a21}
+.rbh svg{color:var(--accent);flex:none}
+.rulebox .pfacts{border:0;border-radius:0;background:#1d2a33}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1222,7 +1253,7 @@ function newGame(name,nAI,diff,regions,mapId,opts={}){
   const RN=applyRulesN(n);
   const players=[];
   for(let i=0;i<n;i++)players.push({id:i,name:i===0?(name||'Du'):names[i-1],color:cols[i],human:i===0,money:50,plants:[],cities:[],pool:{coal:0,oil:0,garbage:0,uranium:0},done:false,lastPowered:0});
-  if(opts.styles){const pool=shuffle(Object.keys(STYLES));players.slice(1).forEach((q,i)=>{q.style=i<pool.length?pool[i]:(Math.random()<.5?null:pool[i%pool.length])})}
+  if(opts.styles){const pool=Object.keys(STYLES);players.slice(1).forEach(q=>{q.style=pool[Math.floor(Math.random()*pool.length)]})}
   const deckId=MAPS[MAPID].deluxe?'d2':(DECKS[opts.deck]?opts.deck:'std');const keys=deckKeys(deckId);loadDeck(keys);
   const isMix=deckId==='mix'||deckId==='mix1';
   const DR=DECK_RULES[isMix?'std':deckId];
@@ -2195,17 +2226,24 @@ function regionsValid(sel,n){
   return seen.size===n&&citiesConnected(sel);
 }
 function regionsOk(){const m=MAPS[MAPID].mustRegion;return !UI.regions.length||(regionsValid(UI.regions,regionCount(UI.nAI+1))&&(!m||UI.regions.includes(m)))}
+function regionVB(){const cs=Object.values(CITY),xs=cs.map(c=>c.x),ys=cs.map(c=>c.y),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),pd=Math.max(x1-x0,y1-y0)*.08;return `${x0-pd} ${y0-pd} ${x1-x0+2*pd} ${y1-y0+2*pd}`}
+function regionThumb(k,vb){
+  return `<svg viewBox="${vb}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path class="rt-land" d="${GEO_LAND}"/>${Object.entries(TERR).map(([rk,d])=>`<path d="${d}" class="rt-terr${rk===k?' me':''}" style="--rc:${REGIONS[rk].col}"/>`).join('')}</svg>`;
+}
 function regionPicker(){
   const n=regionCount(UI.nAI+1),sel=UI.regions,rand=!sel.length;
-  const dots=CITIES.map(([id,,rg])=>{const c=CITY[id];const on=sel.includes(rg);return `<circle cx="${c.x.toFixed(0)}" cy="${c.y.toFixed(0)}" r="15" fill="${REGIONS[rg].col}" opacity="${rand?.6:on?1:.18}" data-act="reg" data-r="${rg}"/>`}).join('');
-  const btns=Object.entries(REGIONS).map(([k,r])=>`<button type="button" data-act="reg" data-r="${k}" style="--rc:${r.col}" class="${sel.includes(k)?'on':''}"><i></i>${r.name}</button>`).join('');
-  let hint,bad=false;
-  if(rand)hint=`Zufällig: ${n} zusammenhängende Regionen.`+(MAPS[MAPID].mustRegion?' Zentrum mit Paris ist immer dabei.':'');
-  else if(sel.length!==n){hint=`Wähle ${n} Regionen (${sel.length} gewählt).`;bad=true}
+  const cnt=rk=>CITIES.filter(c=>c[2]===rk).length;
+  const vb=regionVB(),tiles=Object.entries(REGIONS).map(([k,r])=>{const on=sel.includes(k);return `<button type="button" class="rtile${on?' on':''}" data-act="reg" data-r="${k}" aria-pressed="${on}" style="--rc:${r.col}">${regionThumb(k,vb)}<span class="rtn"><i></i>${r.name}</span><span class="rtc">${cnt(k)} Städte</span>${on?'<span class="rtchk" aria-hidden="true"></span>':''}</button>`}).join('');
+  let hint,bad=false,ok=false;
+  if(rand)hint=`Beim Start werden ${n} zusammenhängende Regionen ausgelost.`+(MAPS[MAPID].mustRegion?' Zentrum mit Paris ist immer dabei.':'');
+  else if(sel.length!==n){hint=`Wähle ${n} Regionen (${sel.length} gewählt).`;bad=sel.length>n}
   else if(!regionsValid(sel,n)){hint=regionsAdjacent(sel)?'In dieser Auswahl wäre eine Stadt nicht erreichbar. Wähle andere Regionen.':'Die Regionen müssen aneinandergrenzen.';bad=true}
   else if(MAPS[MAPID].mustRegion&&!sel.includes(MAPS[MAPID].mustRegion)){hint='Frankreich wird immer mit der Region Zentrum (Paris) gespielt.';bad=true}
-  else hint='Netzgebiet steht.';
-  return `<div class="rpick v2"><div class="rp-side"><div class="rp-list">${btns}<button type="button" data-act="regrand" class="${rand?'on':''}" style="--rc:var(--accent)">Zufällig</button></div><div class="rp-hint${bad?' bad':''}">${hint}</div></div></div>`;
+  else {hint='Netzgebiet steht.';ok=true}
+  const slots=Array.from({length:n},(_,i)=>`<i class="${!rand&&i<sel.length?'f':''}"></i>`).join('');
+  return `<div class="rhead"><div class="rmode seg"><button type="button" data-act="regrand" class="${rand?'on':''}">Zufällig</button><button type="button" data-act="regpick" class="${rand?'':'on'}">Selbst wählen</button></div><span class="rslots" aria-label="${rand?n:sel.length} von ${n}">${slots}<em>${rand?n:sel.length}/${n}</em></span></div>
+  <div class="rtiles${rand?' rand':''}">${tiles}</div>
+  <div class="rstatus${bad?' bad':ok?' ok':''}">${hint}</div>`;
 }
 function hasSave(){try{return !!localStorage.getItem(SAVE_KEY)}catch(_){return false}}
 const DECK_NOTE={std:'Die Kraftwerke aus dem Grundspiel.',d1:'„Die neuen Kraftwerke“, Set 1: Nummern 1 bis 50, mehr kleine und günstige Kraftwerke, Fusion bei 44, großes Uran-Kraftwerk 50.',d2:'Set 2: neue Müll-Öl-Hybride, viele Kohle- und Müllkraftwerke, großes Uran-Kraftwerk 50.',mix:'Alle drei Decks in einem Stapel, rund 126 Kraftwerke. Die Stufe-3-Karte liegt nach 34 Karten, sonst käme sie praktisch nie.',mix1:'Für jede Nummer zufällig eine Karte aus einem der drei Decks, ein normaler Stapel mit 42 Kraftwerken.'};
@@ -2219,10 +2257,10 @@ function oppBlock(){
   const n=UI.nAI+1,R=RULES_N[n],st=(UI.styles||'mix')==='mix';
   const seats=k=>`<span class="seats">${Array.from({length:k+1},(_,i)=>`<i style="background:${SEATCOL[i]}"${i===0?' class="you"':''}></i>`).join('')}</span>`;
   let h=`<div class="gl sub">Spielerzahl</div><div class="pcards" role="radiogroup" aria-label="Spielerzahl">${[2,3,4,5].map(k=>`<button type="button" class="pcard${UI.nAI===k?' on':''}" role="radio" aria-checked="${UI.nAI===k}" data-act="nai" data-n="${k}"><b>${k+1}</b>${seats(k)}</button>`).join('')}</div>
-  <div class="pfacts"><div><b>${n}</b><span>Spieler: du und ${UI.nAI} KI</span></div><div><b>${regionCount(n)}</b><span>Regionen</span></div><div><b>${R.s2}</b><span>Städte bis Stufe 2</span></div><div><b>${R.end}</b><span>Städte bis Spielende</span></div></div>`;
+  <div class="rulebox"><div class="rbh"><svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.2v4M8 4.6v.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>So ändern sich die Regeln mit ${n} Spielern</span></div><div class="pfacts"><div><b>${UI.nAI}</b><span>KI-Gegner</span></div><div><b>${regionCount(n)}</b><span>Regionen im Spiel</span></div><div><b>${R.s2}</b><span>Städte lösen Stufe 2 aus</span></div><div><b>${R.end}</b><span>Städte beenden das Spiel</span></div></div></div>`;
   const lv=['easy','normal','hard','expert'];
   h+=`<div class="gl sub">KI-Stärke</div><div class="dlevels" role="radiogroup" aria-label="KI-Stärke">${lv.map((d,i)=>`<button type="button" class="dlv${UI.diff===d?' on':''}" role="radio" aria-checked="${UI.diff===d}" data-act="diff" data-d="${d}"><span class="sigbars" aria-hidden="true">${lv.map((_,j)=>`<i class="${j<=i?'f':''}" style="height:${7+j*5}px"></i>`).join('')}</span><b>${AI_NAME[d]}</b><small>${DIFF_SHORT[d]}</small></button>`).join('')}</div><p class="dnote2">${AI_NOTE[UI.diff]||''}</p>`;
-  h+=`<div class="toggle pers${st?' on':''}"><button type="button" class="swt" role="switch" aria-checked="${st}" data-act="styleSel" data-s="${st?'off':'mix'}" aria-label="KI-Persönlichkeiten"><span></span></button><div class="tgt"><b>KI-Persönlichkeiten</b><span>${st?'Jede KI bekommt einen eigenen Spielstil.':'Alle KIs spielen ausgewogen, ohne besonderen Stil.'}</span>${st?`<div class="stylist">${Object.values(STYLES).map(x=>`<div><b>${x.name}</b><span>${x.note}</span></div>`).join('')}</div>`:''}</div></div>`;
+  h+=`<div class="toggle pers${st?' on':''}"><button type="button" class="swt" role="switch" aria-checked="${st}" data-act="styleSel" data-s="${st?'off':'mix'}" aria-label="KI-Persönlichkeiten"><span></span></button><div class="tgt"><b>KI-Persönlichkeiten</b><span>${st?'Jede KI zieht zufällig einen der vier Spielstile. Mehrere KIs können denselben Stil haben.':'Alle KIs spielen ausgewogen, ohne besonderen Stil.'}</span>${st?`<div class="stylist">${Object.values(STYLES).map(x=>`<div><b>${x.name}</b><span>${x.note}</span></div>`).join('')}</div>`:''}</div></div>`;
   return h;
 }
 function rulesBlock(){
@@ -2290,6 +2328,10 @@ function renderStart(show){
 let LANG=(()=>{try{return localStorage.getItem('hochspannung-lang')||'en'}catch(_){return'en'}})();
 const B='(?<![\\p{L}\\p{N}])',E='(?![\\p{L}])';
 const TP=[
+[/^So ändern sich die Regeln mit (\d+) Spielern$/u,'How the rules change with $1 players'],
+[/^Beim Start werden (\d+) zusammenhängende Regionen ausgelost\.$/u,'$1 connected regions are drawn at random when the game starts.'],
+[/^Beim Start werden (\d+) zusammenhängende Regionen ausgelost\. Zentrum mit Paris ist immer dabei\.$/u,'$1 connected regions are drawn at random when the game starts. Centre with Paris is always included.'],
+[/^(\d+) Städte$/u,'$1 cities'],
 [/^Spieler: du und (\d+) KI$/u,'players: you and $1 AI'],
 [/^Sobald das große Uran-Kraftwerk (?:\((.+)\) )?gekauft ist, kommt kein Uran mehr nach\.$/u,(m,a)=>a?`Once the big uranium plant (${a.replace(' oder ',' or ')}) is bought, no more uranium is restocked.`:'Once the big uranium plant is bought, no more uranium is restocked.'],
 [/^(\d+) · Nr\. (\d+)–(\d+)$/u,'$1 · no. $2–$3'],
@@ -2433,6 +2475,8 @@ const TP=[
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
 const TS=Object.entries({
+'Jede KI zieht zufällig einen der vier Spielstile. Mehrere KIs können denselben Stil haben.':'Each AI draws one of the four play styles at random. Several AIs can share a style.',
+'Städte lösen Stufe 2 aus':'cities trigger Step 2','Städte beenden das Spiel':'cities end the game','Regionen im Spiel':'regions in play','KI-Gegner':'AI opponents','Selbst wählen':'Choose','Netzgebiet steht.':'Map area is set.',
 'Alle KIs spielen ausgewogen, ohne besonderen Stil.':'All AIs play balanced, without a particular style.','Jede KI bekommt einen eigenen Spielstil.':'Each AI gets its own play style.',
 'Städte bis Spielende':'cities to end the game','Städte bis Stufe 2':'cities to Step 2','Zum Kennenlernen':'To learn the game','Solide Gegner':'Solid opponents','Mutig und planvoll':'Bold and planned','Spielt auf Sieg':'Plays to win',
 'In diesem Deck ist das größte Kraftwerk (50) ein Uran-Kraftwerk. Mit Atomausstieg geht das Uran oft aus, dann steht es still. Für ein ausgewogenes Spiel das Basisdeck wählen oder ohne Atomausstieg spielen.':'In this deck the biggest plant (50) is a uranium plant. With the phase-out, uranium often runs out and the plant stands idle. For a balanced game, pick the base deck or play without the phase-out.',
@@ -3195,6 +3239,7 @@ const A={
   styleSel:b=>{UI.styles=b.dataset.s;UI.name=$('#nm').value;renderStart(true);return'skip'},
   reg:b=>{const r=b.dataset.r;UI.regions=UI.regions.includes(r)?UI.regions.filter(x=>x!==r):[...UI.regions,r];UI.name=$('#nm').value;renderStart(true);return'skip'},
   regrand:()=>{UI.regions=[];UI.name=$('#nm').value;renderStart(true);return'skip'},
+  regpick:()=>{if(!UI.regions.length){const n=regionCount(UI.nAI+1);const ks=Object.keys(REGIONS);for(let t=0;t<200;t++){const c=shuffle(ks).slice(0,n);if(regionsValid(c,n)&&(!MAPS[MAPID].mustRegion||c.includes(MAPS[MAPID].mustRegion))){UI.regions=c;break}}}UI.name=$('#nm').value;renderStart(true);return'skip'},
   markets:()=>{UI.sheet=UI.sheet==='markets'&&isDock()?null:'markets'},
   pinfo:b=>{UI.back=isDock()?UI.sheet:null;UI.pnum=+b.dataset.num;UI.sheet='plant'},
   start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();newGame(UI.name||(LANG==='en'?'You':'Du'),UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off'});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false)},
