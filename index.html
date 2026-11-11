@@ -1149,6 +1149,13 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 #start.v3.wide .s3-sh{margin:0 -28px;padding:14px 14px 14px 10px}
 #start.v3.wide .s3-body{padding-bottom:24px}
 #start.v3.wide .s3-body .mcards{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* v113: Landesgrenze kräftiger, damit klar ist, welches Land gespielt wird */
+#map .coast{stroke:#6f8ba0;stroke-width:2.2px;vector-effect:non-scaling-stroke;stroke-opacity:.95}
+#map.atlas .coast{stroke:#7894a9;stroke-width:2.2px}
+#map.atlas .coast-glow{stroke:#5fa8d3;stroke-width:14;opacity:.13}
+#map.moving .coast{stroke-width:1.8px}
+[data-theme="light"] #map .coast,[data-theme="light"] #map.atlas .coast{stroke:#7a5a2c}
+[data-theme="light"] #map.atlas .coast-glow{stroke:#8a6a3a;opacity:.2}
 /* ---- v16: Kraftwerksdeck & Atomausstieg ---- */
 .dcards{display:flex;flex-direction:column;gap:8px}
 .dcard{display:flex;flex-direction:column;gap:7px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--t26343e);background:var(--t121b22);color:var(--fg);cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
@@ -4549,7 +4556,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v112';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v113';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
