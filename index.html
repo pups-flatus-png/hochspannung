@@ -1582,6 +1582,12 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 
 /* v91: iOS-Homescreen – Kopfleiste unter Statusleiste/Dynamic Island hervorholen */
 #top{padding-top:max(6px,env(safe-area-inset-top,0px))}
+
+/* v92: Auktionsknöpfe direkt am Kraftwerk statt unten angeheftet */
+.aucact{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.aucact .row{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+.aucact .row .grow{flex:1 1 120px}
+.aucact .btn{min-height:44px;white-space:nowrap}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -2777,6 +2783,7 @@ function marketHTML(mode){
   const spy=S.spy===H&&S.deck.length?`<div class="spy"><span>${LANG==='en'?'Industrial espionage · top card of the deck':'Industriespionage · oberste Karte im Stapel'}</span>${S.deck[0]===STEP3?plantCard(STEP3):S.deck[0]>=100?`<b class="spyev">${promoName(PROMO_BY_ID[S.deck[0]])}</b>`:plantCard(S.deck[0],{sm:true,act:'pinfo'})}</div>`:'';
   return `<div class="sec"><div class="mkt-label"><span>Aktueller Markt</span><span>kaufbar</span></div><div class="cards">${now.map(card).join('')}</div>${bn===5?`<p class="hint mk-x">${LX('Benelux: Das Öko-Kraftwerk vorne im zukünftigen Markt ist zusätzlich kaufbar.','Benelux: the eco plant at the front of the future market is also buyable.')}</p>`:''}<div class="mkt-label"><span>Zukünftiger Markt</span><span>${S.deck.length} im Stapel</span></div><div class="cards">${fut.map(n=>plantCard(n,{act:'pinfo'})).join('')}${S.step3Pending?plantCard(STEP3):''}</div>${spy}</div>`;
 }
+const aucAct=o=>`<div class="aucact">${o.h}</div>`;
 function panelAuction(a){
   let h='';
   if(a.kind==='discard'){
@@ -2787,24 +2794,24 @@ function panelAuction(a){
   if(auc.mode==='bid'){
     const hp=P(auc.high);
     const bk=auc.plant+'-'+auc.bid+'-'+auc.high;const pop=UI.lastBid!==bk;UI.lastBid=bk;
-    h+=`<section class="sec"><h3>Versteigerung</h3><div class="bidbox">${plantCard(auc.plant)}<div><div class="big${pop?' pop':''}">${auc.bid} €</div><div class="who">Höchstgebot: ${esc(hp.name)}</div><div class="bidders">${auc.all.map(id=>`<span ${pc(id)} class="${auc.bidders.includes(id)?'':'out'}">${esc(P(id).name)}</span>`).join('')}</div></div></div>${plantLine(auc.plant)}`;
+    h+=`<section class="sec aucsec"><h3>Versteigerung</h3><div class="bidbox">${plantCard(auc.plant)}<div><div class="big${pop?' pop':''}">${auc.bid} €</div><div class="who">Höchstgebot: ${esc(hp.name)}</div><div class="bidders">${auc.all.map(id=>`<span ${pc(id)} class="${auc.bidders.includes(id)?'':'out'}">${esc(P(id).name)}</span>`).join('')}</div></div></div>${plantLine(auc.plant)}`;
     if(isMine(a)){
       const key=auc.plant+'-'+auc.bid;
       if(UI.bidKey!==key){UI.bidKey=key;UI.bid=auc.bid+1}
       const can=me().money>=auc.bid+1;
-      UI._ab={t:LX(`Höchstgebot ${auc.bid} € · erhöhen oder aussteigen`,`Highest bid ${auc.bid} € · raise or drop out`),h:(can?`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=auc.bid+1?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=me().money?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="raise">${LX('Bieten','Bid')} ${UI.bid} €</button><button type="button" class="btn" data-act="drop">Aussteigen</button></div>`:`<p class="hint">Du hast nicht genug Geld, um zu erhöhen.</p><button type="button" class="btn" data-act="drop">Aussteigen</button>`)};
+      h+=aucAct({t:LX(`Höchstgebot ${auc.bid} € · erhöhen oder aussteigen`,`Highest bid ${auc.bid} € · raise or drop out`),h:(can?`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=auc.bid+1?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=me().money?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="raise">${LX('Bieten','Bid')} ${UI.bid} €</button><button type="button" class="btn" data-act="drop">Aussteigen</button></div>`:`<p class="hint">Du hast nicht genug Geld, um zu erhöhen.</p><button type="button" class="btn" data-act="drop">Aussteigen</button>`)});
       if(auc.chooser!==H&&!me().done)h+=`<p class="hint">${esc(P(auc.chooser).name)} hat Kraftwerk ${PN(auc.plant)} zur Versteigerung gestellt. Du kannst nur mitbieten oder aussteigen. Steigst du aus, kommst du danach selbst an die Reihe und wählst dein eigenes Kraftwerk aus dem aktuellen Markt.</p>`;
     }
     h+=`</section>`;
     return h+marketHTML(null);
   }
   if(isMine(a)){
-    h+=`<section class="sec"><h3>Du eröffnest</h3><p class="hint">${UI.sel?'Lege dein Startgebot fest.':'Tippe auf ein Kraftwerk im aktuellen Markt, um es zu versteigern.'}${S.round===1?' In der ersten Runde muss jeder ein Kraftwerk kaufen.':''}</p>`;
+    h+=`<section class="sec aucsec"><h3>Du eröffnest</h3><p class="hint">${UI.sel?'Lege dein Startgebot fest.':'Tippe auf ein Kraftwerk im aktuellen Markt, um es zu versteigern.'}${S.round===1?' In der ersten Runde muss jeder ein Kraftwerk kaufen.':''}</p>`;
     const passB=S.round>1?`<button type="button" class="btn" data-act="pass">Diese Runde passen</button>`:'';
     if(UI.sel){
-      h+=plantLine(UI.sel);
-      UI._ab={t:LX(`Kraftwerk ${PN(UI.sel)} versteigern`,`Auction plant ${PN(UI.sel)}`),h:`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=minBid(UI.sel)?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=me().money?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="open">Für ${UI.bid} € anbieten</button></div>${passB}`};
-    }else if(passB)UI._ab={t:LX('Kraftwerk im Markt antippen – oder passen','Tap a plant in the market – or pass'),h:passB};
+      h+=`<div class="bidbox">${plantCard(UI.sel)}<div>${plantLine(UI.sel)}</div></div>`;
+      h+=aucAct({t:LX(`Kraftwerk ${PN(UI.sel)} versteigern`,`Auction plant ${PN(UI.sel)}`),h:`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=minBid(UI.sel)?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=me().money?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="open">Für ${UI.bid} € anbieten</button></div>${passB}`});
+    }else if(passB)h+=aucAct({t:LX('Kraftwerk im Markt antippen – oder passen','Tap a plant in the market – or pass'),h:passB});
     h+=`</section>`;
     return h+marketHTML('pick');
   }
@@ -3055,6 +3062,13 @@ function marketDemand(r){
   let all=0,mine=0,flex=0;S.players.forEach(p=>{const d=fuelNeed(p);all+=d[r]||0;if(p.human)mine+=d[r]||0;Object.keys(HYB).forEach(t=>{if(d[t]&&HYB[t].includes(r))flex+=d[t]})});
   return `<div class="dem"><span><span class="dl">Bedarf aller Betriebe je Lieferung</span><b>${all}</b></span>${flex?`<span><span class="dl">plus flexibel (Hybrid)</span><b>${flex}</b></span>`:''}<span><span class="dl">davon du</span><b>${mine}</b></span></div>`;
 }
+function aucScroll(a){/* Handy: eigene Auktionsrunde – Gebotsbereich ins Bild holen, damit man nicht suchen muss */
+  try{if(!S||S.phase!=='auction'||!isMine(a))return;const k=S.round+'|'+S.auc.mode+'|'+(S.auc.plant||'')+'|'+(UI.sel||'');if(UI._aucK===k)return;UI._aucK=k;
+    const sec=panel.querySelector('.aucsec');if(!sec)return;const pr=panel.getBoundingClientRect(),r=sec.getBoundingClientRect();
+    const q=panel.querySelector('.qbar'),o=panel.querySelector('.order.pin');const cover=(q?q.offsetHeight:0)+(o?Math.min(o.offsetHeight,70):0);
+    const visTop=pr.top+cover,visBot=pr.bottom-((panel.querySelector('.actbar')||{}).offsetHeight||0);
+    if(r.top>=visTop&&r.top+Math.min(r.height,260)<=visBot)return;
+    panel.scrollTo({top:panel.scrollTop+r.top-visTop-34,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}catch(_){}}
 function renderPanel(){
   const a=actor();UI._ab=null;let h=qbarHTML()+orderHTML(a)+feedHTML()+phaseRulesHTML()+turnLine(a);
   const after=oppPlantsHTML()+((S.phase==='auction'||S.xauc)&&S.phase!=='end'?seatHTML(a):'');
@@ -3068,7 +3082,7 @@ function renderPanel(){
   }
   h+=after+panelMine();
   if(UI._ab&&isMine(a))h+=`<div class="actbar" role="region" aria-label="${LX('Dein Zug','Your move')}"><div class="ab-t"><span class="dot"></span>${UI._ab.t}</div>${UI._ab.h}</div>`;
-  const st=panel.scrollTop;panel.innerHTML=h;panel.scrollTop=st;orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
+  const st=panel.scrollTop;panel.innerHTML=h;panel.scrollTop=st;aucScroll(a);orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
 }
 
 /* --- Fenster --- */
