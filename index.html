@@ -1557,6 +1557,18 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .sec h3{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:.02em;text-transform:none;color:var(--fg)}
 .feed,.oppp,.sec.tseat{background:none;border:0;border-top:1px solid var(--line);border-radius:0;padding-left:0;padding-right:0}
 .oppp{margin:0}
+
+/* v87b: iOS-Homescreen – App füllt den ganzen Bildschirm; kompakte Aktionsleiste am Handy */
+#app{position:fixed;inset:0;height:auto}
+@media (orientation:portrait),(max-width:600px){
+  #panel>.actbar{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px 10px;padding-top:9px;padding-bottom:max(10px,env(safe-area-inset-bottom,0px))}
+  .actbar .ab-t{flex:1 1 150px;font-size:15.5px;min-width:0}
+  .actbar .row{flex:1 1 220px;flex-wrap:nowrap}
+  .actbar .row .btn{white-space:nowrap;padding-inline:12px}
+  .actbar>.btn{width:auto;flex:1 1 auto}
+  .actbar .btn{min-height:42px}
+  .actbar .stepper output{min-width:46px}
+}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
