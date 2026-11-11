@@ -2070,6 +2070,11 @@ function buyResources(pid,cart){
   p.money-=total;S.lastBuyN=RES.reduce((x,r)=>x+(cart[r]||0),0);
   log(parts.length?p.name+' kauft '+parts.join(', ')+' für '+total+' €.':p.name+' kauft keine Rohstoffe.',pid);
 }
+function linkPath(p,target){/* kürzeste Leitung vom eigenen Netz zur neuen Stadt – für die Netzlinien auf der Karte */
+  if(!p.cities.length)return[];const act=new Set(activeIds()),d={},pv={},done=new Set();
+  act.forEach(c=>d[c]=Infinity);p.cities.forEach(c=>d[c]=0);
+  for(;;){let u=null,b=Infinity;for(const c of act)if(!done.has(c)&&d[c]<b){b=d[c];u=c}if(u===null||u===target)break;done.add(u);for(const{to,cost}of ADJ[u]){if(act.has(to)&&d[u]+cost<d[to]){d[to]=d[u]+cost;pv[to]=u}}}
+  const out=[];let c=target,g=0;while(pv[c]!=null&&g++<200){out.push([pv[c],c].sort().join('|'));c=pv[c]}return out}
 function distFrom(p){
   if(!p.cities.length)return null;
   const act=new Set(activeIds()),d={},done=new Set();
@@ -2102,6 +2107,7 @@ function buildOptions(p){
 function doBuild(pid,city){
   const p=P(pid);const o=buildOptions(p).find(x=>x.city===city);
   if(!o||o.cost>p.money)return false;
+  if(o.conn>0&&!o.jump){try{const ln=linkPath(p,city);if(ln.length&&!(MR().islands&&o.conn===(MAPS[S.map].islandFee||20)&&!ln.length))p.links=[...new Set([...(p.links||[]),...ln])]}catch(_){}}
   p.money-=o.cost;p.cities.push(city);(S.owners[city]??=[]).push(pid);if(o.jump)p.jumpUsed=true;S.builtRound=(S.builtRound||0)+1;S.turnBuilt.push({city,cost:o.cost,slot:o.slot,conn:o.conn,jump:!!o.jump});
   const sp=st().pl[pid];sp.slot+=o.slot;sp.conn+=o.conn;sp.built.push(city);
   log(p.name+' baut in '+CITY[city].name+' ('+o.cost+' €)'+(o.jump?' mit dem freien Sprung':'')+'.',pid);
@@ -2588,7 +2594,7 @@ function renderMap(){
     const L=`x1="${A.x.toFixed(1)}" y1="${A.y.toFixed(1)}" x2="${B.x.toFixed(1)}" y2="${B.y.toFixed(1)}"`;
     if(!on){g+=`<line class="edge off" ${L}/>`;continue}
     g+=`<line class="edge" ${L}/><line class="pylons" ${L}/>`;
-    const owners=S.players.filter(p=>p.cities.includes(e.a)&&p.cities.includes(e.b));
+    const ek=[e.a,e.b].sort().join('|');const owners=S.players.filter(p=>(p.cities.includes(e.a)&&p.cities.includes(e.b))||(p.links&&p.links.includes(ek)));
     owners.forEach((owner,oi)=>{const off=(oi-(owners.length-1)/2)*4;const dx=B.x-A.x,dy=B.y-A.y,len=Math.hypot(dx,dy)||1,nx=-dy/len*off,ny=dx/len*off;const LO=`x1="${(A.x+nx).toFixed(1)}" y1="${(A.y+ny).toFixed(1)}" x2="${(B.x+nx).toFixed(1)}" y2="${(B.y+ny).toFixed(1)}"`;g+=`<line class="edge glow" style="stroke:${owner.color}" ${LO}/><line class="edge own" style="stroke:${owner.color}" ${LO}/>`});
     const mx=(A.x+B.x)/2,my=(A.y+B.y)/2;
     labels+=`<g class="ecost" transform="translate(${mx.toFixed(1)},${my.toFixed(1)})"><circle r="8.5"/><text y="3.8">${e.cost}</text></g>`;
