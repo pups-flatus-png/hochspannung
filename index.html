@@ -1625,6 +1625,10 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 
 /* v99: iOS vergrößert Text nach dem Drehen sonst automatisch */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+
+/* v101: Aktionsleiste ohne negative Sticky-Versätze (robuster in iOS-Web-Apps) */
+#panel:has(>.actbar){padding-bottom:0}
+#panel>.actbar{bottom:0!important;margin-bottom:0!important}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
