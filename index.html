@@ -948,7 +948,8 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .resume{display:flex;align-items:center;gap:14px;background:rgba(var(--tr18_26_32),.82);backdrop-filter:blur(8px);border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:14px;padding:10px 10px 10px 16px}
 .resume b{display:block;font-family:var(--display);font-size:18px;letter-spacing:.02em}
 .resume span{font-size:12px;color:var(--muted)}
-.resume .btn{min-height:42px;padding:0 16px}
+.resume .btn{min-height:42px;padding:0 16px}.resume .quitx{padding:0 12px;min-width:42px;color:var(--muted)}
+.btn.danger{background:#c9483c;border-color:#c9483c;color:#fff}.menu .quitb{color:#ef6a5e}
 #start.v2 .setup{position:relative;display:flex;flex-direction:column;min-height:0;background:var(--t0e151b);border-left:1px solid var(--t1d2a33)}
 .setup-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:28px 26px 18px;display:flex;flex-direction:column;gap:30px}
 .sgroup{display:flex;flex-direction:column;gap:10px}
@@ -2807,7 +2808,7 @@ function renderSheet(){
   if(!UI.sheet){sheet.hidden=true;sheet.innerHTML='';undock();return}
   let h='';const head=(t,tb)=>`<div class="sheet-head${tb?' tabs':''}"><h2>${t}</h2><button type="button" class="xbtn" data-act="close" aria-label="Schließen" title="Schließen"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 3l12 12M15 3 3 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>${tb?`<div class="seg stabs">${[['markets','Märkte'],['opp','Gegner']].map(([k,l])=>`<button type="button" data-act="${k}" class="${tb===k?'on':''}">${l}</button>`).join('')}</div>`:''}</div>`;
   if(UI.sheet==='menu'){
-    h=head('Menü')+`<div class="menu"><div class="mgl">Karte bei Auktion und Rohstoffkauf</div><div class="seg">${[['auto','Verkleinern'],['always','Immer groß']].map(([k,l])=>`<button type="button" data-act="mapMode" data-m="${k}" class="${MAPMODE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Sprache · Language</div><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Vibration beim Überbieten</div><div class="seg">${[[true,LANG==='en'?'On':'An'],[false,LANG==='en'?'Off':'Aus']].map(([k,l])=>`<button type="button" data-act="vibToggle" class="${!!UI.vib===k?'on':''}" ${!!UI.vib===k?'disabled':''}>${l}</button>`).join('')}</div><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button><div class="mgl">Darstellung</div><div class="seg">${[['dark','Dunkel'],['light','Hell'],['auto','Automatisch']].map(([k,l])=>`<button type="button" data-act="theme" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div></div>`;
+    h=head('Menü')+`<div class="menu"><div class="mgl">Karte bei Auktion und Rohstoffkauf</div><div class="seg">${[['auto','Verkleinern'],['always','Immer groß']].map(([k,l])=>`<button type="button" data-act="mapMode" data-m="${k}" class="${MAPMODE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Sprache · Language</div><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Vibration beim Überbieten</div><div class="seg">${[[true,LANG==='en'?'On':'An'],[false,LANG==='en'?'Off':'Aus']].map(([k,l])=>`<button type="button" data-act="vibToggle" class="${!!UI.vib===k?'on':''}" ${!!UI.vib===k?'disabled':''}>${l}</button>`).join('')}</div><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn quitb" data-act="quit">Partie beenden</button>':''}<div class="mgl">Darstellung</div><div class="seg">${[['dark','Dunkel'],['light','Hell'],['auto','Automatisch']].map(([k,l])=>`<button type="button" data-act="theme" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div></div>`;
   }else if(UI.sheet==='opp'){
     h=head('Gegner und Betriebe','opp')+oppCompare()+S.order.map(id=>{const p=P(id);const sv=storeOf(p);const pool=RES.filter(r=>p.pool[r]>0).map(r=>`<span class="stock">${resIcon(r)}${p.pool[r]}</span>`).join('')||'<span class="hint">leer</span>';
       return `<div class="opp" id="opp-${id}" ${pc(id)}><div class="h"><b>${esc(p.name)}</b>${p.style&&STYLES[p.style]?`<span class="stag">${STYLES[p.style].name}</span><span class="hint">${STYLES[p.style].note}</span>`:''}<span>${p.money} €</span><span>${cityCount(p)} Städte</span><span>Kapazität ${capacity(p)}</span>${p.lastPowered?`<span>zuletzt ${p.lastPowered} versorgt</span>`:''}</div><div class="cards">${p.plants.map(n=>plantCard(n,{lg:true,store:sv[n]||[],act:'pinfo'})).join('')||'<span class="hint">noch keine Kraftwerke</span>'}</div><div class="stock-row"><span class="lbl">Lager</span>${pool}</div></div>`}).join('');
@@ -2829,6 +2830,8 @@ ${S&&(S.promos||[]).length?`<div class="rdiff ig"><div class="rd-h"><div><span c
 <h4>Einkommen</h4><p>${PAY.slice(0,11).map((v,i)=>i+'→'+v).join(' · ')} · … bis 20→150 €</p></div>`;
   }else if(UI.sheet==='newgame'){
     h=head('Neues Spiel?')+`<p class="hint">Das laufende Spiel wird beendet.</p><div class="row"><button type="button" class="btn" data-act="close">Abbrechen</button><button type="button" class="btn pri grow" data-act="newyes">Neues Spiel einrichten</button></div>`;
+  }else if(UI.sheet==='quit'){
+    h=head('Partie beenden?')+`<p class="hint">Die laufende Partie wird abgebrochen und gelöscht. Sie zählt nicht in der Statistik.</p><div class="row"><button type="button" class="btn" data-act="close">Weiterspielen</button><button type="button" class="btn pri grow danger" data-act="quityes">Partie beenden</button></div>`;
   }else if(UI.sheet==='import'){
     const im=UI.imp||{};const r=im.r;
     h=head('Ergebnis übernehmen');
@@ -3003,7 +3006,7 @@ function _renderStart(show){
   start.hidden=false;start.classList.add('v2');
   const M=MAPS[UI.map],nP=UI.nAI+1,games=loadHist().length;
   const mapCard=([k,m])=>`<button type="button" class="mcard${UI.map===k?' on':''}" data-act="mapSel" data-m="${k}" aria-pressed="${UI.map===k}">${mapThumb(k)}<span class="mcn">${m.name}</span>${m.deluxe?'<span class="dlxtag">Deluxe</span>':''}${m.exp&&m.rtxt?`<span class="xn" title="${m.rtxt.length} Sonderregeln">${m.rtxt.length} ${LANG==='en'?(m.rtxt.length===1?'rule':'rules'):(m.rtxt.length===1?'Regel':'Regeln')}</span>`:''}</button>`;
-  const resume=S&&S.phase!=='end'?`<div class="resume"><div><b>Laufende Partie</b><span>Runde ${S.round} auf ${esc(MAPS[S.map||'de'].name)}</span></div><button type="button" class="btn pri" data-act="cont">Weiterspielen</button></div>`:'';
+  const resume=S&&S.phase!=='end'?`<div class="resume"><div><b>Laufende Partie</b><span>Runde ${S.round} auf ${esc(MAPS[S.map||'de'].name)}</span></div><button type="button" class="btn pri" data-act="cont">Weiterspielen</button><button type="button" class="btn quitx" data-act="quit" aria-label="Partie beenden" title="Partie beenden">✕</button></div>`:'';
   start.innerHTML=`<section class="hero"><div class="hero-top"><div class="sbrand"><h1>Hochspannung</h1><p>Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über ${esc(M.name)}. Wer am Ende die meisten Städte versorgt, gewinnt.</p></div></div>
    <div class="hero-map">${heroMap()}</div>
    <div class="hero-foot"><span class="hm-hint">${UI.regions.length?'Tippe Regionen an, um dein Netzgebiet zu ändern.':'Tippe Regionen an, um dein Netzgebiet selbst zu wählen.'}</span>${resume}<div class="seg lang">${[['de','DE'],['en','EN']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}" aria-label="${k==='de'?'Deutsch':'English'}">${l}</button>`).join('')}</div></div></section>
@@ -3382,6 +3385,7 @@ const TS=Object.entries({
 'So läuft eine Runde':'How a round works','1 · Reihenfolge':'1 · Turn order','2 · Kraftwerke versteigern':'2 · Auction power plants','3 · Rohstoffe kaufen':'3 · Buy resources','4 · Netz ausbauen':'4 · Build your network','5 · Strom liefern':'5 · Deliver power','Stufen und Ende':'Steps and game end',
 'Wer die meisten Städte hat, ist zuerst dran. Bei Gleichstand entscheidet das größte Kraftwerk. Beim Rohstoffkauf und beim Bauen geht es rückwärts, der Führende kommt also zuletzt.':'Whoever has the most cities goes first. Ties are broken by the largest plant. Buying resources and building go in reverse, so the leader comes last.',
 'Reihum eröffnet jeder eine Versteigerung um ein Kraftwerk aus dem aktuellen Markt oder passt. Das Mindestgebot ist die Kraftwerksnummer. Jeder kauft höchstens ein Kraftwerk pro Runde und betreibt höchstens drei.':'In turn, each player opens an auction for a plant from the current market or passes. The minimum bid is the plant number. Everyone buys at most one plant per round and runs at most three.',
+'Partie beenden?':'End this game?','Partie beenden':'End game','Die laufende Partie wird abgebrochen und gelöscht. Sie zählt nicht in der Statistik.':'The current game is stopped and deleted. It does not count in your statistics.',
 'Geboten wird im Uhrzeigersinn um den Tisch, beginnend links vom Eröffner. Die Sitzordnung bleibt die ganze Partie gleich.':'Bids go clockwise around the table, starting left of the player who opened. Seating stays the same all game.',
 'Ohne Rabatt: Kauft in einer Runde niemand ein Kraftwerk, fällt das kleinste aus dem Spiel und wird ersetzt.':'No discount: if nobody buys a plant in a round, the smallest leaves the game and is replaced.',
 'Rabatt (Recharged)':'Discount (Recharged)','Originalregel: ohne Rabatt':'Original rule: no discount',
@@ -4014,7 +4018,7 @@ function showIntro(){
 function schedule(){
   clearTimeout(timer);timer=null;
   const a=actor();if(!a||S.phase==='bureau')return;
-  if(UI.intro)return;
+  if(UI.intro||UI.sheet==='quit')return;
   if(P(a.pid).human)return;
   timer=setTimeout(()=>{timer=null;S.aiN=(S.aiN||0)+1;UI.undo=[];const au=S.phase==='auction'&&S.auc&&S.auc.mode==='bid'?{h:S.auc.high,pl:S.auc.plant}:null;aiAct(a);
     if(au&&P(au.h).human&&S.phase==='auction'&&S.auc.mode==='bid'&&S.auc.plant===au.pl&&S.auc.high!==au.h){UI.outbid={name:P(S.auc.high).name,amt:S.auc.bid,t:Date.now()};buzz()}
@@ -4073,6 +4077,8 @@ const A={
   statsResetYes:()=>{saveHist([]);try{localStorage.removeItem(STATS_KEY)}catch(_){}UI.statReset=false;renderStats();return'skip'},
   menu:()=>UI.sheet='menu',close:()=>{UI.sheet=UI.back||null;UI.back=null},opp:()=>{UI.sheet=UI.sheet==='opp'&&isDock()?null:'opp'},oppToggle:b=>{if(S&&S.phase!=='auction'){UI.oppPh=UI.oppPh||{};const k=S.round+S.phase;UI.oppPh[k]=!(UI.oppPh[k]??false);return}try{const o=localStorage.getItem('hochspannung-opp-open')!=='0';localStorage.setItem('hochspannung-opp-open',o?'0':'1')}catch(_){}},oppjump:b=>{const el=document.getElementById('opp-'+b.dataset.pid);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return'skip'},log:()=>UI.sheet='log',rules:()=>UI.sheet='rules',
   results:()=>UI.sheet='results',newgame:()=>UI.sheet='newgame',
+  quit:()=>{if(!S)return'skip';UI.sheet='quit';UI.back=null;if(!start.hidden){renderSheet();return'skip'}},
+  quityes:()=>{clearTimeout(timer);timer=null;S=null;try{localStorage.removeItem(SAVE_KEY)}catch(_){}UI.intro=false;const io=document.getElementById('intro');if(io)io.remove();UI.undo=[];UI.sheet=null;UI.back=null;UI.toast=null;renderSheet();renderStart(true);return'skip'},
   newyes:()=>{UI.sheet=null;clearTimeout(timer);renderSheet();renderStart(true);return'skip'},
   startrules:()=>{UI.sheet='rules';renderStart(false);return'rules'},
   nai:b=>{UI.nAI=+b.dataset.n;if(UI.regions.length&&UI.regions.length!==regionCount(UI.nAI+1))UI.regions=[];UI.name=$('#nm').value;renderStart(true);return'skip'},
