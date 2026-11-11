@@ -1069,6 +1069,67 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 }
 @media (max-width:440px){.sbrand h1{font-size:clamp(34px,10.4vw,44px);letter-spacing:.05em}.sbrand p{font-size:13.5px}}
 @media (orientation:portrait) and (min-width:700px){#start.v2 .hero{height:58vh}.setup-body{max-width:640px;margin:0 auto;width:100%}.startbar{justify-content:center}.startbar .sb-sum{max-width:420px}}
+/* v108: Handy-Startbildschirm */
+#start.v3{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;padding:0;overflow-y:auto;overscroll-behavior:contain;background:var(--t0a1117,var(--bg))}
+.s3{flex:1 0 auto;width:100%;box-sizing:border-box;max-width:560px;margin:0 auto;padding:max(18px,calc(env(safe-area-inset-top,0px) + 10px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px;position:relative}
+.s3-top{display:flex;align-items:flex-start;gap:10px;position:relative;z-index:2;padding:4px 4px 0}
+.s3-brand{flex:1;min-width:0}
+.s3-brand h1{margin:0;font-family:var(--display);font-weight:700;font-size:clamp(28px,8.6vw,36px);line-height:.95;letter-spacing:.05em;text-transform:uppercase;color:var(--tf4f6f7);text-shadow:0 0 24px rgba(242,179,61,.16)}
+.s3-brand p{margin:6px 0 0;font-size:13.5px;line-height:1.4;color:var(--ta9b6bf)}
+.s3-ibs{display:flex;gap:6px;flex:none}
+.s3-ib{all:unset;box-sizing:border-box;width:38px;height:38px;border-radius:10px;border:1px solid var(--t26343e);background:color-mix(in srgb,var(--t121b22) 80%,transparent);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.s3-ib:focus-visible,.s3-row:focus-visible,.s3-hero:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.s3-lang{width:auto;padding:0 9px;font-weight:700;font-size:12px;letter-spacing:.06em}
+.s3-hero{position:relative;height:min(46vh,340px);margin:-6px -8px -4px;cursor:pointer;border-radius:16px}
+.s3.hasres .s3-hero{height:min(30vh,220px);opacity:.75}
+.s3-hero .hero-map,.s3-bmap .hero-map{position:absolute;inset:0;padding:6px}
+.s3-hero .heromap{pointer-events:none}
+.s3-res{border-radius:16px;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 7%,var(--t121b22)),var(--t121b22));padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 18px 40px -24px rgba(0,0,0,.8)}
+.s3-rtop{display:flex;gap:12px;align-items:center}
+.s3-rthumb{width:76px;height:76px;flex:none;border-radius:12px;border:1px solid var(--t26343e);background:var(--t0e151b);overflow:hidden;display:flex;padding:6px;box-sizing:border-box}
+.s3-rthumb svg{width:100%;height:100%}.s3-rthumb .mt-land{fill:var(--t1d2a33)}.s3-rthumb .mt-c{fill:var(--accent);opacity:.85}
+.s3-rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.s3-rt b{font-family:var(--display);font-size:21px;font-weight:700;letter-spacing:.01em;line-height:1.1}
+.s3-rt>span:last-child{font-size:13.5px;color:var(--muted)}
+.s3-k{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--t8a99a5,var(--muted))}
+.s3-k.acc,.s3 .acc{color:var(--accent)}
+.s3-x{all:unset;box-sizing:border-box;width:38px;height:38px;flex:none;align-self:flex-start;border-radius:10px;border:1px solid var(--t26343e);display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;font-size:14px}
+.s3-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.s3-tiles div{background:color-mix(in srgb,var(--fg) 4%,transparent);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.s3-tiles span{font-size:11.5px;color:var(--muted)}
+.s3-tiles b{font-family:var(--display);font-size:19px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s3-go{min-height:50px;font-family:var(--display);font-size:19px;letter-spacing:.04em;font-weight:700;box-shadow:0 8px 26px -10px rgba(242,179,61,.7)}
+.s3-chips{all:unset;display:flex;flex-wrap:wrap;gap:6px;cursor:pointer}
+.s3-chips span{padding:5px 10px;border-radius:14px;background:var(--t121b22);border:1px solid var(--t1d2a33);font-size:12px;color:var(--tc4cfd6,var(--muted))}
+.s3-new{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.s3-new h2{margin:0;font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.01em}
+.s3-rows{border-radius:14px;background:var(--t121b22);border:1px solid var(--t1d2a33);overflow:hidden}
+.s3-row{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;color:var(--fg)}
+.s3-row+.s3-row{border-top:1px solid var(--t1d2a33)}
+.s3-row:active{background:color-mix(in srgb,var(--fg) 5%,transparent)}
+.s3-ic{width:32px;height:32px;flex:none;border-radius:9px;background:var(--t0e151b);display:flex;align-items:center;justify-content:center}
+.s3-ini{width:32px;height:32px;border-radius:9px;background:var(--accent);color:#1d1405;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:13px}
+.s3-rv{flex:1;min-width:0;display:flex;flex-direction:column}
+.s3-rv span{font-size:12px;color:var(--muted)}
+.s3-rv b{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s3-rv b.bad{color:#ef8a7e}
+.s3-chev{flex:none;color:var(--t6f8494,var(--muted))}
+.s3-warn{margin:0;font-size:13px;color:#ef8a7e}
+.s3-alt{min-height:48px;background:transparent;border:1px solid var(--t3a4b58,var(--line));color:var(--fg);font-family:var(--display);font-size:17px;font-weight:700;letter-spacing:.03em}
+.s3-note{margin:0;font-size:12.5px;color:var(--muted);text-align:center}
+.s3-app{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:14px;border-top:1px solid var(--t1d2a33);font-size:13px;color:var(--muted)}
+.s3-app .seg{width:auto}
+#start.v3 .s3-bar{position:sticky;bottom:0;z-index:5;padding:12px max(16px,env(safe-area-inset-right,0px)) max(14px,calc(env(safe-area-inset-bottom,0px) + 8px)) max(16px,env(safe-area-inset-left,0px))}
+.s3-bar .s3-wide{flex:1;min-height:50px;font-family:var(--display);font-size:18px;letter-spacing:.03em;font-weight:700}
+.s3.sub{padding-top:max(8px,env(safe-area-inset-top,0px));gap:0}
+.s3-sh{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:6px;margin:0 -16px;padding:8px 10px;background:color-mix(in srgb,var(--t0a1117,var(--bg)) 94%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--t1d2a33)}
+.s3-sh h1{flex:1;margin:0;font-family:var(--display);font-weight:700;font-size:23px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s3-bk{border:0;background:transparent;width:42px;height:42px}
+.s3-done{all:unset;cursor:pointer;padding:10px 10px;font-weight:700;font-size:15px;color:var(--accent)}
+.s3-body{display:flex;flex-direction:column;gap:22px;padding-top:16px}
+.s3-bmap{position:relative;height:min(52vh,340px);border-radius:16px;overflow:hidden;background:var(--t0e151b);border:1px solid var(--t1d2a33)}
+.s3-tap{position:absolute;left:10px;bottom:10px;z-index:3;padding:5px 10px;border-radius:10px;background:color-mix(in srgb,var(--t0e151b) 88%,transparent);font-size:12px;color:var(--muted);pointer-events:none}
+@media (orientation:landscape) and (max-height:520px){.s3-hero{height:200px}.s3.hasres .s3-hero{height:140px}.s3-bmap{height:260px}}
 /* ---- v16: Kraftwerksdeck & Atomausstieg ---- */
 .dcards{display:flex;flex-direction:column;gap:8px}
 .dcard{display:flex;flex-direction:column;gap:7px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--t26343e);background:var(--t121b22);color:var(--fg);cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
@@ -3378,6 +3439,79 @@ function xpickHTML(mapCard){
   const open=UI.xopen||MAPS[UI.map].exp;
   return `<div class="xpick${open?' open':''}"><button type="button" class="xhead" data-act="xToggle" aria-expanded="${!!open}"><span class="xht">Erweiterungen</span><span class="xhs">${n} Spielpläne · je Karte die Zahl ihrer Sonderregeln</span><span class="xchev" aria-hidden="true"></span></button>${open?`<div class="xboxes">${Object.entries(by).map(([b,ms])=>`<div class="xbox"><div class="xbh"><span class="xbt">${XBOX[b]?XBOX[b][LANG==='en'?1:0]:''}</span><span class="xbn">${LANG==='en'?'Expansion':'Erweiterung'} ${b}</span></div><div class="mcards two">${ms.map((e,i)=>{let h=mapCard(e);const sel=ms.findIndex(x=>x[0]===UI.map);if(sel>=0&&i===Math.min(ms.length-1,sel-(sel%2)+1))h+=`<div class="xrules">${mapRulesHTML(UI.map,UI.regions)}</div>`;return h}).join('')}</div></div>`).join('')}</div>`:''}</div>`;
 }
+/* v108: Startbildschirm fürs Handy – Übersicht mit Zusammenfassungszeilen, Einstellungen auf Unterseiten */
+function nmVal(){const i=document.getElementById('nm');return i?i.value:(UI.name||'')}
+const SPHQ='(max-width:700px),(orientation:landscape) and (max-height:520px)';
+function sPhone(){return !!(window.matchMedia&&matchMedia(SPHQ).matches)}
+if(window.matchMedia){const mq=matchMedia(SPHQ);const f=()=>{if(!start.hidden)renderStart(true)};mq.addEventListener?mq.addEventListener('change',f):mq.addListener&&mq.addListener(f)}
+const S3I={
+ chev:'<svg class="s3-chev" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5"/></svg>',
+ back:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 3.5 5.5 9 11 14.5"/></svg>',
+ stats:'<svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M3 15V9M7.5 15V4M12 15v-7M16 15V11"/></svg>',
+ rules:'<svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M3 3.5h4.5A1.5 1.5 0 0 1 9 5v10a1.5 1.5 0 0 0-1.5-1.5H3ZM15 3.5h-4.5A1.5 1.5 0 0 0 9 5v10a1.5 1.5 0 0 1 1.5-1.5H15Z"/></svg>',
+ board:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#9cc3ea" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5l-4 1.5-5-1.5-4 1.5Z M5.5 2v10.5M10.5 3.5V14"/></svg>',
+ opp:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#b48cff" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="5.5" r="2.5"/><path d="M1.5 14c.5-2.6 2.3-4 4.5-4s4 1.4 4.5 4M11 3.2a2.5 2.5 0 0 1 0 4.6M12.5 10.3c1.1.6 1.8 1.8 2 3.7"/></svg>',
+ rul:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#66cc7d" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h7"/><circle cx="5" cy="4" r="1.3" fill="var(--t121b22)"/><circle cx="10.5" cy="8" r="1.3" fill="var(--t121b22)"/><circle cx="7" cy="12" r="1.3" fill="var(--t121b22)"/></svg>'};
+function s3Summary(){
+  const M=MAPS[UI.map],n=regionCount(UI.nAI+1),en=LANG==='en';
+  const nm=UI.name||LX('Dein Betrieb','Your company');
+  const regs=UI.regions.length?UI.regions.map(r=>rName(r)).join(', '):LX(`${n} Regionen, zufällig`,`${n} regions, random`);
+  const opp=`${UI.nAI} ${LX('Gegner','opponents')} · ${LX('KI','AI')} ${tr(AI_NAME[UI.diff])}`;
+  const deck=M.exp?LX('Basis-Kraftwerke','Base plants'):M.deluxe?LX('Deluxe-Kraftwerke','Deluxe plants'):tr(DECKS[UI.deck||'std'].name);
+  const disc=M.noDiscount?LX('ohne Rabatt','no discount'):UI.disc==='orig'?LX('Rabatt aus','discount off'):LX('Rabatt an','discount on');
+  const pr=(UI.promos||[]).length;const promo=pr?(en?`${pr} promo${pr>1?'s':''}`:`${pr} Promo${pr>1?'s':''}`):LX('keine Promos','no promos');
+  return {nm,map:tr(en&&M.en?M.en:M.name),regs,opp,rules:`${deck} · ${disc} · ${promo}`,bad:!regionsOk()};
+}
+function s3Resume(){
+  if(!S||S.phase==='end')return '';
+  const en=LANG==='en',me=S.players[H];if(!me)return '';
+  const rk=[...S.players].sort((a,b)=>b.cities.length-a.cities.length||b.money-a.money).findIndex(p=>p===me)+1;
+  const PHN={auction:LX('Versteigerung','Auction'),resources:LX('Rohstoffe kaufen','Buying resources'),build:LX('Netzausbau','Building'),bureau:LX('Bürokratie','Bureaucracy')};
+  const MM=MAPS[S.map||'de'],goal=(RULES_N[S.players.length]||RULES_N[4]).end;
+  return `<section class="s3-res" aria-label="${LX('Laufende Partie','Game in progress')}"><div class="s3-rtop"><div class="s3-rthumb">${mapThumb(S.map||'de')}</div><div class="s3-rt"><span class="s3-k acc">${LX('Laufende Partie','Game in progress')}</span><b>${esc(tr(en&&MM.en?MM.en:MM.name))} · ${LX('Runde','Round')} ${S.round}</b><span>${PHN[S.phase]||''}</span></div><button type="button" class="s3-x" data-act="quit" aria-label="${LX('Partie beenden','End game')}" title="${LX('Partie beenden','End game')}">✕</button></div>
+  <div class="s3-tiles"><div><span>${LX('Platz','Place')}</span><b>${rk}${LX('.',en?['st','nd','rd'][rk-1]||'th':'')} ${LX('von','of')} ${S.players.length}</b></div><div><span>${LX('Geld','Money')}</span><b class="acc">${fmt(me.money)} €</b></div><div><span>${LX('Städte','Cities')}</span><b>${me.cities.length} / ${goal}</b></div></div>
+  <button type="button" class="btn pri s3-go" data-act="cont">${LX('Weiterspielen','Continue')}</button></section>`;
+}
+function s3Chips(){
+  const h=loadHist();if(!h.length)return '';
+  const me=g=>g.players&&g.players.find(p=>p.human);
+  const w=h.filter(g=>{const m=me(g);return m&&m.place===1}).length,l=h[h.length-1],lm=me(l);
+  const LM=MAPS[l.map];
+  const c=[`${h.length} ${h.length===1?LX('Partie','game'):LX('Partien','games')}`,`${w} ${w===1?LX('Sieg','win'):LX('Siege','wins')}`];
+  if(lm&&LM)c.push(LX(`Zuletzt: Platz ${lm.place} auf ${LM.name}`,`Last: ${lm.place}${['st','nd','rd'][lm.place-1]||'th'} on ${LM.en||tr(LM.name)}`));
+  return `<button type="button" class="s3-chips" data-act="stats" aria-label="${LX('Statistik öffnen','Open statistics')}">${c.map(x=>`<span>${esc(x)}</span>`).join('')}</button>`;
+}
+function s3Row(sv,ic,k,v,bad){return `<button type="button" class="s3-row" data-act="sv" data-v="${sv}"><span class="s3-ic">${ic}</span><span class="s3-rv"><span>${k}</span><b${bad?' class="bad"':''}>${esc(v)}</b></span>${S3I.chev}</button>`}
+function renderStart3(){
+  const en=LANG==='en',sv=UI.sv||'',M=MAPS[UI.map],x=s3Summary();
+  const lang=`<button type="button" class="s3-ib s3-lang" data-act="lang" data-l="${en?'de':'en'}" aria-label="${en?'Sprache: Englisch. Zu Deutsch wechseln':'Sprache: Deutsch. Zu Englisch wechseln'}">${en?'EN':'DE'}</button>`;
+  if(!sv){
+    const res=s3Resume();
+    start.innerHTML=`<div class="s3${res?' hasres':''}"><header class="s3-top"><div class="s3-brand"><h1>Hochspannung</h1><p>${LX('Kraftwerke ersteigern, Brennstoff kaufen, die meisten Städte versorgen.','Win plants, buy fuel, power the most cities.')}</p></div><div class="s3-ibs"><button type="button" class="s3-ib" data-act="stats" aria-label="${LX('Statistik','Statistics')}">${S3I.stats}</button><button type="button" class="s3-ib" data-act="startrules" aria-label="${LX('Spielregeln','Rules')}">${S3I.rules}</button>${lang}</div></header>
+    <div class="s3-hero" data-act="sv" data-v="board" role="button" tabindex="0" aria-label="${LX('Spielplan und Netzgebiet ändern','Change board and regions')}"><div class="hero-map">${heroMap()}<canvas class="hm-fx" aria-hidden="true"></canvas></div></div>
+    ${res}${s3Chips()}
+    <section class="s3-new"><h2>${res?LX('Oder neues Spiel','Or start a new game'):LX('Neues Spiel','New game')}</h2><div class="s3-rows">
+    ${s3Row('co',`<span class="s3-ini">${esc(coInitials(x.nm))}</span>`,LX('Betrieb','Company'),x.nm)}
+    ${s3Row('board',S3I.board,LX('Spielplan & Netzgebiet','Board & regions'),`${x.map} · ${x.regs}`,x.bad)}
+    ${s3Row('opp',S3I.opp,LX('Gegner','Opponents'),x.opp)}
+    ${s3Row('rules',S3I.rul,LX('Kraftwerke & Regeln','Rules & extras'),x.rules)}</div>
+    ${x.bad?`<p class="s3-warn">${LX('Das Netzgebiet ist noch nicht gültig. Tippe auf „Spielplan & Netzgebiet“.','The play area is not valid yet. Tap “Board & regions”.')}</p>`:''}
+    ${res?`<button type="button" class="btn s3-alt" data-act="start" ${x.bad?'disabled':''}>${LX('Neues Spiel starten','Start new game')}</button><p class="s3-note">${LX('Ein neues Spiel ersetzt die laufende Partie.','A new game replaces the one in progress.')}</p>`:''}</section>
+    <div class="s3-app"><span>${LX('Darstellung','Appearance')}</span><div class="seg">${[['dark',LX('Dunkel','Dark')],['light',LX('Hell','Light')],['auto','Auto']].map(([k,l])=>`<button type="button" data-act="themeSel" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div></div>
+    </div>${res?'':`<div class="startbar s3-bar"><div class="sb-sum"><b>${esc(x.map)}</b><span>${UI.nAI+1} ${LX('Spieler','players')} · ${LX('KI','AI')} ${tr(AI_NAME[UI.diff])} · ${UI.regions.length||regionCount(UI.nAI+1)} ${LX('Regionen','regions')}</span></div><button type="button" class="btn pri" data-act="start" ${x.bad?'disabled':''}>${LX('Neues Spiel','New game')}</button></div>`}`;
+    return;
+  }
+  const T={co:LX('Dein Betrieb','Your company'),board:LX('Spielplan & Netzgebiet','Board & regions'),opp:LX('Gegner','Opponents'),rules:LX('Kraftwerke & Regeln','Rules & extras')};
+  const mapCard=([k,m])=>`<button type="button" class="mcard${UI.map===k?' on':''}" data-act="mapSel" data-m="${k}" aria-pressed="${UI.map===k}">${mapThumb(k)}<span class="mcn">${m.name}</span>${m.deluxe?'<span class="dlxtag">Deluxe</span>':''}${m.exp&&m.rtxt?`<span class="xn">${m.rtxt.length} ${en?(m.rtxt.length===1?'rule':'rules'):(m.rtxt.length===1?'Regel':'Regeln')}</span>`:''}</button>`;
+  let b='';
+  if(sv==='co')b=`<div class="cocard"><div class="co-emb" aria-hidden="true"><svg class="co-bolt" viewBox="0 0 24 24"><path d="M13.5 2 5 13.2h5.6L9.4 22 19 9.8h-5.7z"/></svg><span id="coIni">${coInitials(x.nm)}</span></div><div class="co-main"><label class="co-lbl" for="nm">Firmenname</label><div class="co-in"><input id="nm" maxlength="18" autocomplete="off" spellcheck="false" value="${esc(x.nm)}"><button type="button" class="co-dice" data-act="coRand" aria-label="Zufälliger Firmenname" title="Zufälliger Firmenname"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></button></div></div></div><p class="s3-note">${LX('Der Name erscheint im Spiel, im Verlauf und in der Rangliste.','The name appears in the game, the log and the leaderboard.')}</p>`;
+  else if(sv==='board')b=`<div class="sgroup"><span class="s3-k">${LX('Spielplan','Board')}</span><div class="mcards">${Object.entries(MAPS).filter(([,m])=>!m.deluxe&&!m.exp).map(mapCard).join('')}</div><div class="mcards two">${Object.entries(MAPS).filter(([,m])=>m.deluxe).map(mapCard).join('')}</div>${xpickHTML(mapCard)}${M.exp?'':`<div class="nhint">${MAP_NOTE[UI.map]||''}</div>`}</div>
+   <div class="sgroup"><span class="s3-k">${LX('Netzgebiet','Play area')}</span><div class="s3-bmap"><div class="hero-map">${heroMap()}<canvas class="hm-fx" aria-hidden="true"></canvas></div><span class="s3-tap">${LX('Regionen auf der Karte antippen','Tap regions on the map')}</span></div>${regionPicker()}</div>`;
+  else if(sv==='opp')b=`<div class="sgroup">${oppBlock()}</div>`;
+  else b=`<div class="sgroup">${rulesBlock()}${promoBlock()}</div>`;
+  const done=sv==='board'?(x.bad?LX('Netzgebiet unvollständig','Play area incomplete'):LX(`${x.map} übernehmen`,`Use ${x.map}`)):LX('Fertig','Done');
+  start.innerHTML=`<div class="s3 sub"><header class="s3-sh"><button type="button" class="s3-ib s3-bk" data-act="sv" data-v="" aria-label="${LX('Zurück','Back')}">${S3I.back}</button><h1>${T[sv]}</h1><button type="button" class="s3-done" data-act="sv" data-v="">${LX('Fertig','Done')}</button></header><div class="s3-body">${b}</div></div><div class="startbar s3-bar"><button type="button" class="btn pri s3-wide" data-act="sv" data-v="" ${sv==='board'&&x.bad?'disabled':''}>${esc(done)}</button></div>`;
+}
 function startScroller(){const b=start.querySelector('.setup-body');return b&&/(auto|scroll)/.test(getComputedStyle(b).overflowY)&&b.scrollHeight>b.clientHeight?b:start}
 
 /* Startbild: Energiefluss als Canvas-Partikel (flüssig, auch auf großen Retina-Bildschirmen) statt animierter SVG-Striche mit Leuchtfilter */
@@ -3406,7 +3540,9 @@ function renderStart(show){const was=!start.hidden;const sb=start.querySelector(
 function _renderStart(show){
   if(!show){start.hidden=true;return}
   UI.map=UI.map||'de';loadMap(UI.map);
-  start.hidden=false;start.classList.add('v2');
+  start.hidden=false;
+  if(sPhone()){start.classList.remove('v2');start.classList.add('v3');renderStart3();return}
+  start.classList.remove('v3');start.classList.add('v2');UI.sv='';
   const M=MAPS[UI.map],nP=UI.nAI+1,games=loadHist().length;
   const mapCard=([k,m])=>`<button type="button" class="mcard${UI.map===k?' on':''}" data-act="mapSel" data-m="${k}" aria-pressed="${UI.map===k}">${mapThumb(k)}<span class="mcn">${m.name}</span>${m.deluxe?'<span class="dlxtag">Deluxe</span>':''}${m.exp&&m.rtxt?`<span class="xn" title="${m.rtxt.length} Sonderregeln">${m.rtxt.length} ${LANG==='en'?(m.rtxt.length===1?'rule':'rules'):(m.rtxt.length===1?'Regel':'Regeln')}</span>`:''}</button>`;
   const resume=S&&S.phase!=='end'?`<div class="resume"><div><b>Laufende Partie</b><span>Runde ${S.round} auf ${esc(MAPS[S.map||'de'].name)}</span></div><button type="button" class="btn pri" data-act="cont">Weiterspielen</button><button type="button" class="btn quitx" data-act="quit" aria-label="Partie beenden" title="Partie beenden">✕</button></div>`:'';
@@ -4384,7 +4520,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v107';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v108';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -4490,16 +4626,17 @@ const A={
   lbDel:b=>{UI.lbDel=b.dataset.id;renderStats();return'skip'},
   lbDelNo:()=>{UI.lbDel=null;renderStats();return'skip'},
   lbDelYes:b=>{const id=b.dataset.id;UI.lbDel=null;LB.db&&LB.db.doc('results/'+id).delete().catch(()=>{UI.lbMsg='Löschen hat nicht geklappt.';renderStats()});return'skip'},
-  deckSel:b=>{UI.deck=b.dataset.d;UI.name=$('#nm').value;renderStart(true);return'skip'},
-  s3:b=>{UI.s3Early=b.dataset.v==='true';UI.name=$('#nm').value;renderStart(true);return'skip'},
-  discTog:()=>{UI.disc=UI.disc==='orig'?'rech':'orig';try{localStorage.setItem('hochspannung-disc',UI.disc)}catch(_){}UI.name=$('#nm').value;renderStart(true);return'skip'},
-  atom:b=>{UI.deAtom=b.dataset.v==='true';UI.name=$('#nm').value;renderStart(true);return'skip'},
-  mapSel:b=>{UI.map=b.dataset.m;if(MAPS[UI.map].paris&&(UI.deck==='mix'||UI.deck==='mix1'))UI.deck='std';UI.regions=[];UI.name=$('#nm').value;renderStart(true);return'skip'},
+  deckSel:b=>{UI.deck=b.dataset.d;UI.name=nmVal();renderStart(true);return'skip'},
+  s3:b=>{UI.s3Early=b.dataset.v==='true';UI.name=nmVal();renderStart(true);return'skip'},
+  discTog:()=>{UI.disc=UI.disc==='orig'?'rech':'orig';try{localStorage.setItem('hochspannung-disc',UI.disc)}catch(_){}UI.name=nmVal();renderStart(true);return'skip'},
+  atom:b=>{UI.deAtom=b.dataset.v==='true';UI.name=nmVal();renderStart(true);return'skip'},
+  mapSel:b=>{UI.map=b.dataset.m;if(MAPS[UI.map].paris&&(UI.deck==='mix'||UI.deck==='mix1'))UI.deck='std';UI.regions=[];UI.name=nmVal();renderStart(true);return'skip'},
   mapPeek:()=>{UI.peek=!UI.peek;UI.peekKey=S.round+S.phase;UI.vb=null},
   theme:b=>{setTheme(b.dataset.t)},
-  coRand:()=>{const cur=$('#nm').value;const pool=CO_NAMES.filter(n=>n!==cur);UI.name=pool[Math.floor(Math.random()*pool.length)];saveName(UI.name);renderStart(true);const i=$('#nm');if(i){i.classList.add('co-flash');setTimeout(()=>i.classList.remove('co-flash'),500)}return'skip'},
-  xToggle:()=>{if(MAPS[UI.map].exp)return'skip';UI.xopen=!UI.xopen;UI.name=$('#nm').value;renderStart(true);return'skip'},
-  themeSel:b=>{setTheme(b.dataset.t);UI.name=$('#nm').value;renderStart(true);return'skip'},
+  sv:b=>{if(UI.sv==='co')UI.name=nmVal(),saveName(UI.name);UI.sv=b.dataset.v||'';renderStart(true);start.scrollTop=0;return'skip'},
+  coRand:()=>{const cur=nmVal();const pool=CO_NAMES.filter(n=>n!==cur);UI.name=pool[Math.floor(Math.random()*pool.length)];saveName(UI.name);renderStart(true);const i=$('#nm');if(i){i.classList.add('co-flash');setTimeout(()=>i.classList.remove('co-flash'),500)}return'skip'},
+  xToggle:()=>{if(MAPS[UI.map].exp)return'skip';UI.xopen=!UI.xopen;UI.name=nmVal();renderStart(true);return'skip'},
+  themeSel:b=>{setTheme(b.dataset.t);UI.name=nmVal();renderStart(true);return'skip'},
   mapStyle:b=>{MAPSTYLE=b.dataset.m==='classic'?'classic':'atlas';try{localStorage.setItem('hochspannung-mapstyle',MAPSTYLE)}catch(_){}},
   botMode:b=>{BOTMODE=b.dataset.m==='lift'?'lift':'auto';try{localStorage.setItem('hochspannung-bot',BOTMODE)}catch(_){}fitViewport()},
   mapMode:b=>{MAPMODE=b.dataset.m==='always'?'always':'auto';try{localStorage.setItem('hochspannung-map',MAPMODE)}catch(_){}},
@@ -4517,15 +4654,15 @@ const A={
   quityes:()=>{clearTimeout(timer);timer=null;S=null;try{localStorage.removeItem(SAVE_KEY)}catch(_){}UI.intro=false;const io=document.getElementById('intro');if(io)io.remove();UI.undo=[];UI.sheet=null;UI.back=null;UI.toast=null;renderSheet();renderStart(true);return'skip'},
   newyes:()=>{UI.sheet=null;clearTimeout(timer);renderSheet();renderStart(true);return'skip'},
   startrules:()=>{UI.sheet='rules';renderStart(false);return'rules'},
-  nai:b=>{UI.nAI=+b.dataset.n;if(UI.regions.length&&UI.regions.length!==regionCount(UI.nAI+1))UI.regions=[];UI.name=$('#nm').value;renderStart(true);return'skip'},
-  diff:b=>{UI.diff=b.dataset.d;UI.name=$('#nm').value;renderStart(true);return'skip'},
-  styleSel:b=>{UI.styles=b.dataset.s;UI.name=$('#nm').value;renderStart(true);return'skip'},
-  reg:b=>{const r=b.dataset.r;UI.regions=UI.regions.includes(r)?UI.regions.filter(x=>x!==r):[...UI.regions,r];UI.name=$('#nm').value;renderStart(true);return'skip'},
-  regrand:()=>{UI.regions=[];UI.name=$('#nm').value;renderStart(true);return'skip'},
-  regpick:()=>{if(!UI.regions.length){const n=regionCount(UI.nAI+1);const ks=Object.keys(REGIONS);for(let t=0;t<200;t++){const c=shuffle(ks).slice(0,n);if(regionsValid(c,n)&&(!MAPS[MAPID].mustRegion||c.includes(MAPS[MAPID].mustRegion))){UI.regions=c;break}}}UI.name=$('#nm').value;renderStart(true);return'skip'},
+  nai:b=>{UI.nAI=+b.dataset.n;if(UI.regions.length&&UI.regions.length!==regionCount(UI.nAI+1))UI.regions=[];UI.name=nmVal();renderStart(true);return'skip'},
+  diff:b=>{UI.diff=b.dataset.d;UI.name=nmVal();renderStart(true);return'skip'},
+  styleSel:b=>{UI.styles=b.dataset.s;UI.name=nmVal();renderStart(true);return'skip'},
+  reg:b=>{const r=b.dataset.r;UI.regions=UI.regions.includes(r)?UI.regions.filter(x=>x!==r):[...UI.regions,r];UI.name=nmVal();renderStart(true);return'skip'},
+  regrand:()=>{UI.regions=[];UI.name=nmVal();renderStart(true);return'skip'},
+  regpick:()=>{if(!UI.regions.length){const n=regionCount(UI.nAI+1);const ks=Object.keys(REGIONS);for(let t=0;t<200;t++){const c=shuffle(ks).slice(0,n);if(regionsValid(c,n)&&(!MAPS[MAPID].mustRegion||c.includes(MAPS[MAPID].mustRegion))){UI.regions=c;break}}}UI.name=nmVal();renderStart(true);return'skip'},
   markets:()=>{UI.sheet=UI.sheet==='markets'&&isDock()?null:'markets'},
   pinfo:b=>{UI.back=isDock()?UI.sheet:null;UI.pnum=+b.dataset.num;UI.sheet='plant'},
-  start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();saveName(UI.name);newGame(UI.name||(LANG==='en'?'Your company':'Dein Betrieb'),UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false);UI.intro=true;setTimeout(showIntro,30)},
+  start:()=>{if(!regionsOk())return'skip';UI.name=nmVal().trim();saveName(UI.name);newGame(UI.name||(LANG==='en'?'Your company':'Dein Betrieb'),UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false);UI.intro=true;setTimeout(showIntro,30)},
   cont:()=>{loadMap(S.map||'de');loadDeck(S.deckKeys||deckKeys('std'));applyPlantOv();applyMapN(S.n);applyGameMods();UI.vb=null;renderStart(false)},
   zin:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.3);return'skip'},
   zout:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.3);return'skip'},
@@ -4545,9 +4682,9 @@ const A={
   xraise:()=>{const a=actor();if(!a||a.kind!=='xbid'||a.pid!==H)return'skip';xRaise(H,Math.max(UI.xbid,S.xauc.bid+1,10))},
   subpick:b=>{if(S.subPick!==H)return'skip';pickSub(H,+b.dataset.num)},
   xdrop:()=>{const a=actor();if(!a||a.kind!=='xbid'||a.pid!==H)return'skip';xDrop(H)},
-  promo:b=>{const k=b.dataset.k;UI.promos=UI.promos.includes(k)?UI.promos.filter(x=>x!==k):[...UI.promos,k];try{localStorage.setItem('hochspannung-promos',JSON.stringify(UI.promos))}catch(_){}UI.name=$('#nm').value;renderStart(true);return'skip'},
-  prTog:()=>{UI.prOpen=!UI.prOpen;UI.name=$('#nm').value;renderStart(true);return'skip'},
-  promoAll:b=>{UI.promos=b.dataset.v==='all'?Object.keys(PROMOS):[];try{localStorage.setItem('hochspannung-promos',JSON.stringify(UI.promos))}catch(_){}UI.name=$('#nm').value;renderStart(true);return'skip'},
+  promo:b=>{const k=b.dataset.k;UI.promos=UI.promos.includes(k)?UI.promos.filter(x=>x!==k):[...UI.promos,k];try{localStorage.setItem('hochspannung-promos',JSON.stringify(UI.promos))}catch(_){}UI.name=nmVal();renderStart(true);return'skip'},
+  prTog:()=>{UI.prOpen=!UI.prOpen;UI.name=nmVal();renderStart(true);return'skip'},
+  promoAll:b=>{UI.promos=b.dataset.v==='all'?Object.keys(PROMOS):[];try{localStorage.setItem('hochspannung-promos',JSON.stringify(UI.promos))}catch(_){}UI.name=nmVal();renderStart(true);return'skip'},
   mrTog:b=>{const k=b.dataset.k;UI.mrOpen=UI.mrOpen||{};const cur=b.getAttribute('aria-expanded')==='true';UI.mrOpen[k]=!cur;if(cur){try{const s=JSON.parse(localStorage.getItem('hochspannung-seen')||'{}');s[k]=1;localStorage.setItem('hochspannung-seen',JSON.stringify(s))}catch(_){}}},
   mrSeen:b=>{const k=b.dataset.k;try{const s=JSON.parse(localStorage.getItem('hochspannung-seen')||'{}');s[k]=1;localStorage.setItem('hochspannung-seen',JSON.stringify(s))}catch(_){}UI.mrOpen=UI.mrOpen||{};UI.mrOpen[k]=false},
   kSide:b=>{UI.kside=b.dataset.s;UI.pcart={}},
