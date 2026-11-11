@@ -1149,6 +1149,13 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 #start.v3.wide .s3-sh{margin:0 -28px;padding:14px 14px 14px 10px}
 #start.v3.wide .s3-body{padding-bottom:24px}
 #start.v3.wide .s3-body .mcards{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* v115: Wasserlinien */
+.wlm{fill:none;stroke-linejoin:round}
+.wlines{fill:#7fa6c2;opacity:.3;pointer-events:none}
+#map.atlas .coast{stroke:#8fb0c6;stroke-opacity:.6;stroke-width:1px;vector-effect:non-scaling-stroke}
+[data-theme="light"] .wlines{fill:#8a6a3a;opacity:.35}
+[data-theme="light"] #map.atlas .coast{stroke:#9c7f55;stroke-opacity:.8}
+#map.moving .wlines{display:none}
 /* ---- v16: Kraftwerksdeck & Atomausstieg ---- */
 .dcards{display:flex;flex-direction:column;gap:8px}
 .dcard{display:flex;flex-direction:column;gap:7px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--t26343e);background:var(--t121b22);color:var(--fg);cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
@@ -2698,6 +2705,7 @@ function renderMap(){
   const ATL=MAPSTYLE==='atlas',LY=ATL?atlasLayout(act,opts):null;
   let g='<defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" class="gridline"/></pattern><pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r=".9" class="landdot"/></pattern><filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter><radialGradient id="vig" cx="50%" cy="45%" r="70%"><stop offset="60%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".45"/></radialGradient>'+(ATL?`<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0V7" class="hatchl"/></pattern><pattern id="eng" width="56" height="56" patternUnits="userSpaceOnUse"><path class="engl" d="M5 11q4-3 8 0q4 3 8 0M31 33q4-3 8 0q4 3 8 0M15 45q3-2 6 0M40 8q3-2 6 0M9 27q3-2 6 0M46 49q3-2 6 0"/><circle class="engd" cx="26" cy="20" r=".7"/><circle class="engd" cx="50" cy="26" r=".6"/><circle class="engd" cx="4" cy="50" r=".6"/><circle class="engd" cx="34" cy="52" r=".5"/></pattern><clipPath id="landclip"><path d="${GEO_LAND}"/></clipPath>`:'')+'</defs><rect x="-800" y="-800" width="2400" height="2600" fill="url(#grid)"/>';
   if(GEO_OUT)g+=`<path class="land-out" d="${GEO_OUT}"/>`;
+  g+=waterlines();
   g+=`<path class="land-shadow" d="${GEO_LAND}"/><path class="land" d="${GEO_LAND}"/><path class="land-tex" d="${GEO_LAND}"/>`;
   if(ATL)g+=`<path class="land-eng" d="${GEO_LAND}"/>`;
   if(ATL&&VBORD){g+='<g class="rcells" clip-path="url(#landclip)">';for(const[rk,r]of Object.entries(REGIONS)){if(!RCELL[rk])continue;const on=S.regions.includes(rk);g+=on?`<path class="rcell" d="${RCELL[rk]}" style="fill:${r.col};stroke:${r.col}"/>`:`<path class="rcell off" d="${RCELL[rk]}"/>`}g+=`<path class="rbord" d="${VBORD}"/></g>`}
@@ -2765,7 +2773,15 @@ function fitMap(){
     UI.vb={x:x0+w/2-W/2,y:y0-sc*(T+3)-(avail*sc-h)/2,w:W,h:H};
   }catch(_){}
 }
-let _vbRaf=0;function applyVB(){if(_vbRaf)return;_vbRaf=requestAnimationFrame(()=>{_vbRaf=0;const v=UI.vb;if(!v)return;svg.setAttribute('viewBox',`${v.x.toFixed(1)} ${v.y.toFixed(1)} ${v.w.toFixed(1)} ${v.h.toFixed(1)}`)})}
+/* v115: feine Wasserlinien vor der Küste wie im Stichatlas – Abstände und Strichstärke bleiben auf dem Bildschirm gleich (--wu = Karteneinheiten pro Pixel) */
+function waterlines(){
+  if(!GEO_LAND)return '';const[vx,vy,vw,vh]=MAPVB.split(' ').map(Number),e=Math.max(vw,vh)*1.5;
+  const R=[[31,.07],[21,.12],[13,.20],[6,.30]];/* außen zuerst, sonst löscht der äußere Ring die inneren */
+  const m=R.map(([w,o])=>`<path d="${GEO_LAND}" class="wlm" style="stroke:rgb(${Math.round(o/.3*255)},${Math.round(o/.3*255)},${Math.round(o/.3*255)});stroke-width:calc(var(--wu,1px) * ${2*w+1})"/><path d="${GEO_LAND}" class="wlm" style="stroke:#000;stroke-width:calc(var(--wu,1px) * ${2*w-.1})"/>`).join('');
+  return `<mask id="wlMask" maskUnits="userSpaceOnUse" x="${vx-e}" y="${vy-e}" width="${vw+2*e}" height="${vh+2*e}">${m}<path d="${GEO_LAND}" fill="#000"/></mask><rect class="wlines" x="${vx-e}" y="${vy-e}" width="${vw+2*e}" height="${vh+2*e}" mask="url(#wlMask)"/>`;
+}
+function wuUpdate(){const v=UI.vb;if(!v)return;const r=svg.getBoundingClientRect();if(!r.width||!r.height)return;const u=Math.max(v.w/r.width,v.h/r.height);const k=u.toPrecision(4);if(svg._wu===k)return;svg._wu=k;svg.style.setProperty('--wu',k+'px')}
+let _vbRaf=0;function applyVB(){if(_vbRaf)return;_vbRaf=requestAnimationFrame(()=>{_vbRaf=0;const v=UI.vb;if(!v)return;svg.setAttribute('viewBox',`${v.x.toFixed(1)} ${v.y.toFixed(1)} ${v.w.toFixed(1)} ${v.h.toFixed(1)}`);wuUpdate()})}
 let _mvT=0;function mapMoving(on){clearTimeout(_mvT);if(on)svg.classList.add('moving');else _mvT=setTimeout(()=>svg.classList.remove('moving'),160)}
 function svgScale(){const r=svg.getBoundingClientRect();return Math.max(UI.vb.w/r.width,UI.vb.h/r.height)}
 function zoomAt(cx,cy,f){
@@ -4549,7 +4565,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v114';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v115';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
