@@ -3136,7 +3136,7 @@ function aucScroll(a){/* Handy: eigene Auktionsrunde – Gebotsbereich ins Bild 
     panel.scrollTo({top:panel.scrollTop+r.top-visTop-34,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}catch(_){}}
 function renderPanel(){
   const a=actor();UI._ab=null;let h=qbarHTML()+orderHTML(a)+feedHTML()+phaseRulesHTML()+turnLine(a);
-  const after=oppPlantsHTML()+((S.phase==='auction'||S.xauc)&&S.phase!=='end'?seatHTML(a):'');
+  const after=oppPlantsHTML();
   if(S.subPick!=null){h+=panelSub(a)}else if(S.xauc){h+=panelX(a)}else
   switch(S.phase){
     case'auction':h+=panelAuction(a);break;
