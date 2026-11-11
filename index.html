@@ -1948,7 +1948,7 @@ function aiPlantValue(p,num){
   if(PLANTS[num][0]==='mine'){if(!heldPlants(p).length)return -1;const c=PLANTS[num][2],own=p.plants.filter(n=>PLANTS[n][0]==='mine').length;const left=Math.max(1,(S.endTriggered?0:Math.max(2,11-S.round))-own);const v=Math.round(Math.floor(num)+c*Math.min(4,left)*0.9-own*3);return v>Math.floor(num)?Math.min(v,p.money-aiReserve(p)):-1}
   const[t,k,c]=PLANTS[num];const cur=capacity(p);
   let after;
-  if(p.plants.length<3)after=cur+c;
+  if(heldPlants(p).length<3)after=cur+c;
   else{const worst=Math.min(...p.plants.map(n=>PLANTS[n][2]));after=cur-worst+c}
   const gain=after-cur;if(gain<=0)return -1;
   let v=num+gain*4+(FREE(t)?6:0)+(k===1&&!FREE(t)?2:0)+(c>=5?4:0)+(S.step===1&&p.plants.length===0?3:0);
@@ -1963,7 +1963,7 @@ function aiPlantValue(p,num){
   if(v<0)return -1;v=Math.round(v*L(p).mul);if(L(p).over!=null)v=Math.min(v,num+L(p).over+(p.plants.length<3&&S.step===1&&p.plants.length===0?4:0));return v;
 }
 function aiReserve(p){return S.round===1?8:L(p).res}
-function capGain(q,num){const c=PLANTS[num][2],cur=capacity(q);if(q.plants.length<3)return c;return Math.max(0,c-Math.min(...q.plants.map(n=>PLANTS[n][2])))}
+function capGain(q,num){const c=PLANTS[num][2],hq=heldPlants(q);if(PLANTS[num][0]==='mine')return 0;if(hq.length<3)return c;return Math.max(0,c-Math.min(...hq.map(n=>PLANTS[n][2])))}
 function aiNoise(p,key){if(ADV)return 1;S.nz=S.nz||{};const k=key+':'+p.id;if(S.nz[k]==null){const sm=L(p).smart;S.nz[k]=sm.lo+Math.random()*(sm.hi-sm.lo)}return S.nz[k]}
 function smartCeiling(p,num){
   const sm=L(p).smart,[t,k,c]=PLANTS[num];const gain=capGain(p,num);if(gain<=0)return -1;
@@ -1994,7 +1994,7 @@ function aiChoose(p){
   if(S.round>1&&Math.random()<L(p).pass)return doPass(p.id);
   if(S.round>1){
     const spare=capacity(p)-p.cities.length;
-    if(!best||(spare>=3&&p.plants.length>=2&&bs<22)||(p.plants.length===3&&bs<12))return doPass(p.id);
+    if(!best||(spare>=3&&heldPlants(p).length>=2&&bs<22)||(heldPlants(p).length===3&&bs<12))return doPass(p.id);
   }
   if(!best){const c=buyable().filter(n=>minBid(n)<=p.money);if(!c.length)return doPass(p.id);best=c[0]}
   let ob=minBid(best);const sm=L(p).smart;if(sm&&S.round>1){const v=aiPlantValue(p,best);const room=Math.min(v,p.money-aiReserve(p))-ob;if(room>=3&&Math.random()<sm.open)ob+=1+Math.floor(Math.random()*Math.min(room-1,4))}
@@ -2373,7 +2373,7 @@ const nST=k=>k===1?'Stadt':'Städte';
 function plantReasons(m,num){
   const[t,k,c]=PLANTS[num];const L_=[];const cap=capacity(m),n=m.cities.length,gain=capGain(m,num);
   L_.push(`Kapazität ${cap} → ${cap+gain}`);
-  if(m.plants.length>=3){const w=m.plants.slice().sort((a,b)=>PLANTS[a][2]-PLANTS[b][2])[0];L_.push(`Ersetzt dein Kraftwerk ${PN(w)}.`)}
+  if(heldPlants(m).length>=3){const w=heldPlants(m).sort((a,b)=>PLANTS[a][2]-PLANTS[b][2])[0];L_.push(`Ersetzt dein Kraftwerk ${PN(w)}.`)}
   if(n>=cap)L_.push('Du hast so viele Städte wie Kapazität. Ohne neues Kraftwerk wächst dein Netz nicht.');
   if(FREE(t))L_.push('Braucht keine Rohstoffe.');
   else{const rs=HYB[t]||[t];const st=Math.max(...rs.map(r=>S.resMarket[r]));L_.push(st<2*k?`Brennstoff knapp: nur ${st} am Markt.`:`Brennstoff gut verfügbar: ${st} am Markt.`)}
@@ -2388,7 +2388,7 @@ function advise(a){
     const cap=capacity(m),n=m.cities.length;
     const c=buyable().map(num=>{const v=aiPlantValue(m,num);const mb=Math.min(v,m.money-aiReserve(m));return{num,v,mb,ok:v>=0&&mb>=minBid(num),s:v-minBid(num)+PLANTS[num][2]*3}}).filter(x=>x.ok).sort((x,y)=>y.s-x.s);
     const b=c[0],spare=cap-n;
-    if(S.round>1&&(!b||(spare>=3&&m.plants.length>=2&&b.s<22)||(m.plants.length===3&&b.s<12))){
+    if(S.round>1&&(!b||(spare>=3&&heldPlants(m).length>=2&&b.s<22)||(heldPlants(m).length===3&&b.s<12))){
       const L_=[];if(spare>=3)L_.push(`Du hast noch ${spare} freie Plätze im Netz. Spar dein Geld für den Ausbau.`);if(!b)L_.push('Kein Kraftwerk im Markt bringt dir genug.');else L_.push(`Bestes Angebot wäre Kraftwerk ${PN(b.num)}, lohnt sich aber kaum.`);
       return{title:'Passen',lines:L_}}
     if(!b)return{title:'Günstigstes Kraftwerk nehmen',lines:['In Runde 1 musst du ein Kraftwerk kaufen.']};
@@ -2688,7 +2688,7 @@ function promoChips(p){const en=LANG==='en',c=[];if(p.sub!=null)c.push((en?'Subs
 function panelMine(){
   const p=me();
   const sv=storeOf(p);
-  const slots=[0,1,2].map(i=>p.plants[i]!=null?plantCard(p.plants[i],{lg:true,store:sv[p.plants[i]]||[],act:'pinfo',sub:p.sub===p.plants[i]}):'<div class="plant empty lg"></div>').join('')+(p.park?parkCard(true):'');
+  const hp=heldPlants(p),mines=p.plants.filter(n=>PLANTS[n][0]==='mine');const slots=[0,1,2].map(i=>hp[i]!=null?plantCard(hp[i],{lg:true,store:sv[hp[i]]||[],act:'pinfo',sub:p.sub===hp[i]}):'<div class="plant empty lg"></div>').join('')+mines.map(n=>plantCard(n,{lg:true,act:'pinfo'})).join('')+(p.park?parkCard(true):'');
   const pool=RES.filter(r=>p.pool[r]>0).map(r=>`<span class="stock">${resIcon(r)}${p.pool[r]}</span>`).join('')||'<span class="hint">leer</span>';
   return `<section class="sec mine"><h3>Dein Betrieb</h3><div class="mrow"><div class="stat"><b>${p.money}</b><span>€</span></div><div class="stat"><b>${cityCount(p)}</b><span>Städte</span></div><div class="stat"><b>${capacity(p)}</b><span>Kapazität</span></div></div><div class="cards">${slots}</div><div class="stock-row"><span class="lbl">Lager</span>${pool}</div></section>`;
 }
