@@ -1595,6 +1595,11 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 #intro .ireel{position:absolute;left:0;right:0;top:0;will-change:transform;pointer-events:none}
 #intro .iri{display:flex;align-items:center;gap:10px;padding:0 12px}
 #intro .irn{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.8}
+
+/* v94: Energiefluss im Startbild per Canvas */
+.hero-map{position:absolute}
+.hero-map .hm-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.hero-map .heromap{position:relative;z-index:1}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -3291,9 +3296,9 @@ function heroMap(){
   let g=`<defs><radialGradient id="hmG" cx="50%" cy="50%" r="50%"><stop offset="40%" stop-color="#fff"/><stop offset="88%" stop-color="#000"/></radialGradient><mask id="hmFade" maskUnits="userSpaceOnUse" x="${vx-ex}" y="${vy-ex}" width="${vw+2*ex}" height="${vh+2*ex}"><rect x="${vx-ex}" y="${vy-ex}" width="${vw+2*ex}" height="${vh+2*ex}" fill="url(#hmG)"/></mask></defs><g mask="url(#hmFade)"><path class="hm-land" d="${GEO_LAND}"/>`;
   g+=GEO_RIV.map(d=>`<path class="hm-riv" d="${d}"/>`).join('')+'</g>';
   g+=Object.entries(TERR).map(([k,d])=>`<path class="hm-terr${!rand&&sel.includes(k)?' on':''}" d="${d}" style="--rc:${REGIONS[k].col}" data-act="reg" data-r="${k}"/>`).join('');
-  let live=0;
+  let live=0;HM.flows=[];HM.fade={cx:vx+vw/2,cy:vy+vh/2,rx:vw/2+ex,ry:vh/2+ex};
   EDGE_LIST.forEach((e,i)=>{const a=CITY[e.a],b=CITY[e.b];const on=inA(e.a)&&inA(e.b);g+=`<line class="hm-e${on?' on':''}" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}"/>`;
-    if(on&&(i*7)%3===0&&live<60){live++;g+=`<line class="hm-p" style="animation-delay:-${((i*0.37)%2.4).toFixed(2)}s" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}"/>`}});
+    if(on&&(i*7)%3===0&&live<60){live++;HM.flows.push([a.x,a.y,b.x,b.y,(i*0.37)%2.4])}});
   g+=CITIES.map(([id,,rg])=>{const c=CITY[id];const on=inA(id);return `<circle class="hm-c${on?' on':''}" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${on?9:6}" style="--rc:${REGIONS[rg].col}" data-act="reg" data-r="${rg}"/>`}).join('');
   return `<svg class="heromap" viewBox="${MAPVB}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Spielplan ${esc(MAPS[UI.map].name)}: tippe Regionen an, um das Netzgebiet zu wählen">${g}</svg>`;
 }
@@ -3306,7 +3311,30 @@ function xpickHTML(mapCard){
   return `<div class="xpick${open?' open':''}"><button type="button" class="xhead" data-act="xToggle" aria-expanded="${!!open}"><span class="xht">Erweiterungen</span><span class="xhs">${n} Spielpläne · je Karte die Zahl ihrer Sonderregeln</span><span class="xchev" aria-hidden="true"></span></button>${open?`<div class="xboxes">${Object.entries(by).map(([b,ms])=>`<div class="xbox"><div class="xbh"><span class="xbt">${XBOX[b]?XBOX[b][LANG==='en'?1:0]:''}</span><span class="xbn">${LANG==='en'?'Expansion':'Erweiterung'} ${b}</span></div><div class="mcards two">${ms.map((e,i)=>{let h=mapCard(e);const sel=ms.findIndex(x=>x[0]===UI.map);if(sel>=0&&i===Math.min(ms.length-1,sel-(sel%2)+1))h+=`<div class="xrules">${mapRulesHTML(UI.map,UI.regions)}</div>`;return h}).join('')}</div></div>`).join('')}</div>`:''}</div>`;
 }
 function startScroller(){const b=start.querySelector('.setup-body');return b&&/(auto|scroll)/.test(getComputedStyle(b).overflowY)&&b.scrollHeight>b.clientHeight?b:start}
-function renderStart(show){const was=!start.hidden;const sb=start.querySelector('.setup-body'),st=start.scrollTop,bt=sb?sb.scrollTop:0;_renderStart(show);if(show&&was){start.scrollTop=st;const nb=start.querySelector('.setup-body');if(nb)nb.scrollTop=bt}}
+
+/* Startbild: Energiefluss als Canvas-Partikel (flüssig, auch auf großen Retina-Bildschirmen) statt animierter SVG-Striche mit Leuchtfilter */
+const HM={flows:[],fade:null,raf:0,spr:null,col:''};
+function hmSprite(col){const c=document.createElement('canvas');c.width=c.height=48;const x=c.getContext('2d');const g=x.createRadialGradient(24,24,0,24,24,24);g.addColorStop(0,'#fff');g.addColorStop(.2,col);g.addColorStop(.38,col+'aa');g.addColorStop(.62,col+'33');g.addColorStop(1,col+'00');x.fillStyle=g;x.fillRect(0,0,48,48);return c}
+function hmStart(){if(HM.raf)return;if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;HM.raf=requestAnimationFrame(hmLoop)}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)hmStart()});
+function hmLoop(now){HM.raf=0;
+  const cv=document.querySelector('#start .hm-fx'),svg=document.querySelector('#start .heromap');
+  if(!cv||!svg||start.hidden||document.hidden||!cv.offsetWidth)return;
+  const dpr=Math.min(2,window.devicePixelRatio||1),cr=cv.getBoundingClientRect(),W=Math.round(cr.width*dpr),Hh=Math.round(cr.height*dpr);
+  if(cv.width!==W||cv.height!==Hh){cv.width=W;cv.height=Hh}
+  const x=cv.getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,W,Hh);
+  let col=(getComputedStyle(document.documentElement).getPropertyValue('--accent')||'#f2b33d').trim();if(!/^#[0-9a-f]{6}$/i.test(col))col='#f2b33d';
+  if(HM.col!==col){HM.col=col;HM.spr=hmSprite(col)}
+  const m=svg.getScreenCTM();if(!m){HM.raf=requestAnimationFrame(hmLoop);return}
+  const light=document.documentElement.dataset.theme==='light';x.globalCompositeOperation=light?'source-over':'lighter';
+  const t=(now||performance.now())/1000,v=50/2.4,f=HM.fade,sz=Math.max(10,Math.min(30,15*m.a))*dpr;
+  for(const[x1,y1,x2,y2,d]of HM.flows){const L=Math.hypot(x2-x1,y2-y1);if(L<2)continue;const ux=(x2-x1)/L,uy=(y2-y1)/L;
+    for(let s=(((t+d)*v)%50);s<L;s+=50){const px=x1+ux*s,py=y1+uy*s;
+      let a=Math.min(1,s/8,(L-s)/8);if(f){const q=Math.hypot((px-f.cx)/f.rx,(py-f.cy)/f.ry);a*=q<.4?1:q>.88?0:1-(q-.4)/.48}
+      if(a<=.02)continue;x.globalAlpha=a*(light?.8:.95);
+      const sx=(m.a*px+m.c*py+m.e-cr.left)*dpr,sy=(m.b*px+m.d*py+m.f-cr.top)*dpr;x.drawImage(HM.spr,sx-sz/2,sy-sz/2,sz,sz)}}
+  x.globalAlpha=1;HM.raf=requestAnimationFrame(hmLoop)}
+function renderStart(show){const was=!start.hidden;const sb=start.querySelector('.setup-body'),st=start.scrollTop,bt=sb?sb.scrollTop:0;_renderStart(show);if(show&&was){start.scrollTop=st;const nb=start.querySelector('.setup-body');if(nb)nb.scrollTop=bt}hmStart()}
 function _renderStart(show){
   if(!show){start.hidden=true;return}
   UI.map=UI.map||'de';loadMap(UI.map);
@@ -3315,7 +3343,7 @@ function _renderStart(show){
   const mapCard=([k,m])=>`<button type="button" class="mcard${UI.map===k?' on':''}" data-act="mapSel" data-m="${k}" aria-pressed="${UI.map===k}">${mapThumb(k)}<span class="mcn">${m.name}</span>${m.deluxe?'<span class="dlxtag">Deluxe</span>':''}${m.exp&&m.rtxt?`<span class="xn" title="${m.rtxt.length} Sonderregeln">${m.rtxt.length} ${LANG==='en'?(m.rtxt.length===1?'rule':'rules'):(m.rtxt.length===1?'Regel':'Regeln')}</span>`:''}</button>`;
   const resume=S&&S.phase!=='end'?`<div class="resume"><div><b>Laufende Partie</b><span>Runde ${S.round} auf ${esc(MAPS[S.map||'de'].name)}</span></div><button type="button" class="btn pri" data-act="cont">Weiterspielen</button><button type="button" class="btn quitx" data-act="quit" aria-label="Partie beenden" title="Partie beenden">✕</button></div>`:'';
   start.innerHTML=`<section class="hero"><div class="hero-top"><div class="sbrand"><h1>Hochspannung</h1><p>Ersteigere Kraftwerke, kauf Brennstoff am Markt und zieh dein Netz über ${esc(M.name)}. Wer am Ende die meisten Städte versorgt, gewinnt.</p></div></div>
-   <div class="hero-map">${heroMap()}</div>
+   <div class="hero-map">${heroMap()}<canvas class="hm-fx" aria-hidden="true"></canvas></div>
    <div class="hero-foot"><span class="hm-hint">${UI.regions.length?'Tippe Regionen an, um dein Netzgebiet zu ändern.':'Tippe Regionen an, um dein Netzgebiet selbst zu wählen.'}</span>${resume}<div class="seg lang">${[['de','DE'],['en','EN']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}" aria-label="${k==='de'?'Deutsch':'English'}">${l}</button>`).join('')}</div></div></section>
   <section class="setup"><div class="setup-body">
    <div class="sgroup"><h2>Dein Betrieb</h2><div class="cocard"><div class="co-emb" aria-hidden="true"><svg class="co-bolt" viewBox="0 0 24 24"><path d="M13.5 2 5 13.2h5.6L9.4 22 19 9.8h-5.7z"/></svg><span id="coIni">${coInitials(UI.name||(LANG==='en'?'Your company':'Dein Betrieb'))}</span></div><div class="co-main"><label class="co-lbl" for="nm">Firmenname</label><div class="co-in"><input id="nm" maxlength="18" autocomplete="off" spellcheck="false" value="${esc(UI.name||(LANG==='en'?'Your company':'Dein Betrieb'))}"><button type="button" class="co-dice" data-act="coRand" aria-label="Zufälliger Firmenname" title="Zufälliger Firmenname"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/></svg></button></div><div class="co-sub">So heißt dein Energieversorger auf dem Spielplan, im Protokoll und in der Statistik.</div></div></div></div>
