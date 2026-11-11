@@ -2516,7 +2516,9 @@ function orderPin(){
   if(!o||!sn){return}
   const qh=q?q.offsetHeight:0;o.style.setProperty('--qbh',(qh-10)+'px');
   const stuck=sn.getBoundingClientRect().top<panel.getBoundingClientRect().top+qh-4;
-  o.classList.toggle('stuck',stuck);
+  if(stuck===o.classList.contains('stuck'))return;
+  if(stuck){const h1=o.offsetHeight;o.classList.add('stuck');const h2=o.offsetHeight;o.style.marginBottom=Math.max(0,h1-h2)+'px'}
+  else{o.classList.remove('stuck');o.style.marginBottom=''}
 }
 function renderTop(){
   const phases=S.phase==='end'?'<span class="ph cur"><i>✓</i><em>Spielende</em></span>':PH.map((ph,i)=>`<span class="ph${S.phase===ph?' cur':''}${PH.indexOf(S.phase)>i?' past':''}"><i>${i+1}</i><em>${PS[ph]}</em></span>`).join('');
@@ -3127,6 +3129,12 @@ function marketDemand(r){
   let all=0,mine=0,flex=0;S.players.forEach(p=>{const d=fuelNeed(p);all+=d[r]||0;if(p.human)mine+=d[r]||0;Object.keys(HYB).forEach(t=>{if(d[t]&&HYB[t].includes(r))flex+=d[t]})});
   return `<div class="dem"><span><span class="dl">Bedarf aller Betriebe je Lieferung</span><b>${all}</b></span>${flex?`<span><span class="dl">plus flexibel (Hybrid)</span><b>${flex}</b></span>`:''}<span><span class="dl">davon du</span><b>${mine}</b></span></div>`;
 }
+/* Ruhiger Bildschirm: beim Neuzeichnen bleibt der Abschnitt, den du gerade liest, an derselben Stelle */
+const ANC_SKIP=/^(qbar|order|osent|actbar)$/;
+function ancKey(el){const c=(el.className||'').toString().split(' ')[0]||el.tagName;let i=0,x=el;while((x=x.previousElementSibling))if(((x.className||'').toString().split(' ')[0]||x.tagName)===c)i++;return c+'#'+i}
+function panelAnchor(){try{if(!panel.scrollTop)return null;const pt=panel.getBoundingClientRect().top;const q=panel.querySelector('.qbar'),o=panel.querySelector('.order.pin');const cover=(q?q.offsetHeight:0)+(o&&o.classList.contains('stuck')?o.offsetHeight:0);
+  for(const el of panel.children){const c=(el.className||'').toString().split(' ')[0];if(ANC_SKIP.test(c))continue;const r=el.getBoundingClientRect();if(r.bottom>pt+cover+8)return{k:ancKey(el),d:r.top-pt}}}catch(_){}return null}
+function panelRestore(anc){try{if(!anc)return;const pt=panel.getBoundingClientRect().top;for(const el of panel.children){if(ancKey(el)===anc.k){const d=el.getBoundingClientRect().top-pt;if(Math.abs(d-anc.d)>1)panel.scrollTop+=d-anc.d;return}}}catch(_){}}
 function aucScroll(a){/* Handy: eigene Auktionsrunde – Gebotsbereich ins Bild holen, damit man nicht suchen muss */
   try{if(!S||S.phase!=='auction'||!isMine(a))return;const k=S.round+'|'+S.auc.mode+'|'+(S.auc.plant||'')+'|'+(UI.sel||'');if(UI._aucK===k)return;UI._aucK=k;
     const sec=panel.querySelector('.aucsec');if(!sec)return;const pr=panel.getBoundingClientRect(),r=sec.getBoundingClientRect();
@@ -3147,7 +3155,7 @@ function renderPanel(){
   }
   h+=after+panelMine();
   if(UI._ab&&isMine(a))h+=`<div class="actbar" role="region" aria-label="${LX('Dein Zug','Your move')}"><div class="ab-t"><span class="dot"></span>${UI._ab.t}</div>${UI._ab.h}</div>`;
-  const st=panel.scrollTop;panel.innerHTML=h;panel.scrollTop=st;aucScroll(a);orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
+  const st=panel.scrollTop,anc=panelAnchor();panel.innerHTML=h;panel.scrollTop=st;panelRestore(anc);aucScroll(a);orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
 }
 
 /* --- Fenster --- */
