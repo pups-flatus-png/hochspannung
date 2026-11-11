@@ -1130,6 +1130,25 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .s3-bmap{position:relative;height:min(52vh,340px);border-radius:16px;overflow:hidden;background:var(--t0e151b);border:1px solid var(--t1d2a33)}
 .s3-tap{position:absolute;left:10px;bottom:10px;z-index:3;padding:5px 10px;border-radius:10px;background:color-mix(in srgb,var(--t0e151b) 88%,transparent);font-size:12px;color:var(--muted);pointer-events:none}
 @media (orientation:landscape) and (max-height:520px){.s3-hero{height:200px}.s3.hasres .s3-hero{height:140px}.s3-bmap{height:260px}}
+/* v109: Startbildschirm breit (Mac, iPad): Karte links, Spalte rechts */
+.s3-side{display:contents}
+#start.v3.wide{display:block;overflow:hidden}
+#start.v3.wide .s3{max-width:none;height:100vh;height:100dvh;padding:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(360px,34vw,460px);grid-template-rows:auto minmax(0,1fr);gap:0}
+#start.v3.wide .s3-top{grid-column:1;grid-row:1;padding:max(40px,calc(env(safe-area-inset-top,0px) + 24px)) 48px 0 max(48px,env(safe-area-inset-left,0px));z-index:3;pointer-events:none}
+#start.v3.wide .s3-brand h1{font-size:clamp(46px,5.4vw,84px);letter-spacing:.07em}
+#start.v3.wide .s3-brand p{font-size:16px;margin-top:12px}
+#start.v3.wide .s3-hero{grid-column:1;grid-row:1/3;height:auto;margin:0;opacity:1;border-radius:0;background:radial-gradient(120% 90% at 40% 55%,var(--t0f1b23) 0%,var(--t0a1117) 55%,var(--t06090c) 100%)}
+#start.v3.wide .s3-hero .hero-map{padding:clamp(120px,19vh,180px) 40px 40px}
+#start.v3.wide .s3-hero.live .heromap{pointer-events:auto}
+#start.v3.wide .s3-hero .s3-tap{left:48px;bottom:28px;font-size:13px}
+#start.v3.wide .s3-side{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;gap:16px;min-height:0;overflow-y:auto;overscroll-behavior:contain;background:var(--t0e151b);border-left:1px solid var(--t1d2a33);padding:28px 28px 0}
+#start.v3.wide .s3-sidetop{display:flex;justify-content:flex-end}
+#start.v3.wide .s3-side>.s3-app{margin-bottom:24px}
+#start.v3.wide .s3-bar{position:sticky;bottom:0;margin:auto -28px 0;padding:14px 28px max(14px,calc(env(safe-area-inset-bottom,0px) + 10px))}
+#start.v3.wide .s3.sub .s3-side{gap:0;padding-top:0}
+#start.v3.wide .s3-sh{margin:0 -28px;padding:14px 14px 14px 10px}
+#start.v3.wide .s3-body{padding-bottom:24px}
+#start.v3.wide .s3-body .mcards{grid-template-columns:repeat(3,minmax(0,1fr))}
 /* ---- v16: Kraftwerksdeck & Atomausstieg ---- */
 .dcards{display:flex;flex-direction:column;gap:8px}
 .dcard{display:flex;flex-direction:column;gap:7px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--t26343e);background:var(--t121b22);color:var(--fg);cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
@@ -1683,6 +1702,10 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
  .order.v3 .ot .chk{top:auto;bottom:6px}
 }
 @media (orientation:landscape) and (max-height:520px){#app{grid-template-columns:minmax(0,1fr) min(48vw,440px)}}
+/* v109: Status in schmalen Reihenfolge-Karten als eigene Zeile statt über Geld/Städten */
+@container (max-width:600px){.order.v3.c4 .ord .ot .ost,.order.v3.stuck.c4 .ord .ot .ost{position:static;grid-row:auto;grid-column:1/-1;justify-self:start;margin:1px 0 0;font-size:10.5px;padding:0 6px;line-height:1.5}}
+@container (max-width:470px){.order.v3 .ord .ot .ost{position:static;grid-row:auto;grid-column:1/-1;justify-self:start;margin:1px 0 0;font-size:10.5px;padding:0 6px;line-height:1.5}}
+
 
 /* v99: iOS vergrößert Text nach dem Drehen sonst automatisch */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -1692,7 +1715,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #panel>.actbar{bottom:0!important;margin-bottom:0!important}
 
 /* v106: Überboten-Hinweis schwebt, statt Inhalt zu verschieben */
-.outbid{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 74px);transform:translateX(-50%);z-index:30;width:max-content;max-width:calc(100vw - 32px);margin:0;box-shadow:0 10px 28px rgba(0,0,0,.5);pointer-events:none}
+.outbid{position:fixed;left:12px;right:12px;margin-inline:auto!important;top:calc(env(safe-area-inset-top,0px) + 74px);z-index:30;width:fit-content;max-width:calc(100vw - 24px);box-sizing:border-box;text-align:center;margin:0;box-shadow:0 10px 28px rgba(0,0,0,.5);pointer-events:none}
 
 /* v107: Handy quer – außer beim Städtebau bekommt die Phase mehr Platz als die Karte */
 @media (orientation:landscape) and (max-height:520px){#app:not(.phbuild){grid-template-columns:minmax(0,1fr) min(62vw,600px)}}
@@ -3206,10 +3229,10 @@ function panelRestore(anc){try{if(!anc)return;const pt=panel.getBoundingClientRe
 function aucScroll(a){/* Handy: eigene Auktionsrunde – Gebotsbereich ins Bild holen, damit man nicht suchen muss */
   try{if(!S||S.phase!=='auction'||!isMine(a))return;const k=S.round+'|'+S.auc.mode+'|'+(S.auc.plant||'')+'|'+(UI.sel||'');if(UI._aucK===k)return;UI._aucK=k;
     const sec=panel.querySelector('.aucsec');if(!sec)return;const pr=panel.getBoundingClientRect(),r=sec.getBoundingClientRect();
-    const q=panel.querySelector('.qbar'),o=panel.querySelector('.order.pin');const cover=(q?q.offsetHeight:0)+(o?Math.min(o.offsetHeight,70):0);
+    const q=panel.querySelector('.qbar'),o=panel.querySelector('.order.pin');let oh=0;if(o){if(o.classList.contains('stuck'))oh=o.offsetHeight;else{const mb=o.style.marginBottom;o.classList.add('stuck');oh=o.offsetHeight;o.classList.remove('stuck');o.style.marginBottom=mb}}const cover=(q?q.offsetHeight:0)+oh;
     const visTop=pr.top+cover,visBot=pr.bottom-((panel.querySelector('.actbar')||{}).offsetHeight||0);
     if(r.top>=visTop&&r.top+Math.min(r.height,260)<=visBot)return;
-    panel.scrollTo({top:panel.scrollTop+r.top-visTop-34,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}catch(_){}}
+    panel.scrollTo({top:panel.scrollTop+r.top-visTop-44,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}catch(_){}}
 function renderPanel(){
   const a=actor();UI._ab=null;let h=qbarHTML()+orderHTML(a)+feedHTML()+phaseRulesHTML()+turnLine(a);
   const after=oppPlantsHTML();
@@ -3485,10 +3508,15 @@ function s3Row(sv,ic,k,v,bad){return `<button type="button" class="s3-row" data-
 function renderStart3(){
   const en=LANG==='en',sv=UI.sv||'',M=MAPS[UI.map],x=s3Summary();
   const lang=`<button type="button" class="s3-ib s3-lang" data-act="lang" data-l="${en?'de':'en'}" aria-label="${en?'Sprache: Englisch. Zu Deutsch wechseln':'Sprache: Deutsch. Zu Englisch wechseln'}">${en?'EN':'DE'}</button>`;
+  const wide=!sPhone();
+  const icons=`<div class="s3-ibs"><button type="button" class="s3-ib" data-act="stats" aria-label="${LX('Statistik','Statistics')}">${S3I.stats}</button><button type="button" class="s3-ib" data-act="startrules" aria-label="${LX('Spielregeln','Rules')}">${S3I.rules}</button>${lang}</div>`;
+  const top=`<header class="s3-top"><div class="s3-brand"><h1>Hochspannung</h1><p>${LX('Kraftwerke ersteigern, Brennstoff kaufen, die meisten Städte versorgen.','Win plants, buy fuel, power the most cities.')}</p></div>${wide?'':icons}</header>`;
+  const hero=live=>`<div class="s3-hero${live?' live':''}"${live?'':` data-act="sv" data-v="board" role="button" tabindex="0" aria-label="${LX('Spielplan und Netzgebiet ändern','Change board and regions')}"`}><div class="hero-map">${heroMap()}<canvas class="hm-fx" aria-hidden="true"></canvas></div>${live?`<span class="s3-tap">${LX('Regionen auf der Karte antippen','Click regions on the map')}</span>`:''}</div>`;
   if(!sv){
     const res=s3Resume();
-    start.innerHTML=`<div class="s3${res?' hasres':''}"><header class="s3-top"><div class="s3-brand"><h1>Hochspannung</h1><p>${LX('Kraftwerke ersteigern, Brennstoff kaufen, die meisten Städte versorgen.','Win plants, buy fuel, power the most cities.')}</p></div><div class="s3-ibs"><button type="button" class="s3-ib" data-act="stats" aria-label="${LX('Statistik','Statistics')}">${S3I.stats}</button><button type="button" class="s3-ib" data-act="startrules" aria-label="${LX('Spielregeln','Rules')}">${S3I.rules}</button>${lang}</div></header>
-    <div class="s3-hero" data-act="sv" data-v="board" role="button" tabindex="0" aria-label="${LX('Spielplan und Netzgebiet ändern','Change board and regions')}"><div class="hero-map">${heroMap()}<canvas class="hm-fx" aria-hidden="true"></canvas></div></div>
+    const bar=res?'':`<div class="startbar s3-bar"><div class="sb-sum"><b>${esc(x.map)}</b><span>${UI.nAI+1} ${LX('Spieler','players')} · ${LX('KI','AI')} ${tr(AI_NAME[UI.diff])} · ${UI.regions.length||regionCount(UI.nAI+1)} ${LX('Regionen','regions')}</span></div><button type="button" class="btn pri" data-act="start" ${x.bad?'disabled':''}>${LX('Neues Spiel','New game')}</button></div>`;
+    start.innerHTML=`<div class="s3${res?' hasres':''}">${top}
+    ${hero(false)}<div class="s3-side">${wide?`<div class="s3-sidetop">${icons}</div>`:''}
     ${res}${s3Chips()}
     <section class="s3-new"><h2>${res?LX('Oder neues Spiel','Or start a new game'):LX('Neues Spiel','New game')}</h2><div class="s3-rows">
     ${s3Row('co',`<span class="s3-ini">${esc(coInitials(x.nm))}</span>`,LX('Betrieb','Company'),x.nm)}
@@ -3498,7 +3526,7 @@ function renderStart3(){
     ${x.bad?`<p class="s3-warn">${LX('Das Netzgebiet ist noch nicht gültig. Tippe auf „Spielplan & Netzgebiet“.','The play area is not valid yet. Tap “Board & regions”.')}</p>`:''}
     ${res?`<button type="button" class="btn s3-alt" data-act="start" ${x.bad?'disabled':''}>${LX('Neues Spiel starten','Start new game')}</button><p class="s3-note">${LX('Ein neues Spiel ersetzt die laufende Partie.','A new game replaces the one in progress.')}</p>`:''}</section>
     <div class="s3-app"><span>${LX('Darstellung','Appearance')}</span><div class="seg">${[['dark',LX('Dunkel','Dark')],['light',LX('Hell','Light')],['auto','Auto']].map(([k,l])=>`<button type="button" data-act="themeSel" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div></div>
-    </div>${res?'':`<div class="startbar s3-bar"><div class="sb-sum"><b>${esc(x.map)}</b><span>${UI.nAI+1} ${LX('Spieler','players')} · ${LX('KI','AI')} ${tr(AI_NAME[UI.diff])} · ${UI.regions.length||regionCount(UI.nAI+1)} ${LX('Regionen','regions')}</span></div><button type="button" class="btn pri" data-act="start" ${x.bad?'disabled':''}>${LX('Neues Spiel','New game')}</button></div>`}`;
+    ${wide?bar:''}</div></div>${wide?'':bar}`;
     return;
   }
   const T={co:LX('Dein Betrieb','Your company'),board:LX('Spielplan & Netzgebiet','Board & regions'),opp:LX('Gegner','Opponents'),rules:LX('Kraftwerke & Regeln','Rules & extras')};
@@ -3506,11 +3534,12 @@ function renderStart3(){
   let b='';
   if(sv==='co')b=`<div class="cocard"><div class="co-emb" aria-hidden="true"><svg class="co-bolt" viewBox="0 0 24 24"><path d="M13.5 2 5 13.2h5.6L9.4 22 19 9.8h-5.7z"/></svg><span id="coIni">${coInitials(x.nm)}</span></div><div class="co-main"><label class="co-lbl" for="nm">Firmenname</label><div class="co-in"><input id="nm" maxlength="18" autocomplete="off" spellcheck="false" value="${esc(x.nm)}"><button type="button" class="co-dice" data-act="coRand" aria-label="Zufälliger Firmenname" title="Zufälliger Firmenname"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></button></div></div></div><p class="s3-note">${LX('Der Name erscheint im Spiel, im Verlauf und in der Rangliste.','The name appears in the game, the log and the leaderboard.')}</p>`;
   else if(sv==='board')b=`<div class="sgroup"><span class="s3-k">${LX('Spielplan','Board')}</span><div class="mcards">${Object.entries(MAPS).filter(([,m])=>!m.deluxe&&!m.exp).map(mapCard).join('')}</div><div class="mcards two">${Object.entries(MAPS).filter(([,m])=>m.deluxe).map(mapCard).join('')}</div>${xpickHTML(mapCard)}${M.exp?'':`<div class="nhint">${MAP_NOTE[UI.map]||''}</div>`}</div>
-   <div class="sgroup"><span class="s3-k">${LX('Netzgebiet','Play area')}</span><div class="s3-bmap"><div class="hero-map">${heroMap()}<canvas class="hm-fx" aria-hidden="true"></canvas></div><span class="s3-tap">${LX('Regionen auf der Karte antippen','Tap regions on the map')}</span></div>${regionPicker()}</div>`;
+   <div class="sgroup"><span class="s3-k">${LX('Netzgebiet','Play area')}</span>${wide?'':`<div class="s3-bmap"><div class="hero-map">${heroMap()}<canvas class="hm-fx" aria-hidden="true"></canvas></div><span class="s3-tap">${LX('Regionen auf der Karte antippen','Tap regions on the map')}</span></div>`}${regionPicker()}</div>`;
   else if(sv==='opp')b=`<div class="sgroup">${oppBlock()}</div>`;
   else b=`<div class="sgroup">${rulesBlock()}${promoBlock()}</div>`;
   const done=sv==='board'?(x.bad?LX('Netzgebiet unvollständig','Play area incomplete'):LX(`${x.map} übernehmen`,`Use ${x.map}`)):LX('Fertig','Done');
-  start.innerHTML=`<div class="s3 sub"><header class="s3-sh"><button type="button" class="s3-ib s3-bk" data-act="sv" data-v="" aria-label="${LX('Zurück','Back')}">${S3I.back}</button><h1>${T[sv]}</h1><button type="button" class="s3-done" data-act="sv" data-v="">${LX('Fertig','Done')}</button></header><div class="s3-body">${b}</div></div><div class="startbar s3-bar"><button type="button" class="btn pri s3-wide" data-act="sv" data-v="" ${sv==='board'&&x.bad?'disabled':''}>${esc(done)}</button></div>`;
+  const sh=`<header class="s3-sh"><button type="button" class="s3-ib s3-bk" data-act="sv" data-v="" aria-label="${LX('Zurück','Back')}">${S3I.back}</button><h1>${T[sv]}</h1><button type="button" class="s3-done" data-act="sv" data-v="">${LX('Fertig','Done')}</button></header>`,bar=`<div class="startbar s3-bar"><button type="button" class="btn pri s3-wide" data-act="sv" data-v="" ${sv==='board'&&x.bad?'disabled':''}>${esc(done)}</button></div>`;
+  start.innerHTML=wide?`<div class="s3 sub">${top}${hero(sv==='board')}<div class="s3-side">${sh}<div class="s3-body">${b}</div>${bar}</div></div>`:`<div class="s3 sub">${sh}<div class="s3-body">${b}</div></div>${bar}`;
 }
 function startScroller(){const b=start.querySelector('.setup-body');return b&&/(auto|scroll)/.test(getComputedStyle(b).overflowY)&&b.scrollHeight>b.clientHeight?b:start}
 
@@ -3541,7 +3570,7 @@ function _renderStart(show){
   if(!show){start.hidden=true;return}
   UI.map=UI.map||'de';loadMap(UI.map);
   start.hidden=false;
-  if(sPhone()){start.classList.remove('v2');start.classList.add('v3');renderStart3();return}
+  {start.classList.remove('v2');start.classList.add('v3');start.classList.toggle('wide',!sPhone());renderStart3();return}
   start.classList.remove('v3');start.classList.add('v2');UI.sv='';
   const M=MAPS[UI.map],nP=UI.nAI+1,games=loadHist().length;
   const mapCard=([k,m])=>`<button type="button" class="mcard${UI.map===k?' on':''}" data-act="mapSel" data-m="${k}" aria-pressed="${UI.map===k}">${mapThumb(k)}<span class="mcn">${m.name}</span>${m.deluxe?'<span class="dlxtag">Deluxe</span>':''}${m.exp&&m.rtxt?`<span class="xn" title="${m.rtxt.length} Sonderregeln">${m.rtxt.length} ${LANG==='en'?(m.rtxt.length===1?'rule':'rules'):(m.rtxt.length===1?'Regel':'Regeln')}</span>`:''}</button>`;
@@ -4520,7 +4549,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v108';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v109';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
