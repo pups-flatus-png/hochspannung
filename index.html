@@ -1121,7 +1121,14 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .toggle.on .swt.nuke{background:rgba(224,72,61,.22);border-color:var(--uranium);box-shadow:inset 0 0 10px rgba(224,72,61,.25)}
 .toggle.on .swt.nuke .nk{transform:translateX(32px);background:radial-gradient(circle at 35% 30%,var(--t5a6670),var(--t3a444c) 60%,var(--t262e34));box-shadow:0 0 0 2px var(--uranium),0 2px 5px rgba(0,0,0,.6)}
 .toggle.on .swt.nuke svg{fill:var(--taab4bb);animation:none;transform:rotate(30deg)}
-.toggle.on .swt.nuke span{transform:translateX(32px)}
+.toggle.on .swt.nuke .nk{transform:translateX(32px)}
+.swt.nuke .swl{font-style:normal;position:absolute;top:50%;transform:translateY(-50%);right:9px;font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--muted);pointer-events:none}
+.toggle.on .swt.nuke .swl{right:auto;left:9px;transform:translateY(-50%);color:#ffb3ab}
+[data-theme="light"] .toggle.on .swt.nuke .swl{color:#a3291f}
+.toggle.on .swt.nuke .nk::after{content:"";position:absolute;left:3px;right:3px;top:50%;height:2.5px;margin-top:-1.25px;border-radius:2px;background:var(--uranium);transform:rotate(-45deg);box-shadow:0 0 0 1.5px var(--t262e34)}
+.tgt .stp{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;font-family:var(--body,inherit);font-size:11px;font-weight:800;letter-spacing:.04em;vertical-align:2px;border:1px solid var(--line);color:var(--muted);background:var(--panel-2)}
+.tgt .stp.on{color:#fff;background:#c9483c;border-color:#c9483c}
+
 @media (prefers-reduced-motion:reduce){.swt.nuke svg,.swt.nuke .nk{animation:none!important}}
 .themebtn{flex:none;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--fg);display:grid;place-items:center;cursor:pointer;padding:0}
 .themebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -2948,7 +2955,7 @@ function rulesBlock(){
   }
   h+=`<div class="mixleg">${TYPE_ORDER.map(t=>`<span><i style="background:${TCOL[t]}"></i>${{coal:'Kohle',hybrid:'Kohle/Öl',gohybrid:M.gas?'Gas/Öl':'Müll/Öl',oil:'Öl',garbage:M.gas?'Gas':'Müll',uranium:'Uran',eco:'Öko',fusion:'Fusion'}[t]}</span>`).join('')}</div>`;
   if(M.phaseOutOpt||M.phaseOut39){const on=M.phaseOut39||UI.deAtom!==false;const trig=M.deluxe?'':{std:'39',d1:'38',d2:'37',mix:'39, 38 oder 37',mix1:'39, 38 oder 37'}[d];
-    h+=`<div class="toggle${on?' on':''}${M.phaseOut39?' fixed':''}">${M.phaseOut39?'':`<button type="button" class="swt nuke" role="switch" aria-checked="${on}" data-act="atom" data-v="${!on}" aria-label="Atomausstieg"><span class="nk"><svg viewBox="-12 -12 24 24" aria-hidden="true"><circle r="2.2"/><path d="M0-3.4L-3.9-10.1A11.6 11.6 0 0 1 3.9-10.1Z"/><path d="M0-3.4L-3.9-10.1A11.6 11.6 0 0 1 3.9-10.1Z" transform="rotate(120)"/><path d="M0-3.4L-3.9-10.1A11.6 11.6 0 0 1 3.9-10.1Z" transform="rotate(240)"/></svg></span></button>`}<div class="tgt"><b>Atomausstieg</b><span>${M.phaseOut39?'<span>Gehört fest zum Italien-Plan.</span> ':''}<span>${on?`Sobald das große Uran-Kraftwerk ${trig?'('+trig+') ':''}gekauft ist, kommt kein Uran mehr nach.`:'Uran wird wie im Grundspiel nachgefüllt.'}</span></span>${M.phaseOut39?'':'<small>Regel aus Funkenschlag Recharged</small>'}</div></div>`;
+    h+=`<div class="toggle${on?' on':''}${M.phaseOut39?' fixed':''}">${M.phaseOut39?'':`<button type="button" class="swt nuke" role="switch" aria-checked="${on}" data-act="atom" data-v="${!on}" aria-label="Atomausstieg"><span class="nk"><svg viewBox="-12 -12 24 24" aria-hidden="true"><circle r="2.2"/><path d="M0-3.4L-3.9-10.1A11.6 11.6 0 0 1 3.9-10.1Z"/><path d="M0-3.4L-3.9-10.1A11.6 11.6 0 0 1 3.9-10.1Z" transform="rotate(120)"/><path d="M0-3.4L-3.9-10.1A11.6 11.6 0 0 1 3.9-10.1Z" transform="rotate(240)"/></svg></span><i class="swl" aria-hidden="true">${on?LX('AN','ON'):LX('AUS','OFF')}</i></button>`}<div class="tgt"><b>Atomausstieg <span class="stp${on?' on':''}">${on?LX('✓ An','✓ On'):LX('– Aus','– Off')}</span></b><span>${M.phaseOut39?'<span>Gehört fest zum Italien-Plan.</span> ':''}<span>${on?`Sobald das große Uran-Kraftwerk ${trig?'('+trig+') ':''}gekauft ist, kommt kein Uran mehr nach.`:'Uran wird wie im Grundspiel nachgefüllt.'}</span></span>${M.phaseOut39?'':'<small>Regel aus Funkenschlag Recharged</small>'}</div></div>`;
     h+=uraniumTrapWarn();
   }
   {const nd=M.noDiscount,on=!nd&&UI.disc!=='orig';
