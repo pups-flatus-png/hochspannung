@@ -895,6 +895,30 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .goalnote{margin:-4px 0 14px}
 /* ---- v15: Startbildschirm "Leitstelle bei Nacht" ---- */
 #start,#start .setup-body{overflow-anchor:none}
+#intro{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:16px;background:rgba(4,7,10,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:ifade .25s ease}
+#intro.out{opacity:0;transition:opacity .25s}
+@keyframes ifade{from{opacity:0}}
+#intro .ib{position:relative;width:min(420px,100%);padding:22px 20px 18px;border-radius:18px;border:1px solid var(--line);background:radial-gradient(120% 90% at 0 0,rgba(242,179,61,.12),transparent 60%),var(--panel);box-shadow:0 24px 60px rgba(0,0,0,.45)}
+#intro .ik{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-text)}
+#intro h2{margin:4px 0 14px;font-family:var(--display);font-size:24px;line-height:1.15}
+#intro .islots{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+#intro .isl{display:grid;grid-template-columns:30px 1fr;align-items:center;gap:10px}
+#intro .ino{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:16px;font-weight:800;background:var(--panel-2);border:1px solid var(--line);color:var(--muted)}
+#intro .ichip{display:flex;align-items:center;gap:10px;height:42px;padding:0 12px;border-radius:11px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden}
+#intro .idot{width:14px;height:14px;border-radius:50%;flex:none;background:var(--pc,#555);box-shadow:0 0 0 3px color-mix(in srgb,var(--pc,#555) 25%,transparent)}
+#intro .inm{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.55;filter:blur(.4px)}
+#intro .isl.set .ichip{border-color:color-mix(in srgb,var(--pc) 60%,var(--line));background:color-mix(in srgb,var(--pc) 12%,var(--panel-2));animation:ipop .35s cubic-bezier(.2,1.6,.4,1)}
+#intro .isl.set .inm{opacity:1;filter:none}
+#intro .isl.set .ino{background:var(--pc);border-color:transparent;color:#fff}
+#intro .isl.me .ichip{box-shadow:0 0 0 2px var(--accent)}
+@keyframes ipop{0%{transform:scale(.94)}100%{transform:scale(1)}}
+#intro .ihint{margin:14px 0 0;color:var(--muted);font-size:14px;line-height:1.45}
+#intro .ihint b{color:var(--fg)}
+#intro .igo{width:100%;margin-top:14px}
+#intro .iskip{all:unset;cursor:pointer;display:block;margin:14px auto 0;font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+#intro .iskip[hidden]{display:none}
+@media (prefers-reduced-motion:reduce){#intro,#intro .isl.set .ichip{animation:none}}
+
 #start.v2{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,440px);align-items:stretch;justify-content:stretch;padding:0;overflow:hidden;background:var(--t070b0e)}
 #start.v2 .hero{position:relative;display:flex;flex-direction:column;min-height:0;overflow:hidden;
   background:radial-gradient(120% 90% at 40% 55%,var(--t0f1b23) 0%,var(--t0a1117) 55%,var(--t06090c) 100%)}
@@ -3966,9 +3990,31 @@ function render(){if(!S)return;normAlloc(me());layoutMap();renderTop();renderMap
   S.players.forEach(p=>{if(pm[p.id]!=null&&pm[p.id]!==p.money){const d=p.money-pm[p.id];floatText(document.querySelector(`[data-pid="${p.id}"]`),(d>0?'+':'−')+Math.abs(d)+' €',d>0?'#8fe39c':'#ff8a80')}});
   UI.prevMoney=Object.fromEntries(S.players.map(p=>[p.id,p.money]));
 }
+
+function showIntro(){
+  if(!S||!UI.intro)return;const en=LANG==='en';let ov=document.getElementById('intro');if(ov)ov.remove();
+  ov=document.createElement('div');ov.id='intro';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-label',en?'Drawing the turn order':'Spielerreihenfolge wird ausgelost');
+  const ord=S.order.slice(),N=ord.length,nm=id=>{const p=P(id);return p.human?(en?'You':'Du'):p.name};
+  ov.innerHTML=`<div class="ib"><span class="ik">${en?'Round 1':'Runde 1'}</span><h2>${en?'Drawing the turn order':'Die Reihenfolge wird ausgelost'}</h2><ol class="islots">${ord.map((id,i)=>`<li class="isl" data-i="${i}"><span class="ino">${i+1}</span><span class="ichip"><span class="idot"></span><span class="inm">?</span></span></li>`).join('')}</ol><p class="ihint" hidden></p><button type="button" class="btn pri igo" hidden>${en?"Let's go":'Los geht’s'}</button><button type="button" class="iskip">${en?'Skip':'Überspringen'}</button></div>`;
+  document.body.appendChild(ov);
+  const slots=[...ov.querySelectorAll('.isl')],ids=S.players.map(p=>p.id);let timers=[],done=false;
+  const setChip=(el,id,final)=>{const p=P(id);el.style.setProperty('--pc',p.color);el.querySelector('.inm').textContent=nm(id);el.classList.toggle('me',!!p.human&&final)};
+  const finish=()=>{if(done)return;done=true;timers.forEach(clearInterval);timers.forEach(clearTimeout);slots.forEach((li,i)=>{setChip(li,ord[i],true);li.classList.add('set')});
+    const h=ov.querySelector('.ihint'),me=ord.indexOf(H)+1;h.innerHTML=en?`${me===1?'<b>You go first.</b>':`${esc(nm(ord[0]))} goes first. You are <b>${me}${me===2?'nd':me===3?'rd':'th'}</b>.`} From round 2 on, the player with the most cities goes first.`:`${me===1?'<b>Du beginnst.</b>':`${esc(nm(ord[0]))} beginnt. Du bist <b>${me}.</b> in der Reihenfolge.`} Ab Runde 2 ist vorne, wer die meisten Städte hat.`;h.hidden=false;
+    ov.querySelector('.iskip').hidden=true;const g=ov.querySelector('.igo');g.hidden=false;try{g.focus()}catch(_){}};
+  const close=()=>{UI.intro=false;ov.classList.add('out');setTimeout(()=>ov.remove(),260);after()};
+  ov.querySelector('.igo').onclick=close;ov.querySelector('.iskip').onclick=finish;
+  ov.addEventListener('keydown',e=>{if(e.key==='Escape'||e.key==='Enter'){e.preventDefault();done?close():finish()}});
+  const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce||window.__fast){finish();return}
+  slots.forEach((li,i)=>{const pool=ord.slice(i);let k=Math.floor(Math.random()*pool.length);const iv=setInterval(()=>{const left=ord.slice(Math.max(i,slots.filter(x=>x.classList.contains('set')).length));k=(k+1)%left.length;setChip(li,left[k],false)},70+i*8);timers.push(iv);
+    timers.push(setTimeout(()=>{clearInterval(iv);setChip(li,ord[i],true);li.classList.add('set');if(i===N-1)setTimeout(finish,450)},900+i*620))});
+  ov.querySelector('.iskip').focus();
+}
 function schedule(){
   clearTimeout(timer);timer=null;
   const a=actor();if(!a||S.phase==='bureau')return;
+  if(UI.intro)return;
   if(P(a.pid).human)return;
   timer=setTimeout(()=>{timer=null;S.aiN=(S.aiN||0)+1;UI.undo=[];const au=S.phase==='auction'&&S.auc&&S.auc.mode==='bid'?{h:S.auc.high,pl:S.auc.plant}:null;aiAct(a);
     if(au&&P(au.h).human&&S.phase==='auction'&&S.auc.mode==='bid'&&S.auc.plant===au.pl&&S.auc.high!==au.h){UI.outbid={name:P(S.auc.high).name,amt:S.auc.bid,t:Date.now()};buzz()}
@@ -4037,7 +4083,7 @@ const A={
   regpick:()=>{if(!UI.regions.length){const n=regionCount(UI.nAI+1);const ks=Object.keys(REGIONS);for(let t=0;t<200;t++){const c=shuffle(ks).slice(0,n);if(regionsValid(c,n)&&(!MAPS[MAPID].mustRegion||c.includes(MAPS[MAPID].mustRegion))){UI.regions=c;break}}}UI.name=$('#nm').value;renderStart(true);return'skip'},
   markets:()=>{UI.sheet=UI.sheet==='markets'&&isDock()?null:'markets'},
   pinfo:b=>{UI.back=isDock()?UI.sheet:null;UI.pnum=+b.dataset.num;UI.sheet='plant'},
-  start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();saveName(UI.name);newGame(UI.name||(LANG==='en'?'Your company':'Dein Betrieb'),UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false)},
+  start:()=>{if(!regionsOk())return'skip';UI.name=$('#nm').value.trim();saveName(UI.name);newGame(UI.name||(LANG==='en'?'Your company':'Dein Betrieb'),UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false);UI.intro=true;setTimeout(showIntro,30)},
   cont:()=>{loadMap(S.map||'de');loadDeck(S.deckKeys||deckKeys('std'));applyPlantOv();applyMapN(S.n);applyGameMods();UI.vb=null;renderStart(false)},
   zin:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.3);return'skip'},
   zout:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.3);return'skip'},
