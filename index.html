@@ -1600,6 +1600,8 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .hero-map{position:absolute}
 .hero-map .hm-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
 .hero-map .heromap{position:relative;z-index:1}
+
+.fuelk em.tr{display:block;margin-top:2px;font-style:normal;font-size:11.5px;color:var(--muted)}.fuelk em.tr.up{color:var(--t6fd08a)}.fuelk em.tr.down{color:var(--tff8a7a)}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -4026,11 +4028,15 @@ function fuelCard(h){
   const mU=sum(F,'units')?sum(F,'cost')/sum(F,'units'):null,oU=sum(O,'units')?sum(O,'cost')/sum(O,'units'):null;
   const mC=sum(F,'pw')?sum(F,'cost')/sum(F,'pw'):null,oC=sum(O,'pw')?sum(O,'cost')/sum(O,'pw'):null;
   const mR=avg(F.map(x=>x.round)),mI=avg(F.filter(x=>x.inc!=null).map(x=>x.inc));
-  const cmp=(a,b)=>a==null||b==null?'':`<em class="${a<b-0.05?'up':a>b+0.05?'down':''}">Gegner Ø ${fmt1(b)} €</em>`;
+  const pc=(a,b)=>a==null||b==null||!b?null:Math.round((a-b)/b*100),pcs=x=>x==null?'–':(x>0?'+':x<0?'−':'±')+Math.abs(x)+' %';
+  const Lg=F[F.length-1],Pv=F.slice(0,-1);
+  const trd=(lv,pv)=>{if(h.length<2||lv==null||pv==null)return '';const x=pc(lv,pv);return `<em class="tr ${x==null?'':x<0?'up':x>0?'down':''}">${LX('Letzte Partie','Last game')} ${fmt1(lv)} € · ${pcs(x)} ${LX('ggü. davor','vs. before')}</em>`};
+  const lU=Lg&&Lg.units?Lg.cost/Lg.units:null,pU=sum(Pv,'units')?sum(Pv,'cost')/sum(Pv,'units'):null,lC=Lg&&Lg.pw?Lg.cost/Lg.pw:null,pC=sum(Pv,'pw')?sum(Pv,'cost')/sum(Pv,'pw'):null;
+  const cmp=(a,b)=>a==null||b==null?'':`<em class="${a<b-0.05?'up':a>b+0.05?'down':''}">Gegner Ø ${fmt1(b)} € · ${pcs(pc(a,b))}</em>`;
   const perRes=RES.map(k=>{let mc=0,mu=0,oc=0,ou=0;h.forEach(g=>{const m=me_(g);g.players.forEach(p=>{const x=(p.res||{})[k]||[0,0];if(p===m){mu+=x[0];mc+=x[1]}else{ou+=x[0];oc+=x[1]}})});return{k,m:mu?mc/mu:null,o:ou?oc/ou:null,mu}}).filter(x=>x.mu||x.o!=null);
   return `<section class="card wide fuel"><h3>Brennstoffkosten</h3><p class="hint">Was dich Kohle, Öl, Müll/Gas und Uran im Schnitt kosten, verglichen mit deinen Gegnern.</p>
-  <div class="fuelk"><div><small>Je Einheit</small><b>${mU==null?'–':fmt1(mU)+' €'}</b>${cmp(mU,oU)}</div><div><small>Je versorgter Stadt</small><b>${mC==null?'–':fmt1(mC)+' €'}</b>${cmp(mC,oC)}</div><div><small>Je Runde</small><b>${fmt1(mR)} €</b></div><div><small>Anteil an Einnahmen</small><b>${isNaN(mI)?'–':Math.round(mI)+' %'}</b></div></div>
-  <div class="st-table"><table><thead><tr><th>Rohstoff</th><th>Du Ø je Einheit</th><th>Gegner Ø</th><th>Unterschied</th></tr></thead><tbody>${perRes.map(x=>{const d=x.m!=null&&x.o!=null?x.m-x.o:null;return `<tr><td>${resIcon(x.k)} ${x.k==='garbage'?'Müll/Gas':RNAME[x.k]}</td><td>${x.m==null?'–':fmt1(x.m)+' €'}</td><td>${x.o==null?'–':fmt1(x.o)+' €'}</td><td class="${d==null?'':d<-0.05?'up':d>0.05?'down':''}">${d==null?'–':(d>0?'+':'')+fmt1(d)+' €'}</td></tr>`}).join('')}</tbody></table></div>
+  <div class="fuelk"><div><small>Je Einheit</small><b>${mU==null?'–':fmt1(mU)+' €'}</b>${cmp(mU,oU)}${trd(lU,pU)}</div><div><small>Je versorgter Stadt</small><b>${mC==null?'–':fmt1(mC)+' €'}</b>${cmp(mC,oC)}${trd(lC,pC)}</div><div><small>Je Runde</small><b>${fmt1(mR)} €</b></div><div><small>Anteil an Einnahmen</small><b>${isNaN(mI)?'–':Math.round(mI)+' %'}</b></div></div>
+  <div class="st-table"><table><thead><tr><th>Rohstoff</th><th>Du Ø je Einheit</th><th>Gegner Ø</th><th>Unterschied</th><th>in %</th></tr></thead><tbody>${perRes.map(x=>{const d=x.m!=null&&x.o!=null?x.m-x.o:null;return `<tr><td>${resIcon(x.k)} ${x.k==='garbage'?'Müll/Gas':RNAME[x.k]}</td><td>${x.m==null?'–':fmt1(x.m)+' €'}</td><td>${x.o==null?'–':fmt1(x.o)+' €'}</td><td class="${d==null?'':d<-0.05?'up':d>0.05?'down':''}">${d==null?'–':(d>0?'+':'')+fmt1(d)+' €'}</td><td class="${d==null?'':d<-0.05?'up':d>0.05?'down':''}">${pcs(pc(x.m,x.o))}</td></tr>`}).join('')}</tbody></table></div>
   <p class="hint">Grün: du kaufst günstiger ein als deine Gegner. Je versorgter Stadt zählt alle Rohstoffkäufe geteilt durch alle Städte, die du über die Partie versorgt hast.</p></section>`;
 }
 function lastBox(h){
