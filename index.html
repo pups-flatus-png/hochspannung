@@ -727,7 +727,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
   #app.mapmin #panel{border-top:0}
 }
 @media (orientation:landscape){
-  #app.mapmin{grid-template-columns:minmax(0,1fr) minmax(320px,58%)}
+  /* v86: feste Panelbreite in allen Phasen */
   #board>.mapbar{display:none}
 }
 .t-gohybrid{--cbg:var(--t433d14);--cacc:var(--te8d27a);background:linear-gradient(135deg,var(--t433d14) 0 50%,var(--t15202e) 50% 100%)}
@@ -1482,6 +1482,65 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .tk .tk-post{position:absolute;top:0;bottom:0;right:0;background:repeating-linear-gradient(90deg,transparent 0 4px,color-mix(in srgb,var(--line) 60%,transparent) 4px 5px);opacity:.5;pointer-events:none;z-index:0}
 .tk .tick.post span{opacity:.7}
 .jtog{display:inline-flex;margin:0 6px 6px 0}.jtog.on{border-color:#b48cff;color:#b48cff}
+
+/* ---- v86: Redesign – feste Panelbreite, Phasen-Stepper ---- */
+@media (orientation:landscape){#app{grid-template-columns:minmax(0,1fr) clamp(340px,31vw,460px)}}
+.brand{color:var(--fg)}
+.phase-wrap{flex:1 1 auto;max-width:640px;gap:5px}
+.phases{display:flex;gap:6px;width:100%}
+.ph{flex:1 1 0;min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:baseline;gap:3px 7px;padding:0 0 0;border:0;border-radius:0;background:none;font-size:13.5px;color:var(--muted);position:relative}
+.ph::after{content:"";grid-column:1/-1;height:3px;border-radius:2px;background:var(--line);margin-top:1px}
+.ph i{width:auto;height:auto;background:none;color:var(--muted);font-size:13px;border-radius:0;display:inline}
+.ph em{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph.past{color:var(--muted)}
+.ph.past i{background:none;color:var(--muted)}
+.ph.past::after{background:var(--edge)}
+.ph.cur{color:var(--fg);font-weight:600}
+.ph.cur i{background:none;color:var(--accent-text)}
+.ph.cur::after{background:var(--accent)}
+@media (max-width:820px){.ph:not(.cur) em{display:none}.ph{padding:0;font-size:13px}.phases{gap:4px}.ph.cur{flex-grow:2.6}}
+@media (max-width:480px){.ph{padding:0}.phases{gap:3px}}
+
+/* ---- v86: einheitliche Kraftwerkskarte (neutral, Typ-Band oben, Rohstoffsymbole) ---- */
+:root{--pcard:#172129;--pcard-line:#26333d}
+[data-theme="light"]{--pcard:#fffaf0;--pcard-line:#dccdae}
+[data-theme="light"] .plant,[data-theme="light"] .pm{--pcard:#172129;--pcard-line:#2c3a45}
+.plant,.mp{--band:linear-gradient(var(--cacc),var(--cacc))}
+.plant.t-hybrid,.mp.t-hybrid{--band:linear-gradient(90deg,var(--td9a06a) 50%,var(--t8fbbe8) 50%)}
+.plant.t-gohybrid,.mp.t-gohybrid{--band:linear-gradient(90deg,#d9c13f 50%,var(--t8fbbe8) 50%)}
+.plant.t-flux,.mp.t-flux{--band:linear-gradient(90deg,var(--td9a06a) 25%,var(--t8fbbe8) 25% 50%,#d9c13f 50% 75%,var(--tff7a6d) 75%)}
+.plant.t-mine,.mp.t-mine{--band:repeating-linear-gradient(135deg,#e8d27a 0 4px,transparent 4px 8px)}
+.plant,.plant.t-hybrid,.plant.t-gohybrid,.plant.t-fusion,.plant.t-flux,.plant.t-mine{background:var(--pcard);border:1px solid var(--pcard-line);box-shadow:0 2px 8px -4px rgba(0,0,0,.5);padding-top:9px}
+.plant::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--band);z-index:0}
+.plant.t-fusion{box-shadow:0 0 12px -4px rgba(95,212,240,.45)}
+.plant .wm{display:none}
+.plant .pn{color:var(--fg);text-shadow:none}
+.plant .tl{color:var(--cacc)}
+[data-theme="light"] .plant.t-garbage .tl,[data-theme="light"] .plant.t-gohybrid .tl,[data-theme="light"] .plant.t-mine .tl{color:#7d6a12}
+.plant .bi{color:color-mix(in srgb,var(--cacc) 80%,var(--fg))}
+.plant .out .cty{background:color-mix(in srgb,var(--fg) 9%,transparent);color:var(--fg)}
+.plant .out .arr{color:var(--muted)}
+.plant .store{border-top:1px solid var(--pcard-line)}
+.plant .store i{border:1.5px dashed color-mix(in srgb,var(--fg) 30%,transparent)}
+.plant.empty{background:transparent;box-shadow:none;border:1px dashed var(--line)}
+.plant.empty::before{display:none}
+.plant.step3{background:var(--pcard)}
+.plant.step3::before{background:var(--accent)}
+.plant.disc{border-color:var(--accent)}
+.plant.promo{border:1.5px dashed #e8b24a!important}
+.mp,.mp.t-mine,.mp.t-gohybrid,.mp.t-hybrid{background:var(--band) top/100% 3px no-repeat,var(--pcard);border:1px solid var(--pcard-line);border-top-width:0;padding-top:2px;color:var(--fg)}
+.mp.none{background:none;border:1px dashed var(--line);color:var(--muted)}
+.pm{--band:linear-gradient(var(--cacc),var(--cacc));background:var(--band) top/100% 4px no-repeat,var(--pcard);border:1px solid var(--pcard-line);padding-top:8px}
+.pm.t-hybrid{--band:linear-gradient(90deg,var(--td9a06a) 50%,var(--t8fbbe8) 50%)}
+.pm.t-gohybrid{--band:linear-gradient(90deg,#d9c13f 50%,var(--t8fbbe8) 50%)}
+.pm.t-flux{--band:linear-gradient(90deg,var(--td9a06a) 25%,var(--t8fbbe8) 25% 50%,#d9c13f 50% 75%,var(--tff7a6d) 75%)}
+.pm.pmpark{background:repeating-linear-gradient(135deg,#2e2210 0 4px,#241a0c 4px 8px)}
+
+/* v86: Geldänderungen als ruhige Marke an der Ecke statt fliegender Zahl */
+.float{white-space:nowrap;font-size:12.5px;line-height:1;padding:4px 7px;border-radius:10px;text-shadow:none;background:color-mix(in srgb,var(--fc,#8fe39c) 16%,var(--panel));border:1px solid color-mix(in srgb,var(--fc,#8fe39c) 45%,transparent);box-shadow:0 4px 12px -4px rgba(0,0,0,.5);transform:translate(-100%,-100%);animation:tagIn 2.6s ease-out forwards}
+.float.fl-left{transform:translate(-50%,0)}
+@keyframes tagIn{0%{opacity:0}8%{opacity:1}80%{opacity:1}100%{opacity:0}}
+[data-theme="light"] .float{color:color-mix(in srgb,var(--fc) 55%,#000)!important}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -2341,8 +2400,9 @@ function isDone(id){switch(S.phase){case'auction':return P(id).done;case'resourc
 document.addEventListener('scroll',e=>{if(e.target&&e.target.id==='panel')document.querySelectorAll('.float').forEach(f=>f.remove())},true);
 function floatText(el,text,color){
   if(!el)return;const r=el.getBoundingClientRect();if(!r.width)return;
-  const key=Math.round(r.left)+':'+Math.round(r.top);document.querySelectorAll('.float').forEach(o=>{if(o.dataset.k===key)o.remove()});const f=document.createElement('div');f.className='float';f.dataset.k=key;f.textContent=text;f.style.color=color;f.style.left=(r.left+r.width/2)+'px';f.style.top=(r.bottom+2)+'px';
-  document.body.appendChild(f);setTimeout(()=>f.remove(),1500);
+  const key=(el.dataset&&el.dataset.pid!=null?'p'+el.dataset.pid+(el.classList.contains('wallet')?'w':''):Math.round(r.left)+':'+Math.round(r.top));document.querySelectorAll('.float').forEach(o=>{if(o.dataset.k===key)o.remove()});const f=document.createElement('div');f.className='float';f.dataset.k=key;f.textContent=text;f.style.color=color;f.style.setProperty('--fc',color);
+  if(el.classList.contains('wallet')){f.classList.add('fl-left');f.style.left=(r.left+r.width/2)+'px';f.style.top=(r.bottom+4)+'px'}else{f.style.left=(r.right-5)+'px';f.style.top=(r.bottom-5)+'px'}
+  document.body.appendChild(f);setTimeout(()=>f.remove(),2600);
 }
 function shortName(n){const w=String(n).split(/\s+/);return w[0].length>=4?w[0]:String(n)}
 function orderHTML(a){
