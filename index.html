@@ -1632,6 +1632,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
 /* v106: Überboten-Hinweis schwebt, statt Inhalt zu verschieben */
 .outbid{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 74px);transform:translateX(-50%);z-index:30;width:max-content;max-width:calc(100vw - 32px);margin:0;box-shadow:0 10px 28px rgba(0,0,0,.5);pointer-events:none}
+
+/* v107: Handy quer – außer beim Städtebau bekommt die Phase mehr Platz als die Karte */
+@media (orientation:landscape) and (max-height:520px){#app:not(.phbuild){grid-template-columns:minmax(0,1fr) min(62vw,600px)}}
+@media (orientation:landscape) and (max-height:520px){#app.phbuild{grid-template-columns:minmax(0,1fr) clamp(300px,40vw,420px)}}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -4380,7 +4384,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v106';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v107';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -4404,6 +4408,7 @@ function layoutMap(){
   const min=quiet&&MAPMODE==='auto'&&!UI.peek;
   const app=$('#app'),was=app.classList.contains('mapmin');
   app.classList.toggle('mapmin',min);
+  {const pb=S.phase==='build',wasB=app.classList.contains('phbuild');app.classList.toggle('phbuild',pb);if(wasB!==pb&&matchMedia('(orientation:landscape) and (max-height:520px)').matches){UI.vb=null}}
   const mb=$('#mapbar');mb.hidden=!(quiet&&MAPMODE==='auto');
   $('#mapbarT').textContent=min?'Karte zeigen':'Karte verkleinern';
   mb.setAttribute('aria-expanded',String(!min));
