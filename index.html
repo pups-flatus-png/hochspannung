@@ -1541,6 +1541,22 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .float.fl-left{transform:translate(-50%,0)}
 @keyframes tagIn{0%{opacity:0}8%{opacity:1}80%{opacity:1}100%{opacity:0}}
 [data-theme="light"] .float{color:color-mix(in srgb,var(--fc) 55%,#000)!important}
+
+/* ---- v86b: Aktionsleiste unten, weniger Kästen, klarere Überschriften ---- */
+#panel>.actbar{position:sticky;bottom:-18px;z-index:7;width:auto;max-width:none;margin:auto calc(-1 * max(16px,env(safe-area-inset-right,0px))) -18px calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:12px max(16px,env(safe-area-inset-right,0px)) max(14px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--panel) 92%,var(--bg));border-top:1px solid var(--line);box-shadow:0 -10px 24px -14px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:10px;flex:none}
+.actbar .ab-t{display:flex;align-items:center;gap:9px;font-family:var(--display);font-size:18px;font-weight:600;line-height:1.15;color:var(--fg)}
+.actbar .ab-t .dot{width:8px;height:8px;flex:none;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent)}
+.actbar .row{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+.actbar .row .grow{flex:1 1 140px}
+.actbar>.btn{width:100%}
+.actbar .btn{min-height:46px}
+.actbar .hint{margin:0}
+[data-theme="light"] #panel>.actbar{box-shadow:0 -10px 24px -16px rgba(80,55,20,.35)}
+.turn{font-family:var(--display);font-size:18px;font-weight:600}
+.turn .advbtn{font-family:var(--body)}
+.sec h3{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:.02em;text-transform:none;color:var(--fg)}
+.feed,.oppp,.sec.tseat{background:none;border:0;border-top:1px solid var(--line);border-radius:0;padding-left:0;padding-right:0}
+.oppp{margin:0}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -2743,8 +2759,7 @@ function panelAuction(a){
       const key=auc.plant+'-'+auc.bid;
       if(UI.bidKey!==key){UI.bidKey=key;UI.bid=auc.bid+1}
       const can=me().money>=auc.bid+1;
-      h+=can?`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=auc.bid+1?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=me().money?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="raise">Bieten</button></div>`:`<p class="hint">Du hast nicht genug Geld, um zu erhöhen.</p>`;
-      h+=`<button type="button" class="btn" data-act="drop">Aussteigen</button>`;
+      UI._ab={t:LX(`Höchstgebot ${auc.bid} € · erhöhen oder aussteigen`,`Highest bid ${auc.bid} € · raise or drop out`),h:(can?`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=auc.bid+1?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=me().money?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="raise">${LX('Bieten','Bid')} ${UI.bid} €</button><button type="button" class="btn" data-act="drop">Aussteigen</button></div>`:`<p class="hint">Du hast nicht genug Geld, um zu erhöhen.</p><button type="button" class="btn" data-act="drop">Aussteigen</button>`)};
       if(auc.chooser!==H&&!me().done)h+=`<p class="hint">${esc(P(auc.chooser).name)} hat Kraftwerk ${PN(auc.plant)} zur Versteigerung gestellt. Du kannst nur mitbieten oder aussteigen. Steigst du aus, kommst du danach selbst an die Reihe und wählst dein eigenes Kraftwerk aus dem aktuellen Markt.</p>`;
     }
     h+=`</section>`;
@@ -2752,10 +2767,11 @@ function panelAuction(a){
   }
   if(isMine(a)){
     h+=`<section class="sec"><h3>Du eröffnest</h3><p class="hint">${UI.sel?'Lege dein Startgebot fest.':'Tippe auf ein Kraftwerk im aktuellen Markt, um es zu versteigern.'}${S.round===1?' In der ersten Runde muss jeder ein Kraftwerk kaufen.':''}</p>`;
+    const passB=S.round>1?`<button type="button" class="btn" data-act="pass">Diese Runde passen</button>`:'';
     if(UI.sel){
-      h+=`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=minBid(UI.sel)?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=me().money?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="open">Für ${UI.bid} € anbieten</button></div>${plantLine(UI.sel)}`;
-    }
-    if(S.round>1)h+=`<button type="button" class="btn" data-act="pass">Diese Runde passen</button>`;
+      h+=plantLine(UI.sel);
+      UI._ab={t:LX(`Kraftwerk ${PN(UI.sel)} versteigern`,`Auction plant ${PN(UI.sel)}`),h:`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=minBid(UI.sel)?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=me().money?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="open">Für ${UI.bid} € anbieten</button></div>${passB}`};
+    }else if(passB)UI._ab={t:LX('Kraftwerk im Markt antippen – oder passen','Tap a plant in the market – or pass'),h:passB};
     h+=`</section>`;
     return h+marketHTML('pick');
   }
@@ -2830,7 +2846,7 @@ function panelResources0(a){
     h+=`<div class="prow">${plantCard(n,{sm:true,act:'pinfo'})}<div class="pcol"><div class="pslots" aria-label="Lager von Kraftwerk ${PN(n)}">${slotsHTML(n,p.alloc[n]||[],c)}</div><div class="pctl">${types.map(r=>`<div class="rctl">${resIcon(r)}<button type="button" class="mini" data-act="cartm" data-n="${n}" data-r="${r}" ${(c[r]||0)>0?'':'disabled'} aria-label="${RNAME[r]} für Kraftwerk ${n} weniger">−</button><output>${c[r]||0}</output><button type="button" class="mini" data-act="cartp" data-n="${n}" data-r="${r}" ${canAddP(n,r)?'':'disabled'} aria-label="${RNAME[r]} für Kraftwerk ${n} mehr">+</button></div>`).join('')}</div></div></div>`;
   }
   const tot=cartCost();
-  h+=`<div class="row"><button type="button" class="btn" data-act="suggest">Bedarf für eine Runde</button><button type="button" class="btn" data-act="realloc">Lager neu verteilen</button></div><div class="row"><button type="button" class="btn" data-act="skipbuy">${MR().india?'Passen (für diese Runde fertig)':'Nichts kaufen'}</button><button type="button" class="btn pri grow" data-act="buy" ${tot?'':'disabled'}>${MR().india?'1 Einheit kaufen':'Kaufen'} · ${tot} €</button></div></section>`;
+  h+=`<div class="row"><button type="button" class="btn" data-act="suggest">Bedarf für eine Runde</button><button type="button" class="btn" data-act="realloc">Lager neu verteilen</button></div></section>`;UI._ab={t:tot?LX(`Einkauf: ${tot} €`,`Shopping: ${tot} €`):LX('Rohstoffe wählen','Pick resources'),h:`<div class="row"><button type="button" class="btn" data-act="skipbuy">${MR().india?'Passen (für diese Runde fertig)':'Nichts kaufen'}</button><button type="button" class="btn pri grow" data-act="buy" ${tot?'':'disabled'}>${MR().india?'1 Einheit kaufen':'Kaufen'} · ${tot} €</button></div>`};
   return h+mk;
 }
 function incomeFor(c,f){return PAY[Math.min(c,f,20)]}
@@ -2869,7 +2885,7 @@ function panelBuild(a){
     h+=`<div class="mkt-label"><span>Günstigste Städte</span><span>${p.money} € verfügbar</span></div><div class="opts">${opts.slice(0,5).map(o=>`<button type="button" class="opt${UI.buildSel===o.city?' sel':''}" data-act="bsel" data-city="${o.city}"><span><span class="nm">${CITY[o.city].name}</span> <span class="rg">${REGIONS[CITY[o.city].reg].name}</span></span><span class="cst">${o.cost} €</span></button>`).join('')}</div>`;
   }else h+=`<p class="hint">Keine Stadt ist für dich frei.</p>`;
   if(cityCount(p)+1>=END_AT&&!S.endTriggered)h+=`<p class="warn">Mit ${END_AT} Städten endet das Spiel nach dieser Runde.</p>`;
-  h+=`<div class="row">${S.turnBuilt.length?'<button type="button" class="btn" data-act="breset">Zurücknehmen</button>':''}<button type="button" class="btn pri grow" data-act="bdone">Ausbau beenden</button></div></section>`;
+  h+=`</section>`;UI._ab={t:S.turnBuilt.length?LX(`${S.turnBuilt.length} ${S.turnBuilt.length===1?'Stadt':'Städte'} gebaut`,`${S.turnBuilt.length} ${S.turnBuilt.length===1?'city':'cities'} built`):LX('Stadt auf der Karte antippen','Tap a city on the map'),h:`<div class="row">${S.turnBuilt.length?'<button type="button" class="btn" data-act="breset">Zurücknehmen</button>':''}<button type="button" class="btn pri grow" data-act="bdone">Ausbau beenden</button></div>`};
   return h;
 }
 function allocPower(p,nums){
@@ -2916,7 +2932,7 @@ function panelBureau(){
   {const ms=mineSale(p,true);if(ms){if(UI.sellKey!==S.round){UI.sellKey=S.round;UI.sell=true}const en=LANG==='en';
     h+=`<div class="toggle${UI.sell?' on':''} sellt"><button type="button" class="swt" role="switch" aria-checked="${UI.sell}" data-act="sellToggle" aria-label="${en?'Sell uranium':'Uran verkaufen'}"><span></span></button><div class="tgt"><b>${en?'Sell uranium from your mines':'Uran aus deinen Minen verkaufen'}</b><span>${ms.price?(UI.sell?(en?`${ms.c} × ${ms.price} € = ${ms.inc} € at round end. ${ms.n===1?'Your token then fills the highest free space.':'Your '+ms.n+' tokens then fill the highest free spaces.'}`:`${ms.c} × ${ms.price} € = ${ms.inc} € am Rundenende. Danach ${ms.n===1?'belegt dein Marker das höchste freie Feld':'belegen deine '+ms.n+' Marker die höchsten freien Felder'}.`):(en?'You keep the market prices high for a later sale and earn nothing from your mines this round.':'Du hältst die Preise für später hoch und verdienst diese Runde nichts mit deinen Minen.')):(en?'The uranium market is full: no sale possible this round.':'Der Uranmarkt ist voll: Diese Runde ist kein Verkauf möglich.')}</span></div></div>`}}
   h+=`<div class="income"><span>${powered} von ${cityCount(p)} Städten versorgt</span><b>+${roundIncome(p,powered)} €</b></div>`;
-  h+=`<div class="row"><button type="button" class="btn" data-act="realloc">Lager neu verteilen</button><button type="button" class="btn pri grow" data-act="power" ${o&&!mustMax?'':'disabled'}>Strom liefern</button></div></section>`;
+  h+=`</section>`;UI._ab={t:LX(`${powered} von ${cityCount(p)} Städten versorgt`,`${powered} of ${cityCount(p)} cities powered`),h:`<div class="row"><button type="button" class="btn" data-act="realloc">Lager neu verteilen</button><button type="button" class="btn pri grow" data-act="power" ${o&&!mustMax?'':'disabled'}>Strom liefern · +${roundIncome(p,powered)} €</button></div>`};
   const nx=S.players.filter(x=>!x.human);
   h+=`<p class="hint">Die Gegner haben bereits geliefert: ${nx.map(x=>esc(x.name)+' '+x.lastPowered).join(', ')} Städte.</p>`;
   return h;
@@ -3007,7 +3023,8 @@ function marketDemand(r){
   return `<div class="dem"><span><span class="dl">Bedarf aller Betriebe je Lieferung</span><b>${all}</b></span>${flex?`<span><span class="dl">plus flexibel (Hybrid)</span><b>${flex}</b></span>`:''}<span><span class="dl">davon du</span><b>${mine}</b></span></div>`;
 }
 function renderPanel(){
-  const a=actor();let h=qbarHTML()+orderHTML(a)+feedHTML()+phaseRulesHTML()+((S.phase==='auction'||S.xauc)&&S.phase!=='end'?seatHTML(a):'')+oppPlantsHTML()+turnLine(a);
+  const a=actor();UI._ab=null;let h=qbarHTML()+orderHTML(a)+feedHTML()+phaseRulesHTML()+turnLine(a);
+  const after=oppPlantsHTML()+((S.phase==='auction'||S.xauc)&&S.phase!=='end'?seatHTML(a):'');
   if(S.subPick!=null){h+=panelSub(a)}else if(S.xauc){h+=panelX(a)}else
   switch(S.phase){
     case'auction':h+=panelAuction(a);break;
@@ -3016,7 +3033,8 @@ function renderPanel(){
     case'bureau':h+=panelBureau();break;
     case'end':h+=`<section class="sec"><h3>Spielende</h3><p class="hint">${esc(P(S.ranking[0]).name)} gewinnt.</p><button type="button" class="btn pri" data-act="results">Ergebnis ansehen</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button></section>`;break;
   }
-  h+=panelMine();
+  h+=after+panelMine();
+  if(UI._ab&&isMine(a))h+=`<div class="actbar" role="region" aria-label="${LX('Dein Zug','Your move')}"><div class="ab-t"><span class="dot"></span>${UI._ab.t}</div>${UI._ab.h}</div>`;
   const st=panel.scrollTop;panel.innerHTML=h;panel.scrollTop=st;orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
 }
 
