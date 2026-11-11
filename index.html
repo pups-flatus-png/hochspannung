@@ -2921,6 +2921,20 @@ function buildRuleHint(p){const R=MR(),en=LANG==='en';let t=[];
   if(R.islands&&p.cities.length)t.push(en?'Starting a network on the other island costs 20 € extra and needs an empty city.':'Ein Netz auf der anderen Insel kostet 20 € Aufpreis und braucht eine leere Stadt.');
   if(MAPS[S.map].cityx&&Object.values(MAPS[S.map].cityx).some(x=>x.trans))t.push(S.step<2?(en?'Cities marked 2+ open in Step 2.':'Mit 2+ markierte Städte öffnen erst ab Stufe 2.'):(en?'Cities marked 2+ are now open.':'Mit 2+ markierte Städte sind jetzt offen.'));
   return t.length?`<p class="hint brule">${t.join(' ')}</p>`:'';}
+function cityWhyNot(p,c){/* angetippte Stadt ohne Preisschild: Preis (falls möglich) und Grund erklären */
+  const C=CITY[c];if(!C)return'';const L=(de,en)=>LX(de,en);const occ=S.owners[c]||[],cr=cityRule(c);let why='',price='';
+  const d=distFrom(p),conn=d?d[c]:0,cn=conn===Infinity||conn==null?null:conn;
+  const nextSlot=occ.length<cr.costs.length?cr.costs[occ.length]:null;
+  if(!activeIds().includes(c))why=L('Diese Stadt liegt nicht im Spielgebiet dieser Partie.','This city is outside the play area of this game.');
+  else if(occ.includes(p.id))why=L('Hier hast du schon ein Haus. Pro Stadt darf jede Firma nur einmal bauen.','You already have a house here. Each company may build only once per city.');
+  else if(nextSlot==null)why=L('Alle Plätze sind belegt.','All spaces are taken.');
+  else if(occ.length>=cr.max){let st=S.step+1;const x=(MAPS[S.map].cityx||{})[c];while(st<=3&&(x&&x.steps?x.steps[st-1]:st)<=occ.length)st++;
+    why=st<=3?L(`In Stufe ${['I','II','III'][S.step-1]} ist hier kein Platz frei. Ab Stufe ${['I','II','III'][st-1]} kostet der nächste Platz ${nextSlot} €.`,`No space is open here in step ${['I','II','III'][S.step-1]}. From step ${['I','II','III'][st-1]} the next space costs ${nextSlot} €.`):L('In dieser Partie ist hier kein weiterer Platz mehr frei.','No further space opens here in this game.');
+    if(cn!=null)price=L(`Dann: Platz ${nextSlot} € + Leitung ${cn} € = ${nextSlot+cn} €`,`Then: space ${nextSlot} € + connection ${cn} € = ${nextSlot+cn} €`)}
+  else{why=L('Von deinem Netz aus ist diese Stadt gerade nicht erreichbar (Sonderregel dieses Spielplans).','This city can’t be reached from your network right now (a special rule of this board).');
+    if(cn!=null)price=L(`Platz ${nextSlot} € + Leitung ${cn} €`,`Space ${nextSlot} € + connection ${cn} €`)}
+  return `<div class="selinfo nope"><div class="t">${C.name}</div><p class="hint">${why}</p>${price?`<div class="calc">${price}</div>`:''}</div>`;
+}
 function panelBuild(a){
   if(!isMine(a)){
     return `<section class="sec"><h3>Netzausbau</h3>${netStatus(me())}<p class="hint">Gebaut wird in umgekehrter Reihenfolge. Die Farben in den Städten zeigen, wer dort Strom liefert.</p></section>`;
@@ -2929,7 +2943,7 @@ function panelBuild(a){
   const tb=S.turnBuilt.length?`<p class="nturn">Diesen Zug: ${S.turnBuilt.length} ${S.turnBuilt.length===1?'Stadt':'Städte'} für ${S.turnBuilt.reduce((s,b)=>s+b.cost,0)} € (${S.turnBuilt.map(b=>CITY[b.city].name).join(', ')})</p>`:'';
   let h=`<section class="sec"><h3>Dein Netzausbau</h3>${netStatus(p,tb)}<p class="hint">Tippe auf eine Stadt mit Preisschild. Der Preis enthält den Platz in der Stadt (${MAPS[S.map].cityx?(LANG==='en'?'10–20 € depending on the city':'je nach Stadt 10 bis 20 €'):SLOT_COST.slice(0,S.step).join(' / ')+' €'}) und die günstigste Leitung zu deinem Netz.</p>${buildRuleHint(p)}`;
   const sel=UI.buildSel&&opts.find(o=>o.city===UI.buildSel);
-  if(UI.buildSel&&!sel)UI.buildSel=null;
+  if(UI.buildSel&&!sel)h+=cityWhyNot(p,UI.buildSel);
   if(sel){
     const c=CITY[sel.city];
     h+=`<div class="selinfo"><div class="t">${c.name}</div><div class="calc">Platz ${sel.slot} € + ${sel.jump?'freier Sprung 0 €':MR().islands&&p.cities.length&&islandOf(sel.city)&&!p.cities.some(x=>islandOf(x)===islandOf(sel.city))?'Insel-Aufpreis '+sel.conn+' €':'Leitung '+sel.conn+' €'} = <b>${sel.cost} €</b><br>${(()=>{const n=p.cities.length,cap=capacity(p),fu=fueledCap(p);const g=incomeFor(n+1,fu)-incomeFor(n,fu);return n>=cap?'<span class="nwarn">Über Kapazität: bringt erst mit größeren Kraftwerken Geld.</span>':g>0?'Danach '+(n+1)+' von '+cap+' versorgt · Einnahme +'+g+' €':'<span class="nwarn">Brennstoff reicht nicht: bringt diese Runde kein Geld.</span>'})()}</div><button type="button" class="btn pri" data-act="build" ${sel.cost>p.money?'disabled':''}>${sel.cost>p.money?'Zu wenig Geld':'Hier bauen · '+sel.cost+' €'}</button></div>`;
