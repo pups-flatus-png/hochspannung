@@ -3316,7 +3316,7 @@ ${S&&(S.promos||[]).length?`<div class="rdiff ig"><div class="rd-h"><div><span c
 const DOCK_MQ=matchMedia('(orientation:landscape) and (min-width:900px) and (min-height:500px)');
 function isDock(){return !!S&&(UI.sheet==='markets'||UI.sheet==='opp')&&DOCK_MQ.matches&&start.hidden}
 function undock(){if(sheet.classList.contains('dock')){sheet.classList.remove('dock');sheet.removeAttribute('style')}}
-sheet.addEventListener('click',e=>{if(e.target===sheet){const ac=S&&actor();if(ac&&ac.kind==='discard'&&ac.pid===H)return;UI.sheet=null;renderSheet()}});
+sheet.addEventListener('click',e=>{if(e.target===sheet){const ac=S&&actor();if(ac&&ac.kind==='discard'&&ac.pid===H)return;UI.sheet=null;renderSheet();if(UI.rulesFromStart){UI.rulesFromStart=false;renderStart(true)}}});
 
 /* --- Start --- */
 function regionsAdjacent(sel){return regGroups(sel).every(grp=>{const set=new Set(grp),seen=new Set([grp[0]]),q=[grp[0]];while(q.length){const r=q.shift();for(const x of RADJ[r]||[])if(set.has(x)&&!seen.has(x)){seen.add(x);q.push(x)}}return seen.size===grp.length})}
@@ -4549,7 +4549,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v109';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v110';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -4677,12 +4677,12 @@ const A={
   statsReset:()=>{UI.statReset=true;renderStats();return'skip'},
   statsResetNo:()=>{UI.statReset=false;renderStats();return'skip'},
   statsResetYes:()=>{saveHist([]);try{localStorage.removeItem(STATS_KEY)}catch(_){}UI.statReset=false;renderStats();return'skip'},
-  menu:()=>UI.sheet='menu',close:()=>{UI.sheet=UI.back||null;UI.back=null},opp:()=>{UI.sheet=UI.sheet==='opp'&&isDock()?null:'opp'},oppToggle:b=>{if(S&&S.phase!=='auction'){UI.oppPh=UI.oppPh||{};const k=S.round+S.phase;UI.oppPh[k]=!(UI.oppPh[k]??false);return}try{const o=localStorage.getItem('hochspannung-opp-open')!=='0';localStorage.setItem('hochspannung-opp-open',o?'0':'1')}catch(_){}},oppjump:b=>{const el=document.getElementById('opp-'+b.dataset.pid);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return'skip'},log:()=>UI.sheet='log',rules:()=>UI.sheet='rules',
+  menu:()=>UI.sheet='menu',close:()=>{UI.sheet=UI.back||null;UI.back=null;if(!UI.sheet&&UI.rulesFromStart){UI.rulesFromStart=false;renderSheet();renderStart(true);return'skip'}},opp:()=>{UI.sheet=UI.sheet==='opp'&&isDock()?null:'opp'},oppToggle:b=>{if(S&&S.phase!=='auction'){UI.oppPh=UI.oppPh||{};const k=S.round+S.phase;UI.oppPh[k]=!(UI.oppPh[k]??false);return}try{const o=localStorage.getItem('hochspannung-opp-open')!=='0';localStorage.setItem('hochspannung-opp-open',o?'0':'1')}catch(_){}},oppjump:b=>{const el=document.getElementById('opp-'+b.dataset.pid);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return'skip'},log:()=>UI.sheet='log',rules:()=>UI.sheet='rules',
   results:()=>UI.sheet='results',newgame:()=>UI.sheet='newgame',
   quit:()=>{if(!S)return'skip';UI.sheet='quit';UI.back=null;if(!start.hidden){renderSheet();return'skip'}},
   quityes:()=>{clearTimeout(timer);timer=null;S=null;try{localStorage.removeItem(SAVE_KEY)}catch(_){}UI.intro=false;const io=document.getElementById('intro');if(io)io.remove();UI.undo=[];UI.sheet=null;UI.back=null;UI.toast=null;renderSheet();renderStart(true);return'skip'},
   newyes:()=>{UI.sheet=null;clearTimeout(timer);renderSheet();renderStart(true);return'skip'},
-  startrules:()=>{UI.sheet='rules';renderStart(false);return'rules'},
+  startrules:()=>{UI.sheet='rules';UI.rulesFromStart=true;renderStart(false);return'rules'},
   nai:b=>{UI.nAI=+b.dataset.n;if(UI.regions.length&&UI.regions.length!==regionCount(UI.nAI+1))UI.regions=[];UI.name=nmVal();renderStart(true);return'skip'},
   diff:b=>{UI.diff=b.dataset.d;UI.name=nmVal();renderStart(true);return'skip'},
   styleSel:b=>{UI.styles=b.dataset.s;UI.name=nmVal();renderStart(true);return'skip'},
@@ -4692,7 +4692,7 @@ const A={
   markets:()=>{UI.sheet=UI.sheet==='markets'&&isDock()?null:'markets'},
   pinfo:b=>{UI.back=isDock()?UI.sheet:null;UI.pnum=+b.dataset.num;UI.sheet='plant'},
   start:()=>{if(!regionsOk())return'skip';UI.name=nmVal().trim();saveName(UI.name);newGame(UI.name||(LANG==='en'?'Your company':'Dein Betrieb'),UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false);UI.intro=true;setTimeout(showIntro,30)},
-  cont:()=>{loadMap(S.map||'de');loadDeck(S.deckKeys||deckKeys('std'));applyPlantOv();applyMapN(S.n);applyGameMods();UI.vb=null;renderStart(false)},
+  cont:()=>{UI.rulesFromStart=false;loadMap(S.map||'de');loadDeck(S.deckKeys||deckKeys('std'));applyPlantOv();applyMapN(S.n);applyGameMods();UI.vb=null;renderStart(false)},
   zin:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.3);return'skip'},
   zout:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.3);return'skip'},
   fit:()=>{fitMap();applyVB();return'skip'},
