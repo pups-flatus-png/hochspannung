@@ -3479,7 +3479,7 @@ function s3Summary(){
   const M=MAPS[UI.map],n=regionCount(UI.nAI+1),en=LANG==='en';
   const nm=UI.name||LX('Dein Betrieb','Your company');
   const regs=UI.regions.length?UI.regions.map(r=>rName(r)).join(', '):LX(`${n} Regionen, zufällig`,`${n} regions, random`);
-  const opp=`${UI.nAI} ${LX('Gegner','opponents')} · ${LX('KI','AI')} ${tr(AI_NAME[UI.diff])}`;
+  const opp=`${UI.nAI+1} ${LX('Spieler','players')} · ${UI.nAI} ${LX('KI-Gegner','AI opponents')} · ${tr(AI_NAME[UI.diff])}`;
   const deck=M.exp?LX('Basis-Kraftwerke','Base plants'):M.deluxe?LX('Deluxe-Kraftwerke','Deluxe plants'):tr(DECKS[UI.deck||'std'].name);
   const disc=M.noDiscount?LX('ohne Rabatt','no discount'):UI.disc==='orig'?LX('Rabatt aus','discount off'):LX('Rabatt an','discount on');
   const pr=(UI.promos||[]).length;const promo=pr?(en?`${pr} promo${pr>1?'s':''}`:`${pr} Promo${pr>1?'s':''}`):LX('keine Promos','no promos');
@@ -3520,8 +3520,8 @@ function renderStart3(){
     ${res}${s3Chips()}
     <section class="s3-new"><h2>${res?LX('Oder neues Spiel','Or start a new game'):LX('Neues Spiel','New game')}</h2><div class="s3-rows">
     ${s3Row('co',`<span class="s3-ini">${esc(coInitials(x.nm))}</span>`,LX('Betrieb','Company'),x.nm)}
+    ${s3Row('opp',S3I.opp,LX('Spieler & Gegner','Players & opponents'),x.opp)}
     ${s3Row('board',S3I.board,LX('Spielplan & Netzgebiet','Board & regions'),`${x.map} · ${x.regs}`,x.bad)}
-    ${s3Row('opp',S3I.opp,LX('Gegner','Opponents'),x.opp)}
     ${s3Row('rules',S3I.rul,LX('Kraftwerke & Regeln','Rules & extras'),x.rules)}</div>
     ${x.bad?`<p class="s3-warn">${LX('Das Netzgebiet ist noch nicht gültig. Tippe auf „Spielplan & Netzgebiet“.','The play area is not valid yet. Tap “Board & regions”.')}</p>`:''}
     ${res?`<button type="button" class="btn s3-alt" data-act="start" ${x.bad?'disabled':''}>${LX('Neues Spiel starten','Start new game')}</button><p class="s3-note">${LX('Ein neues Spiel ersetzt die laufende Partie.','A new game replaces the one in progress.')}</p>`:''}</section>
@@ -3529,7 +3529,7 @@ function renderStart3(){
     ${wide?bar:''}</div></div>${wide?'':bar}`;
     return;
   }
-  const T={co:LX('Dein Betrieb','Your company'),board:LX('Spielplan & Netzgebiet','Board & regions'),opp:LX('Gegner','Opponents'),rules:LX('Kraftwerke & Regeln','Rules & extras')};
+  const T={co:LX('Dein Betrieb','Your company'),board:LX('Spielplan & Netzgebiet','Board & regions'),opp:LX('Spieler & Gegner','Players & opponents'),rules:LX('Kraftwerke & Regeln','Rules & extras')};
   const mapCard=([k,m])=>`<button type="button" class="mcard${UI.map===k?' on':''}" data-act="mapSel" data-m="${k}" aria-pressed="${UI.map===k}">${mapThumb(k)}<span class="mcn">${m.name}</span>${m.deluxe?'<span class="dlxtag">Deluxe</span>':''}${m.exp&&m.rtxt?`<span class="xn">${m.rtxt.length} ${en?(m.rtxt.length===1?'rule':'rules'):(m.rtxt.length===1?'Regel':'Regeln')}</span>`:''}</button>`;
   let b='';
   if(sv==='co')b=`<div class="cocard"><div class="co-emb" aria-hidden="true"><svg class="co-bolt" viewBox="0 0 24 24"><path d="M13.5 2 5 13.2h5.6L9.4 22 19 9.8h-5.7z"/></svg><span id="coIni">${coInitials(x.nm)}</span></div><div class="co-main"><label class="co-lbl" for="nm">Firmenname</label><div class="co-in"><input id="nm" maxlength="18" autocomplete="off" spellcheck="false" value="${esc(x.nm)}"><button type="button" class="co-dice" data-act="coRand" aria-label="Zufälliger Firmenname" title="Zufälliger Firmenname"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></button></div></div></div><p class="s3-note">${LX('Der Name erscheint im Spiel, im Verlauf und in der Rangliste.','The name appears in the game, the log and the leaderboard.')}</p>`;
@@ -4549,7 +4549,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v110';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v111';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
