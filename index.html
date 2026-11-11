@@ -417,7 +417,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 #map.atlas .land{fill:var(--t121d24)}
 #map.atlas .land-tex{opacity:.45}
 #map.atlas .coast{stroke:var(--t34495a);stroke-width:1.1}
-#map.atlas .coast-glow{fill:none;stroke:#5fa8d3;stroke-width:6;opacity:.07;filter:url(#glow)}
+#map.atlas .coast-glow{fill:none;stroke:#5fa8d3;stroke-width:9;opacity:.05;stroke-linejoin:round}
 .coast-glow{display:none}#map.atlas .coast-glow{display:inline}
 #map.atlas .terr{stroke-width:46;opacity:.07}#map.atlas .terr.off{opacity:0}
 #map.atlas .river{opacity:.32;stroke-width:1.6}
@@ -1569,6 +1569,11 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
   .actbar .btn{min-height:42px}
   .actbar .stepper output{min-width:46px}
 }
+
+/* v89: Karte flüssig zoomen – teure Ebenen während der Geste ausblenden; kompaktes Kartenschild am Handy */
+#map.moving .land-shadow,#map.moving .coast-glow,#map.moving .land-eng,#map.moving .land-tex,#map.moving .rcell.off,#map.moving .edge.glow{display:none}
+#map.moving .city .cshadow{display:none}
+@media (max-width:700px){.regions-tag.cart .cr{display:none}.regions-tag.cart{padding:3px 8px 3px 5px}}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -2593,12 +2598,19 @@ function fitMap(){
     const T=tk&&tk.offsetParent?Math.max(0,tk.getBoundingClientRect().bottom-r.top):0;
     const B=rt&&rt.offsetParent&&rt.textContent?Math.max(0,r.bottom-rt.getBoundingClientRect().top):0;
     const avail=Math.max(r.height*0.5,r.height-T-B-6);
-    const sc=Math.max(w/r.width,h/avail);
+    let sc=Math.max(w/r.width,h/avail);
+    const cap=r.width<700?2.1:99;
+    if(sc>cap){/* Handy: nicht winzig zeigen, sondern lesbar auf dein Netz (oder die Mitte) zoomen */
+      sc=cap;const mine=S&&me()?me().cities.map(id=>CITY[id]).filter(Boolean):[];
+      const fc=mine.length?mine:cs;const fx=fc.reduce((t,c)=>t+c.x,0)/fc.length,fy=fc.reduce((t,c)=>t+c.y,0)/fc.length;
+      const W=sc*r.width,H=sc*r.height,ay=(T+3)+avail/2;
+      UI.vb={x:Math.min(Math.max(fx-W/2,x0),x0+w-W),y:Math.min(Math.max(fy-ay*sc,y0-sc*(T+3)),y0+h-sc*(T+3+avail)),w:W,h:H};return}
     const W=sc*r.width,H=sc*r.height;
     UI.vb={x:x0+w/2-W/2,y:y0-sc*(T+3)-(avail*sc-h)/2,w:W,h:H};
   }catch(_){}
 }
-function applyVB(){const v=UI.vb;if(!v)return;svg.setAttribute('viewBox',`${v.x.toFixed(1)} ${v.y.toFixed(1)} ${v.w.toFixed(1)} ${v.h.toFixed(1)}`)}
+let _vbRaf=0;function applyVB(){if(_vbRaf)return;_vbRaf=requestAnimationFrame(()=>{_vbRaf=0;const v=UI.vb;if(!v)return;svg.setAttribute('viewBox',`${v.x.toFixed(1)} ${v.y.toFixed(1)} ${v.w.toFixed(1)} ${v.h.toFixed(1)}`)})}
+let _mvT=0;function mapMoving(on){clearTimeout(_mvT);if(on)svg.classList.add('moving');else _mvT=setTimeout(()=>svg.classList.remove('moving'),160)}
 function svgScale(){const r=svg.getBoundingClientRect();return Math.max(UI.vb.w/r.width,UI.vb.h/r.height)}
 function zoomAt(cx,cy,f){
   const r=svg.getBoundingClientRect(),s=svgScale(),v=UI.vb;
@@ -2619,22 +2631,22 @@ function zoomAt(cx,cy,f){
     const prev=pts.get(e.pointerId),cur={x:e.clientX,y:e.clientY};
     if(pts.size===1){
       const dx=cur.x-prev.x,dy=cur.y-prev.y;moved+=Math.abs(dx)+Math.abs(dy);
-      if(moved>6){const s=svgScale();UI.vb.x-=dx*s;UI.vb.y-=dy*s;applyVB()}
+      if(moved>6){mapMoving(true);const s=svgScale();UI.vb.x-=dx*s;UI.vb.y-=dy*s;applyVB()}
       pts.set(e.pointerId,cur);
     }else if(pts.size===2){
       const other=[...pts.entries()].find(([id])=>id!==e.pointerId)[1];
       const d0=Math.hypot(prev.x-other.x,prev.y-other.y),d1=Math.hypot(cur.x-other.x,cur.y-other.y);
       pts.set(e.pointerId,cur);
-      if(d0>0)zoomAt((cur.x+other.x)/2,(cur.y+other.y)/2,d1/d0);
+      mapMoving(true);if(d0>0)zoomAt((cur.x+other.x)/2,(cur.y+other.y)/2,d1/d0);
     }
   });
   const end=e=>{
     if(!pts.has(e.pointerId))return;pts.delete(e.pointerId);
     if(pts.size===0&&moved<=6&&tapCity)onCityTap(tapCity);
-    if(pts.size===0)tapCity=null;
+    if(pts.size===0){tapCity=null;mapMoving(false)}
   };
   svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);
-  svg.addEventListener('wheel',e=>{e.preventDefault();if(UI.vb)zoomAt(e.clientX,e.clientY,e.deltaY<0?1.15:1/1.15)},{passive:false});
+  svg.addEventListener('wheel',e=>{e.preventDefault();mapMoving(true);mapMoving(false);if(UI.vb)zoomAt(e.clientX,e.clientY,e.deltaY<0?1.15:1/1.15)},{passive:false});
 })();
 function onCityTap(id){
   const a=actor();
