@@ -2459,6 +2459,7 @@ function isDone(id){switch(S.phase){case'auction':return P(id).done;case'resourc
 document.addEventListener('scroll',e=>{if(e.target&&e.target.id==='panel')document.querySelectorAll('.float').forEach(f=>f.remove())},true);
 function floatText(el,text,color){
   if(!el)return;const r=el.getBoundingClientRect();if(!r.width)return;
+  {const pn=el.closest&&el.closest('#panel');if(pn){const pr=pn.getBoundingClientRect();if(r.bottom-8<pr.top||r.bottom>pr.bottom)return}}
   const key=(el.dataset&&el.dataset.pid!=null?'p'+el.dataset.pid+(el.classList.contains('wallet')?'w':''):Math.round(r.left)+':'+Math.round(r.top));document.querySelectorAll('.float').forEach(o=>{if(o.dataset.k===key)o.remove()});const f=document.createElement('div');f.className='float';f.dataset.k=key;f.textContent=text;f.style.color=color;f.style.setProperty('--fc',color);
   if(el.classList.contains('wallet')){f.classList.add('fl-left');f.style.left=(r.left+r.width/2)+'px';f.style.top=(r.bottom+4)+'px'}else{f.style.left=(r.right-5)+'px';f.style.top=(r.bottom-5)+'px'}
   document.body.appendChild(f);setTimeout(()=>f.remove(),2600);
@@ -2898,7 +2899,7 @@ function panelResources0(a){
     h+=`<div class="prow">${plantCard(n,{sm:true,act:'pinfo'})}<div class="pcol"><div class="pslots" aria-label="Lager von Kraftwerk ${PN(n)}">${slotsHTML(n,p.alloc[n]||[],c)}</div><div class="pctl">${types.map(r=>`<div class="rctl">${resIcon(r)}<button type="button" class="mini" data-act="cartm" data-n="${n}" data-r="${r}" ${(c[r]||0)>0?'':'disabled'} aria-label="${RNAME[r]} für Kraftwerk ${n} weniger">−</button><output>${c[r]||0}</output><button type="button" class="mini" data-act="cartp" data-n="${n}" data-r="${r}" ${canAddP(n,r)?'':'disabled'} aria-label="${RNAME[r]} für Kraftwerk ${n} mehr">+</button></div>`).join('')}</div></div></div>`;
   }
   const tot=cartCost();
-  h+=`<div class="row"><button type="button" class="btn" data-act="suggest">Bedarf für eine Runde</button><button type="button" class="btn" data-act="realloc">Lager neu verteilen</button></div></section>`;UI._ab={t:tot?LX(`Einkauf: ${tot} €`,`Shopping: ${tot} €`):LX('Rohstoffe wählen','Pick resources'),h:`<div class="row"><button type="button" class="btn" data-act="skipbuy">${MR().india?'Passen (für diese Runde fertig)':'Nichts kaufen'}</button><button type="button" class="btn pri grow" data-act="buy" ${tot?'':'disabled'}>${MR().india?'1 Einheit kaufen':'Kaufen'} · ${tot} €</button></div>`};
+  h+=`<div class="row"><button type="button" class="btn" data-act="suggest">Bedarf für eine Runde</button><button type="button" class="btn" data-act="realloc">Lager neu verteilen</button></div>`;h+=aucAct({t:tot?LX(`Einkauf: ${tot} €`,`Shopping: ${tot} €`):LX('Rohstoffe wählen','Pick resources'),h:`<div class="row"><button type="button" class="btn" data-act="skipbuy">${MR().india?'Passen (für diese Runde fertig)':'Nichts kaufen'}</button><button type="button" class="btn pri grow" data-act="buy" ${tot?'':'disabled'}>${MR().india?'1 Einheit kaufen':'Kaufen'} · ${tot} €</button></div>`})+`</section>`;
   return h+mk;
 }
 function incomeFor(c,f){return PAY[Math.min(c,f,20)]}
