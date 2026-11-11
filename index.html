@@ -1371,6 +1371,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .kr-c:focus-visible{outline:2px solid var(--accent)}
 .kr-h{display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-bottom:2px}.kr-h b{font-family:var(--display);font-size:17px}
 .kr-tag{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.kr-c.on .kr-tag{color:var(--accent-text)}
+.kr-last{font-size:10.5px;font-weight:600;color:var(--muted);margin:-2px 0 2px}
 .kr-r{display:grid;grid-template-columns:16px auto 1fr;align-items:center;gap:6px;font-size:12px;padding:2px 4px;border-radius:6px}
 .kr-r b{font-family:var(--display);font-size:14px}.kr-r small{color:var(--muted);font-size:10.5px}
 .kr-r em{grid-column:2/4;font-style:normal;font-size:10px;font-weight:700;color:#6fd08a;margin-top:-3px}
@@ -2232,7 +2233,7 @@ function kSideSeg(){if(!S.resNorth)return '';const sd=UI.kside||'south',en=LANG=
     const rows=rs.map(r=>{const a=o[r];if(side==='north'&&r==='uranium')return `<div class="kr-r none">${resIcon(r)}<span>${en?'none':'keins'}</span></div>`;
       const b=x[r],cheap=a.pr!=null&&(b.pr==null||a.pr<b.pr);
       return `<div class="kr-r${need.has(r)?' nd':''}${cheap?' ch':''}">${resIcon(r)}<b>${a.pr==null?'–':a.pr+' €'}</b><small>${a.n} ${en?'left':'da'}</small>${cheap&&need.has(r)?`<em>${en?'cheaper':'günstiger'}</em>`:''}</div>`}).join('');
-    return `<button type="button" class="kr-c${on?' on':''}" data-act="kSide" data-s="${side}" aria-pressed="${on}"><span class="kr-h"><b>${side==='north'?(en?'North':'Nord'):(en?'South':'Süd')}</b><span class="kr-tag">${on?(en?'You buy here':'Du kaufst hier'):(en?'Switch here':'Hierher wechseln')}</span></span>${rows}<span class="kr-f">${en?'Refill':'Nachschub'} ${refill(side)}</span></button>`};
+    const ls=p.lastSide&&p.lastSide.s===side&&p.lastSide.r===S.round-1;return `<button type="button" class="kr-c${on?' on':''}" data-act="kSide" data-s="${side}" aria-pressed="${on}"><span class="kr-h"><b>${side==='north'?(en?'North':'Nord'):(en?'South':'Süd')}</b><span class="kr-tag">${on?(en?'You buy here':'Du kaufst hier'):(en?'Switch here':'Hierher wechseln')}</span></span>${ls?`<span class="kr-last">↺ ${en?'You bought here last round':'Hier hast du letzte Runde gekauft'}</span>`:''}${rows}<span class="kr-f">${en?'Refill':'Nachschub'} ${refill(side)}</span></button>`};
   return `<div class="kr2"><div class="kr-g">${col('south')}${col('north')}</div><p class="hint kr-n">${en?'Prices show the next unit. <b>One market per turn</b>, you may switch next turn. Both share one supply; the North refills first, so a busy South can run dry. Highlighted: fuel your plants use.':'Preise gelten für die nächste Einheit. <b>Pro Zug nur ein Markt</b>, beim nächsten Zug darfst du wechseln. Beide teilen sich den Vorrat; der Norden wird zuerst nachgefüllt, im Süden kann es dann knapp werden. Hervorgehoben: Brennstoff deiner Kraftwerke.'}</p></div>`}
 function kSideSeg0(){if(!S.resNorth)return '';const sd=UI.kside||'south',en=LANG==='en';return `<div class="kside"><div class="seg">${[['south',en?'South market':'Südmarkt'],['north',en?'North market':'Nordmarkt']].map(([k,l])=>`<button type="button" data-act="kSide" data-s="${k}" class="${sd===k?'on':''}">${l}</button>`).join('')}</div><span class="hint">${en?'One side per turn. Uranium only in the South.':'Pro Zug nur eine Seite. Uran gibt es nur im Süden.'}</span></div>`}
 function trackHTML(r,k=0){
@@ -4158,7 +4159,7 @@ const A={
   suggest:()=>withSide(UI.kside||'south',()=>suggestCart()),
   realloc:()=>{const p=me();p.alloc=storageView(p);normAlloc(p);UI.powerKey='';UI.pcart={}},
   hyb:b=>{UI.hyb[+b.dataset.n]=b.dataset.r},
-  buy:()=>{if(!myTurn('buy'))return;const tot=Z();RES.forEach(r=>tot[r]=cartTot(r));const p=me();normAlloc(p);withSide(UI.kside||'south',()=>buyResources(H,tot));if(S.resNorth&&(UI.kside||'south')==='north')S.log[0].t+=' (Nordmarkt)';for(const[n,c]of Object.entries(UI.pcart))RES.forEach(r=>{for(let i=0;i<(c[r]||0);i++)p.alloc[n].push(r)});UI.pcart={};nextSeq()},
+  buy:()=>{if(!myTurn('buy'))return;const tot=Z();RES.forEach(r=>tot[r]=cartTot(r));const p=me();normAlloc(p);withSide(UI.kside||'south',()=>buyResources(H,tot));if(S.resNorth&&RES.some(r=>tot[r]>0))p.lastSide={r:S.round,s:UI.kside||'south'};if(S.resNorth&&(UI.kside||'south')==='north')S.log[0].t+=' (Nordmarkt)';for(const[n,c]of Object.entries(UI.pcart))RES.forEach(r=>{for(let i=0;i<(c[r]||0);i++)p.alloc[n].push(r)});UI.pcart={};nextSeq()},
   skipbuy:()=>{if(!myTurn('buy'))return;buyResources(H,{coal:0,oil:0,garbage:0,uranium:0});nextSeq()},
   bsel:b=>{UI.buildSel=b.dataset.city},
   build:()=>{if(!myTurn('build'))return;if(doBuild(H,UI.buildSel))UI.buildSel=null},
