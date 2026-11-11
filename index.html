@@ -894,6 +894,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .st-empty-inline{color:var(--muted);font-size:13px}
 .goalnote{margin:-4px 0 14px}
 /* ---- v15: Startbildschirm "Leitstelle bei Nacht" ---- */
+#start,#start .setup-body{overflow-anchor:none}
 #start.v2{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,440px);align-items:stretch;justify-content:stretch;padding:0;overflow:hidden;background:var(--t070b0e)}
 #start.v2 .hero{position:relative;display:flex;flex-direction:column;min-height:0;overflow:hidden;
   background:radial-gradient(120% 90% at 40% 55%,var(--t0f1b23) 0%,var(--t0a1117) 55%,var(--t06090c) 100%)}
@@ -2970,7 +2971,8 @@ function xpickHTML(mapCard){
   const open=UI.xopen||MAPS[UI.map].exp;
   return `<div class="xpick${open?' open':''}"><button type="button" class="xhead" data-act="xToggle" aria-expanded="${!!open}"><span class="xht">Erweiterungen</span><span class="xhs">${n} Spielpläne · je Karte die Zahl ihrer Sonderregeln</span><span class="xchev" aria-hidden="true"></span></button>${open?`<div class="xboxes">${Object.entries(by).map(([b,ms])=>`<div class="xbox"><div class="xbh"><span class="xbt">${XBOX[b]?XBOX[b][LANG==='en'?1:0]:''}</span><span class="xbn">${LANG==='en'?'Expansion':'Erweiterung'} ${b}</span></div><div class="mcards two">${ms.map((e,i)=>{let h=mapCard(e);const sel=ms.findIndex(x=>x[0]===UI.map);if(sel>=0&&i===Math.min(ms.length-1,sel-(sel%2)+1))h+=`<div class="xrules">${mapRulesHTML(UI.map,UI.regions)}</div>`;return h}).join('')}</div></div>`).join('')}</div>`:''}</div>`;
 }
-function renderStart(show){const st=start.scrollTop,was=!start.hidden;_renderStart(show);if(show&&was)start.scrollTop=st}
+function startScroller(){const b=start.querySelector('.setup-body');return b&&/(auto|scroll)/.test(getComputedStyle(b).overflowY)&&b.scrollHeight>b.clientHeight?b:start}
+function renderStart(show){const was=!start.hidden;const sb=start.querySelector('.setup-body'),st=start.scrollTop,bt=sb?sb.scrollTop:0;_renderStart(show);if(show&&was){start.scrollTop=st;const nb=start.querySelector('.setup-body');if(nb)nb.scrollTop=bt}}
 function _renderStart(show){
   if(!show){start.hidden=true;return}
   UI.map=UI.map||'de';loadMap(UI.map);
@@ -4080,8 +4082,8 @@ function myTurn(kind){const a=actor();return a&&a.pid===H&&a.kind===kind}
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b||b.disabled||b.hasAttribute('disabled'))return;
   const f=A[b.dataset.act];if(!f)return;
-  let anc=null;if(!start.hidden&&start.contains(b)){const sel='[data-act="'+b.dataset.act+'"]'+Object.entries(b.dataset).filter(([k])=>k!=='act').map(([k,v])=>'[data-'+k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase())+'="'+CSS.escape(v)+'"]').join('');anc={sel,top:b.getBoundingClientRect().top,st:start.scrollTop}}
-  const fixAnc=()=>{if(!anc||start.hidden)return;const nb=start.querySelector(anc.sel);if(nb)start.scrollTop+=nb.getBoundingClientRect().top-anc.top;else start.scrollTop=anc.st};
+  let anc=null;if(!start.hidden&&start.contains(b)){const sel='[data-act="'+b.dataset.act+'"]'+Object.entries(b.dataset).filter(([k])=>k!=='act').map(([k,v])=>'[data-'+k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase())+'="'+CSS.escape(v)+'"]').join('');anc={sel,top:b.getBoundingClientRect().top}}
+  const fixAnc=()=>{if(!anc||start.hidden)return;const nb=start.querySelector(anc.sel);if(nb)startScroller().scrollTop+=nb.getBoundingClientRect().top-anc.top};
   const S0=S,snap=S&&S.phase!=='end'&&b.dataset.act!=='undo'?JSON.stringify(S):null;
   const r=f(b);fixAnc();
   if(S!==S0)UI.undo=[];
