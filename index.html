@@ -398,6 +398,48 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 /* ---- v3: Karte & Kraftwerke ---- */
 #board{background:radial-gradient(120% 90% at 50% 40%,var(--t0e171d) 0%,var(--t080c10) 100%)}
 .gridline{stroke:var(--t101a21)}
+/* ===== Atlas map style ===== */
+.city .rtick,.city .mine{display:none}
+#board:has(#map.atlas){background:radial-gradient(130% 100% at 50% 42%,var(--t0e171d) 0%,var(--t080c10) 70%,#05080b 100%)}
+#board:has(#map.atlas)::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 95% at 50% 45%,transparent 62%,rgba(0,0,0,.42) 100%);z-index:1}
+#map.atlas .gridline{opacity:.35}
+#map.atlas .land{fill:var(--t121d24)}
+#map.atlas .land-tex{opacity:.45}
+#map.atlas .coast{stroke:var(--t34495a);stroke-width:1.1}
+#map.atlas .coast-glow{fill:none;stroke:#5fa8d3;stroke-width:6;opacity:.07;filter:url(#glow)}
+.coast-glow{display:none}#map.atlas .coast-glow{display:inline}
+#map.atlas .terr{stroke-width:46;opacity:.07}#map.atlas .terr.off{opacity:0}
+#map.atlas .river{opacity:.32;stroke-width:1.6}
+#map.atlas .rlabel{font-size:15px;letter-spacing:.5em;font-weight:600;fill:var(--t2f4450);opacity:.75}
+#map.atlas .rlabel.off{opacity:.25}
+#map.atlas .edge{stroke:var(--t2a3a45);stroke-width:2}
+#map.atlas .pylons{stroke-width:2.4;stroke-dasharray:0 9;opacity:.4}
+#map.atlas .edge.off{stroke:var(--t1a252d);stroke-width:1;opacity:.45}
+#map.atlas .edge.own{stroke-width:3.2}
+#map.atlas .edge.glow{stroke-width:9;opacity:.5}
+#map.atlas .ecost{opacity:.5;transition:opacity .2s}
+#map.atlas .ecost circle{transform:scale(.76);fill:var(--t0e161c);stroke:var(--t2a3a45);stroke-width:.8}
+#map.atlas .ecost text{font-size:8.5px;fill:var(--t9fb2c0)}
+#map.atlas.building .ecost{opacity:1}
+#map.atlas.building .ecost circle{stroke:var(--t3d5466)}
+#map.atlas .city.off circle{transform:scale(.52);fill:var(--t2a3a45)}
+#map.atlas .city.off text{display:none}
+#map.atlas .city .cshadow{opacity:.55}
+#map.atlas .city .body{stroke:var(--t34495a)!important;stroke-width:1.6;fill:var(--t18242c)}
+#map.atlas .city .rtick{display:inline;fill:none;stroke-width:3;stroke-linecap:round;stroke-dasharray:22 200;transform:rotate(-130deg)}
+#map.atlas .city .mine{display:inline;fill:none;stroke-width:1.6;opacity:.85;stroke-dasharray:3 3.2}
+#map.atlas .city .inner{fill:var(--t0d151a);stroke:none}
+#map.atlas .city .sl{transform-box:fill-box;transform-origin:center;transform:scale(.82)}
+#map.atlas .city .sl.open{fill:none;stroke:var(--t6f8aa0);stroke-width:1}
+#map.atlas .city .sl.lock{stroke:var(--t2a3a45);stroke-dasharray:1.5 1.5}
+#map.atlas .city .cname{font-size:10.5px;font-weight:600;letter-spacing:.02em;stroke:var(--t080c10);stroke-width:4px;stroke-linejoin:round}
+#map.atlas.dense .city .cname{font-size:9.5px}
+#map.atlas .city.can .body{stroke:var(--accent)!important;stroke-width:1.8;stroke-opacity:.55}
+#map.atlas .city.can .inner{fill:var(--t18242c)}
+[data-theme="light"] #board:has(#map.atlas)::after{background:radial-gradient(120% 95% at 50% 45%,transparent 65%,rgba(80,55,20,.18) 100%)}
+[data-theme="light"] #map.atlas .coast-glow{stroke:#8a6a3a;opacity:.12}
+[data-theme="light"] #map.atlas .city .cname{stroke:var(--t080c10)}
+
 .land-shadow{fill:#000;opacity:.5;transform:translate(0,6px);filter:url(#glow)}
 .land{fill:var(--t121d24)}
 .land-tex{fill:url(#dots)}
@@ -1355,6 +1397,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .toggle.sellt{margin:8px 0}
 .toggle.sellt.on{border-color:color-mix(in srgb,#e8d27a 50%,var(--line));background:linear-gradient(180deg,rgba(232,210,122,.08),transparent)}
 .toggle.sellt.on .swt{background:#c9ab22}
+.qv:has(.qrow){flex-direction:column;align-items:flex-start;gap:2px}.qrow{display:flex;align-items:center;gap:8px}.qrow .qp b{font-size:14px}.qside{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.06em;color:var(--muted);width:12px}
 .mrule{flex:none;margin:0 0 12px;border-radius:12px;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));background:radial-gradient(120% 100% at 0 0,rgba(242,179,61,.08),transparent 60%),var(--panel);overflow:hidden}
 .mrule.first{border-color:color-mix(in srgb,var(--accent) 60%,var(--line));box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)}
 .mr-h{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;cursor:pointer}
@@ -2319,7 +2362,7 @@ function renderMap(){
   g+=`<path class="land-shadow" d="${GEO_LAND}"/><path class="land" d="${GEO_LAND}"/><path class="land-tex" d="${GEO_LAND}"/>`;
   for(const[rk,r]of Object.entries(REGIONS)){const on=S.regions.includes(rk);g+=`<path class="terr${on?'':' off'}" d="${TERR[rk]}" style="fill:${r.col};stroke:${r.col}"/>`}
   GEO_RIV.forEach(d=>g+=`<path class="river" d="${d}"/>`);
-  g+=`<path class="coast" d="${GEO_LAND}"/>`;
+  g+=`<path class="coast-glow" d="${GEO_LAND}"/><path class="coast" d="${GEO_LAND}"/>`;
   for(const[rk,r]of Object.entries(REGIONS)){
     const cs=CITIES.filter(c=>c[2]===rk).map(c=>CITY[c[0]]);
     const x=cs.reduce((s,c)=>s+c.x,0)/cs.length,y=cs.reduce((s,c)=>s+c.y,0)/cs.length;
@@ -2352,9 +2395,9 @@ function renderMap(){
       else sl+=`<circle class="sl ${i<cr.max?'open':'lock'}" cx="${sx}" cy="${sy}" r="4.5"/>`;
     });
     const o=opts[id],sel=building&&UI.buildSel===id;
-    g+=`<g class="city${o?' can':''}${sel?' sel':''}" data-city="${id}" transform="translate(${c.x.toFixed(1)},${c.y.toFixed(1)})"><circle class="halo" r="24"/><circle class="cshadow" r="20"/><circle class="body" r="17" style="stroke:${REGIONS[c.reg].col}"/><circle class="inner" r="13.5"/>${sl}<text class="cname" y="32">${c.name}</text>${o?`<g class="cost${o.jump?' jump':''}" transform="translate(0,-25)"><rect x="${o.jump?-21:-15}" y="-8" width="${o.jump?42:30}" height="15" rx="7.5"/><text y="3.5">${o.jump?'↷ ':''}${o.cost}</text></g>`:''}${MAPS[S.map].startCities&&MAPS[S.map].startCities.includes(id)?'<text class="cstar" x="15" y="-12">★</text>':''}${cr.trans?`<g class="ctrans${S.step<2?' lk':''}" transform="translate(-27,-21)"><title>${LX('Jenseits der Grenze: erst ab Stufe 2 bebaubar','Across the border: buildable from step 2')}</title><rect width="${S.step<2?30:22}" height="13" rx="6.5"/><text x="${S.step<2?15:11}" y="9.5">${S.step<2?LX('ab II','from II'):'II'}</text></g>`:''}${MR().wien===id?`<g class="cwien" transform="translate(12,-23)"><title>${LX('Wien: Müll 1 € billiger für Spieler mit Stadt hier','Vienna: garbage 1 € cheaper for players with a city here')}</title><rect width="34" height="13" rx="6.5"/><text x="17" y="9.5">${LX('Müll −1','Garb. −1')}</text></g>`:''}</g>`;
+    g+=`<g class="city${o?' can':''}${sel?' sel':''}" data-city="${id}" transform="translate(${c.x.toFixed(1)},${c.y.toFixed(1)})"><circle class="halo" r="24"/><circle class="cshadow" r="20"/><circle class="body" r="17" style="stroke:${REGIONS[c.reg].col}"/><circle class="rtick" r="17" style="stroke:${REGIONS[c.reg].col}"/>${occ.includes(H)?'<circle class="mine" r="20.5" style="stroke:'+me().color+'"/>':''}<circle class="inner" r="13.5"/>${sl}<text class="cname" y="32">${c.name}</text>${o?`<g class="cost${o.jump?' jump':''}" transform="translate(0,-25)"><rect x="${o.jump?-21:-15}" y="-8" width="${o.jump?42:30}" height="15" rx="7.5"/><text y="3.5">${o.jump?'↷ ':''}${o.cost}</text></g>`:''}${MAPS[S.map].startCities&&MAPS[S.map].startCities.includes(id)?'<text class="cstar" x="15" y="-12">★</text>':''}${cr.trans?`<g class="ctrans${S.step<2?' lk':''}" transform="translate(-27,-21)"><title>${LX('Jenseits der Grenze: erst ab Stufe 2 bebaubar','Across the border: buildable from step 2')}</title><rect width="${S.step<2?30:22}" height="13" rx="6.5"/><text x="${S.step<2?15:11}" y="9.5">${S.step<2?LX('ab II','from II'):'II'}</text></g>`:''}${MR().wien===id?`<g class="cwien" transform="translate(12,-23)"><title>${LX('Wien: Müll 1 € billiger für Spieler mit Stadt hier','Vienna: garbage 1 € cheaper for players with a city here')}</title><rect width="34" height="13" rx="6.5"/><text x="17" y="9.5">${LX('Müll −1','Garb. −1')}</text></g>`:''}</g>`;
   }
-  svg.innerHTML=g;
+  svg.innerHTML=g;svg.classList.toggle('atlas',MAPSTYLE==='atlas');svg.classList.toggle('building',!!building||S.phase==='build');svg.classList.toggle('dense',CITIES.filter(c=>act.has(c[0])).length>=24);
   if(!UI.vb)fitMap();
   applyVB();
 }
@@ -2796,7 +2839,8 @@ function oppPlantsHTML(){
 }
 function qbarHTML(){
   const opps=S.players.filter(p=>!p.human);const rich=Math.max(...opps.map(p=>p.money)),cap=Math.max(...opps.map(capacity));
-  const pr=RES.map(r=>{const np=nextPrice(r);return `<span class="qp${np==null?' out':''}" title="${RNAME[r]}">${resIcon(r)}<b>${np==null?'–':np}</b></span>`}).join('');
+  const row=()=>RES.map(r=>{const np=CAP[r]?nextPrice(r):null;return `<span class="qp${np==null?' out':''}" title="${RNAME[r]}">${resIcon(r)}<b>${np==null?'–':np}</b></span>`}).join('');
+  const pr=S.resNorth?`<span class="qrow"><i class="qside">${LX('S','S')}</i>${row()}</span><span class="qrow"><i class="qside">${LX('N','N')}</i>${withSide('north',row)}</span>`:row();
   return `<div class="qbar"><button type="button" class="qb" data-act="markets" aria-label="Märkte: Kraftwerke und Rohstoffpreise"><span class="ql">${ICO_MKT}<span>Märkte</span></span><span class="qv">${pr}</span></button><button type="button" class="qb" data-act="opp" aria-label="Gegner: Geld, Kraftwerke und Lager"><span class="ql">${ICO_OPP}<span>Gegner</span></span><span class="qv"><span class="qs"><b>${rich} €</b><small>reichster</small></span><span class="qs"><b>${cap}</b>${BOLT}<small>max.</small></span></span></button></div>`;
 }
 function oppCompare(){
@@ -2845,7 +2889,7 @@ function renderSheet(){
   if(!UI.sheet){sheet.hidden=true;sheet.innerHTML='';undock();return}
   let h='';const head=(t,tb)=>`<div class="sheet-head${tb?' tabs':''}"><h2>${t}</h2><button type="button" class="xbtn" data-act="close" aria-label="Schließen" title="Schließen"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 3l12 12M15 3 3 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>${tb?`<div class="seg stabs">${[['markets','Märkte'],['opp','Gegner']].map(([k,l])=>`<button type="button" data-act="${k}" class="${tb===k?'on':''}">${l}</button>`).join('')}</div>`:''}</div>`;
   if(UI.sheet==='menu'){
-    h=head('Menü')+`<div class="menu"><div class="mgl">Karte bei Auktion und Rohstoffkauf</div><div class="seg">${[['auto','Verkleinern'],['always','Immer groß']].map(([k,l])=>`<button type="button" data-act="mapMode" data-m="${k}" class="${MAPMODE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Sprache · Language</div><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Vibration beim Überbieten</div><div class="seg">${[[true,LANG==='en'?'On':'An'],[false,LANG==='en'?'Off':'Aus']].map(([k,l])=>`<button type="button" data-act="vibToggle" class="${!!UI.vib===k?'on':''}" ${!!UI.vib===k?'disabled':''}>${l}</button>`).join('')}</div><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn quitb" data-act="quit">Partie beenden</button>':''}<div class="mgl">Darstellung</div><div class="seg">${[['dark','Dunkel'],['light','Hell'],['auto','Automatisch']].map(([k,l])=>`<button type="button" data-act="theme" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div></div>`;
+    h=head('Menü')+`<div class="menu"><div class="mgl">${LX('Kartenstil','Map style')}</div><div class="seg">${[['atlas',LX('Atlas (neu)','Atlas (new)')],['classic',LX('Klassisch','Classic')]].map(([k,l])=>`<button type="button" data-act="mapStyle" data-m="${k}" class="${MAPSTYLE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Karte bei Auktion und Rohstoffkauf</div><div class="seg">${[['auto','Verkleinern'],['always','Immer groß']].map(([k,l])=>`<button type="button" data-act="mapMode" data-m="${k}" class="${MAPMODE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Sprache · Language</div><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Vibration beim Überbieten</div><div class="seg">${[[true,LANG==='en'?'On':'An'],[false,LANG==='en'?'Off':'Aus']].map(([k,l])=>`<button type="button" data-act="vibToggle" class="${!!UI.vib===k?'on':''}" ${!!UI.vib===k?'disabled':''}>${l}</button>`).join('')}</div><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn quitb" data-act="quit">Partie beenden</button>':''}<div class="mgl">Darstellung</div><div class="seg">${[['dark','Dunkel'],['light','Hell'],['auto','Automatisch']].map(([k,l])=>`<button type="button" data-act="theme" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div></div>`;
   }else if(UI.sheet==='opp'){
     h=head('Gegner und Betriebe','opp')+oppCompare()+S.order.map(id=>{const p=P(id);const sv=storeOf(p);const pool=RES.filter(r=>p.pool[r]>0).map(r=>`<span class="stock">${resIcon(r)}${p.pool[r]}</span>`).join('')||'<span class="hint">leer</span>';
       return `<div class="opp" id="opp-${id}" ${pc(id)}><div class="h"><b>${esc(p.name)}</b>${p.style&&STYLES[p.style]?`<span class="stag">${STYLES[p.style].name}</span><span class="hint">${STYLES[p.style].note}</span>`:''}<span>${p.money} €</span><span>${cityCount(p)} Städte</span><span>Kapazität ${capacity(p)}</span>${p.lastPowered?`<span>zuletzt ${p.lastPowered} versorgt</span>`:''}</div><div class="cards">${p.plants.map(n=>plantCard(n,{lg:true,store:sv[n]||[],act:'pinfo'})).join('')||'<span class="hint">noch keine Kraftwerke</span>'}</div><div class="stock-row"><span class="lbl">Lager</span>${pool}</div></div>`}).join('');
@@ -4015,6 +4059,7 @@ const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):nul
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 applyTheme();if(_mqLight){try{_mqLight.addEventListener('change',()=>{if(THEME==='auto')applyTheme()})}catch(_){}}
 function setTheme(t){THEME=t;try{localStorage.setItem('hochspannung-theme',t)}catch(_){}applyTheme()}
+let MAPSTYLE=(()=>{try{return localStorage.getItem('hochspannung-mapstyle')||'atlas'}catch(_){return'atlas'}})();
 let MAPMODE=(()=>{try{return localStorage.getItem('hochspannung-map')||'auto'}catch(_){return'auto'}})();
 function layoutMap(){
   const k=S.round+S.phase;if(UI.peekKey!==k){UI.peek=false;UI.peekKey=k}
@@ -4106,6 +4151,7 @@ const A={
   coRand:()=>{const cur=$('#nm').value;const pool=CO_NAMES.filter(n=>n!==cur);UI.name=pool[Math.floor(Math.random()*pool.length)];saveName(UI.name);renderStart(true);const i=$('#nm');if(i){i.classList.add('co-flash');setTimeout(()=>i.classList.remove('co-flash'),500)}return'skip'},
   xToggle:()=>{if(MAPS[UI.map].exp)return'skip';UI.xopen=!UI.xopen;UI.name=$('#nm').value;renderStart(true);return'skip'},
   themeSel:b=>{setTheme(b.dataset.t);UI.name=$('#nm').value;renderStart(true);return'skip'},
+  mapStyle:b=>{MAPSTYLE=b.dataset.m==='classic'?'classic':'atlas';try{localStorage.setItem('hochspannung-mapstyle',MAPSTYLE)}catch(_){}},
   mapMode:b=>{MAPMODE=b.dataset.m==='always'?'always':'auto';try{localStorage.setItem('hochspannung-map',MAPMODE)}catch(_){}},
   lang:b=>{setLang(b.dataset.l);if(S)render();if(!$('#start').hidden)renderStart(true);if(!$('#stats').hidden)renderStats();renderSheet();return'skip'},
   stats:()=>{UI.statReset=false;UI.statView='total';UI.sheet=null;renderSheet();renderStats();$('#stats').scrollTop=0;return'skip'},
