@@ -2223,7 +2223,8 @@ function umkHTML(){if(!S.umk)return '';const en=LANG==='en';const p=me();const m
 function kSideSeg(){if(!S.resNorth)return '';const sd=UI.kside||'south',en=LANG==='en',p=me();
   const need=new Set();Object.keys(fuelNeed(p)).forEach(t=>(HYB[t]||[t]).forEach(r=>need.add(r)));
   const rs=['coal','oil','garbage','uranium'];
-  const info=side=>withSide(side,()=>{const o={};rs.forEach(r=>{o[r]={n:S.resMarket[r]||0,pr:CAP[r]?nextPrice(r):null}});return o});
+  // panelResources renders under withSide(UI.kside): the market currently loaded is the chosen side; reading the other side means one more swap
+  const read=()=>{const o={};rs.forEach(r=>{o[r]={n:S.resMarket[r]||0,pr:CAP[r]?nextPrice(r):null}});return o};const info=side=>side===sd?read():withSide('north',read);
   const I={south:info('south'),north:info('north')};
   const t=MAPS[S.map].north.resupply,tn=t[S.n]||t[4];
   const refill=side=>rs.map(r=>{const v=side==='north'?(r==='uranium'?0:((tn[r]||[0,0,0])[S.step-1]||0)):((r==='uranium'&&S.noUranium)?0:RSUP(r));return v?`<span>${resIcon(r)}+${v}</span>`:''}).join('')||'–';
