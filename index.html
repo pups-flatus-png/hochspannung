@@ -2829,7 +2829,7 @@ function marketHTML(mode){
   if(S.step===3||MR().china)return `<div class="sec"><div class="mkt-label"><span>${MR().china&&S.step<3?'Markt · Planwirtschaft':'Markt · alle kaufbar'}</span>${MR().china&&S.step<3?`<span>${S.deck.length} im Stapel</span>`:''}</div><div class="cards">${S.market.map(card).join('')}</div>${MR().china&&S.step<3?'<p class="hint mk-x">Gekaufte Kraftwerke werden erst am Rundenende ersetzt.</p>':''}</div>`;
   const bn=buyN(),now=S.market.slice(0,bn),fut=S.market.slice(bn);
   const spy=S.spy===H&&S.deck.length?`<div class="spy"><span>${LANG==='en'?'Industrial espionage · top card of the deck':'Industriespionage · oberste Karte im Stapel'}</span>${S.deck[0]===STEP3?plantCard(STEP3):S.deck[0]>=100?`<b class="spyev">${promoName(PROMO_BY_ID[S.deck[0]])}</b>`:plantCard(S.deck[0],{sm:true,act:'pinfo'})}</div>`:'';
-  return `<div class="sec"><div class="mkt-label"><span>Aktueller Markt</span><span>kaufbar</span></div><div class="cards">${now.map(card).join('')}</div>${bn===5?`<p class="hint mk-x">${LX('Benelux: Das Öko-Kraftwerk vorne im zukünftigen Markt ist zusätzlich kaufbar.','Benelux: the eco plant at the front of the future market is also buyable.')}</p>`:''}<div class="mkt-label"><span>Zukünftiger Markt</span><span>${S.deck.length} im Stapel</span></div><div class="cards">${fut.map(n=>plantCard(n,{act:'pinfo'})).join('')}${S.step3Pending?plantCard(STEP3):''}</div>${spy}</div>`;
+  return `<div class="sec"><div class="mkt-label"><span>Aktueller Markt</span><span>kaufbar</span></div><div class="cards">${now.map(card).join('')}</div>${bn===5?`<p class="hint mk-x">${LX('Benelux: Das Öko-Kraftwerk vorne im zukünftigen Markt ist zusätzlich kaufbar.','Benelux: the eco plant at the front of the future market is also buyable.')}</p>`:''}<div class="mkt-label"><span>Zukünftiger Markt</span><span>${S.deck.length} im Stapel</span></div><div class="cards">${fut.map(n=>plantCard(n,{act:'pinfo'})).join('')}${S.step3Pending?plantCard(STEP3):''}</div>${spy}${promoDeckNote()}</div>`;
 }
 const aucAct=o=>`<div class="aucact">${o.h}</div>`;
 function panelAuction(a){
@@ -3039,6 +3039,9 @@ function panelBureau(){
   h+=`<p class="hint">Die Gegner haben bereits geliefert: ${nx.map(x=>esc(x.name)+' '+x.lastPowered).join(', ')} Städte.</p>`;
   return h;
 }
+function promoDeckNote(){/* Promokarten sind verdeckt in den Stapel gemischt – zeigen, dass sie noch kommen können */
+  const ks=(S.deck||[]).filter(c=>c>=100&&PROMO_BY_ID[c]).map(c=>PROMO_BY_ID[c]);if(!ks.length)return '';
+  return `<p class="hint pdeck">${LX('Noch verdeckt im Stapel','Still hidden in the deck')}: ${ks.map(k=>`<b>${promoName(k)}</b>`).join(', ')}. ${LX('Wird eine Karte aufgedeckt, gibt es sofort eine Zusatzversteigerung ab 10 € – oder das Ereignis tritt ein.','When one is revealed there is an extra auction from 10 € right away – or the event happens.')}</p>`}
 function promoName(k){return PROMOS[k][LANG==='en'?'en':'de'][0]}
 function panelX(a){const x=S.xauc,k=PROMO_BY_ID[x.card],en=LANG==='en';const mine=a&&a.pid===H;
   if(mine&&UI.xKey!==x.card+'-'+x.bid){UI.xKey=x.card+'-'+x.bid;UI.xbid=Math.max(10,x.bid+1)}
@@ -3610,7 +3613,7 @@ const TP=[
 [/^Lager von Kraftwerk (\d+[′″]?)$/u,'Storage of plant $1'],
 [/^(.+) gewinnt\.$/u,'$1 wins.'],
 ];
-const TS=Object.entries({
+const TS=Object.entries({'Umspannwerk':'Substation','Lagerhalle':'Warehouse','Freizeitpark':'Amusement park','Liefervertrag':'Supply contract',
 'beliebige Rohstoffe':'any resources',
 'Zusatzversteigerung':'Extra auction','Flux-Generator':'Flux generator',
 'Passen (für diese Runde fertig)':'Pass (done for this round)','1 Einheit kaufen':'Buy 1 unit','Rohstoffe · Süd':'Resources · South','Rohstoffe · Nord':'Resources · North','Uranmine':'Uranium mine',
