@@ -1579,6 +1579,9 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .land-out{fill:var(--t121d24);opacity:.38;stroke:var(--line);stroke-width:1;stroke-dasharray:2 4}
 #map.atlas .land-out{fill:var(--t0e171d);opacity:.9;stroke:var(--t1a252d)}
 [data-theme="light"] .land-out{opacity:.5}
+
+/* v91: iOS-Homescreen – Kopfleiste unter Statusleiste/Dynamic Island hervorholen */
+#top{padding-top:max(6px,env(safe-area-inset-top,0px))}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -4259,6 +4262,10 @@ function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(_){}}
 let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}catch(_){return'dark'}})();
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
+/* iOS-Homescreen-App: innerHeight ist dort teils um die Statusleiste zu kurz – dann App auf volle Bildschirmhöhe ziehen */
+function fixIOSHeight(){try{const app=document.getElementById('app');if(!app||!navigator.standalone)return;const port=innerWidth<innerHeight;const h=port?Math.max(screen.height,screen.width):Math.min(screen.height,screen.width);
+  if(h>innerHeight+8&&h<innerHeight+120){app.style.bottom='auto';app.style.height=h+'px';document.documentElement.style.background=getComputedStyle(document.body).backgroundColor}else{app.style.bottom='';app.style.height=''}}catch(_){}}
+addEventListener('resize',()=>setTimeout(fixIOSHeight,60));addEventListener('orientationchange',()=>setTimeout(fixIOSHeight,300));setTimeout(fixIOSHeight,0);
 applyTheme();if(_mqLight){try{_mqLight.addEventListener('change',()=>{if(THEME==='auto')applyTheme()})}catch(_){}}
 function setTheme(t){THEME=t;try{localStorage.setItem('hochspannung-theme',t)}catch(_){}applyTheme()}
 let MAPSTYLE=(()=>{try{return localStorage.getItem('hochspannung-mapstyle')||'atlas'}catch(_){return'atlas'}})();
