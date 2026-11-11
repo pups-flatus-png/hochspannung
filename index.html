@@ -196,6 +196,20 @@ button.plant{cursor:pointer}
 .income b{font-family:var(--display);font-size:26px;color:var(--accent-text)}
 .warn{color:var(--bad);font-size:12px;margin:0}
 
+.feed{flex:none;border:1px solid var(--line);border-radius:12px;background:var(--panel-2);padding:8px 10px 6px}
+.fd-top{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.fd-k{flex:1;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.fd-top .linkbtn{font-size:12px;padding:2px 0}
+.fd-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.fd-list li{display:flex;gap:7px;align-items:baseline;font-size:12.5px;line-height:1.35;color:var(--muted)}
+.fd-list li:first-child,.feed:not(.open) .fd-list li{color:var(--fg)}
+.feed:not(.open) .fd-list li+li{color:var(--muted)}
+.fd-list li .dot{width:7px;height:7px;border-radius:50%;background:var(--pc,var(--muted));flex:none;transform:translateY(-1px)}
+.fd-list li.me .fd-t{font-weight:600}
+.fd-list li.fd-h{margin-top:6px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-text)}
+.fd-list li.fd-h:first-child{margin-top:0}
+.fd-list li.new{animation:fadeIn .45s ease-out}
+@media (prefers-reduced-motion:reduce){.fd-list li.new{animation:none}}
 .ticker{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:10px}
 .ticker p{margin:0;font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:baseline;line-height:1.35}
 .ticker p:first-of-type{color:var(--fg)}
@@ -1594,7 +1608,7 @@ let S=null;
 const H=0;
 function rnd(n){return Math.floor(Math.random()*n)}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
-function log(t,pid=null){S.log.unshift({t,pid,r:S.round});if(S.log.length>120)S.log.length=120}
+function log(t,pid=null){S.log.unshift({t,pid,r:S.round,ph:S.phase});if(S.log.length>120)S.log.length=120}
 function P(id){return S.players[id]}
 /* --- Kartenregeln der Erweiterungen --- */
 function MR(){return (MAPS[(S&&S.map)||MAPID]||{}).rules||{}}
@@ -2718,6 +2732,20 @@ function panelMine(){
   const pool=RES.filter(r=>p.pool[r]>0).map(r=>`<span class="stock">${resIcon(r)}${p.pool[r]}</span>`).join('')||'<span class="hint">leer</span>';
   return `<section class="sec mine"><h3>Dein Betrieb</h3><div class="mrow"><div class="stat"><b>${p.money}</b><span>€</span></div><div class="stat"><b>${cityCount(p)}</b><span>Städte</span></div><div class="stat"><b>${capacity(p)}</b><span>Kapazität</span></div></div><div class="cards">${slots}</div><div class="stock-row"><span class="lbl">Lager</span>${pool}</div></section>`;
 }
+function feedHTML(){
+  if(!S||!S.log.length)return '';const en=LANG==='en';const open=!!UI.feedOpen;
+  const nw=UI.lastFeed!==S.log[0]?.t;UI.lastFeed=S.log[0]?.t;
+  const noise=/ (bietet|erhöht auf|steigt aus)/;
+  const evs=S.log.filter((l,i)=>i===0||!noise.test(l.t));
+  let pool=evs.filter(l=>l.r===S.round);if(pool.length<4)pool=evs.filter(l=>l.r>=S.round-1);pool=pool.slice(0,20);
+  const list=open?pool:evs.slice(0,2);
+  let lastPh=null,lastR=null;
+  const PHN={auction:en?'Auction':'Versteigerung',resources:en?'Resources':'Rohstoffe',build:en?'Building':'Bauen',bureau:en?'Bureaucracy':'Bürokratie',end:en?'End':'Ende'};
+  const rows=list.map((l,i)=>{let hd='';if(open&&(l.ph!==lastPh||l.r!==lastR)&&l.ph){hd=`<li class="fd-h">${en?'Round':'Runde'} ${l.r} · ${PHN[l.ph]||''}</li>`;lastPh=l.ph;lastR=l.r}
+    return hd+`<li class="${i===0&&nw?'new':''}${l.pid===H?' me':''}" ${l.pid!=null?pc(l.pid):''}><span class="dot"></span><span class="fd-t">${esc(l.t)}</span></li>`}).join('');
+  const more=Math.max(0,pool.length-2);
+  return `<section class="feed${open?' open':''}"><div class="fd-top"><span class="fd-k">${en?'Latest moves':'Zuletzt passiert'}</span>${more?`<button type="button" class="linkbtn" data-act="feedTog">${open?(en?'Less':'Weniger'):(en?`+${more} more`:`+${more} weitere`)}</button>`:''}<button type="button" class="linkbtn" data-act="log">${en?'Full log':'Protokoll'}</button></div><ul class="fd-list">${rows}</ul></section>`;
+}
 function panelLog(){
   const nw=UI.lastLog!==S.log[0]?.t;UI.lastLog=S.log[0]?.t;
   return `<section class="ticker">${S.log.slice(0,4).map((l,i)=>`<p class="${i===0&&nw?'new':''}" ${l.pid!=null?pc(l.pid):''}><span class="dot"></span>${esc(l.t)}</p>`).join('')}<button type="button" class="linkbtn" data-act="log">Ganzes Protokoll</button></section>`;
@@ -2772,7 +2800,7 @@ function marketDemand(r){
   return `<div class="dem"><span><span class="dl">Bedarf aller Betriebe je Lieferung</span><b>${all}</b></span>${flex?`<span><span class="dl">plus flexibel (Hybrid)</span><b>${flex}</b></span>`:''}<span><span class="dl">davon du</span><b>${mine}</b></span></div>`;
 }
 function renderPanel(){
-  const a=actor();let h=qbarHTML()+orderHTML(a)+phaseRulesHTML()+((S.phase==='auction'||S.xauc)&&S.phase!=='end'?seatHTML(a):'')+oppPlantsHTML()+turnLine(a);
+  const a=actor();let h=qbarHTML()+orderHTML(a)+feedHTML()+phaseRulesHTML()+((S.phase==='auction'||S.xauc)&&S.phase!=='end'?seatHTML(a):'')+oppPlantsHTML()+turnLine(a);
   if(S.subPick!=null){h+=panelSub(a)}else if(S.xauc){h+=panelX(a)}else
   switch(S.phase){
     case'auction':h+=panelAuction(a);break;
@@ -2781,7 +2809,7 @@ function renderPanel(){
     case'bureau':h+=panelBureau();break;
     case'end':h+=`<section class="sec"><h3>Spielende</h3><p class="hint">${esc(P(S.ranking[0]).name)} gewinnt.</p><button type="button" class="btn pri" data-act="results">Ergebnis ansehen</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button></section>`;break;
   }
-  h+=panelMine()+panelLog();
+  h+=panelMine();
   const st=panel.scrollTop;panel.innerHTML=h;panel.scrollTop=st;orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
 }
 
@@ -3386,6 +3414,7 @@ const TS=Object.entries({
 'Wer die meisten Städte hat, ist zuerst dran. Bei Gleichstand entscheidet das größte Kraftwerk. Beim Rohstoffkauf und beim Bauen geht es rückwärts, der Führende kommt also zuletzt.':'Whoever has the most cities goes first. Ties are broken by the largest plant. Buying resources and building go in reverse, so the leader comes last.',
 'Reihum eröffnet jeder eine Versteigerung um ein Kraftwerk aus dem aktuellen Markt oder passt. Das Mindestgebot ist die Kraftwerksnummer. Jeder kauft höchstens ein Kraftwerk pro Runde und betreibt höchstens drei.':'In turn, each player opens an auction for a plant from the current market or passes. The minimum bid is the plant number. Everyone buys at most one plant per round and runs at most three.',
 'Partie beenden?':'End this game?','Partie beenden':'End game','Die laufende Partie wird abgebrochen und gelöscht. Sie zählt nicht in der Statistik.':'The current game is stopped and deleted. It does not count in your statistics.',
+'Zuletzt passiert':'Latest moves',
 'Geboten wird im Uhrzeigersinn um den Tisch, beginnend links vom Eröffner. Die Sitzordnung bleibt die ganze Partie gleich.':'Bids go clockwise around the table, starting left of the player who opened. Seating stays the same all game.',
 'Ohne Rabatt: Kauft in einer Runde niemand ein Kraftwerk, fällt das kleinste aus dem Spiel und wird ersetzt.':'No discount: if nobody buys a plant in a round, the smallest leaves the game and is replaced.',
 'Rabatt (Recharged)':'Discount (Recharged)','Originalregel: ohne Rabatt':'Original rule: no discount',
@@ -4027,11 +4056,13 @@ function schedule(){
 function after(){save();render();schedule()}
 try{UI.promos=JSON.parse(localStorage.getItem('hochspannung-promos')||'[]').filter(k=>PROMOS[k])}catch(_){UI.promos=[]}
 try{UI.disc=localStorage.getItem('hochspannung-disc')||'rech'}catch(_){UI.disc='rech'}
+try{UI.feedOpen=localStorage.getItem('hochspannung-feed')==='1'}catch(_){}
 try{const n=localStorage.getItem('hochspannung-name');if(n&&!UI.name)UI.name=n}catch(_){}
 try{UI.adv=localStorage.getItem('hochspannung-adv')==='1';UI.vib=localStorage.getItem('hochspannung-vib')!=='0'}catch(_){UI.vib=true}
 function buzz(){if(!UI.vib)return;try{if(navigator.vibrate&&navigator.vibrate([45,35,45]))return}catch(_){}
   try{const l=document.createElement('label');l.style.cssText='position:fixed;opacity:0;pointer-events:none;width:1px;height:1px';const i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');l.appendChild(i);document.body.appendChild(l);l.click();setTimeout(()=>l.remove(),50)}catch(_){}}
 const A={
+  feedTog:()=>{UI.feedOpen=!UI.feedOpen;try{localStorage.setItem('hochspannung-feed',UI.feedOpen?'1':'0')}catch(_){}},
   undo:()=>{const u=(UI.undo||[]).pop();if(!u||!S||S.phase==='end')return'skip';clearTimeout(timer);timer=null;S=JSON.parse(u);UI.sel=null;UI.buildSel=null;UI.pcart={};UI.discSel=null;UI.sheet=null;UI.powerKey='';UI.bidKey='';UI.outbid=null;UI.toast='Rückgängig gemacht'},
   advToggle:()=>{UI.adv=!UI.adv;try{localStorage.setItem('hochspannung-adv',UI.adv?'1':'0')}catch(_){}},
   advPick:b=>{const n=+b.dataset.num;UI.sel=n;UI.bid=+b.dataset.bid;UI.bidKey=''},
