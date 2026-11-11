@@ -1602,6 +1602,29 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .hero-map .heromap{position:relative;z-index:1}
 
 .fuelk em.tr{display:block;margin-top:2px;font-style:normal;font-size:11.5px;color:var(--muted)}.fuelk em.tr.up{color:var(--t6fd08a)}.fuelk em.tr.down{color:var(--tff8a7a)}
+
+/* v99: schmales Panel (z. B. iPhone quer) – Reihenfolge-Karten zweizeilig wie bei 4+ Spielern */
+@container (max-width:470px){
+ .order.v3 .ot{grid-template-columns:auto minmax(0,1fr);column-gap:6px;row-gap:5px;padding:9px 7px 8px}
+ .order.v3 .ot .who{display:contents}
+ .order.v3 .ot .n{grid-row:1;grid-column:1;width:24px;height:24px;font-size:13px}
+ .order.v3 .ot .mv{grid-row:1;grid-column:2;flex-direction:column;align-items:flex-start;gap:0;line-height:1.1}
+ .order.v3 .ot .nm{grid-row:2;grid-column:1/-1}
+ .order.v3 .ot .mps{grid-row:3;padding-top:5px}
+ .order.v3 .ot .nmf{display:none}.order.v3 .ot .nms{display:inline}
+ .order.v3 .ot .nm{font-size:12px}
+ .order.v3 .ot .mv{font-size:12px}
+ .order.v3 .ot .mv b{font-size:14px}
+ .order.v3 .ot .mv i{display:none}
+ .order.v3 .ot .chk{position:absolute;top:5px;right:5px;width:15px;height:15px}
+ .order.v3 .ot .ost{position:absolute;right:6px;bottom:7px;margin:0}
+ .order.v3 .ot .ost{top:6px;bottom:auto;right:5px;font-size:11px;padding:1px 6px;line-height:1.3}
+ .order.v3 .ot .chk{top:auto;bottom:6px}
+}
+@media (orientation:landscape) and (max-height:520px){#app{grid-template-columns:minmax(0,1fr) min(48vw,440px)}}
+
+/* v99: iOS vergrößert Text nach dem Drehen sonst automatisch */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
