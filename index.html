@@ -1309,6 +1309,27 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 [data-theme="light"] .pm{background:var(--band) top/100% 4px no-repeat,linear-gradient(180deg,var(--tint),var(--tint2))!important;border-color:var(--pcard-line)!important}
 [data-theme="light"] .mp:not(.none){background:var(--band) top/100% 3px no-repeat,var(--tint)!important;border-color:var(--pcard-line)!important;color:#1f1a12!important}
 [data-theme="light"] .tk-t{background:color-mix(in srgb,var(--tc) 18%,#fffaf0);color:#1f1a12;box-shadow:0 0 0 1px color-mix(in srgb,var(--tc) 35%,#e3d7bf)}
+/* v131: Gegner-Board kompakter */
+.ticker{width:auto!important;max-width:min(400px,calc(100% - 110px))}
+.tk-h{padding:5px 6px 5px 12px!important;gap:8px!important}
+.tk-x{width:24px!important;height:24px!important}
+.tk-next{height:24px!important}
+.tk-r{grid-template-columns:136px minmax(0,1fr)!important;gap:10px!important;padding:6px 10px 6px 0!important}
+.tk-n{gap:6px!important;padding-left:9px!important}
+.tk-dot{width:9px!important;height:9px!important;margin-top:4px!important}
+.tk-nm b{font-size:15px!important;max-width:120px}
+.tk-nm small{font-size:11px!important}
+.tk-pl{margin-top:3px!important;gap:3px!important;max-width:128px}
+.tk-t{height:18px!important;font-size:11.5px!important;padding:2px 4px 0 5px!important;gap:2px!important}
+.tk-t .tb{width:10px!important;height:10px!important}
+.tk-rd{grid-template-columns:22px minmax(0,1fr)!important;gap:6px!important;padding:1px 0!important}
+.tk-rd+.tk-rd{padding-top:3px!important;margin-top:1px!important}
+.tk-a .tk-rl{padding-top:3px!important;letter-spacing:.04em!important;font-weight:700}
+.tk-rc{gap:4px 8px!important}
+.tk-a .tk-hp,.tk-a .tk-hr,.tk-a .tk-hc{font-size:12px!important;gap:4px!important}
+.tk-rc u{font-size:11.5px!important}
+.tk-hr .ri{width:12px!important;height:12px!important}
+.tk-a{padding-top:0!important}
 /* ---- v16: Kraftwerksdeck & Atomausstieg ---- */
 .dcards{display:flex;flex-direction:column;gap:8px}
 .dcard{display:flex;flex-direction:column;gap:7px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--t26343e);background:var(--t121b22);color:var(--fg);cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
@@ -4819,7 +4840,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v130';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v131';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -4931,7 +4952,7 @@ function tkRound(q,r,label){const h=tkHist(q,r);const parts=[];
   if(h.plants.length)parts.push(h.plants.map(x=>`<span class="tk-hp">${tkTile(x.n)}<u>${x.pr} €</u></span>`).join(''));
   const rs=Object.entries(h.res);if(rs.length)parts.push(`<span class="tk-hr">${rs.map(([r,k])=>`<span>${k}${resIcon(r)}</span>`).join('')}<u>${h.resCost} €</u></span>`);
   if(h.cities)parts.push(`<span class="tk-hc">+${h.cities} ${h.cities===1?LX('Stadt','city'):LX('Städte','cities')}<u>${h.cityCost} €</u></span>`);
-  return `<div class="tk-rd"><span class="tk-rl">${label}</span><div class="tk-rc">${parts.length?parts.join(''):`<span class="tk-none">${r===S.round?LX('noch nichts','nothing yet'):LX('nichts gekauft','bought nothing')}</span>`}</div></div>`}
+  return `<div class="tk-rd"><span class="tk-rl">${label}</span><div class="tk-rc">${parts.length?parts.join(''):`<span class="tk-none">${r===S.round?'–':LX('nichts gekauft','bought nothing')}</span>`}</div></div>`}
 function tkOwned(q){const fresh=new Set();[S.round,S.round-1].forEach(r=>tkHist(q,r).plants.forEach(x=>fresh.add(x.n)));
   const ps=[...q.plants].sort((a,b)=>a-b);if(!ps.length)return'';return `<span class="tk-pl">${ps.map(n=>tkTile(n,fresh.has(n)?'new':'')).join('')}</span>`}
 function renderTicker(){const el=document.getElementById('ticker');if(!el)return;
@@ -4941,9 +4962,9 @@ function renderTicker(){const el=document.getElementById('ticker');if(!el)return
   const clean=(q,t)=>{t=tr(t);if(t.startsWith(q.name+' '))t=t.slice(q.name.length+1);return t.charAt(0).toUpperCase()+t.slice(1)};
   const col=UI.tkCol;
   const rows=opp.map(q=>{const on=q.id===act;
-    return `<div class="tk-r${on?' on':''}" style="--pc:${q.color}"><div class="tk-n"><span class="tk-dot"></span><span class="tk-nm"><b>${esc(q.name)}</b><small>${q.money} € · ${q.cities.length} ${LX('Städte','cities')}</small>${tkOwned(q)}</span></div><div class="tk-a">${tkRound(q,S.round,LX('Diese Runde','This round')+' · R'+S.round)}${S.round>1?tkRound(q,S.round-1,LX('Letzte Runde','Last round')+' · R'+(S.round-1)):''}</div></div>`}).join('');
+    return `<div class="tk-r${on?' on':''}" style="--pc:${q.color}"><div class="tk-n"><span class="tk-dot"></span><span class="tk-nm"><b>${esc(q.name)}</b><small>${q.money} € · ${q.cities.length} ${LX('Städte','cities')}</small>${tkOwned(q)}</span></div><div class="tk-a">${tkRound(q,S.round,'R'+S.round)}${S.round>1?tkRound(q,S.round-1,'R'+(S.round-1)):''}</div></div>`}).join('');
   el.className='ticker'+(col?' col':'');
-  el.innerHTML=`<div class="tk-h"><span class="tk-t">${LX('Gegner live','Opponents live')}</span><span class="tk-ph">${LX('Runde','Round')} ${S.round} · ${ph}</span>${UI.stepWait!=null?`<button type="button" class="tk-next" data-act="aiStep" style="--pc:${P(UI.stepWait).color}">${LX('Nächster Zug','Next move')} <kbd>${LX('Leertaste','Space')}</kbd><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h9.5M8.5 4l4 4-4 4"/></svg></button>`:''}<button type="button" class="tk-x" data-act="tkCol" aria-label="${col?LX('Gegner-Ticker aufklappen','Expand opponent ticker'):LX('Gegner-Ticker einklappen','Collapse opponent ticker')}" aria-expanded="${!col}"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="${col?'M3.5 6 8 10.5 12.5 6':'M3.5 10 8 5.5 12.5 10'}"/></svg></button></div>${col?'':`<div class="tk-rows">${rows}</div>`}`;
+  el.innerHTML=`<div class="tk-h"><span class="tk-t">${LX('Gegner live','Opponents live')}</span><span class="tk-ph">${ph}</span>${UI.stepWait!=null?`<button type="button" class="tk-next" data-act="aiStep" style="--pc:${P(UI.stepWait).color}">${LX('Nächster Zug','Next move')} <kbd>${LX('Leertaste','Space')}</kbd><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h9.5M8.5 4l4 4-4 4"/></svg></button>`:''}<button type="button" class="tk-x" data-act="tkCol" aria-label="${col?LX('Gegner-Ticker aufklappen','Expand opponent ticker'):LX('Gegner-Ticker einklappen','Collapse opponent ticker')}" aria-expanded="${!col}"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="${col?'M3.5 6 8 10.5 12.5 6':'M3.5 10 8 5.5 12.5 10'}"/></svg></button></div>${col?'':`<div class="tk-rows">${rows}</div>`}`;
   el.hidden=false;
   const tk=document.getElementById('tracker'),bd=document.getElementById('board');if(tk&&bd&&!tk.hidden){const r=tk.getBoundingClientRect(),rb=bd.getBoundingClientRect();el.style.setProperty('--tktop',Math.max(12,r.bottom-rb.top+10)+'px')}
 }
