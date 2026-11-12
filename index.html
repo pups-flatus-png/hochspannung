@@ -1247,6 +1247,20 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .tk-a{display:flex;flex-direction:column;gap:2px;min-width:0;padding-top:2px}
 .tk-a span{font-size:13px;line-height:1.35;color:var(--fg);text-transform:none;letter-spacing:0}
 .tk-b{display:flex;flex-direction:column;gap:2px;margin-top:5px;padding-top:5px;border-top:1px dashed color-mix(in srgb,var(--line) 80%,transparent)}
+.tk-t{position:relative;font-style:normal;display:inline-flex;align-items:center;gap:3px;height:22px;padding:2px 5px 0 6px;border-radius:5px;background:color-mix(in srgb,var(--tc) 16%,var(--panel-2));font-family:var(--display);font-weight:700;font-size:13px;color:var(--fg);box-sizing:border-box;overflow:visible}
+.tk-t::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;border-radius:5px 5px 0 0;background:var(--band)}
+.tk-t .tb{width:12px;height:12px;color:var(--tc);fill:currentColor}
+.tk-t.new{box-shadow:0 0 0 1.5px var(--tc),0 0 10px -2px var(--tc)}
+.tk-t.new::after{content:"";position:absolute;top:-4px;right:-3px;width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--panel)}
+.tk-rd{display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px;align-items:start;padding:3px 0}
+.tk-rd+.tk-rd{border-top:1px dashed color-mix(in srgb,var(--line) 80%,transparent);padding-top:5px;margin-top:2px;opacity:.8}
+.tk-a .tk-rl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-top:5px;line-height:1.3}
+.tk-rc{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;min-width:0}
+.tk-a .tk-hp,.tk-a .tk-hr,.tk-a .tk-hc{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--fg)}
+.tk-a .tk-hr span{display:inline-flex;align-items:center;gap:1px;font-size:12.5px;color:var(--fg)}
+.tk-hr .ri{width:13px;height:13px}
+.tk-rc u{text-decoration:none;color:var(--muted);font-size:12px}
+.tk-a .tk-none{font-size:12px;color:var(--muted)}
 .tk-pl{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .tk-pl i{position:relative;font-style:normal;display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 5px 0 6px;border-radius:5px;background:color-mix(in srgb,var(--tc) 16%,var(--panel-2));border-top:2px solid var(--tc);font-family:var(--display);font-weight:700;font-size:13px;color:var(--fg);box-sizing:border-box}
 .tk-pl i .tb{width:12px;height:12px;color:var(--tc);fill:currentColor}
@@ -4785,7 +4799,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v128';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v129';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -4880,23 +4894,34 @@ function tkBuys(q){const out=[];for(const l of S.log){if(l.pid!==q.id||l.r<S.rou
   if(!out.length)return'';
   return `<div class="tk-b"><span class="tk-bl">${LX('Kraftwerkskäufe','Plant purchases')}</span>${out.map(x=>{const P_=PLANTS[x.n];if(!P_)return'';const[ty,k,c]=P_;const fuel=FREE(ty)?LX('ohne Brennstoff','no fuel'):ty==='mine'?LX('Uran','uranium'):`${k}× ${(HYB[ty]||[ty]).map(r=>resIcon(r)).join('/')}`;
     return `<em class="tk-p" style="--tc:${TCOL[ty]||'#999'}"><small>${LX('R','R')}${x.r}</small><i>${Math.floor(x.n)}</i><b>${tr(TYPE_NAME[ty])}</b><span>${fuel} → ${c}</span><u>${x.pr} €</u></em>`}).join('')}</div>`}
-function tkOwned(q){const fresh=new Set();S.log.forEach(l=>{if(l.pid===q.id&&l.r>=S.round-1){const m=/kauft Kraftwerk (\d+(?:\.\d+)?) für/.exec(l.t);if(m)fresh.add(+m[1])}});
-  const ps=[...q.plants].sort((a,b)=>a-b);if(!ps.length)return'';
-  return `<span class="tk-pl">${ps.map(n=>{const[ty,k,c]=PLANTS[n];return `<i class="${fresh.has(n)?'new':''}" style="--tc:${TCOL[ty]||'#999'}" title="${esc(tr(TYPE_NAME[ty]))} · ${FREE(ty)?'':k+' → '}${c}">${Math.floor(n)}${useIcon('b-'+ty,'tb')}</i>`}).join('')}</span>`}
-/* v128: Bau-Animation als eigene HTML-Ebene über der Karte – die große SVG-Karte muss dafür nicht neu gezeichnet werden */
-function cityBursts(list){const bd=document.getElementById('board');if(!bd||svg.classList.contains('moving'))return;const rb=bd.getBoundingClientRect();
-  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
-  for(const[id,col]of list){const el=svg.querySelector(`.city[data-city="${CSS.escape(id)}"]`);if(!el)continue;const r=el.getBoundingClientRect();if(!r.width)continue;
-    const d=document.createElement('div');d.className='cburst';d.style.cssText=`left:${(r.left+r.width/2-rb.left).toFixed(1)}px;top:${(r.top+r.height/2-rb.top).toFixed(1)}px;--c:${col};--s:${Math.max(26,Math.min(64,r.width*1.05)).toFixed(0)}px`;
-    d.innerHTML='<i></i><i></i><b></b>';bd.appendChild(d);setTimeout(()=>d.remove(),1400)}}
+const RCOLX={coal:'#c88a55',oil:'#7ea9d6',garbage:'#d9c13f',uranium:'#ef6a5e'};
+function tkBand(ty){const h=HYB[ty];if(!h)return TCOL[ty]||'#999';const c=h.map(r=>RCOLX[r]);const w=100/c.length;return `linear-gradient(90deg,${c.map((x,i)=>`${x} ${(i*w).toFixed(0)}% ${((i+1)*w).toFixed(0)}%`).join(',')})`}
+function tkTile(n,cls=''){const P_=PLANTS[n];if(!P_)return'';const[ty,k,c]=P_;const band=tkBand(ty),tc=HYB[ty]?RCOLX[HYB[ty][0]]:(TCOL[ty]||'#999');
+  return `<i class="tk-t ${cls}" style="--tc:${tc};--band:${band}" title="${esc(tr(TYPE_NAME[ty]))} · ${FREE(ty)?LX('ohne Brennstoff','no fuel'):k+' '+tr(RNAME[ty])} → ${c}">${PN(n)}${useIcon('b-'+ty,'tb')}</i>`}
+let _pnRev=null;function plantByPN(str){if(!_pnRev||_pnRev.n!==Object.keys(PLANTS).length){_pnRev={n:Object.keys(PLANTS).length,m:{}};Object.keys(PLANTS).forEach(k=>{_pnRev.m[PN(+k)]=+k})}return _pnRev.m[str]}
+const RREV={Kohle:'coal','Öl':'oil','Müll':'garbage',Uran:'uranium'};
+function tkHist(q,r){const o={plants:[],res:{},resCost:0,cities:0,cityCost:0,pass:false};
+  for(const l of S.log){if(l.pid!==q.id||l.r!==r)continue;let m;
+    if(m=/kauft Kraftwerk (\S+) für (\d+) €/.exec(l.t)){const n=plantByPN(m[1]);if(n!=null)o.plants.push({n,pr:+m[2]})}
+    else if(m=/ kauft (.+) für (\d+) €\.$/.exec(l.t)){m[1].split(', ').forEach(x=>{const mm=/^(\d+) (\S+)$/.exec(x);if(mm&&RREV[mm[2]])o.res[RREV[mm[2]]]=(o.res[RREV[mm[2]]]||0)+(+mm[1])});o.resCost+=+m[2]}
+    else if(m=/ baut in .+ \((\d+) €\)/.exec(l.t)){o.cities++;o.cityCost+=+m[1]}
+    else if(/(passt|verzichtet|kauft kein Kraftwerk)/.test(l.t))o.pass=true}
+  return o}
+function tkRound(q,r,label){const h=tkHist(q,r);const parts=[];
+  if(h.plants.length)parts.push(h.plants.map(x=>`<span class="tk-hp">${tkTile(x.n)}<u>${x.pr} €</u></span>`).join(''));
+  const rs=Object.entries(h.res);if(rs.length)parts.push(`<span class="tk-hr">${rs.map(([r,k])=>`<span>${k}${resIcon(r)}</span>`).join('')}<u>${h.resCost} €</u></span>`);
+  if(h.cities)parts.push(`<span class="tk-hc">+${h.cities} ${h.cities===1?LX('Stadt','city'):LX('Städte','cities')}<u>${h.cityCost} €</u></span>`);
+  return `<div class="tk-rd"><span class="tk-rl">${label}</span><div class="tk-rc">${parts.length?parts.join(''):`<span class="tk-none">${r===S.round?LX('noch nichts','nothing yet'):LX('nichts gekauft','bought nothing')}</span>`}</div></div>`}
+function tkOwned(q){const fresh=new Set();[S.round,S.round-1].forEach(r=>tkHist(q,r).plants.forEach(x=>fresh.add(x.n)));
+  const ps=[...q.plants].sort((a,b)=>a-b);if(!ps.length)return'';return `<span class="tk-pl">${ps.map(n=>tkTile(n,fresh.has(n)?'new':'')).join('')}</span>`}
 function renderTicker(){const el=document.getElementById('ticker');if(!el)return;
   if(!S||!start.hidden||S.phase==='end'){el.hidden=true;el.innerHTML='';return}
   const a=actor(),act=a&&!P(a.pid).human?a.pid:null,opp=S.players.filter(q=>!q.human);if(!opp.length){el.hidden=true;return}
   const ph={auction:LX('Versteigerung','Auction'),resources:LX('Rohstoffe','Resources'),build:LX('Netzausbau','Building'),bureau:LX('Bürokratie','Bureaucracy')}[S.phase]||'';
   const clean=(q,t)=>{t=tr(t);if(t.startsWith(q.name+' '))t=t.slice(q.name.length+1);return t.charAt(0).toUpperCase()+t.slice(1)};
   const col=UI.tkCol;
-  const rows=opp.map(q=>{const ls=S.log.filter(l=>l.pid===q.id&&l.r===S.round).slice(0,2);const on=q.id===act;
-    return `<div class="tk-r${on?' on':''}" style="--pc:${q.color}"><div class="tk-n"><span class="tk-dot"></span><span class="tk-nm"><b>${esc(q.name)}</b><small>${q.money} € · ${q.cities.length} ${LX('Städte','cities')}</small>${tkOwned(q)}</span></div><div class="tk-a">${ls.length?ls.map((l,i)=>`<span class="${i?'old':''}">${esc(clean(q,l.t))}</span>`).join(''):`<span class="old">${on?LX('denkt nach …','thinking …'):LX('noch nichts diese Runde','nothing yet this round')}</span>`}${tkBuys(q)}</div></div>`}).join('');
+  const rows=opp.map(q=>{const on=q.id===act;
+    return `<div class="tk-r${on?' on':''}" style="--pc:${q.color}"><div class="tk-n"><span class="tk-dot"></span><span class="tk-nm"><b>${esc(q.name)}</b><small>${q.money} € · ${q.cities.length} ${LX('Städte','cities')}</small>${tkOwned(q)}</span></div><div class="tk-a">${tkRound(q,S.round,LX('Diese Runde','This round')+' · R'+S.round)}${S.round>1?tkRound(q,S.round-1,LX('Letzte Runde','Last round')+' · R'+(S.round-1)):''}</div></div>`}).join('');
   el.className='ticker'+(col?' col':'');
   el.innerHTML=`<div class="tk-h"><span class="tk-t">${LX('Gegner live','Opponents live')}</span><span class="tk-ph">${LX('Runde','Round')} ${S.round} · ${ph}</span>${UI.stepWait!=null?`<button type="button" class="tk-next" data-act="aiStep" style="--pc:${P(UI.stepWait).color}">${LX('Nächster Zug','Next move')} <kbd>${LX('Leertaste','Space')}</kbd><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h9.5M8.5 4l4 4-4 4"/></svg></button>`:''}<button type="button" class="tk-x" data-act="tkCol" aria-label="${col?LX('Gegner-Ticker aufklappen','Expand opponent ticker'):LX('Gegner-Ticker einklappen','Collapse opponent ticker')}" aria-expanded="${!col}"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="${col?'M3.5 6 8 10.5 12.5 6':'M3.5 10 8 5.5 12.5 10'}"/></svg></button></div>${col?'':`<div class="tk-rows">${rows}</div>`}`;
   el.hidden=false;
