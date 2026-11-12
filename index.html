@@ -1167,6 +1167,9 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 [data-theme="light"] #map.atlas .rbord{stroke:#8b7a5c}
 [data-theme="light"] #map.atlas .rlabel{fill:#5d5446}
 #map.moving .rnn{display:none}
+/* v118: Wien-Rabatt im Rohstoffmarkt */
+.rdisc{margin-left:auto;padding:1px 8px;border-radius:9px;font-size:11px;font-weight:700;color:#f2e28a;background:#3a3410;border:1px solid #d9c13f;white-space:nowrap}
+[data-theme="light"] .rdisc{color:#6b5a0c;background:#fbf3c4;border-color:#b89a1c}
 /* ---- v16: Kraftwerksdeck & Atomausstieg ---- */
 .dcards{display:flex;flex-direction:column;gap:8px}
 .dcard{display:flex;flex-direction:column;gap:7px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--t26343e);background:var(--t121b22);color:var(--fg);cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
@@ -3004,14 +3007,14 @@ function normAlloc(p){
 }
 function storeOf(p){return p.human?normAlloc(p):storageView(p)}
 function cartTot(r){return Object.values(UI.pcart).reduce((s,c)=>s+(c[r]||0),0)}
-function cartCost(){return RES.reduce((s,r)=>s+buyCost(r,cartTot(r)),0)}
+function cartCost(){return RES.reduce((s,r)=>s+buyCost(r,cartTot(r),S.resMarket,me()),0)}/* v118: mit Spieler, damit Rabatte (Wien) schon im Korb zählen */
 function plantFill(n){const c=UI.pcart[n]||{};return(me().alloc[n]||[]).length+RES.reduce((s,r)=>s+(c[r]||0),0)}
 function canAddP(n,r){
   const[t,k]=PLANTS[n];if(!fitsType(t,r)||plantFill(n)>=STO(n))return false;
   if(t==='flux'&&r==='uranium'&&!fluxU(me()))return false;
   if(MR().india&&RES.reduce((x,q)=>x+cartTot(q),0)>=1)return false;
   const tot=cartTot(r);if(tot>=S.resMarket[r])return false;
-  return cartCost()-buyCost(r,tot)+buyCost(r,tot+1)<=me().money;
+  return cartCost()-buyCost(r,tot,S.resMarket,me())+buyCost(r,tot+1,S.resMarket,me())<=me().money;
 }
 function addP(n,r){(UI.pcart[n]??=Z())[r]++}
 function suggestCart(){
@@ -3041,7 +3044,8 @@ function panelResources0(a){
   let h=`<section class="sec"><h3>Rohstoffmarkt${S.resNorth?((UI.kside||'south')==='north'?(LANG==='en'?' · North':' · Nord'):(LANG==='en'?' · South':' · Süd')):''}</h3>${mine?'':kSideSeg()}${MR().india?`<p class="hint brule">${LANG==='en'?`One unit per turn, in turn. Only spaces up to ${priceCap()} € are open in this step.`:`Reihum je eine Einheit. In dieser Stufe sind nur Felder bis ${priceCap()} € offen.`}</p>`:''}`;
   for(const r of RES){if(!CAP[r])continue;
     const k=mine?cartTot(r):0;const np=nextPrice(r,k);
-    h+=`<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)}${np!=null?' · nächste '+np+' €':''}${k?' · '+k+' im Korb':''}</span></div>${trackHTML(r,k)}</div>`;
+    const dsc=mine?resDisc(me(),r):0;
+    h+=`<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)}${np!=null?' · nächste '+(dsc?Math.max(1,np-dsc):np)+' €':''}${k?' · '+k+' im Korb':''}</span>${dsc?`<span class="rdisc" title="${LX('Du hast eine Stadt in Wien','You have a city in Vienna')}">${LX(`−${dsc} € für dich (Wien)`,`−${dsc} € for you (Vienna)`)}</span>`:''}</div>${trackHTML(r,k)}</div>`;
   }
   h+=umkHTML()+`</section>`;
   if(!mine)return h;
@@ -4576,7 +4580,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v117';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v118';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
