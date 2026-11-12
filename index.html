@@ -1334,6 +1334,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .sheet>*,.menu>*{flex-shrink:0}
 .menu{min-height:min-content}
 .mk-sep{height:1px;background:var(--line);margin:6px 0 2px}
+.mk9{font-style:normal;font-size:11px;margin-left:6px;padding:1px 7px;border-radius:9px;border:1px solid var(--line);color:var(--muted)}
 /* ---- v16: Kraftwerksdeck & Atomausstieg ---- */
 .dcards{display:flex;flex-direction:column;gap:8px}
 .dcard{display:flex;flex-direction:column;gap:7px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--t26343e);background:var(--t121b22);color:var(--fg);cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
@@ -3170,6 +3171,7 @@ function phaseRuleItems(){
   const M=MAPS[S.map],en=LANG==='en',ph={auction:'a',resources:'r',build:'b',bureau:'p'}[S.phase],out=[];if(!ph)return out;const p=me(),R=MR();
   if(M.exp&&M.rtxt){const sp=(MR_PH[S.map]||'').split('|');M.rtxt.forEach((x,i)=>{if((sp[i]||'').includes(ph))out.push({ic:x[0],t:en?x[3]:x[1],d:en?x[4]:x[2]})})}
   const add=(ic,t,d,st)=>out.push({ic,t,d,st});
+  if(ph==='a'&&M.mktSize===9&&S.step<3)add('plant',en?'Market with 9 plants':'Markt mit 9 Kraftwerken',en?'4 current plants you can buy, plus 5 in the future market – one more than on other boards.':'4 kaufbare im aktuellen Markt, dazu 5 im zukünftigen – eines mehr als auf anderen Spielplänen.');
   if(ph==='a'&&S.origDisc&&!M.noDiscount)add('nodisc',en?'Original rule: no discount':'Originalregel: kein Rabatt',en?'If nobody buys a plant this round, the smallest leaves the game and is replaced.':'Kauft in dieser Runde niemand ein Kraftwerk, fällt das kleinste aus dem Spiel und wird ersetzt.');
   if(ph==='r'&&M.noNuke&&p.plants.includes(FLUX))add('nuke',en?'Flux generator and nuclear ban':'Flux-Generator und Atomverbot',en?'No uranium for the flux generator while your network lies only in banned regions.':'Kein Uran für den Flux-Generator, solange dein Netz nur in Verbotsregionen liegt.',fluxU(p)?(en?'Uranium allowed for you':'Uran für dich erlaubt'):(en?'No uranium for you':'Kein Uran für dich'));
   // live status
@@ -3213,7 +3215,7 @@ function marketHTML(mode){
   if(S.step===3||MR().china)return `<div class="sec"><div class="mkt-label"><span>${MR().china&&S.step<3?'Markt · Planwirtschaft':'Markt · alle kaufbar'}</span>${MR().china&&S.step<3?`<span>${S.deck.length} im Stapel</span>`:''}</div><div class="cards">${S.market.map(card).join('')}</div>${MR().china&&S.step<3?'<p class="hint mk-x">Gekaufte Kraftwerke werden erst am Rundenende ersetzt.</p>':''}</div>`;
   const bn=buyN(),now=S.market.slice(0,bn),fut=S.market.slice(bn);
   const spy=S.spy===H&&S.deck.length?`<div class="spy"><span>${LANG==='en'?'Industrial espionage · top card of the deck':'Industriespionage · oberste Karte im Stapel'}</span>${S.deck[0]===STEP3?plantCard(STEP3):S.deck[0]>=100?`<b class="spyev">${promoName(PROMO_BY_ID[S.deck[0]])}</b>`:plantCard(S.deck[0],{sm:true,act:'pinfo'})}</div>`:'';
-  return `<div class="sec"><div class="mkt-label"><span>Aktueller Markt</span><span>kaufbar</span></div><div class="cards">${now.map(card).join('')}</div>${bn===5?`<p class="hint mk-x">${LX('Benelux: Das Öko-Kraftwerk vorne im zukünftigen Markt ist zusätzlich kaufbar.','Benelux: the eco plant at the front of the future market is also buyable.')}</p>`:''}<div class="mkt-label"><span>Zukünftiger Markt</span><span>${S.deck.length} im Stapel</span></div><div class="cards">${fut.map(n=>plantCard(n,{act:'pinfo'})).join('')}${S.step3Pending?plantCard(STEP3):''}</div>${spy}${promoDeckNote()}</div>`;
+  return `<div class="sec"><div class="mkt-label"><span>Aktueller Markt</span><span>kaufbar</span></div><div class="cards">${now.map(card).join('')}</div>${bn===5?`<p class="hint mk-x">${LX('Benelux: Das Öko-Kraftwerk vorne im zukünftigen Markt ist zusätzlich kaufbar.','Benelux: the eco plant at the front of the future market is also buyable.')}</p>`:''}<div class="mkt-label"><span>Zukünftiger Markt${fut.length===5?` <em class="mk9">${LX('5 statt 4','5 instead of 4')}</em>`:''}</span><span>${S.deck.length} im Stapel</span></div><div class="cards">${fut.map(n=>plantCard(n,{act:'pinfo'})).join('')}${S.step3Pending?plantCard(STEP3):''}</div>${spy}${promoDeckNote()}</div>`;
 }
 const aucAct=o=>`<div class="aucact">${o.h}</div>`;
 function panelAuction(a){
@@ -3708,6 +3710,7 @@ const RCATN={plant:['Kraftwerksmarkt','Plant market'],nuke:['Atomkraft','Nuclear
 function mapRuleItems(k,regs){
   const M=MAPS[k],en=LANG==='en',out=[];if(!M||!M.exp)return out;
   (M.rtxt||[]).forEach(([ic,dt,dd,et,ed])=>out.push({ic,t:en?et:dt,d:en?ed:dd}));
+  if(M.mktSize===9)out.push({ic:'plant',t:en?'Market with 9 plants':'Markt mit 9 Kraftwerken',d:en?'4 current plants you can buy, plus 5 in the future market.':'4 kaufbare im aktuellen Markt, dazu 5 im zukünftigen.'});
   const base={coal:24,oil:18,garbage:6,uranium:2},st=M.start||base;
   const diff=RES.filter(r=>(st[r]??0)!==base[r]);
   if(diff.length)out.push({ic:'res',t:en?'Different starting market':'Anderer Startmarkt',d:'',chips:RES.map(r=>({r,v:st[r]??0,ch:diff.includes(r),b:base[r]}))});
@@ -4844,7 +4847,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v134';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v135';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
