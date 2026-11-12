@@ -1215,6 +1215,52 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 @keyframes ovIn{from{background:transparent;-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0)}}
 @keyframes shIn{from{opacity:0;transform:translateY(8px) scale(.985)}}
 @media (prefers-reduced-motion:reduce){.overlay:not(.dock),.overlay:not(.dock) .sheet{animation:none}}
+/* v125: Einzelschritt-Knopf und Live-Ticker */
+.stepbtn{position:fixed;z-index:35;left:50%;transform:translateX(-50%);bottom:max(18px,calc(env(safe-area-inset-bottom,0px) + 12px));display:flex;align-items:center;gap:12px;padding:10px 16px 10px 14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--pc) 60%,var(--line));background:color-mix(in srgb,var(--pc) 12%,var(--panel));color:var(--fg);box-shadow:0 14px 34px -12px rgba(0,0,0,.8);cursor:pointer;font:inherit}
+.stepbtn .sb-dot{width:12px;height:12px;border-radius:50%;background:var(--pc);box-shadow:0 0 0 3px color-mix(in srgb,var(--pc) 30%,transparent)}
+.stepbtn .sb-t{display:flex;flex-direction:column;line-height:1.15;text-align:left}
+.stepbtn small{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.stepbtn b{font-family:var(--display);font-size:17px}
+.stepbtn .sb-k{font-size:11px;padding:2px 6px;border:1px solid var(--line);border-radius:6px;color:var(--muted)}
+@media (pointer:coarse){.stepbtn .sb-k{display:none}}
+.ticker{position:absolute;z-index:6;right:calc(12px + env(safe-area-inset-right,0px));top:var(--tktop,96px);width:min(440px,calc(100% - 110px));max-height:calc(100% - var(--tktop,96px) - 70px);overflow:hidden;display:flex;flex-direction:column;border-radius:12px;background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);box-shadow:0 14px 34px -16px rgba(0,0,0,.85);backdrop-filter:blur(8px);animation:tkIn .2s ease-out}
+@keyframes tkIn{from{opacity:0;transform:translateY(-6px)}}
+.tk-h{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;border-bottom:1px solid var(--line)}
+.ticker.col .tk-h{border-bottom:0}
+.tk-t{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--fg)}
+.tk-ph{font-size:11px;color:var(--muted);letter-spacing:.04em}
+.tk-x{margin-left:auto;width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tk-rows{display:flex;flex-direction:column;overflow-y:auto}
+.tk-r{display:grid;grid-template-columns:132px minmax(0,1fr);gap:12px;align-items:start;padding:9px 14px 9px 0;border-left:3px solid color-mix(in srgb,var(--pc) 55%,transparent);transition:background .2s}
+.tk-r+.tk-r{border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.tk-r.on{background:color-mix(in srgb,var(--pc) 11%,transparent);border-left-color:var(--pc)}
+.tk-n{display:flex;align-items:flex-start;gap:8px;padding-left:11px;min-width:0}
+.tk-dot{flex:none;width:12px;height:12px;margin-top:4px;border-radius:50%;background:var(--pc);box-shadow:0 0 0 3px color-mix(in srgb,var(--pc) 22%,transparent)}
+.tk-r.on .tk-dot{animation:tkPulse 1.1s ease-in-out infinite}
+@keyframes tkPulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--pc) 0%,transparent)}}
+.tk-nm{display:flex;flex-direction:column;min-width:0}
+.tk-nm b{font-family:var(--display);font-size:17px;font-weight:700;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--fg)}
+.tk-nm small{font-size:11.5px;color:var(--muted)}
+.tk-a{display:flex;flex-direction:column;gap:2px;min-width:0;padding-top:2px}
+.tk-a span{font-size:13px;line-height:1.35;color:var(--fg);text-transform:none;letter-spacing:0}
+.tk-b{display:flex;flex-direction:column;gap:2px;margin-top:5px;padding-top:5px;border-top:1px dashed color-mix(in srgb,var(--line) 80%,transparent)}
+.tk-a .tk-bl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.tk-p small{font-size:10.5px;color:var(--muted);min-width:20px}
+.tk-p u{text-decoration:none;margin-left:auto;font-weight:600;color:var(--fg)}
+.tk-p{display:flex;align-items:center;gap:6px;margin:1px 0;font-style:normal;font-size:12px;color:var(--fg)}
+.tk-p i{font-style:normal;font-family:var(--display);font-weight:700;font-size:13px;min-width:24px;height:20px;padding:0 5px;border-radius:5px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--tc) 22%,var(--panel-2));border-top:2px solid var(--tc);box-sizing:border-box}
+.tk-p b{font-weight:600;color:var(--tc)}
+.tk-p span{display:inline-flex;align-items:center;gap:3px;color:var(--muted)}
+.tk-p .ri{width:13px;height:13px}
+.tk-p.old{opacity:.7}
+.tk-a span.old{color:var(--muted);font-size:12px}
+.tk-r:not(.on) .tk-a span:first-child:not(.old){color:color-mix(in srgb,var(--fg) 82%,var(--muted))}
+@media (max-width:899px),(max-height:520px){.ticker{display:none!important}}
+@media (prefers-reduced-motion:reduce){.ticker,.tk-live{animation:none}}
+.city.just .cring,.city.just circle:first-child{animation:cityJust 1.4s ease-out 2}
+@keyframes cityJust{0%{filter:drop-shadow(0 0 0 var(--pc,#fff))}40%{filter:drop-shadow(0 0 8px #ffd27a)}100%{filter:none}}
+.seg4>button{flex:1}
+.mnote{margin:-2px 0 6px;font-size:12px}
 /* ---- v16: Kraftwerksdeck & Atomausstieg ---- */
 .dcards{display:flex;flex-direction:column;gap:8px}
 .dcard{display:flex;flex-direction:column;gap:7px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--t26343e);background:var(--t121b22);color:var(--fg);cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
@@ -1812,6 +1858,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div class="tracker" id="tracker"></div>
     <button type="button" class="mapbar" id="mapbar" data-act="mapPeek" hidden><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 3.5 5.5 2l5 1.6L15 2v10.5L10.5 14l-5-1.6L1 14Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.5 2v10.4M10.5 3.6V14" stroke="currentColor" stroke-width="1.5"/></svg><span id="mapbarT">Karte zeigen</span></button>
     <div class="regions-tag" id="rtag"></div>
+    <div class="ticker" id="ticker" aria-live="polite" hidden></div>
     <div class="mapctl">
       <button type="button" data-act="zin" aria-label="Hineinzoomen">+</button>
       <button type="button" data-act="zout" aria-label="Herauszoomen">−</button>
@@ -1821,6 +1868,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <aside id="panel"></aside>
 </div>
 <div id="sheet" class="overlay" hidden></div>
+<button type="button" id="stepbtn" class="stepbtn" data-act="aiStep" hidden></button>
 <div id="start" hidden></div>
 <div id="stats" hidden></div>
 
@@ -2377,7 +2425,7 @@ function endGame(){
 }
 
 /* --- KI --- */
-const AI_LV={easy:{mul:.85,res:20,pass:.3,extra:0,stock:false,guard:false,max2:true},normal:{mul:1,res:15,pass:0,extra:0,stock:false,guard:false},hard:{mul:1,res:15,pass:0,extra:0,stock:true,guard:false,endgame:true,smart:{g:0.4,b:0.8,e:1.2,f:0.8,d:0.4,lo:0.3,hi:1.7,jump:0.25,open:0.2}},expert:{mul:1,res:20,pass:0,extra:0,stock:false,guard:false,endgame:true,smart:{g:0.2,b:0.5,e:1,f:0.5,d:0.3,lo:0.3,hi:1.4,jump:0.15,open:0.12}}};
+const AI_LV={easy:{mul:.85,res:20,pass:.3,extra:0,stock:false,guard:false,max2:true},normal:{mul:1,res:15,pass:0,extra:0,stock:false,guard:false},hard:{mul:1,res:15,pass:0,extra:0,stock:true,guard:false,endgame:true,startSel:true,premMul:.6,smart:{g:0.4,b:0.8,e:1.2,f:0.8,d:0.4,lo:0.3,hi:1.7,jump:0.25,open:0.2}},expert:{mul:1,res:20,pass:0,extra:0,stock:false,guard:false,endgame:true,startSel:true,premMul:.3,lookW:.25,smart:{g:0.2,b:0.5,e:1,f:0.5,d:0.3,lo:0.3,hi:1.4,jump:0.15,open:0.12}}};
 const AI_NAME={easy:'Leicht',normal:'Normal',hard:'Schwer',expert:'Experte'};
 const AI_NOTE={easy:'Baut langsam und lässt sich oft Kraftwerke wegschnappen.',normal:'Solide Grundstrategie, bietet bei Kraftwerken gern zu viel.',hard:'Bietet je nach Lage mutig oder zurückhaltend, deckt sich mit günstigen Rohstoffen ein und plant das Spielende.',expert:'Wägt jedes Gebot nach Bedarf, Spielstand und Konkurrenz ab, spart für den Netzausbau und beendet das Spiel nur, wenn sie dabei gewinnt.'};
 function AIK(p){return (p&&p.ai)||S.ai||'normal'}
@@ -2427,7 +2475,7 @@ function smartCeiling(p,num){
   const rivals=S.players.filter(q=>q!==p&&q.money>=minBid(num)+2&&capGain(q,num)>=2&&(q.cities.length>=n||q.human));
   prem+=Math.min(2,rivals.length)*sm.d;
   const after=p.money-num-prem-aiReserve(p);if(after<0)prem+=after*0.5;
-  prem*=aiNoise(p,'a'+S.round+'-'+num);
+  prem*=aiNoise(p,'a'+S.round+'-'+num)*(L(p).premMul||1);
   prem+=(aiNoise(p,'j'+S.round+'-'+num)-1)*2;
   return Math.max(minBid(num),Math.round(num+prem));
 }
@@ -2581,6 +2629,37 @@ function expertTarget(p){
   if(laterEnd)t=Math.max(t,Math.min(fu,END_AT-1));
   return t;
 }
+/* v125: Startstadt mit Weitblick – wo wird das Netz in den nächsten Runden am billigsten wachsen? */
+let _apsp=null;
+function apsp(){const act=activeIds(),key=S.map+'|'+act.join(',');if(_apsp&&_apsp.key===key)return _apsp;
+  const n=act.length,ix={};act.forEach((c,i)=>ix[c]=i);const D=Array.from({length:n},()=>new Float64Array(n).fill(Infinity));
+  for(let i=0;i<n;i++){D[i][i]=0;for(const{to,cost}of ADJ[act[i]]||[]){const j=ix[to];if(j!=null&&cost<D[i][j])D[i][j]=cost}}
+  for(let k=0;k<n;k++){const Dk=D[k];for(let i=0;i<n;i++){const Dik=D[i][k];if(Dik===Infinity)continue;const Di=D[i];for(let j=0;j<n;j++){const v=Dik+Dk[j];if(v<Di[j])Di[j]=v}}}
+  return _apsp={key,act,ix,D}}
+function aiStartCity(p,opts){
+  if(MR().japan||MR().islands)return null;
+  const A=apsp(),free=A.act.filter(c=>{const occ=S.owners[c]||[];const cr=cityRule(c);return occ.length<Math.min(cr.max,cr.costs.length)&&occ.length<S.step});
+  const opp=new Set();S.players.forEach(q=>{if(q!==p)q.cities.forEach(c=>opp.add(c))});
+  const K=Math.min(7,END_AT-1);let best=null,bs=Infinity;
+  for(const o of opts.slice(0,40)){if(o.cost>p.money)continue;const i0=A.ix[o.city];if(i0==null)continue;
+    const inSet=[i0],used=new Set([o.city]);let tot=0;const dmin=new Float64Array(A.act.length);for(let j=0;j<dmin.length;j++)dmin[j]=A.D[i0][j];
+    for(let k=0;k<K;k++){let bj=-1,bv=Infinity;for(const c of free){if(used.has(c))continue;const j=A.ix[c];const v=dmin[j];if(v<bv){bv=v;bj=j}}if(bj<0){tot+=60;continue}
+      tot+=bv;used.add(A.act[bj]);for(let j=0;j<dmin.length;j++){const v=A.D[bj][j];if(v<dmin[j])dmin[j]=v}}
+    let crowd=0;opp.forEach(c=>{const j=A.ix[c];if(j!=null&&A.D[i0][j]<=12)crowd+=12-A.D[i0][j]});
+    const sc=o.cost+tot+crowd*(L(p).crowdW??0.8);if(sc<bs){bs=sc;best=o}}
+  return best}
+function aiPickCity(p,opts){
+  const lv=L(p),A=apsp(),cand=opts.filter(x=>x.cost<=p.money&&x.cost<=opts[0].cost+(lv.pickSpan??6)).slice(0,8);if(cand.length<2)return null;
+  const free=A.act.filter(c=>{const occ=S.owners[c]||[];const cr=cityRule(c);return occ.length<Math.min(cr.max,cr.costs.length)&&occ.length<S.step&&!occ.includes(p.id)});
+  const others=S.players.filter(q=>q!==p&&q.cities.length);const od=others.map(q=>q.cities.map(c=>A.ix[c]).filter(j=>j!=null));
+  let best=null,bs=Infinity;
+  for(const o of cand){let sc=o.cost;
+    if(lv.lookW){const set=[...p.cities,o.city].map(c=>A.ix[c]).filter(j=>j!=null);const dmin=new Float64Array(A.act.length).fill(Infinity);set.forEach(i=>{for(let j=0;j<dmin.length;j++)if(A.D[i][j]<dmin[j])dmin[j]=A.D[i][j]});
+      const used=new Set([...p.cities,o.city]);let tot=0;for(let k=0;k<3;k++){let bj=-1,bv=Infinity;for(const c of free){if(used.has(c))continue;const j=A.ix[c];if(dmin[j]<bv){bv=dmin[j];bj=j}}if(bj<0){tot+=40;continue}tot+=bv;used.add(A.act[bj]);for(let j=0;j<dmin.length;j++)if(A.D[bj][j]<dmin[j])dmin[j]=A.D[bj][j]}
+      sc+=lv.lookW*tot}
+    if(lv.contW&&(S.owners[o.city]||[]).length+1>=S.step){const j=A.ix[o.city];let c=0;od.forEach(js=>{const d=Math.min(...js.map(i=>A.D[i][j]));if(d<=12)c+=1-d/14});sc-=lv.contW*c}
+    if(sc<bs){bs=sc;best=o}}
+  return best}
 function aiBuild(p){
   const lv=L(p);let target=Math.max(capacity(p),1);
   if(lv.extra&&S.step===1&&p.money>(lv.xmoney||45))target+=lv.extra;
@@ -2590,6 +2669,8 @@ function aiBuild(p){
   let g=0;
   while(g++<20&&p.cities.length<target){
     const opts=buildOptions(p);let o=opts[0];if(!o||o.cost>p.money)break;
+    if(lv.startSel&&!p.cities.length){const c=aiStartCity(p,opts);if(c)o=c}
+    else if((lv.lookW||lv.contW)&&p.cities.length){const c=aiPickCity(p,opts);if(c)o=c}
     if(lv.block){const hum=S.players.filter(q=>q!==p&&(q.human||q.cities.length>=p.cities.length));const near=c=>hum.some(q=>q.cities.some(x=>(ADJ[x]||[]).some(e=>e.to===c)))?1:0;let bs=-1e9;for(const x of opts.slice(0,5)){if(x.cost>p.money||x.cost>o.cost+3)continue;const sc=-x.cost+3*near(x.city);if(sc>bs){bs=sc;o=x}}}
     if(lv.max2&&S.turnBuilt.length>=2)break;
     if(lv.guard&&p.cities.length+1>=END_AT&&p.money<150){const best=Math.max(...S.players.filter(q=>q!==p).map(q=>capacity(q)));if(capacity(p)<best)break}
@@ -2865,7 +2946,7 @@ function renderMap(){
       else sl+=`<circle class="sl ${i<cr.max?'open':'lock'}" cx="${sx}" cy="${sy}" r="4.5"/>`;
     });
     const o=opts[id],sel=building&&UI.buildSel===id;
-    g+=`<g class="city${o?' can':''}${sel?' sel':''}" data-city="${id}" transform="translate(${c.x.toFixed(1)},${c.y.toFixed(1)})"><circle class="halo" r="24"/><circle class="cshadow" r="20"/><circle class="body" r="17" style="stroke:${REGIONS[c.reg].col}"/><circle class="rtick" r="17" style="stroke:${REGIONS[c.reg].col}"/>${occ.includes(H)?'<circle class="mine" r="20.5" style="stroke:'+me().color+'"/>':''}<circle class="inner" r="13.5"/>${sl}${(()=>{const q=LY&&LY.city[id];if(q){clab+=`<text class="cname" x="${(c.x+q.x).toFixed(1)}" y="${(c.y+q.y).toFixed(1)}" style="text-anchor:${q.an}">${c.name}</text>`;return ''}return `<text class="cname" y="32">${c.name}</text>`})()}${o?`<g class="cost${o.jump?' jump':''}" transform="translate(0,-25)"><rect x="${o.jump?-21:-15}" y="-8" width="${o.jump?42:30}" height="15" rx="7.5"/><text y="3.5">${o.jump?'↷ ':''}${o.cost}</text></g>`:''}${MAPS[S.map].startCities&&MAPS[S.map].startCities.includes(id)?'<text class="cstar" x="15" y="-12">★</text>':''}${cr.trans?`<g class="ctrans${S.step<2?' lk':''}" transform="translate(-27,-21)"><title>${LX('Jenseits der Grenze: erst ab Stufe 2 bebaubar','Across the border: buildable from step 2')}</title><rect width="${S.step<2?30:22}" height="13" rx="6.5"/><text x="${S.step<2?15:11}" y="9.5">${S.step<2?LX('ab II','from II'):'II'}</text></g>`:''}${MR().wien===id?`<g class="cwien" transform="translate(12,-23)"><title>${LX('Wien: Müll 1 € billiger für Spieler mit Stadt hier','Vienna: garbage 1 € cheaper for players with a city here')}</title><rect width="34" height="13" rx="6.5"/><text x="17" y="9.5">${LX('Müll −1','Garb. −1')}</text></g>`:''}</g>`;
+    g+=`<g class="city${o?' can':''}${sel?' sel':''}${UI.flash&&Date.now()-UI.flash.t<3000&&UI.flash.ids.includes(id)?' just':''}" data-city="${id}" transform="translate(${c.x.toFixed(1)},${c.y.toFixed(1)})"><circle class="halo" r="24"/><circle class="cshadow" r="20"/><circle class="body" r="17" style="stroke:${REGIONS[c.reg].col}"/><circle class="rtick" r="17" style="stroke:${REGIONS[c.reg].col}"/>${occ.includes(H)?'<circle class="mine" r="20.5" style="stroke:'+me().color+'"/>':''}<circle class="inner" r="13.5"/>${sl}${(()=>{const q=LY&&LY.city[id];if(q){clab+=`<text class="cname" x="${(c.x+q.x).toFixed(1)}" y="${(c.y+q.y).toFixed(1)}" style="text-anchor:${q.an}">${c.name}</text>`;return ''}return `<text class="cname" y="32">${c.name}</text>`})()}${o?`<g class="cost${o.jump?' jump':''}" transform="translate(0,-25)"><rect x="${o.jump?-21:-15}" y="-8" width="${o.jump?42:30}" height="15" rx="7.5"/><text y="3.5">${o.jump?'↷ ':''}${o.cost}</text></g>`:''}${MAPS[S.map].startCities&&MAPS[S.map].startCities.includes(id)?'<text class="cstar" x="15" y="-12">★</text>':''}${cr.trans?`<g class="ctrans${S.step<2?' lk':''}" transform="translate(-27,-21)"><title>${LX('Jenseits der Grenze: erst ab Stufe 2 bebaubar','Across the border: buildable from step 2')}</title><rect width="${S.step<2?30:22}" height="13" rx="6.5"/><text x="${S.step<2?15:11}" y="9.5">${S.step<2?LX('ab II','from II'):'II'}</text></g>`:''}${MR().wien===id?`<g class="cwien" transform="translate(12,-23)"><title>${LX('Wien: Müll 1 € billiger für Spieler mit Stadt hier','Vienna: garbage 1 € cheaper for players with a city here')}</title><rect width="34" height="13" rx="6.5"/><text x="17" y="9.5">${LX('Müll −1','Garb. −1')}</text></g>`:''}</g>`;
   }
   if(clab)g+=`<g class="city clab" pointer-events="none">${clab}</g>`;
   svg.innerHTML=g;svg.classList.toggle('atlas',MAPSTYLE==='atlas');svg.classList.toggle('building',!!building||S.phase==='build');svg.classList.toggle('dense',CITIES.filter(c=>act.has(c[0])).length>=24);
@@ -3409,7 +3490,7 @@ function renderSheet(){
   if(!UI.sheet){sheet.hidden=true;sheet.innerHTML='';undock();return}
   let h='';const head=(t,tb)=>`<div class="sheet-head${tb?' tabs':''}"><h2>${t}</h2><button type="button" class="xbtn" data-act="close" aria-label="Schließen" title="Schließen"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 3l12 12M15 3 3 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>${tb?`<div class="seg stabs">${[['markets','Märkte'],['opp','Gegner']].map(([k,l])=>`<button type="button" data-act="${k}" class="${tb===k?'on':''}">${l}</button>`).join('')}</div>`:''}</div>`;
   if(UI.sheet==='menu'){
-    h=head('Menü')+`<div class="menu"><div class="mgl">${LX('Kartenstil','Map style')}</div><div class="seg">${[['atlas',LX('Atlas (neu)','Atlas (new)')],['classic',LX('Klassisch','Classic')]].map(([k,l])=>`<button type="button" data-act="mapStyle" data-m="${k}" class="${MAPSTYLE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Karte bei Auktion und Rohstoffkauf</div><div class="seg">${[['auto','Verkleinern'],['always','Immer groß']].map(([k,l])=>`<button type="button" data-act="mapMode" data-m="${k}" class="${MAPMODE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">${LX('Abstand unten (iPhone)','Bottom margin (iPhone)')}</div><div class="seg">${[['auto',LX('Automatisch','Automatic')],['lift',LX('Höher setzen','Lift up')]].map(([k,l])=>`<button type="button" data-act="botMode" data-m="${k}" class="${BOTMODE===k?'on':''}">${l}</button>`).join('')}</div><p class="hint diag" style="margin:2px 0 6px;font-size:11px;opacity:.7">${viewDiag()}</p><div class="mgl">Sprache · Language</div><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Vibration beim Überbieten</div><div class="seg">${[[true,LANG==='en'?'On':'An'],[false,LANG==='en'?'Off':'Aus']].map(([k,l])=>`<button type="button" data-act="vibToggle" class="${!!UI.vib===k?'on':''}" ${!!UI.vib===k?'disabled':''}>${l}</button>`).join('')}</div><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn quitb" data-act="quit">Partie beenden</button>':''}<div class="mgl">Darstellung</div><div class="seg">${[['dark','Dunkel'],['light','Hell'],['auto','Automatisch']].map(([k,l])=>`<button type="button" data-act="theme" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div></div>`;
+    h=head('Menü')+`<div class="menu"><div class="mgl">${LX('Tempo der Gegner','Opponent speed')}</div><div class="seg seg4">${[['fast',LX('Schnell','Fast')],['normal','Normal'],['slow',LX('Langsam','Slow')],['step',LX('Schritt','Step')]].map(([k,l])=>`<button type="button" data-act="speedSel" data-s="${k}" class="${SPEED===k?'on':''}">${l}</button>`).join('')}</div><p class="hint mnote">${SPEED==='step'?LX('Jeder Gegnerzug wartet auf „Nächster Zug“ oder die Leertaste.','Each opponent move waits for “Next move” or the space bar.'):LX('Wie lange jeder Gegnerzug sichtbar bleibt.','How long each opponent move stays on screen.')}</p><div class="mgl">${LX('Kartenstil','Map style')}</div><div class="seg">${[['atlas',LX('Atlas (neu)','Atlas (new)')],['classic',LX('Klassisch','Classic')]].map(([k,l])=>`<button type="button" data-act="mapStyle" data-m="${k}" class="${MAPSTYLE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Karte bei Auktion und Rohstoffkauf</div><div class="seg">${[['auto','Verkleinern'],['always','Immer groß']].map(([k,l])=>`<button type="button" data-act="mapMode" data-m="${k}" class="${MAPMODE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">${LX('Abstand unten (iPhone)','Bottom margin (iPhone)')}</div><div class="seg">${[['auto',LX('Automatisch','Automatic')],['lift',LX('Höher setzen','Lift up')]].map(([k,l])=>`<button type="button" data-act="botMode" data-m="${k}" class="${BOTMODE===k?'on':''}">${l}</button>`).join('')}</div><p class="hint diag" style="margin:2px 0 6px;font-size:11px;opacity:.7">${viewDiag()}</p><div class="mgl">Sprache · Language</div><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Vibration beim Überbieten</div><div class="seg">${[[true,LANG==='en'?'On':'An'],[false,LANG==='en'?'Off':'Aus']].map(([k,l])=>`<button type="button" data-act="vibToggle" class="${!!UI.vib===k?'on':''}" ${!!UI.vib===k?'disabled':''}>${l}</button>`).join('')}</div><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn quitb" data-act="quit">Partie beenden</button>':''}<div class="mgl">Darstellung</div><div class="seg">${[['dark','Dunkel'],['light','Hell'],['auto','Automatisch']].map(([k,l])=>`<button type="button" data-act="theme" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div></div>`;
   }else if(UI.sheet==='opp'){
     h=head('Gegner und Betriebe','opp')+oppCompare()+S.order.map(id=>{const p=P(id);const sv=storeOf(p);const pool=RES.filter(r=>p.pool[r]>0).map(r=>`<span class="stock">${resIcon(r)}${p.pool[r]}</span>`).join('')||'<span class="hint">leer</span>';
       return `<div class="opp" id="opp-${id}" ${pc(id)}><div class="h"><b>${esc(p.name)}</b>${p.style&&STYLES[p.style]?`<span class="stag">${STYLES[p.style].name}</span><span class="hint">${STYLES[p.style].note}</span>`:''}<span>${p.money} €</span><span>${cityCount(p)} Städte</span><span>Kapazität ${capacity(p)}</span>${p.lastPowered?`<span>zuletzt ${p.lastPowered} versorgt</span>`:''}</div><div class="cards">${p.plants.map(n=>plantCard(n,{lg:true,store:sv[n]||[],act:'pinfo'})).join('')||'<span class="hint">noch keine Kraftwerke</span>'}</div><div class="stock-row"><span class="lbl">Lager</span>${pool}</div></div>`}).join('');
@@ -4270,6 +4351,7 @@ function renderStats(){
   else body=statsTotal(h);
   el.innerHTML=`<div class="st-inner"><div class="st-top">${head}${bar}</div>${body}</div>`;
   el.hidden=false;
+  const tk=document.getElementById('tracker'),bd=document.getElementById('board');if(tk&&bd&&!tk.hidden){const r=tk.getBoundingClientRect(),rb=bd.getBoundingClientRect();el.style.setProperty('--tktop',Math.max(12,r.bottom-rb.top+10)+'px')}
 }
 document.addEventListener('change',e=>{
   if(e.target.id==='cxSel'||e.target.id==='cySel'){UI[e.target.id==='cxSel'?'cx':'cy']=e.target.value;try{localStorage.setItem('hochspannung-'+(e.target.id==='cxSel'?'cx':'cy'),e.target.value)}catch(_){}renderStats();return}
@@ -4688,7 +4770,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v124';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v125';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -4718,7 +4800,7 @@ function layoutMap(){
   mb.setAttribute('aria-expanded',String(!min));
   if(was!==min&&UI.vb)requestAnimationFrame(applyVB);
 }
-function render(){if(!S)return;normAlloc(me());layoutMap();renderTop();renderMap();renderPanel();renderSheet();
+function render(){if(!S)return;normAlloc(me());layoutMap();renderTop();renderMap();renderPanel();renderSheet();renderTicker();
   const pm=UI.prevMoney||{};
   S.players.forEach(p=>{if(pm[p.id]!=null&&pm[p.id]!==p.money){const d=p.money-pm[p.id];floatText(document.querySelector(`[data-pid="${p.id}"]`),(d>0?'+':'−')+Math.abs(d)+' €',d>0?'#8fe39c':'#ff8a80')}});
   UI.prevMoney=Object.fromEntries(S.players.map(p=>[p.id,p.money]));
@@ -4752,15 +4834,52 @@ function showIntro(){
   ov.querySelector('.iskip').focus();
 }
 function schedule(){
-  clearTimeout(timer);timer=null;
+  clearTimeout(timer);timer=null;UI.stepWait=null;
   const a=actor();if(!a||S.phase==='bureau')return;
   if(UI.intro||UI.sheet==='quit')return;
   if(P(a.pid).human)return;
-  timer=setTimeout(()=>{timer=null;S.aiN=(S.aiN||0)+1;UI.undo=[];const au=S.phase==='auction'&&S.auc&&S.auc.mode==='bid'?{h:S.auc.high,pl:S.auc.plant}:null;aiAct(a);
+  const run=()=>{timer=null;UI.stepWait=null;S.aiN=(S.aiN||0)+1;UI.undo=[];const au=S.phase==='auction'&&S.auc&&S.auc.mode==='bid'?{h:S.auc.high,pl:S.auc.plant}:null;
+    const ap=P(a.pid),c0=ap.cities.length,lg=S.log.length&&S.log[0];aiAct(a);
+    if(ap.cities.length>c0)UI.flash={ids:ap.cities.slice(c0),t:Date.now()};
     if(au&&P(au.h).human&&S.phase==='auction'&&S.auc.mode==='bid'&&S.auc.plant===au.pl&&S.auc.high!==au.h){UI.outbid={name:P(S.auc.high).name,amt:S.auc.bid,t:Date.now()};buzz()}
-    after()},a.kind==="bid"?(window.__fast?20:650):(window.__fast?20:950));
+    after()};
+  _aiRun=run;
+  if(SPEED==='step'&&!window.__fast){UI.stepWait=a.pid;stepUI();return}
+  const f=window.__fast?0:SPEEDF[SPEED]||1;
+  timer=setTimeout(run,window.__fast?20:Math.round((a.kind==="bid"?650:950)*f));
 }
-function after(){save();render();schedule()}
+/* v125: Tempo der Gegnerzüge (Menü) und Einzelschritt */
+let _aiRun=null;try{UI.tkCol=!!localStorage.getItem('hochspannung-tkcol')}catch(_){}
+const SPEEDF={fast:.35,normal:1,slow:2.4};
+let SPEED=(()=>{try{return localStorage.getItem('hochspannung-speed')||'normal'}catch(_){return'normal'}})();
+function stepUI(){const b=document.getElementById('stepbtn');if(!b)return;const w=UI.stepWait;
+  if(w==null||!S||S.phase==='end'||!start.hidden){b.hidden=true;return}
+  const p=P(w);b.style.setProperty('--pc',p.color);const tk=document.getElementById('ticker');renderTicker();if(innerWidth>=900&&innerHeight>520&&tk&&!tk.hidden){const r=tk.getBoundingClientRect();b.style.left='auto';b.style.right=(innerWidth-r.right)+'px';b.style.top=(r.bottom+8)+'px';b.style.bottom='auto';b.style.transform='none'}else{b.style.left='';b.style.right='';b.style.top='';b.style.bottom='';b.style.transform=''}b.innerHTML=`<span class="sb-dot"></span><span class="sb-t"><small>${LX('Nächster Zug','Next move')}</small><b>${esc(p.name)}</b></span><span class="sb-k" aria-hidden="true">${LX('Leertaste','Space')}</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h9.5M8.5 4l4 4-4 4"/></svg>`;b.hidden=false}
+document.addEventListener('keydown',e=>{if(UI.stepWait==null||e.repeat)return;if(e.key!==' '&&e.key!=='Enter')return;const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='BUTTON'&&t.id!=='stepbtn'))return;if(!sheet.hidden)return;e.preventDefault();aiStepGo()});
+function aiStepGo(){if(UI.stepWait==null||!_aiRun)return;const r=_aiRun;UI.stepWait=null;stepUI();r()}
+/* v125: Live-Ticker der Gegnerzüge auf der Karte (Desktop) */
+function tkPlant(t,i){const m=/Kraftwerk (\d+(?:\.\d+)?)/.exec(t);if(!m)return'';const n=+m[1];const P_=PLANTS[n];if(!P_)return'';const[ty,k,c]=P_;
+  const fuel=FREE(ty)?LX('ohne Brennstoff','no fuel'):ty==='mine'?LX('verkauft Uran','sells uranium'):`${k}× ${(HYB[ty]||[ty]).map(r=>resIcon(r)).join('/')}`;
+  return `<em class="tk-p${i?' old':''}" style="--tc:${TCOL[ty]||'#999'}"><i>${Math.floor(n)}</i><b>${tr(TYPE_NAME[ty])}</b><span>${fuel} → ${c} ${c===1?LX('Stadt','city'):LX('Städte','cities')}</span></em>`}
+function tkBuys(q){const out=[];for(const l of S.log){if(l.pid!==q.id||l.r<S.round-1)continue;const m=/kauft Kraftwerk (\d+(?:\.\d+)?) für (\d+) €/.exec(l.t);if(m)out.push({r:l.r,n:+m[1],pr:+m[2]})}
+  if(!out.length)return'';
+  return `<div class="tk-b"><span class="tk-bl">${LX('Kraftwerkskäufe','Plant purchases')}</span>${out.map(x=>{const P_=PLANTS[x.n];if(!P_)return'';const[ty,k,c]=P_;const fuel=FREE(ty)?LX('ohne Brennstoff','no fuel'):ty==='mine'?LX('Uran','uranium'):`${k}× ${(HYB[ty]||[ty]).map(r=>resIcon(r)).join('/')}`;
+    return `<em class="tk-p" style="--tc:${TCOL[ty]||'#999'}"><small>${LX('R','R')}${x.r}</small><i>${Math.floor(x.n)}</i><b>${tr(TYPE_NAME[ty])}</b><span>${fuel} → ${c}</span><u>${x.pr} €</u></em>`}).join('')}</div>`}
+function renderTicker(){const el=document.getElementById('ticker');if(!el)return;
+  if(!S||!start.hidden||S.phase==='end'){el.hidden=true;el.innerHTML='';return}
+  const a=actor(),act=a&&!P(a.pid).human?a.pid:null,opp=S.players.filter(q=>!q.human);if(!opp.length){el.hidden=true;return}
+  const ph={auction:LX('Versteigerung','Auction'),resources:LX('Rohstoffe','Resources'),build:LX('Netzausbau','Building'),bureau:LX('Bürokratie','Bureaucracy')}[S.phase]||'';
+  const clean=(q,t)=>{t=tr(t);if(t.startsWith(q.name+' '))t=t.slice(q.name.length+1);return t.charAt(0).toUpperCase()+t.slice(1)};
+  const col=UI.tkCol;
+  const rows=opp.map(q=>{const ls=S.log.filter(l=>l.pid===q.id&&l.r===S.round).slice(0,2);const on=q.id===act;
+    return `<div class="tk-r${on?' on':''}" style="--pc:${q.color}"><div class="tk-n"><span class="tk-dot"></span><span class="tk-nm"><b>${esc(q.name)}</b><small>${q.money} € · ${q.cities.length} ${LX('Städte','cities')}</small></span></div><div class="tk-a">${ls.length?ls.map((l,i)=>`<span class="${i?'old':''}">${esc(clean(q,l.t))}</span>`).join(''):`<span class="old">${on?LX('denkt nach …','thinking …'):LX('noch nichts diese Runde','nothing yet this round')}</span>`}${tkBuys(q)}</div></div>`}).join('');
+  el.className='ticker'+(col?' col':'');
+  el.innerHTML=`<div class="tk-h"><span class="tk-t">${LX('Gegner live','Opponents live')}</span><span class="tk-ph">${LX('Runde','Round')} ${S.round} · ${ph}</span><button type="button" class="tk-x" data-act="tkCol" aria-label="${col?LX('Gegner-Ticker aufklappen','Expand opponent ticker'):LX('Gegner-Ticker einklappen','Collapse opponent ticker')}" aria-expanded="${!col}"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="${col?'M3.5 6 8 10.5 12.5 6':'M3.5 10 8 5.5 12.5 10'}"/></svg></button></div>${col?'':`<div class="tk-rows">${rows}</div>`}`;
+  el.hidden=false;
+  const tk=document.getElementById('tracker'),bd=document.getElementById('board');if(tk&&bd&&!tk.hidden){const r=tk.getBoundingClientRect(),rb=bd.getBoundingClientRect();el.style.setProperty('--tktop',Math.max(12,r.bottom-rb.top+10)+'px')}
+}
+
+function after(){save();render();schedule();renderTicker();stepUI()}
 try{UI.promos=JSON.parse(localStorage.getItem('hochspannung-promos')||'[]').filter(k=>PROMOS[k])}catch(_){UI.promos=[]}
 try{UI.disc=localStorage.getItem('hochspannung-disc')||'rech'}catch(_){UI.disc='rech'}
 try{UI.feedOpen=localStorage.getItem('hochspannung-feed')==='1'}catch(_){}
@@ -4806,6 +4925,9 @@ const A={
   xToggle:()=>{if(MAPS[UI.map].exp)return'skip';UI.xopen=!UI.xopen;UI.name=nmVal();renderStart(true);return'skip'},
   themeSel:b=>{setTheme(b.dataset.t);UI.name=nmVal();renderStart(true);return'skip'},
   mapStyle:b=>{MAPSTYLE=b.dataset.m==='classic'?'classic':'atlas';try{localStorage.setItem('hochspannung-mapstyle',MAPSTYLE)}catch(_){}},
+  aiStep:()=>{aiStepGo();return'skip'},
+  tkCol:()=>{UI.tkCol=!UI.tkCol;try{localStorage.setItem('hochspannung-tkcol',UI.tkCol?'1':'')}catch(_){}renderTicker();stepUI();return'skip'},
+  speedSel:b=>{SPEED=b.dataset.s;try{localStorage.setItem('hochspannung-speed',SPEED)}catch(_){}if(SPEED!=='step'&&UI.stepWait!=null){UI.stepWait=null;stepUI();schedule()}else if(SPEED==='step'&&timer){schedule()}},
   botMode:b=>{BOTMODE=b.dataset.m==='lift'?'lift':'auto';try{localStorage.setItem('hochspannung-bot',BOTMODE)}catch(_){}fitViewport()},
   mapMode:b=>{MAPMODE=b.dataset.m==='always'?'always':'auto';try{localStorage.setItem('hochspannung-map',MAPMODE)}catch(_){}},
   lang:b=>{setLang(b.dataset.l);if(S)render();if(!$('#start').hidden)renderStart(true);if(!$('#stats').hidden)renderStats();renderSheet();return'skip'},
