@@ -1868,12 +1868,13 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 /* v94: Energiefluss im Startbild per Canvas */
 .hero-map{position:absolute}
 .hero-map .hm-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
-.heromap .hm-e.on,.heromap .hm-c.on{transition:opacity .9s ease}
-.heromap.pre .hm-e.on{opacity:.16}.heromap.pre .hm-c.on{opacity:.28}
-html[data-hmi="pre"] #start .s3-brand h1{opacity:.1;text-shadow:none}
-html[data-hmi="lit"] #start .s3-brand h1{animation:hmFlick 1.1s linear both}
-@keyframes hmFlick{0%{opacity:.1;text-shadow:none}6%{opacity:.85}10%{opacity:.15}17%{opacity:1;text-shadow:0 0 34px rgba(242,179,61,.75)}23%{opacity:.4}30%{opacity:1;text-shadow:0 0 40px rgba(242,179,61,.8)}100%{opacity:1;text-shadow:0 0 24px rgba(242,179,61,.16)}}
-.hero-map .hm-land{fill:url(#hmLandG);stroke:var(--hm-coastc,rgba(150,200,240,.75));stroke-width:2.2;stroke-linejoin:round}
+.hero-map .heromap{transition:opacity .9s ease;will-change:opacity}
+.hero-map .heromap.pre{opacity:.32}
+html[data-hmi="pre"] #start .s3-brand h1{opacity:.1}
+html[data-hmi="lit"] #start .s3-brand h1{animation:hmFlick 1.1s linear both;will-change:opacity}
+@keyframes hmFlick{0%{opacity:.1}6%{opacity:.85}10%{opacity:.15}17%{opacity:1}23%{opacity:.4}30%{opacity:1}100%{opacity:1}}
+.hero-map .hm-land{fill:url(#hmLandG);stroke:none}
+.hero-map .hm-shore{fill:none;stroke:var(--hm-coastc,rgba(150,200,240,.75));stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
 .hero-map .hm-coast{fill:none;stroke:var(--hm-coastc,rgba(150,200,240,.75));stroke-width:12;stroke-linejoin:round;opacity:.16}
 [data-theme="light"] .heromap{--hm-land0:#f6ecd2;--hm-land1:#ead9b0;--hm-coastc:rgba(150,110,40,.7)}
 .hm-eq{fill:none;stroke:var(--accent);stroke-width:1.6;stroke-dasharray:10 7;opacity:.45}
@@ -3779,15 +3780,21 @@ function gPath(d,P){if(!P)return d;let out='';const st=P.step;
       if(c==='L'||i>0){const[px,py]=gPath.l,dd=Math.hypot(x-px,y-py),m=Math.max(1,Math.ceil(dd/st));for(let j=1;j<=m;j++){const q=P(px+(x-px)*j/m,py+(y-py)*j/m);out+='L'+q[0].toFixed(1)+' '+q[1].toFixed(1)}}
       else{const q=P(x,y);out+='M'+q[0].toFixed(1)+' '+q[1].toFixed(1)}gPath.l=[x,y]}}
   return out}
+/* Küstenlinie ohne die geraden Schnittkanten, an denen das Land am Kartenrand abgeschnitten ist */
+function coastOnly(d){const ps=[];let cur=null;for(const seg of d.match(/[MLZ][^MLZ]*/g)||[]){const c=seg[0];if(c==='Z'){if(cur&&cur.length)cur.push(cur[0]);continue}const n=seg.slice(1).trim().split(/[\s,]+/).map(Number);if(c==='M'){cur=[];ps.push(cur)}for(let i=0;i+1<n.length;i+=2)cur.push([n[i],n[i+1]])}
+  const all=ps.flat();if(!all.length)return{coast:d,cut:false};const xs=all.map(q=>q[0]),ys=all.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),e=Math.max(x1-x0,y1-y0)*.004;
+  const onB=(a,b)=>(Math.abs(a[0]-x0)<e&&Math.abs(b[0]-x0)<e)||(Math.abs(a[0]-x1)<e&&Math.abs(b[0]-x1)<e)||(Math.abs(a[1]-y0)<e&&Math.abs(b[1]-y0)<e)||(Math.abs(a[1]-y1)<e&&Math.abs(b[1]-y1)<e);
+  let out='',cut=false;for(const pl of ps){let pen=0;for(let i=0;i<pl.length;i++){if(i&&onB(pl[i-1],pl[i])){cut=true;pen=0;continue}if(i&&!pen)out+='M'+pl[i-1][0]+' '+pl[i-1][1];if(i){out+='L'+pl[i][0]+' '+pl[i][1];pen=1}}}
+  return{coast:out,cut}}
 function heroMap(){
   const sel=UI.regions,rand=!sel.length,inA=c=>rand||sel.includes(CITY[c].reg);
   const[vx,vy,vw,vh]=MAPVB.split(' ').map(Number),ex=Math.max(vw,vh)*.12;
   const GP=HMGLOBE?hmGlobe([vx,vy,vw,vh]):null;HM.gp=GP;
-  if(GP&&HM.gck!==UI.map+MAPVB){HM.gck=UI.map+MAPVB;HM.gc={land:gPath(GEO_LAND,GP),riv:GEO_RIV.map(d=>gPath(d,GP)),terr:Object.fromEntries(Object.entries(TERR).map(([k,d])=>[k,gPath(d,GP)])),grat:GP.grat(),eq:GP.eq}}
-  const GC=GP?HM.gc:{land:GEO_LAND,riv:GEO_RIV,terr:TERR,grat:[]},pp=(x,y)=>GP?GP(x,y):[x,y];
+  if(HM.gck!==UI.map+MAPVB+!!GP){HM.gck=UI.map+MAPVB+!!GP;const co=coastOnly(GEO_LAND);HM.gc={cut:co.cut,coast:gPath(co.coast,GP),land:gPath(GEO_LAND,GP),riv:GEO_RIV.map(d=>gPath(d,GP)),terr:Object.fromEntries(Object.entries(TERR).map(([k,d])=>[k,gPath(d,GP)])),grat:GP?GP.grat():[],eq:GP?GP.eq:[]}}
+  const GC=HM.gc,pp=(x,y)=>GP?GP(x,y):[x,y];
   let globe='';if(GP&&GP.limb.length>2){const Lm=GP.limb,ld=Lm.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(''),ty=Math.min(...Lm.map(q=>q[1]));HM.lty=ty;
     globe=`<g mask="url(#hmSphM)"><path class="hm-sph" d="${ld}${GP.full?'':`L${(vx+vw*2.5).toFixed(0)} ${(vy+vh*2.5).toFixed(0)}L${(vx-vw*1.5).toFixed(0)} ${(vy+vh*2.5).toFixed(0)}`}Z" fill="url(#hmSph)"/>${GC.grat.map(d=>`<path class="hm-grat" d="${d}"/>`).join('')}${(GC.eq||[]).map(d=>`<path class="hm-eq" d="${d}"/>`).join('')}<path class="hm-limb2" d="${ld}"/><path class="hm-limb" d="${ld}"/></g>`}
-  let g=`<defs><linearGradient id="hmSphG" x1="0" y1="${GP&&GP.south?1:0}" x2="0" y2="${GP&&GP.south?0:1}"><stop offset="0" stop-color="#fff"/><stop offset=".72" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><mask id="hmSphM" maskUnits="userSpaceOnUse" x="${vx-vw}" y="${vy-vh}" width="${vw*3}" height="${vh*2+ex}"><rect x="${vx-vw}" y="${vy-vh}" width="${vw*3}" height="${vh*2+ex}" fill="url(#hmSphG)"/></mask><linearGradient id="hmLandG" x1="0" y1="0" x2=".4" y2="1"><stop offset="0" stop-color="var(--hm-land0,#1d3346)"/><stop offset="1" stop-color="var(--hm-land1,#122230)"/></linearGradient><linearGradient id="hmSph" gradientUnits="userSpaceOnUse" x1="0" y1="${GP&&HM.lty!=null?HM.lty.toFixed(0):vy}" x2="0" y2="${(vy+vh*.9).toFixed(0)}"><stop offset="0" stop-color="var(--hm-sph2,#4f8fc4)" stop-opacity=".30"/><stop offset=".12" stop-color="var(--hm-sph1,#18324a)" stop-opacity=".22"/><stop offset="1" stop-color="var(--hm-sph0,#0d1720)" stop-opacity=".05"/></linearGradient><radialGradient id="hmG" cx="50%" cy="50%" r="50%"><stop offset="40%" stop-color="#fff"/><stop offset="88%" stop-color="#000"/></radialGradient><mask id="hmFade" maskUnits="userSpaceOnUse" x="${vx-ex}" y="${vy-ex}" width="${vw+2*ex}" height="${vh+2*ex}"><rect x="${vx-ex}" y="${vy-ex}" width="${vw+2*ex}" height="${vh+2*ex}" fill="url(#hmG)"/></mask></defs>${globe}<path class="hm-coast" d="${GC.land}"/><path class="hm-land" d="${GC.land}"/><g mask="url(#hmFade)">`;
+  let g=`<defs><linearGradient id="hmSphG" x1="0" y1="${GP&&GP.south?1:0}" x2="0" y2="${GP&&GP.south?0:1}"><stop offset="0" stop-color="#fff"/><stop offset=".72" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><mask id="hmSphM" maskUnits="userSpaceOnUse" x="${vx-vw}" y="${vy-vh}" width="${vw*3}" height="${vh*2+ex}"><rect x="${vx-vw}" y="${vy-vh}" width="${vw*3}" height="${vh*2+ex}" fill="url(#hmSphG)"/></mask><linearGradient id="hmLandG" x1="0" y1="0" x2=".4" y2="1"><stop offset="0" stop-color="var(--hm-land0,#1d3346)"/><stop offset="1" stop-color="var(--hm-land1,#122230)"/></linearGradient><linearGradient id="hmSph" gradientUnits="userSpaceOnUse" x1="0" y1="${GP&&HM.lty!=null?HM.lty.toFixed(0):vy}" x2="0" y2="${(vy+vh*.9).toFixed(0)}"><stop offset="0" stop-color="var(--hm-sph2,#4f8fc4)" stop-opacity=".30"/><stop offset=".12" stop-color="var(--hm-sph1,#18324a)" stop-opacity=".22"/><stop offset="1" stop-color="var(--hm-sph0,#0d1720)" stop-opacity=".05"/></linearGradient><radialGradient id="hmG" cx="50%" cy="50%" r="50%"><stop offset="40%" stop-color="#fff"/><stop offset="88%" stop-color="#000"/></radialGradient><mask id="hmFade" maskUnits="userSpaceOnUse" x="${vx-ex}" y="${vy-ex}" width="${vw+2*ex}" height="${vh+2*ex}"><rect x="${vx-ex}" y="${vy-ex}" width="${vw+2*ex}" height="${vh+2*ex}" fill="url(#hmG)"/></mask></defs>${globe}<path class="hm-land" d="${GC.land}"${GC.cut?' mask="url(#hmFade)"':''}/><path class="hm-coast" d="${GC.coast}"/><path class="hm-shore" d="${GC.coast}"/><g mask="url(#hmFade)">`;
   g+=GC.riv.map(d=>`<path class="hm-riv" d="${d}"/>`).join('')+'</g>';
   g+=Object.entries(GC.terr).map(([k,d])=>`<path class="hm-terr${!rand&&sel.includes(k)?' on':''}" d="${d}" style="--rc:${REGIONS[k].col}" data-act="reg" data-r="${k}"/>`).join('');
   HM.fade={cx:vx+vw/2,cy:vy+vh/2,rx:vw/2+ex,ry:vh/2+ex};const G={n:{},adj:{},vb:[vx,vy,vw,vh]};
@@ -3948,12 +3955,13 @@ function hmLoop(now){HM.raf=0;
     const A=el<I.ign+I.wave?1:Math.max(0,1-(el-I.ign-I.wave)/I.settle);idle=el<I.ign+I.wave?0:1-A;
     if(!I.lit&&u>=(I.long?.82:.6))hmLit(false);
     const S0=G.n[I.src];if(el<I.ign+.5){const k=Math.min(1,el/I.ign),z=(base*(2+6*k))*(el<I.ign?1:Math.max(0,1-(el-I.ign)/.5));x.globalAlpha=.9;if(z>0){const q=PT(S0.x,S0.y);x.drawImage(HM.hot,q[0]-z/2,q[1]-z/2,z,z)}}
-    x.lineCap='round';
+    x.lineCap='round';x.lineJoin='round';const LP=new Path2D(),SP=[];
     for(const a in G.adj)for(const b of G.adj[a]){if(a>b)continue;const P=G.n[a],Q=G.n[b],L=Math.hypot(Q.x-P.x,Q.y-P.y)||1;
-      const ef=I.sf(a,b);for(const[o,e,d]of[[P,Q,I.D[a]],[Q,P,I.D[b]]]){const lit=Math.min(L,(F-d)*ef);if(lit<=0)continue;const k=lit/L,ex=o.x+(e.x-o.x)*k,ey=o.y+(e.y-o.y)*k,al=A*fa(ex,ey);if(al<=.02)continue;
-        x.globalAlpha=al*.28;x.strokeStyle=col;x.lineWidth=Math.max(3,7*s)*dpr;x.beginPath();const nS=GP?Math.max(1,Math.ceil(lit/(GP.step*1.5))):1;for(let j=0;j<=nS;j++){const q=PT(o.x+(ex-o.x)*j/nS,o.y+(ey-o.y)*j/nS);j?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1])}x.stroke();
-        x.globalAlpha=al*.95;x.lineWidth=Math.max(1.2,2.4*s)*dpr;x.stroke();
-        if(lit<L){const z=base*1.6,q=PT(ex,ey);x.globalAlpha=al;x.drawImage(HM.hot,q[0]-z/2,q[1]-z/2,z,z)}}}
+      const ef=I.sf(a,b);for(const[o,e,d]of[[P,Q,I.D[a]],[Q,P,I.D[b]]]){const lit=Math.min(L,(F-d)*ef);if(lit<=0)continue;const k=lit/L,ex=o.x+(e.x-o.x)*k,ey=o.y+(e.y-o.y)*k;if(fa(ex,ey)<=.02)continue;
+        const nS=GP?Math.max(1,Math.ceil(lit/(GP.step*1.5))):1;for(let j=0;j<=nS;j++){const q=PT(o.x+(ex-o.x)*j/nS,o.y+(ey-o.y)*j/nS);j?LP.lineTo(q[0],q[1]):LP.moveTo(q[0],q[1])}
+        if(lit<L)SP.push(PT(ex,ey))}}
+    if(A>.02){x.strokeStyle=col;x.globalAlpha=A*.28;x.lineWidth=Math.max(3,7*s)*dpr;x.stroke(LP);x.globalAlpha=A*.95;x.lineWidth=Math.max(1.2,2.4*s)*dpr;x.stroke(LP);
+      const z=base*1.6;x.globalAlpha=A;for(const q of SP)x.drawImage(HM.hot,q[0]-z/2,q[1]-z/2,z,z)}
     for(const k in G.n)if(I.D[k]<=F&&!I.rung[k]){I.rung[k]=1;HM.rings.push({id:k,t:0,big:k===I.src?1:0});HM.heat[k]=1}
     if(el>=I.ign+I.wave+I.settle){HM.intro=null;hmLit(true)}}
   /* 2. Laufende Energiepakete mit Leuchtschweif, gelegentlich ein starker Stromstoß */
@@ -4964,7 +4972,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v140';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v141';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
