@@ -1266,10 +1266,15 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .tk-r:not(.on) .tk-a span:first-child:not(.old){color:color-mix(in srgb,var(--fg) 82%,var(--muted))}
 @media (max-width:899px),(max-height:520px){.ticker{display:none!important}}
 @media (prefers-reduced-motion:reduce){.ticker,.tk-live{animation:none}}
-.city.just .cring,.city.just circle:first-child{animation:cityJust 1.4s ease-out 2}
-@keyframes cityJust{0%{filter:drop-shadow(0 0 0 var(--pc,#fff))}40%{filter:drop-shadow(0 0 8px #ffd27a)}100%{filter:none}}
 .seg4>button{flex:1}
 .mnote{margin:-2px 0 6px;font-size:12px}
+.cburst{position:absolute;z-index:5;width:0;height:0;pointer-events:none}
+.cburst i,.cburst b{position:absolute;left:calc(var(--s)/-2);top:calc(var(--s)/-2);width:var(--s);height:var(--s);border-radius:50%;will-change:transform,opacity}
+.cburst i{border:2.5px solid var(--c);opacity:0;animation:cbRing 1.1s cubic-bezier(.2,.7,.3,1) forwards}
+.cburst i+i{animation-delay:.18s;border-width:1.5px}
+.cburst b{background:radial-gradient(circle,color-mix(in srgb,var(--c) 55%,transparent) 0%,transparent 65%);animation:cbGlow .9s ease-out forwards}
+@keyframes cbRing{0%{opacity:.95;transform:scale(.55)}100%{opacity:0;transform:scale(2.2)}}
+@keyframes cbGlow{0%{opacity:0;transform:scale(.6)}30%{opacity:1}100%{opacity:0;transform:scale(1.4)}}
 /* ---- v16: Kraftwerksdeck & Atomausstieg ---- */
 .dcards{display:flex;flex-direction:column;gap:8px}
 .dcard{display:flex;flex-direction:column;gap:7px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--t26343e);background:var(--t121b22);color:var(--fg);cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
@@ -2944,6 +2949,7 @@ function renderMap(){
   const prevO=UI.prevOwners||S.owners,fresh=new Set();
   for(const[cty,arr]of Object.entries(S.owners)){const pa=prevO[cty]||[];arr.forEach((pid,i)=>{if(pa[i]!==pid)fresh.add(cty+':'+i)})}
   UI.prevOwners=JSON.parse(JSON.stringify(S.owners));
+  const bursts=[];
   let clab='';
   for(const[id]of CITIES){
     const c=CITY[id];
@@ -2951,14 +2957,14 @@ function renderMap(){
     const occ=S.owners[id]||[];const cr=cityRule(id);
     let sl='';
     SP.forEach(([sx,sy],i)=>{if(i>=cr.costs.length)return;
-      if(occ[i]!=null){const fr=fresh.has(id+':'+i);sl+=`<circle class="sl${fr?' fresh':''}" cx="${sx}" cy="${sy}" r="5" style="fill:${P(occ[i]).color};stroke:${P(occ[i]).color}"/>`;if(fr)sl+=`<circle class="ring" r="17" style="stroke:${P(occ[i]).color}"/>`}
+      if(occ[i]!=null){const fr=fresh.has(id+':'+i);sl+=`<circle class="sl" cx="${sx}" cy="${sy}" r="5" style="fill:${P(occ[i]).color};stroke:${P(occ[i]).color}"/>`;if(fr)bursts.push([id,P(occ[i]).color])}
       else sl+=`<circle class="sl ${i<cr.max?'open':'lock'}" cx="${sx}" cy="${sy}" r="4.5"/>`;
     });
     const o=opts[id],sel=building&&UI.buildSel===id;
-    g+=`<g class="city${o?' can':''}${sel?' sel':''}${UI.flash&&Date.now()-UI.flash.t<3000&&UI.flash.ids.includes(id)?' just':''}" data-city="${id}" transform="translate(${c.x.toFixed(1)},${c.y.toFixed(1)})"><circle class="halo" r="24"/><circle class="cshadow" r="20"/><circle class="body" r="17" style="stroke:${REGIONS[c.reg].col}"/><circle class="rtick" r="17" style="stroke:${REGIONS[c.reg].col}"/>${occ.includes(H)?'<circle class="mine" r="20.5" style="stroke:'+me().color+'"/>':''}<circle class="inner" r="13.5"/>${sl}${(()=>{const q=LY&&LY.city[id];if(q){clab+=`<text class="cname" x="${(c.x+q.x).toFixed(1)}" y="${(c.y+q.y).toFixed(1)}" style="text-anchor:${q.an}">${c.name}</text>`;return ''}return `<text class="cname" y="32">${c.name}</text>`})()}${o?`<g class="cost${o.jump?' jump':''}" transform="translate(0,-25)"><rect x="${o.jump?-21:-15}" y="-8" width="${o.jump?42:30}" height="15" rx="7.5"/><text y="3.5">${o.jump?'↷ ':''}${o.cost}</text></g>`:''}${MAPS[S.map].startCities&&MAPS[S.map].startCities.includes(id)?'<text class="cstar" x="15" y="-12">★</text>':''}${cr.trans?`<g class="ctrans${S.step<2?' lk':''}" transform="translate(-27,-21)"><title>${LX('Jenseits der Grenze: erst ab Stufe 2 bebaubar','Across the border: buildable from step 2')}</title><rect width="${S.step<2?30:22}" height="13" rx="6.5"/><text x="${S.step<2?15:11}" y="9.5">${S.step<2?LX('ab II','from II'):'II'}</text></g>`:''}${MR().wien===id?`<g class="cwien" transform="translate(12,-23)"><title>${LX('Wien: Müll 1 € billiger für Spieler mit Stadt hier','Vienna: garbage 1 € cheaper for players with a city here')}</title><rect width="34" height="13" rx="6.5"/><text x="17" y="9.5">${LX('Müll −1','Garb. −1')}</text></g>`:''}</g>`;
+    g+=`<g class="city${o?' can':''}${sel?' sel':''}" data-city="${id}" transform="translate(${c.x.toFixed(1)},${c.y.toFixed(1)})"><circle class="halo" r="24"/><circle class="cshadow" r="20"/><circle class="body" r="17" style="stroke:${REGIONS[c.reg].col}"/><circle class="rtick" r="17" style="stroke:${REGIONS[c.reg].col}"/>${occ.includes(H)?'<circle class="mine" r="20.5" style="stroke:'+me().color+'"/>':''}<circle class="inner" r="13.5"/>${sl}${(()=>{const q=LY&&LY.city[id];if(q){clab+=`<text class="cname" x="${(c.x+q.x).toFixed(1)}" y="${(c.y+q.y).toFixed(1)}" style="text-anchor:${q.an}">${c.name}</text>`;return ''}return `<text class="cname" y="32">${c.name}</text>`})()}${o?`<g class="cost${o.jump?' jump':''}" transform="translate(0,-25)"><rect x="${o.jump?-21:-15}" y="-8" width="${o.jump?42:30}" height="15" rx="7.5"/><text y="3.5">${o.jump?'↷ ':''}${o.cost}</text></g>`:''}${MAPS[S.map].startCities&&MAPS[S.map].startCities.includes(id)?'<text class="cstar" x="15" y="-12">★</text>':''}${cr.trans?`<g class="ctrans${S.step<2?' lk':''}" transform="translate(-27,-21)"><title>${LX('Jenseits der Grenze: erst ab Stufe 2 bebaubar','Across the border: buildable from step 2')}</title><rect width="${S.step<2?30:22}" height="13" rx="6.5"/><text x="${S.step<2?15:11}" y="9.5">${S.step<2?LX('ab II','from II'):'II'}</text></g>`:''}${MR().wien===id?`<g class="cwien" transform="translate(12,-23)"><title>${LX('Wien: Müll 1 € billiger für Spieler mit Stadt hier','Vienna: garbage 1 € cheaper for players with a city here')}</title><rect width="34" height="13" rx="6.5"/><text x="17" y="9.5">${LX('Müll −1','Garb. −1')}</text></g>`:''}</g>`;
   }
   if(clab)g+=`<g class="city clab" pointer-events="none">${clab}</g>`;
-  svg.innerHTML=g;svg.classList.toggle('atlas',MAPSTYLE==='atlas');svg.classList.toggle('building',!!building||S.phase==='build');svg.classList.toggle('dense',CITIES.filter(c=>act.has(c[0])).length>=24);
+  svg.innerHTML=g;if(bursts.length)requestAnimationFrame(()=>cityBursts(bursts));svg.classList.toggle('atlas',MAPSTYLE==='atlas');svg.classList.toggle('building',!!building||S.phase==='build');svg.classList.toggle('dense',CITIES.filter(c=>act.has(c[0])).length>=24);
   if(!UI.vb)fitMap();
   applyVB();
 }
@@ -4779,7 +4785,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v127';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v128';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -4877,6 +4883,12 @@ function tkBuys(q){const out=[];for(const l of S.log){if(l.pid!==q.id||l.r<S.rou
 function tkOwned(q){const fresh=new Set();S.log.forEach(l=>{if(l.pid===q.id&&l.r>=S.round-1){const m=/kauft Kraftwerk (\d+(?:\.\d+)?) für/.exec(l.t);if(m)fresh.add(+m[1])}});
   const ps=[...q.plants].sort((a,b)=>a-b);if(!ps.length)return'';
   return `<span class="tk-pl">${ps.map(n=>{const[ty,k,c]=PLANTS[n];return `<i class="${fresh.has(n)?'new':''}" style="--tc:${TCOL[ty]||'#999'}" title="${esc(tr(TYPE_NAME[ty]))} · ${FREE(ty)?'':k+' → '}${c}">${Math.floor(n)}${useIcon('b-'+ty,'tb')}</i>`}).join('')}</span>`}
+/* v128: Bau-Animation als eigene HTML-Ebene über der Karte – die große SVG-Karte muss dafür nicht neu gezeichnet werden */
+function cityBursts(list){const bd=document.getElementById('board');if(!bd||svg.classList.contains('moving'))return;const rb=bd.getBoundingClientRect();
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  for(const[id,col]of list){const el=svg.querySelector(`.city[data-city="${CSS.escape(id)}"]`);if(!el)continue;const r=el.getBoundingClientRect();if(!r.width)continue;
+    const d=document.createElement('div');d.className='cburst';d.style.cssText=`left:${(r.left+r.width/2-rb.left).toFixed(1)}px;top:${(r.top+r.height/2-rb.top).toFixed(1)}px;--c:${col};--s:${Math.max(26,Math.min(64,r.width*1.05)).toFixed(0)}px`;
+    d.innerHTML='<i></i><i></i><b></b>';bd.appendChild(d);setTimeout(()=>d.remove(),1400)}}
 function renderTicker(){const el=document.getElementById('ticker');if(!el)return;
   if(!S||!start.hidden||S.phase==='end'){el.hidden=true;el.innerHTML='';return}
   const a=actor(),act=a&&!P(a.pid).human?a.pid:null,opp=S.players.filter(q=>!q.human);if(!opp.length){el.hidden=true;return}
