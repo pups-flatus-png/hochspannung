@@ -2460,7 +2460,68 @@ function aiBid(p){
 function aiDiscard(p){
   const worst=heldPlants(p).filter(x=>x!==S.newPlant).sort((a,b)=>PLANTS[a][2]-PLANTS[b][2]||a-b)[0];discardPlant(p.id,worst);
 }
+/* v124: Rohstoffkauf für Schwer/Experte – richtet sich nach dem Markt und dem Spielziel statt "größtes Kraftwerk zuerst" */
+function aiFuelFor(p,sub,mk){
+  const avail={...p.pool},buy={coal:0,oil:0,garbage:0,uranium:0},mk2={...mk};let cost=0;
+  for(const x of [...sub].sort((a,b)=>a.rs.length-b.rs.length)){
+    if(!x.rs.length)continue;let req=x.k;
+    for(const r of x.rs){const u=Math.min(avail[r],req);avail[r]-=u;req-=u}
+    for(let i=0;i<req;i++){let r=null,bp=Infinity;
+      for(const q of x.rs){if(!CAP[q]||mk2[q]<=0)continue;if(slotPrice(q,CAP[q]-mk2[q])>priceCap())continue;const pr=unitPrice(q,CAP[q]-mk2[q],p);if(pr<bp){bp=pr;r=q}}
+      if(r==null)return null;cost+=bp;mk2[r]--;buy[r]++}
+  }
+  const np={};RES.forEach(r=>np[r]=p.pool[r]+buy[r]);if(!canHold(p,np))return null;
+  return{cost,buy,mk:mk2};
+}
+function aiPlanSmart(p){
+  const M=p.money,cities=cityCount(p);
+  const pl=heldPlants(p).map(n=>{const[t,k,c]=PLANTS[n];return{n,t,k,c:c+(p.sub===n?1:0),rs:FREE(t)?[]:(hybFor(t,p)||[t])}}).filter(x=>x.c>0);
+  const cap=pl.reduce((a,x)=>a+x.c,0);
+  // Wie viele Städte wird sie nach dem Bauen dieser Runde haben?
+  let E=Math.max(cities,Math.min(cap,expertTarget(p)));
+  const others=S.players.filter(q=>q!==p);
+  const fin=S.endTriggered||E>=END_AT||others.some(q=>q.cities.length+simBuild(q,END_AT-q.cities.length,q.money).n>=END_AT);
+  const bc=E>cities?simBuild(p,E-cities,M).cost:0;
+  const budget=M-bc-(fin?0:Math.max(0,L(p).res-10));
+  const val=k=>fin?1000*k:PAY[Math.min(k,20)];
+  let best=null;
+  for(let m=0;m<(1<<pl.length);m++){
+    const sub=pl.filter((_,i)=>m&(1<<i));const r=aiFuelFor(p,sub,S.resMarket);if(!r||r.cost>M)continue;
+    const capS=sub.reduce((a,x)=>a+x.c,0),pw=Math.min(capS,E);
+    const sc=val(pw)-r.cost-Math.max(0,r.cost-budget)*(fin?0:1.4);
+    if(!best||sc>best.sc||(sc===best.sc&&r.cost<best.cost))best={sc,sub,...r,pw};
+  }
+  if(!best)return{buy:{coal:0,oil:0,garbage:0,uranium:0},spent:0};
+  const buy={...best.buy};let spent=best.cost,mk={...best.mk};
+  // Vorrat und Verknappung: kauft auf, wenn es jetzt billiger ist als später, oder wenn es einem führenden Gegner den Brennstoff wegnimmt
+  const lv=L(p),SM=lv.stockMode??1,DN=lv.deny??false;
+  if(!fin&&SM){
+    const idx=S.seq.indexOf(p.id),later=new Set(S.seq.slice(idx+1));
+    const dem={coal:0,oil:0,garbage:0,uranium:0},qneed={};
+    others.forEach(q=>{if(!later.has(q.id))return;const nq={coal:0,oil:0,garbage:0,uranium:0};heldPlants(q).sort((a,b)=>PLANTS[b][2]-PLANTS[a][2]).forEach(n=>{const[t,k]=PLANTS[n];if(FREE(t))return;const rs=hybFor(t,q)||[t];const own=rs.reduce((a,r)=>a+q.pool[r],0);const nd=Math.max(0,k-own);if(nd){const r=rs.length===1?rs[0]:rs.reduce((b,r)=>(mk[r]>mk[b]?r:b),rs[0]);nq[r]+=nd;dem[r]+=nd}});qneed[q.id]=nq});
+    const nextE=Math.min(cap,E+2);let acc=0;const run=[];for(const x of [...pl].sort((a,b)=>b.c-a.c)){if(acc>=nextE)break;run.push(x);acc+=x.c}
+    const need={coal:0,oil:0,garbage:0,uranium:0};run.forEach(x=>{if(x.rs.length)need[x.rs.length===1?x.rs[0]:x.rs.reduce((b,r)=>(mk[r]>mk[b]?r:b),x.rs[0])]+=x.k});
+    const left={};RES.forEach(r=>left[r]=p.pool[r]+buy[r]);best.sub.forEach(x=>{let q=x.k;for(const r of x.rs){const u=Math.min(left[r],q);left[r]-=u;q-=u}});
+    const keep=Math.max(15,bc+10),lead=Math.max(...S.players.map(q=>q.cities.length));
+    for(const r of RES){if(!CAP[r])continue;let want=Math.max(0,need[r]-left[r]);let g=0;
+      while(mk[r]>0&&g++<12){
+        const sp=slotPrice(r,CAP[r]-mk[r]);if(sp>priceCap())break;const pr=unitPrice(r,CAP[r]-mk[r],p);
+        const nextN=Math.max(1,Math.min(CAP[r],mk[r]-1-dem[r]+RSUP(r)));const nextP=slotPrice(r,CAP[r]-nextN);
+        let v=0;
+        if(want>0)v=SM===2?pr:nextP+(lv.slack||0);
+        if(DN&&dem[r]>=mk[r]){ // knapp: jede weitere Einheit fehlt einem Gegner, der nach ihr kauft
+          let hurt=0;others.forEach(q=>{const nq=qneed[q.id];if(!nq||!nq[r])return;const th=q.cities.length>=lead-1?1:0.5;const pc=heldPlants(q).find(n=>(hybFor(PLANTS[n][0],q)||[PLANTS[n][0]]).includes(r));const per=pc?PLANTS[pc][2]/PLANTS[pc][1]:1;hurt=Math.max(hurt,th*per*7/(S.players.length-1))});
+          v+=hurt;}
+        if(v<pr||M-spent-pr<keep)break;
+        const np={};RES.forEach(x=>np[x]=p.pool[x]+buy[x]);np[r]++;if(!canHold(p,np))break;
+        buy[r]++;spent+=pr;mk[r]--;if(want>0)want--;
+      }
+    }
+  }
+  return{buy,spent};
+}
 function aiPlan(p){
+  if(L(p).smart&&!L(p).oldFuel)return aiPlanSmart(p);
   const plants=[...p.plants].sort((a,b)=>PLANTS[b][2]-PLANTS[a][2]);
   const avail={...p.pool},buy={coal:0,oil:0,garbage:0,uranium:0};let mk={...S.resMarket},spent=0,powered=0;
   const cityCount=p.cities.length+(p.park?1:0),cap=capacity(p);
@@ -4627,7 +4688,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v123';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v124';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
