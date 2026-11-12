@@ -1337,6 +1337,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .sheet>*,.menu>*{flex-shrink:0}
 .menu{min-height:min-content}
 .mk-sep{height:1px;background:var(--line);margin:6px 0 2px}
+.mk-two{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;align-items:stretch}.mk-two>*{min-width:0;margin:0}.mk-two>.rres{margin:0}
 .mk9{font-style:normal;font-size:11px;margin-left:6px;padding:1px 7px;border-radius:9px;border:1px solid var(--line);color:var(--muted)}
 /* ---- v16: Kraftwerksdeck & Atomausstieg ---- */
 .dcards{display:flex;flex-direction:column;gap:8px}
@@ -1870,6 +1871,44 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .hero-map .hm-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
 .hero-map .heromap{transition:opacity .9s ease;will-change:opacity}
 .hero-map .heromap.pre{opacity:.32}
+#boot{position:fixed;inset:0;z-index:9999;pointer-events:none}
+#boot .bt-h{position:absolute;left:0;right:0;height:50.5%;background:#030507;animation:btOpen .38s cubic-bezier(.6,0,.2,1) .7s both}
+#boot .bt-h::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px)}
+#boot .bt-t{top:0;--ty:-101%}#boot .bt-b{bottom:0;--ty:101%}
+#boot .bt-dot{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#ffd27a;box-shadow:0 0 12px 3px rgba(255,190,70,.8),0 0 40px 8px rgba(242,179,61,.35);animation:btDot .5s ease-out both}
+#boot .bt-line{position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:linear-gradient(90deg,transparent,#fff3d0 20%,#fff 50%,#fff3d0 80%,transparent);box-shadow:0 0 18px 4px rgba(255,200,90,.55);transform:scaleX(0);animation:btLine .7s cubic-bezier(.3,.7,.2,1) .42s both}
+#boot .bt-flash{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(255,236,190,.55),rgba(242,179,61,.12) 60%,transparent);opacity:0;animation:btFlash .55s ease-out .72s both}
+@keyframes btDot{0%{opacity:0;transform:scale(.3)}40%{opacity:1;transform:scale(1.4)}70%{transform:scale(.9)}100%{opacity:1;transform:scale(1)}}
+@keyframes btLine{0%{transform:scaleX(0);opacity:1}45%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:0}}
+@keyframes btOpen{to{transform:translateY(var(--ty))}}
+@keyframes btFlash{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
+@keyframes bOn{0%{opacity:0}20%{opacity:1}30%{opacity:.25}45%{opacity:1}55%{opacity:.6}70%,100%{opacity:1}}
+@keyframes bWipe{from{clip-path:inset(0 100% 100% 0 round 14px)}to{clip-path:inset(0 0 0 0 round 14px)}}
+@keyframes bType{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes bCharge{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes bReady{0%{box-shadow:0 0 0 0 rgba(255,200,90,.0)}35%{box-shadow:0 0 0 6px rgba(255,200,90,.35),0 0 40px 6px rgba(242,179,61,.45)}100%{box-shadow:0 0 0 14px rgba(255,200,90,0),0 0 40px 6px rgba(242,179,61,0)}}
+html[data-boot] #start .s3-ib{animation:bOn .4s linear both}
+html[data-boot] #start .s3-ib:nth-child(1){animation-delay:1.55s}html[data-boot] #start .s3-ib:nth-child(2){animation-delay:1.72s}html[data-boot] #start .s3-ib:nth-child(3){animation-delay:1.89s}
+html[data-boot] #start .s3-brand p{animation:bOn .5s linear 3.55s both}
+html[data-boot] #start .s3-new h2{animation:bOn .5s linear 1.95s both}
+html[data-boot] #start .s3-rows{animation:bWipe .45s cubic-bezier(.4,0,.2,1) 1.55s both}
+html[data-boot] #start .s3-row{animation:bOn .38s linear both}
+html[data-boot] #start .s3-row .s3-rv b{animation:bType .42s steps(16,end) both}
+html[data-boot] #start .s3-row:nth-child(1){animation-delay:2.05s}html[data-boot] #start .s3-row:nth-child(1) .s3-rv b{animation-delay:2.2s}
+html[data-boot] #start .s3-row:nth-child(2){animation-delay:2.2s}html[data-boot] #start .s3-row:nth-child(2) .s3-rv b{animation-delay:2.35s}
+html[data-boot] #start .s3-row:nth-child(3){animation-delay:2.35s}html[data-boot] #start .s3-row:nth-child(3) .s3-rv b{animation-delay:2.5s}
+html[data-boot] #start .s3-row:nth-child(4){animation-delay:2.5s}html[data-boot] #start .s3-row:nth-child(4) .s3-rv b{animation-delay:2.65s}
+html[data-boot] #start .s3-cap,html[data-boot] #start .s3-chips,html[data-boot] #start .sb-sum,html[data-boot] #start .s3-res{animation:bOn .5s linear 2.7s both}
+html[data-boot] #start .s3-bar .cta{animation:bOn .3s linear 3.05s both,bReady 1s ease-out 4.05s both}
+html[data-boot] #start .s3-bar .cta>span{position:relative;z-index:1}
+html[data-boot] #start .s3-bar .cta::before{content:'';position:absolute;inset:0;z-index:0;background:#141d25;transform-origin:100% 50%;animation:bCharge .85s steps(10,end) 3.15s both}
+.bootlog{position:absolute;left:14px;bottom:10px;z-index:4;font:500 10.5px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;color:rgba(255,214,140,.72);text-transform:uppercase;pointer-events:none;transition:opacity .5s}
+.bootlog div{animation:bOn .3s linear both}.bootlog .ok{color:#ffd27a;text-shadow:0 0 8px rgba(242,179,61,.6)}
+.bootlog.out{opacity:0}
+#start.v3.wide .bootlog{left:auto;right:30px;top:26px;bottom:auto;text-align:right;font-size:11.5px}
+html[data-zoom] #start .s3-hero .hero-map{transform:scale(3.4);opacity:0;filter:brightness(1.6);transition:transform .95s cubic-bezier(.55,0,.75,.35),opacity .45s ease-in .5s,filter .95s}
+html[data-zoom] #start .s3-top,html[data-zoom] #start .s3-new,html[data-zoom] #start .s3-bar,html[data-zoom] #start .s3-side,html[data-zoom] #start .s3-cap,html[data-zoom] #start .s3-res,html[data-zoom] #start .s3-chips{opacity:0;transition:opacity .35s ease}
+@media (prefers-reduced-motion:reduce){#boot{display:none}}
 .hero-map::after{content:'';position:absolute;inset:-10%;background:radial-gradient(closest-side,rgba(255,200,90,.32),rgba(242,179,61,.1) 55%,transparent);opacity:0;pointer-events:none;z-index:3}
 .hero-map.hm-flash::after{animation:hmHalo 1.2s ease-out both;will-change:opacity}
 [data-theme="light"] .hero-map::after{display:none}
@@ -3597,8 +3636,8 @@ function renderSheet(){
   }else if(UI.sheet==='plant'){
     h=head('Kraftwerk '+PN(UI.pnum))+plantInfo(UI.pnum);
   }else if(UI.sheet==='markets'){
-    const resSec=(title)=>`<div class="sec"><h3>${title}</h3>${RES.filter(r=>CAP[r]).map(r=>{const hold=S.players.filter(p=>p.pool[r]>0);return `<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)} · ${r==='uranium'&&S.noUranium?'Kein Uran-Nachschub mehr (Atomausstieg)':'Nachschub +'+RSUP(r)}</span></div>${trackHTML(r)}${marketDemand(r)}<div class="holders">${hold.length?hold.map(p=>`<span ${pc(p.id)}><i class="dot"></i>${esc(p.name)} ${p.pool[r]}</span>`).join(''):'<span>Niemand lagert '+RNAME[r]+'.</span>'}</div></div>`}).join('')}${title==='Rohstoffe'||title==='Rohstoffe · Süd'?umkHTML():''}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`;
-    h=head('Märkte','markets')+(S.resNorth?resSec('Rohstoffe · Süd')+withSide('north',()=>resSec('Rohstoffe · Nord')):resSec('Rohstoffe'))+`<div class="mk-sep"></div>`+marketHTML(null);
+    const resCard=r=>{const hold=S.players.filter(p=>p.pool[r]>0);return `<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)} · ${r==='uranium'&&S.noUranium?'Kein Uran-Nachschub mehr (Atomausstieg)':'Nachschub +'+RSUP(r)}</span></div>${trackHTML(r)}${marketDemand(r)}<div class="holders">${hold.length?hold.map(p=>`<span ${pc(p.id)}><i class="dot"></i>${esc(p.name)} ${p.pool[r]}</span>`).join(''):'<span>Niemand lagert '+RNAME[r]+'.</span>'}</div></div>`};const resSec=(title)=>`<div class="sec"><h3>${title}</h3>${RES.filter(r=>CAP[r]).map(resCard).join('')}${title==='Rohstoffe'||title==='Rohstoffe · Süd'?umkHTML():''}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`;
+    h=head('Märkte','markets')+(S.resNorth?`<div class="sec"><div class="mk-two"><h3>${LX('Rohstoffe · Süd','Resources · South')}</h3><h3>${LX('Rohstoffe · Nord','Resources · North')}</h3>${RES.map(r=>{const a=CAP[r]?resCard(r):'',b=withSide('north',()=>CAP[r]?resCard(r):'');return a||b?(a||'<div></div>')+(b||'<div></div>'):''}).join('')}</div>${umkHTML()}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`:resSec('Rohstoffe'))+`<div class="mk-sep"></div>`+marketHTML(null);
   }else if(UI.sheet==='log'){
     h=head('Protokoll')+`<div class="loglist">${S.log.map(l=>`<p ${l.pid!=null?pc(l.pid):''}><span class="r">R${l.r}</span><span class="dot"></span>${esc(l.t)}</p>`).join('')}</div>`;
   }else if(UI.sheet==='rules'){
@@ -3918,7 +3957,24 @@ function hmIntro(G,long){const ids=Object.keys(G.n);if(!ids.length)return;
     for(const v of G.adj[u]){const d=D[u]+Math.hypot(G.n[u].x-G.n[v].x,G.n[u].y-G.n[v].y)/sf(u,v);if(D[v]==null||d<D[v]){D[v]=d;Q.push(v)}}}
   const mx=Math.max(1,...Object.values(D));ids.forEach(k=>{if(D[k]==null)D[k]=mx});
   HM.intro=long?{long,t0:0,ign:.45,wave:2.7,settle:1.5,src,D,mx,sf,lit:0,rung:{}}:{long,t0:0,ign:.15,wave:1.35,settle:1.1,src,D,mx,sf,lit:0,rung:{}};
-  if(long)document.documentElement.dataset.hmi='pre'}
+  if(long){document.documentElement.dataset.hmi='pre';if(BOOT.on){HM.intro.delay=.75;bootStart()}}}
+/* Hochfahren der ganzen Oberfläche: Standby-Punkt → Lichtlinie → Bild öffnet sich → Netz, Instrumente, Statuszeilen */
+const BOOT={on:false,zoom:false,tm:[]};
+function bootStart(){if(hmReduced()||document.getElementById('boot'))return;const r=document.documentElement;r.dataset.boot='run';
+  const o=document.createElement('div');o.id='boot';o.setAttribute('aria-hidden','true');o.innerHTML='<div class="bt-h bt-t"></div><div class="bt-h bt-b"></div><i class="bt-dot"></i><i class="bt-line"></i><i class="bt-flash"></i>';document.body.appendChild(o);
+  const L=[[.95,'HOCHSPANNUNG GRID OS '+APPV],[1.35,LX('Netzsynchronisation','Grid sync')+' … '+Object.keys(HM.g?HM.g.n:{}).length+' '+LX('Knoten','nodes')],[1.9,LX('Frequenz','Frequency')+' 50,00 Hz'],[2.45,LX('Lastverteilung','Load balance')+' … OK'],[3.05,LX('Kraftwerksmarkt','Plant market')+' … OK'],[3.6,'GRID ONLINE ▮']];
+  const add=()=>{const h=document.querySelector('#start .s3-hero');if(!h)return null;let g=h.querySelector('.bootlog');if(!g){g=document.createElement('div');g.className='bootlog';h.appendChild(g)}return g};
+  L.forEach(([t,txt],i)=>BOOT.tm.push(setTimeout(()=>{const g=add();if(!g)return;const d=document.createElement('div');d.textContent=txt;if(i===L.length-1)d.className='ok';g.appendChild(d)},t*1000)));
+  BOOT.tm.push(setTimeout(()=>{const g=document.querySelector('#start .bootlog');if(g)g.classList.add('out')},4400));
+  BOOT.tm.push(setTimeout(()=>bootEnd(),5600))}
+function bootEnd(skip){BOOT.tm.forEach(clearTimeout);BOOT.tm=[];const o=document.getElementById('boot');if(o)o.remove();delete document.documentElement.dataset.boot;document.querySelectorAll('#start .bootlog').forEach(e=>e.remove())}
+/* Neues Spiel: Kamera fliegt auf das Startgebiet zu, dann erscheint der Spielplan */
+function hmZoomGo(go){const hm=document.querySelector('#start .s3-hero .hero-map');if(!BOOT.zoom||!hm||hmReduced()||!HM.g||!HM.mp){go();return}
+  const ids=Object.keys(HM.g.n);let cx=0,cy=0;ids.forEach(k=>{cx+=HM.g.n[k].x;cy+=HM.g.n[k].y});cx/=ids.length||1;cy/=ids.length||1;
+  const q=HM.gp?HM.gp(cx,cy):[cx,cy],M=HM.mp,px=M.ox+q[0]*M.s,py=M.oy+q[1]*M.s;
+  hm.style.transformOrigin=`${px.toFixed(0)}px ${py.toFixed(0)}px`;document.documentElement.dataset.zoom='1';
+  ids.forEach(k=>{if(Math.random()<.5)HM.heat[k]=1});const c=ids[Math.random()*ids.length|0];if(c)hmSurge(c,8);
+  setTimeout(()=>{go();setTimeout(()=>{delete document.documentElement.dataset.zoom;hm.style.transformOrigin=''},60)},950)}
 function hmIntroSkip(){const I=HM.intro;if(I&&I.long&&I.t0){const now=performance.now()/1000;I.t0=Math.min(I.t0,now-I.ign-I.wave)}}
 function hmStart(){if(HM.raf)return;if(hmReduced()){hmLit(true);return}HM.raf=requestAnimationFrame(hmLoop)}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)hmStart()});
@@ -3936,7 +3992,7 @@ function hmSurge(id,n){const G=HM.g;if(!G||!G.adj[id])return;const nb=G.adj[id].
   nb.forEach(b=>{const p=hmSpawn(G,id,true,b);if(p){p.hops=2+(Math.random()*3|0);HM.pk.push(p)}});
   HM.rings.push({id,t:0,big:1});HM.heat[id]=1}
 /* Antippen/Klicken der Karte: Stromstoß von der nächstgelegenen Stadt aus */
-document.addEventListener('pointerdown',ev=>{if(start.hidden||hmReduced())return;if(HM.intro&&HM.intro.long&&!HM.intro.lit){hmIntroSkip();return}
+document.addEventListener('pointerdown',ev=>{if(start.hidden||hmReduced())return;if(document.documentElement.dataset.boot){bootEnd(true);hmIntroSkip();return}if(HM.intro&&HM.intro.long&&!HM.intro.lit){hmIntroSkip();return}
   const hm=ev.target.closest&&ev.target.closest('#start .hero-map,#start .s3-hero,#start .s3-bmap');if(!hm||!HM.g||!HM.mp)return;
   const cv=hm.querySelector('.hm-fx');if(!cv)return;const r=cv.getBoundingClientRect(),M=HM.mp;
   const mx=((ev.clientX-r.left)/r.width*M.cw-M.ox)/M.s,my=((ev.clientY-r.top)/r.height*M.ch-M.oy)/M.s;
@@ -3958,7 +4014,7 @@ function hmLoop(now){HM.raf=0;
   const base=Math.max(10,Math.min(30,15*s))*dpr;
   /* 1. Hochfahren: Welle breitet sich vom Kraftwerk über die Leitungen aus */
   let idle=1;const I=HM.intro;
-  if(I){if(!I.t0)I.t0=t;const el=t-I.t0,u=Math.min(1,Math.max(0,(el-I.ign)/I.wave)),F=(1-Math.pow(1-u,1.25))*I.mx*1.02;
+  if(I){if(!I.t0)I.t0=t+(I.delay||0);if(t<I.t0){x.globalAlpha=1;HM.raf=requestAnimationFrame(hmLoop);return}const el=t-I.t0,u=Math.min(1,Math.max(0,(el-I.ign)/I.wave)),F=(1-Math.pow(1-u,1.25))*I.mx*1.02;
     const se=Math.max(0,(el-I.ign-I.wave)/I.settle),A=el<I.ign+I.wave?1:Math.pow(Math.max(0,1-se),1.8);idle=el<I.ign+I.wave?0:1;
     if(!I.burst&&el>=I.ign+I.wave){I.burst=1;for(const a in G.adj)for(const b of G.adj[a]){if(a>b)continue;const r=Math.random()<.5;for(let j=0;j<2;j++){const p=hmSpawn(G,r?a:b,false,r?b:a);if(p){p.s=p.L*(j?.15+Math.random()*.3:.55+Math.random()*.4);p.age=1;HM.pk.push(p)}}}}
     if(!I.lit&&u>=(I.long?.82:.6))hmLit(false);
@@ -4981,7 +5037,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v142';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v143';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -5181,7 +5237,7 @@ const A={
   regpick:()=>{if(!UI.regions.length){const n=regionCount(UI.nAI+1);const ks=Object.keys(REGIONS);for(let t=0;t<200;t++){const c=shuffle(ks).slice(0,n);if(regionsValid(c,n)&&(!MAPS[MAPID].mustRegion||c.includes(MAPS[MAPID].mustRegion))){UI.regions=c;break}}}UI.name=nmVal();renderStart(true);return'skip'},
   markets:()=>{UI.sheet=UI.sheet==='markets'&&isDock()?null:'markets'},
   pinfo:b=>{UI.back=isDock()?UI.sheet:null;UI.pnum=+b.dataset.num;UI.sheet='plant'},
-  start:()=>{if(!regionsOk())return'skip';UI.name=nmVal().trim();saveName(UI.name);newGame(UI.name||(LANG==='en'?'Your company':'Dein Betrieb'),UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false);UI.intro=true;setTimeout(showIntro,30)},
+  start:b=>{if(!regionsOk())return'skip';if(BOOT.zoom&&!UI.zooming&&!start.hidden&&!hmReduced()){UI.zooming=1;hmZoomGo(()=>{b&&b.click?b.click():null;UI.zooming=0});return'skip'}UI.name=nmVal().trim();saveName(UI.name);newGame(UI.name||(LANG==='en'?'Your company':'Dein Betrieb'),UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false);UI.intro=true;setTimeout(showIntro,30)},
   cont:()=>{UI.rulesFromStart=false;loadMap(S.map||'de');loadDeck(S.deckKeys||deckKeys('std'));applyPlantOv();applyMapN(S.n);applyGameMods();UI.vb=null;renderStart(false)},
   zin:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.3);return'skip'},
   zout:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.3);return'skip'},
