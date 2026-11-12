@@ -3959,13 +3959,9 @@ function hmIntro(G,long){const ids=Object.keys(G.n);if(!ids.length)return;
   HM.intro=long?{long,t0:0,ign:.45,wave:2.7,settle:1.5,src,D,mx,sf,lit:0,rung:{}}:{long,t0:0,ign:.15,wave:1.35,settle:1.1,src,D,mx,sf,lit:0,rung:{}};
   if(long){document.documentElement.dataset.hmi='pre';if(BOOT.on){HM.intro.delay=.75;bootStart()}}}
 /* Hochfahren der ganzen Oberfläche: Standby-Punkt → Lichtlinie → Bild öffnet sich → Netz, Instrumente, Statuszeilen */
-const BOOT={on:false,zoom:false,tm:[]};
-function bootStart(){if(hmReduced()||document.getElementById('boot'))return;const r=document.documentElement;r.dataset.boot='run';
+const BOOT={on:true,zoom:true,tm:[]};
+function bootStart(){if(hmReduced()||document.getElementById('boot'))return;const day=new Date().toDateString();try{if(localStorage.getItem('hochspannung-boot')===day){HM.intro&&(HM.intro.delay=0);return}localStorage.setItem('hochspannung-boot',day)}catch(_){}const r=document.documentElement;r.dataset.boot='run';
   const o=document.createElement('div');o.id='boot';o.setAttribute('aria-hidden','true');o.innerHTML='<div class="bt-h bt-t"></div><div class="bt-h bt-b"></div><i class="bt-dot"></i><i class="bt-line"></i><i class="bt-flash"></i>';document.body.appendChild(o);
-  const L=[[.95,'HOCHSPANNUNG GRID OS '+APPV],[1.35,LX('Netzsynchronisation','Grid sync')+' … '+Object.keys(HM.g?HM.g.n:{}).length+' '+LX('Knoten','nodes')],[1.9,LX('Frequenz','Frequency')+' 50,00 Hz'],[2.45,LX('Lastverteilung','Load balance')+' … OK'],[3.05,LX('Kraftwerksmarkt','Plant market')+' … OK'],[3.6,'GRID ONLINE ▮']];
-  const add=()=>{const h=document.querySelector('#start .s3-hero');if(!h)return null;let g=h.querySelector('.bootlog');if(!g){g=document.createElement('div');g.className='bootlog';h.appendChild(g)}return g};
-  L.forEach(([t,txt],i)=>BOOT.tm.push(setTimeout(()=>{const g=add();if(!g)return;const d=document.createElement('div');d.textContent=txt;if(i===L.length-1)d.className='ok';g.appendChild(d)},t*1000)));
-  BOOT.tm.push(setTimeout(()=>{const g=document.querySelector('#start .bootlog');if(g)g.classList.add('out')},4400));
   BOOT.tm.push(setTimeout(()=>bootEnd(),5600))}
 function bootEnd(skip){BOOT.tm.forEach(clearTimeout);BOOT.tm=[];const o=document.getElementById('boot');if(o)o.remove();delete document.documentElement.dataset.boot;document.querySelectorAll('#start .bootlog').forEach(e=>e.remove())}
 /* Neues Spiel: Kamera fliegt auf das Startgebiet zu, dann erscheint der Spielplan */
@@ -5037,7 +5033,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v143';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v144';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
