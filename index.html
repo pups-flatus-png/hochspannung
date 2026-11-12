@@ -1133,7 +1133,7 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 /* v109: Startbildschirm breit (Mac, iPad): Karte links, Spalte rechts */
 .s3-side{display:contents}
 #start.v3.wide{display:block;overflow:hidden}
-#start.v3.wide .s3{max-width:none;height:100vh;height:100dvh;padding:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(360px,34vw,460px);grid-template-rows:auto minmax(0,1fr);gap:0}
+#start.v3.wide .s3{max-width:none;height:100vh;height:100dvh;padding:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(400px,36vw,480px);grid-template-rows:auto minmax(0,1fr);gap:0}
 #start.v3.wide .s3-top{grid-column:1;grid-row:1;padding:max(40px,calc(env(safe-area-inset-top,0px) + 24px)) 48px 0 max(48px,env(safe-area-inset-left,0px));z-index:3;pointer-events:none}
 #start.v3.wide .s3-brand h1{font-size:clamp(46px,5.4vw,84px);letter-spacing:.07em}
 #start.v3.wide .s3-brand p{font-size:16px;margin-top:12px}
@@ -1185,6 +1185,26 @@ svg.sl.cart{outline:1.5px solid var(--accent);outline-offset:0;border-radius:2px
 .btn.cta:disabled::after{display:none}
 .s3-go.cta{width:100%;font-size:17px}.s3-go.cta .cta-l{flex:1;text-align:center;padding-left:30px}
 @media (prefers-reduced-motion:reduce){.btn.cta::after{animation:none!important}}
+/* v120: Mac-Startbildschirm – rechte Spalte als ruhiger, zentrierter Block, Kartenlegende links unten */
+#start.v3.wide .s3-side{overflow-x:hidden}
+#start.v3.wide .s3:not(.sub) .s3-side{padding:28px 36px 24px;gap:18px}
+#start.v3.wide .s3:not(.sub) .s3-sidetop+*{margin-top:auto}
+#start.v3.wide .s3:not(.sub) .s3-app{margin-top:auto;margin-bottom:0;padding-top:16px}
+#start.v3.wide .s3:not(.sub) .s3-new h2{font-size:30px;letter-spacing:.02em;margin-bottom:4px}
+#start.v3.wide .s3:not(.sub) .s3-row{padding:15px 16px}
+#start.v3.wide .s3:not(.sub) .s3-rv b{font-size:16px;white-space:normal;line-height:1.3}
+#start.v3.wide .s3:not(.sub) .s3-bar{position:static;margin:4px 0 0;padding:14px 14px 14px 18px;border:1px solid var(--t1d2a33);border-radius:14px;background:color-mix(in srgb,var(--accent) 5%,var(--t121b22));backdrop-filter:none}
+#start.v3.wide .s3:not(.sub) .s3-bar{padding:0;border:0;background:none;margin-top:2px}
+#start.v3.wide .s3:not(.sub) .s3-bar .sb-sum{display:none}
+#start.v3.wide .s3:not(.sub) .s3-bar .cta{flex:1;min-height:56px;padding:0 18px 0 24px;font-size:17px}
+#start.v3.wide .s3:not(.sub) .s3-bar .cta .cta-l{flex:1;text-align:center;padding-left:30px}
+#start.v3.wide .s3:not(.sub) .s3-app{order:10}
+#start.v3.wide .s3:not(.sub) .s3-res{margin-bottom:6px}
+#start.v3.wide .s3-cap{position:absolute;left:max(48px,env(safe-area-inset-left,0px));bottom:36px;z-index:3;display:flex;flex-direction:column;gap:4px;padding-left:14px;border-left:2px solid var(--accent);pointer-events:none}
+#start.v3.wide .s3-cap-k{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+#start.v3.wide .s3-cap b{font-family:var(--display);font-size:26px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;line-height:1}
+#start.v3.wide .s3-cap span:last-child{font-size:13px;color:var(--muted)}
+.s3-cap{display:none}#start.v3.wide .s3-cap{display:flex}
 /* ---- v16: Kraftwerksdeck & Atomausstieg ---- */
 .dcards{display:flex;flex-direction:column;gap:8px}
 .dcard{display:flex;flex-direction:column;gap:7px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--t26343e);background:var(--t121b22);color:var(--fg);cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
@@ -3551,13 +3571,15 @@ function s3Chips(){
   return `<button type="button" class="s3-chips" data-act="stats" aria-label="${LX('Statistik öffnen','Open statistics')}">${c.map(x=>`<span>${esc(x)}</span>`).join('')}</button>`;
 }
 function s3Row(sv,ic,k,v,bad){return `<button type="button" class="s3-row" data-act="sv" data-v="${sv}"><span class="s3-ic">${ic}</span><span class="s3-rv"><span>${k}</span><b${bad?' class="bad"':''}>${esc(v)}</b></span>${S3I.chev}</button>`}
+function s3Caption(){const M=MAPS[UI.map],en=LANG==='en',nr=Object.keys(M.regions||{}).length,nc=(M.cities||[]).length;
+  return `<div class="s3-cap" aria-hidden="true"><span class="s3-cap-k">${M.exp?LX('Erweiterung','Expansion'):M.deluxe?'Deluxe':LX('Grundspiel','Base game')}</span><b>${esc(tr(en&&M.en?M.en:M.name))}</b><span>${nc} ${LX('Städte','cities')} · ${nr} ${LX('Regionen','regions')} · ${LX('du spielst','you play')} ${UI.regions.length||regionCount(UI.nAI+1)}</span></div>`}
 function renderStart3(){
   const en=LANG==='en',sv=UI.sv||'',M=MAPS[UI.map],x=s3Summary();
   const lang=`<button type="button" class="s3-ib s3-lang" data-act="lang" data-l="${en?'de':'en'}" aria-label="${en?'Sprache: Englisch. Zu Deutsch wechseln':'Sprache: Deutsch. Zu Englisch wechseln'}">${en?'EN':'DE'}</button>`;
   const wide=!sPhone();
   const icons=`<div class="s3-ibs"><button type="button" class="s3-ib" data-act="stats" aria-label="${LX('Statistik','Statistics')}">${S3I.stats}</button><button type="button" class="s3-ib" data-act="startrules" aria-label="${LX('Spielregeln','Rules')}">${S3I.rules}</button>${lang}</div>`;
   const top=`<header class="s3-top"><div class="s3-brand"><h1>Hochspannung</h1><p>${LX('Kraftwerke ersteigern, Brennstoff kaufen, die meisten Städte versorgen.','Win plants, buy fuel, power the most cities.')}</p></div>${wide?'':icons}</header>`;
-  const hero=live=>`<div class="s3-hero${live?' live':''}"${live?'':` data-act="sv" data-v="board" role="button" tabindex="0" aria-label="${LX('Spielplan und Netzgebiet ändern','Change board and regions')}"`}><div class="hero-map">${heroMap()}<canvas class="hm-fx" aria-hidden="true"></canvas></div>${live?`<span class="s3-tap">${LX('Regionen auf der Karte antippen','Click regions on the map')}</span>`:''}</div>`;
+  const hero=live=>`<div class="s3-hero${live?' live':''}"${live?'':` data-act="sv" data-v="board" role="button" tabindex="0" aria-label="${LX('Spielplan und Netzgebiet ändern','Change board and regions')}"`}><div class="hero-map">${heroMap()}<canvas class="hm-fx" aria-hidden="true"></canvas></div>${live?`<span class="s3-tap">${LX('Regionen auf der Karte antippen','Click regions on the map')}</span>`:''}${wide&&!live?s3Caption():''}</div>`;
   if(!sv){
     const res=s3Resume();
     const bar=res?'':`<div class="startbar s3-bar"><div class="sb-sum"><b>${esc(x.map)}</b><span>${UI.nAI+1} ${LX('Spieler','players')} · ${LX('KI','AI')} ${tr(AI_NAME[UI.diff])} · ${UI.regions.length||regionCount(UI.nAI+1)} ${LX('Regionen','regions')}</span></div><button type="button" class="btn pri cta" data-act="start" ${x.bad?'disabled':''}><span class="cta-l">${LX('Neues Spiel','New game')}</span><span class="cta-arr" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9.5M8.5 4l4 4-4 4"/></svg></span></button></div>`;
@@ -4595,7 +4617,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v119';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v120';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
