@@ -2173,6 +2173,13 @@ html.ov-dlg :is(#board,#panel,#top,#ticker) *{animation-play-state:paused!import
 #sheet.overlay.dock{-webkit-backdrop-filter:none;backdrop-filter:none}
 html:not([data-theme="light"]) #sheet.dock .sheet{background:linear-gradient(180deg,#151e26,#0e151b)}
 html.ov-vic :is(#top,#board,#panel,#ticker){visibility:hidden}
+/* v165: iPhone – Globus reicht hinter den Titel, Titel auf leicht durchscheinender Platte */
+#start.v3:not(.wide) .s3-top{position:relative;z-index:3}
+#start.v3:not(.wide) .s3-hero{margin-top:-150px;height:calc(min(46vh,340px) + 150px)}
+#start.v3:not(.wide) .s3.hasres .s3-hero{height:calc(min(30vh,220px) + 150px)}
+#start.v3:not(.wide) .s3-hero .hero-map{padding-top:108px}
+html:not([data-theme="light"]) #start.v3:not(.wide) .s3-brand{margin:0 4px;padding:10px 12px 12px;border-radius:18px;background:linear-gradient(180deg,rgba(14,22,30,.42),rgba(10,16,22,.24));border:1px solid rgba(255,255,255,.07);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 30px rgba(0,0,0,.18)}
+[data-theme="light"] #start.v3:not(.wide) .s3-brand{margin:0 4px;padding:10px 12px 12px;border-radius:18px;background:rgba(255,255,255,.35);border:1px solid rgba(0,0,0,.06)}
 .s3-ver{position:absolute;right:10px;bottom:6px;z-index:4;font:500 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;color:var(--ta9b6bf);opacity:.45;pointer-events:none}
 #start.v3.wide .s3-ver{right:24px;bottom:18px}
 .hero-map::after{content:'';position:absolute;inset:-10%;background:radial-gradient(closest-side,rgba(255,200,90,.32),rgba(242,179,61,.1) 55%,transparent);opacity:0;pointer-events:none;z-index:3}
@@ -5464,7 +5471,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v164';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v165';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
