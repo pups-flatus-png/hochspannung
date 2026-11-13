@@ -4437,7 +4437,7 @@ function hmIntro(G,long){const ids=Object.keys(G.n);if(!ids.length)return;
   const SPD={};for(const a in G.adj)for(const b of G.adj[a])if(a<b)SPD[a+'|'+b]=.55+Math.random()*1.1;const sf=(a,b)=>SPD[a<b?a+'|'+b:b+'|'+a]||1;
   const{D,mx}=hmDist(G,src,sf);
   HM.intro=long?{long,t0:0,ign:.45,wave:2.7,settle:1.5,src,D,mx,sf,lit:0,rung:{}}:{long,t0:0,ign:.15,wave:1.35,settle:1.1,src,D,mx,sf,lit:0,rung:{}};
-  if(long){document.documentElement.dataset.hmi='pre';if(BOOT.on){BOOT.keep=sPhone();HM.intro.delay=BOOT.keep?2.8:2.1;bootStart()}}}
+  if(long){document.documentElement.dataset.hmi='pre';if(BOOT.on){BOOT.keep=true;HM.intro.delay=2.8;bootStart()}}}
 /* Hochfahren der ganzen Oberfläche: Standby-Punkt → Lichtlinie → Bild öffnet sich → Netz, Instrumente, Statuszeilen */
 const BOOT={on:true,zoom:true,tm:[]};
 function bootStart(){if(hmReduced()||document.getElementById('boot'))return;const r=document.documentElement;r.dataset.boot='hold';if(HM.intro)HM.intro.hold=true;
@@ -5552,7 +5552,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v171';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v172';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
