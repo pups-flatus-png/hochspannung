@@ -2080,7 +2080,7 @@ html:not([data-theme="light"]) #top{background:linear-gradient(180deg,rgba(10,15
 .ge-bars{display:flex;gap:14px;align-items:flex-end;justify-content:center;height:clamp(220px,34vh,300px);padding-top:8px}
 .eb{order:var(--po);flex:1;max-width:150px;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;min-width:0;animation:geUp .5s ease-out calc(var(--d) - .4s) both}
 .eb-tr{flex:1 1 0;min-height:0;width:56%;min-width:34px;border-radius:12px 12px 4px 4px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.08);display:flex;align-items:flex-end;overflow:hidden;position:relative}
-.eb-fill{width:100%;height:calc(var(--f) * 100%);min-height:4px;background:linear-gradient(180deg,color-mix(in srgb,var(--pc) 100%,#fff 25%),var(--pc) 35%,color-mix(in srgb,var(--pc) 55%,#000));box-shadow:0 0 22px color-mix(in srgb,var(--pc) 60%,transparent);border-radius:10px 10px 2px 2px;transform-origin:50% 100%;animation:ebGrow var(--dur) cubic-bezier(.25,1,.5,1) var(--d) both;will-change:transform;position:relative}
+.eb-fill{width:100%;height:calc(var(--f) * 100%);min-height:4px;background:linear-gradient(180deg,color-mix(in srgb,var(--pc) 100%,#fff 25%),var(--pc) 35%,color-mix(in srgb,var(--pc) 55%,#000));border-radius:10px 10px 2px 2px;transform-origin:50% 100%;animation:ebGrow var(--dur) cubic-bezier(.25,1,.5,1) var(--d) both;will-change:transform;position:relative}
 .eb-fill i{position:absolute;left:0;right:0;top:0;height:3px;background:#fff;opacity:.85;box-shadow:0 0 12px #fff}
 @keyframes ebGrow{from{transform:scaleY(0)}}
 .eb-v{font:800 clamp(22px,4vw,32px)/1 'Orbitron',var(--display);color:#eef2f4;font-variant-numeric:tabular-nums}
@@ -2140,10 +2140,13 @@ html:not([data-theme="light"]) #top{background:linear-gradient(180deg,rgba(10,15
 [data-theme="light"] #gmEnd .ea,[data-theme="light"] #gmEnd .ec,[data-theme="light"] #gmEnd .eb-tr{background:rgba(255,255,255,.7);border-color:rgba(0,0,0,.08)}
 /* v161: Siegesflug */
 #gmVic{position:fixed;inset:0;z-index:59;background:radial-gradient(120% 90% at 50% 45%,#0f1b25 0%,#0a1117 60%,#05080b 100%);animation:geIn .35s ease-out both}
-#gmVic .vstage{position:absolute;inset:0;will-change:transform;transition:opacity .9s ease}
-#gmVic svg.vic,#gmVic .vfx{position:absolute;inset:0;width:100%;height:100%}
+#gmVic .vstage{position:absolute;inset:0;will-change:transform;transition:opacity .5s ease}
+#gmVic .vstage svg.vic,#gmVic .vstage .vfx{position:absolute;inset:0;width:100%;height:100%}
+#gmVic.done .vstage{opacity:0}
+#gmVic .vfx{position:absolute;inset:0;width:100%;height:100%;transition:opacity .5s ease}
 #gmVic svg.vic *{filter:none!important}#gmVic svg.vic text{display:none}
-#gmVic.done .vstage{opacity:.4}
+#gmVic.done .vfx{opacity:0}
+#gmVic.done{background:radial-gradient(120% 90% at 50% 45%,#0c151d 0%,#070b0f 70%)}
 #gmVic svg.vic line.edge,#gmVic svg.vic .city,#gmVic svg.vic .clabel,#gmVic svg.vic text{opacity:.35}
 #gmVic .vg{pointer-events:none}
 #gmVic .ve,#gmVic .ve2{stroke:var(--wc);stroke-width:6;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation-name:veDraw;}
@@ -2166,7 +2169,10 @@ html:not([data-theme="light"]) #top{background:linear-gradient(180deg,rgba(10,15
 #flowfx{position:absolute;left:0;top:0;pointer-events:none;z-index:2}
 #board{position:relative}
 /* v163: Animationen hinter offenen Dialogen anhalten (sonst wird die Unschärfe jedes Bild neu berechnet) */
-html:has(#sheet:not([hidden]):not(.dock)) :is(#board,#panel,#top,#ticker) *,html:has(#gmEnd) :is(#board,#panel,#top,#ticker) *,html:has(#intro:not([hidden])) :is(#board,#panel,#top,#ticker) *{animation-play-state:paused!important}
+html.ov-dlg :is(#board,#panel,#top,#ticker) *{animation-play-state:paused!important}
+#sheet.overlay.dock{-webkit-backdrop-filter:none;backdrop-filter:none}
+html:not([data-theme="light"]) #sheet.dock .sheet{background:linear-gradient(180deg,#151e26,#0e151b)}
+html.ov-vic :is(#top,#board,#panel,#ticker){visibility:hidden}
 .s3-ver{position:absolute;right:10px;bottom:6px;z-index:4;font:500 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;color:var(--ta9b6bf);opacity:.45;pointer-events:none}
 #start.v3.wide .s3-ver{right:24px;bottom:18px}
 .hero-map::after{content:'';position:absolute;inset:-10%;background:radial-gradient(closest-side,rgba(255,200,90,.32),rgba(242,179,61,.1) 55%,transparent);opacity:0;pointer-events:none;z-index:3}
@@ -3273,7 +3279,17 @@ function endShow(){if(!S||!S.ranking)return;let o=document.getElementById('gmEnd
   o.addEventListener('click',e=>{const b=e.target.closest('[data-ge]');if(!b){o.classList.add('skip');return}const a=b.dataset.ge;
     const vv=()=>document.getElementById('gmVic')?.remove();if(a==='close'){o.remove();vv();return}if(a==='stats'){o.remove();vv();A.stats&&A.stats();return}if(a==='new'){o.remove();vv();UI.sheet='newgame';renderSheet();render()}})}
 /* v161: Siegesflug – Kamera startet an der ersten Stadt des Siegers und zoomt heraus, während sein Netz aufleuchtet */
-function endVictory(){if(!S||!S.ranking)return endShow();const W=S.ranking[0],wp=P(W),own=wp.cities||[];const src=document.getElementById('map');
+/* Siegesflug: Karte einmal als Bild aufnehmen, dann Kamerafahrt und leuchtendes Netz auf einem Canvas zeichnen (leicht und scharf) */
+function mapSnapshot(src,W,H){return new Promise((res,rej)=>{try{
+  const cl=src.cloneNode(true);cl.setAttribute('viewBox',MAPVB);cl.setAttribute('preserveAspectRatio','xMidYMid meet');cl.classList.add('moving');
+  const box=document.createElement('div');box.style.cssText=`position:fixed;left:-99999px;top:0;width:${W}px;height:${H}px;visibility:hidden;pointer-events:none`;cl.style.width=W+'px';cl.style.height=H+'px';box.appendChild(cl);document.body.appendChild(box);
+  const P=['fill','fill-opacity','stroke','stroke-width','stroke-opacity','stroke-dasharray','stroke-linecap','stroke-linejoin','opacity','display','fill-rule','mask','clip-path','paint-order'];
+  const el=[...cl.querySelectorAll('*')],cs=el.map(e=>getComputedStyle(e)),vals=cs.map(c=>P.map(k=>c.getPropertyValue(k)));
+  el.forEach((e,i)=>{if(e.tagName==='text'||e.tagName==='TEXT'){e.remove();return}const v=vals[i];let st='';P.forEach((k,j)=>{if(v[j])st+=k+':'+v[j]+';'});st+='filter:none;animation:none;transition:none;';e.setAttribute('style',st);e.removeAttribute('class')});
+  cl.removeAttribute('id');cl.setAttribute('width',W);cl.setAttribute('height',H);cl.setAttribute('xmlns','http://www.w3.org/2000/svg');cl.removeAttribute('class');cl.removeAttribute('style');
+  const xml=new XMLSerializer().serializeToString(cl);box.remove();
+  const url=URL.createObjectURL(new Blob([xml],{type:'image/svg+xml'})),img=new Image();img.onload=()=>{try{const c=document.createElement('canvas');c.width=W;c.height=H;c.getContext('2d').drawImage(img,0,0,W,H);res(c)}catch(e){res(img)}setTimeout(()=>URL.revokeObjectURL(url),1000)};img.onerror=rej;img.src=url}catch(e){rej(e)}})}
+function endVictoryStage(){if(!S||!S.ranking)return endShow();const W=S.ranking[0],wp=P(W),own=wp.cities||[];const src=document.getElementById('map');
   if(hmReduced()||!own.length||!src){endShow();return}
   clearTimeout(window._vicTm);document.getElementById('gmVic')?.remove();const ov=document.createElement('div');ov.id='gmVic';ov.setAttribute('aria-hidden','true');
   const stg=document.createElement('div');stg.className='vstage';ov.appendChild(stg);
@@ -3305,6 +3321,41 @@ function endVictory(){if(!S||!S.ranking)return endShow();const W=S.ranking[0],wp
     stg.animate([{transform:`translate(${cx-fx}px,${cy-fy}px) scale(${s0})`},{transform:'none'}],{duration:DUR,delay:DL,easing:'cubic-bezier(.65,0,.35,1)',fill:'both'})}
   const go=()=>{if(fin)return;fin=true;stg.getAnimations().forEach(a=>a.finish());requestAnimationFrame(draw);ov.classList.add('done');endShow()};
   const tm=window._vicTm=setTimeout(go,DL+DUR+600);ov.addEventListener('click',()=>{clearTimeout(tm);ov.classList.add('skip');go()})}
+function endVictory(){if(innerWidth<900)return endVictoryStage();if(!S||!S.ranking)return endShow();const W=S.ranking[0],wp=P(W),own=wp.cities||[];const src=document.getElementById('map');
+  if(hmReduced()||!own.length||!src){endShow();return}
+  clearTimeout(window._vicTm);document.getElementById('gmVic')?.remove();const ov=document.createElement('div');ov.id='gmVic';ov.setAttribute('aria-hidden','true');
+  const cv=document.createElement('canvas');cv.className='vfx';ov.appendChild(cv);
+  const first=own[0],F=CITY[first],[vx,vy,vw,vh]=MAPVB.split(' ').map(Number);
+  const D={[first]:0},Q=[first],done={},adj={};EDGE_LIST.forEach(e=>{(adj[e.a]??=[]).push(e.b);(adj[e.b]??=[]).push(e.a)});
+  while(Q.length){Q.sort((a,b)=>D[a]-D[b]);const u=Q.shift();if(done[u])continue;done[u]=1;for(const v of adj[u]||[]){const w=Math.hypot(CITY[u].x-CITY[v].x,CITY[u].y-CITY[v].y)*(own.includes(v)?1:1.6);if(D[v]==null||D[u]+w<D[v]){D[v]=D[u]+w;Q.push(v)}}}
+  const mx=Math.max(1,...own.map(c=>D[c]??0)),DL=.35,DUR=3,T0=.45,TS=2.3,dl=c=>DL+T0+(D[c]??mx)/mx*TS;
+  const E=[];EDGE_LIST.forEach(e=>{if(!own.includes(e.a)||!own.includes(e.b))return;const[a,b]=(D[e.a]??0)<=(D[e.b]??0)?[e.a,e.b]:[e.b,e.a];E.push([CITY[a],CITY[b],dl(a),Math.max(.25,((D[b]??0)-(D[a]??0))/mx*TS)])});
+  const C=own.map(c=>[CITY[c],dl(c)]);
+  ov.insertAdjacentHTML('beforeend',`<div class="gv-cap" style="--pc:${wp.color}"><span>${LX('Das Netz des Siegers','The winning grid')}</span><b>${esc(wp.name)}</b><em>${cityCount(wp)} ${LX('Städte','cities')} · ${LX('erste Stadt','first city')}: ${esc(CITY[first].name||first)}</em></div>`);
+  document.body.appendChild(ov);
+  let fin=false;window._vicFin&&window._vicFin();window._vicFin=()=>{fin=true};
+  const col=wp.color,hot=`color-mix(in srgb,${col} 50%,#fff)`,dpr=Math.min(2,devicePixelRatio||1),SW=innerWidth,SH=innerHeight;cv.width=Math.round(SW*dpr);cv.height=Math.round(SH*dpr);
+  const x=cv.getContext('2d');let img=null,t0=null;
+  const IK=Math.min(window.VIC_IK||1.8,4096/Math.max(SW,SH)),IW=Math.round(SW*IK),IH=Math.round(SH*IK),si=Math.min(IW/vw,IH/vh),iox=(IW-vw*si)/2,ioy=(IH-vh*si)/2;
+  mapSnapshot(src,IW,IH).then(i=>{img=i}).catch(()=>{});
+  const z=Math.max(vw,vh)/3.1,asp=SW/SH,b0w=asp>=1?z*asp:z,b0h=asp>=1?z:z/asp,b0=[F.x-b0w/2,F.y-b0h/2,b0w,b0h],b1=[vx,vy,vw,vh];
+  const ease=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+  const draw=now=>{if(!ov.isConnected)return;if(t0==null)t0=now;const t=fin?99:(now-t0)/1000;
+    const e=ease(Math.min(1,Math.max(0,(t-DL)/DUR))),vb=b0.map((v,i)=>v+(b1[i]-v)*e),s=Math.min(SW/vb[2],SH/vb[3]),sox=(SW-vb[2]*s)/2,soy=(SH-vb[3]*s)/2;
+    const X=p=>((p.x-vb[0])*s+sox)*dpr,Y=p=>((p.y-vb[1])*s+soy)*dpr,u=s*dpr;
+    x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,cv.width,cv.height);
+    if(img){const a=s/si*dpr;x.globalAlpha=1;x.imageSmoothingQuality='low';x.setTransform(a,0,0,a,((-iox/si+vx-vb[0])*s+sox)*dpr,((-ioy/si+vy-vb[1])*s+soy)*dpr);x.drawImage(img,0,0);x.setTransform(1,0,0,1,0,0);
+      x.fillStyle='rgba(6,10,14,.45)';x.fillRect(0,0,cv.width,cv.height)}
+    x.lineCap='round';const P1=new Path2D();for(const[A,B,d,du]of E){const k=Math.min(1,Math.max(0,(t-d)/du));if(k<=0)continue;P1.moveTo(X(A),Y(A));P1.lineTo(X(A)+(X(B)-X(A))*k,Y(A)+(Y(B)-Y(A))*k)}
+    x.strokeStyle=col;x.globalAlpha=.28;x.lineWidth=20*u;x.stroke(P1);x.globalAlpha=1;x.lineWidth=6*u;x.strokeStyle=hot;x.stroke(P1);
+    for(const[c,d]of C){const q=t-d;if(q<0)continue;
+      if(q<.9){const k=q/.9;x.globalAlpha=(1-k)*.9;x.strokeStyle=col;x.lineWidth=3*u;x.beginPath();x.arc(X(c),Y(c),18*u*(.4+2.8*k),0,6.2832);x.stroke()}
+      const k=Math.min(1,q/.45),sc=k<.6?.3+k/.6*1.05:1.35-(k-.6)/.4*.35;x.globalAlpha=Math.min(1,k*1.7);x.fillStyle='#fff';x.strokeStyle=col;x.lineWidth=5*u;x.beginPath();x.arc(X(c),Y(c),11*u*sc,0,6.2832);x.fill();x.stroke()}
+    const fe=t-DL-.3;if(fe>0&&fe<1){const k=fe,sc=k<.25?.2+k/.25*1.4:1.6-(k-.25)/.75*.6;x.globalAlpha=k<.25?k/.25:1-(k-.25)/.75;x.fillStyle='#fff';x.strokeStyle=col;x.lineWidth=10*u;x.beginPath();x.arc(X(F),Y(F),16*u*sc,0,6.2832);x.fill();x.stroke()}
+    x.globalAlpha=1;if((t<DL+DUR+.3||!img)&&!fin)requestAnimationFrame(draw)};
+  requestAnimationFrame(draw);
+  const go=()=>{if(fin)return;fin=true;requestAnimationFrame(draw);ov.classList.add('done');endShow();setTimeout(()=>{cv.remove()},700)};
+  const tm=window._vicTm=setTimeout(go,(DL+DUR)*1000+600);ov.addEventListener('click',()=>{clearTimeout(tm);ov.classList.add('skip');go()})}
 /* v163: Elektronenfluss auf eigenem Canvas (statt SVG-Animation, die die ganze Karte neu zeichnen ließ) */
 const FLOW={cv:null,edges:[],t:0,raf:0,spr:{},last:0};
 function flowSprite(c){if(FLOW.spr[c])return FLOW.spr[c];const k=document.createElement('canvas');k.width=k.height=32;const x=k.getContext('2d'),g=x.createRadialGradient(16,16,0,16,16,16);g.addColorStop(0,'#fff');g.addColorStop(.25,c);g.addColorStop(.6,c+'55');g.addColorStop(1,c+'00');x.fillStyle=g;x.fillRect(0,0,32,32);return FLOW.spr[c]=k}
@@ -3325,6 +3376,12 @@ function flowLoop(now){FLOW.raf=0;const b=document.getElementById('board'),m=doc
   else cv.style.display=busy?'none':'';
   FLOW.raf=requestAnimationFrame(flowLoop)}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)flowStart()});
+/* Überlagerungen als Klasse am <html> markieren (billiger als :has, das bei jeder DOM-Änderung neu geprüft wird) */
+(function(){const r=document.documentElement;let q=0;const sync=()=>{q=0;const sh=document.getElementById('sheet'),it=document.getElementById('intro'),v=!!document.getElementById('gmVic'),e=!!document.getElementById('gmEnd');
+  const dlg=v||e||(sh&&!sh.hidden&&!sh.classList.contains('dock'))||(it&&!it.hidden);r.classList.toggle('ov-dlg',!!dlg);r.classList.toggle('ov-vic',v)};
+  const mo=new MutationObserver(()=>{if(!q){q=1;queueMicrotask(sync)}});
+  const go=()=>{mo.observe(document.body,{childList:true});['sheet','intro'].forEach(id=>{const el=document.getElementById(id);if(el)mo.observe(el,{attributes:true,attributeFilter:['hidden','class']})});sync()};
+  if(document.body)go();else addEventListener('DOMContentLoaded',go)})();
 function endAuto(){if(S&&S.phase==='end'&&!S.endShown&&start.hidden){S.endShown=true;try{save()}catch(_){}setTimeout(()=>{if(S&&S.phase==='end')endVictory()},1100)}}
 function renderTop(){endAuto();flowStart();
   const phases=S.phase==='end'?'<span class="ph cur"><i>✓</i><em>Spielende</em></span>':PH.map((ph,i)=>`<span class="ph${S.phase===ph?' cur':''}${PH.indexOf(S.phase)>i?' past':''}"><i>${i+1}</i><em>${PS[ph]}</em></span>`).join('');
@@ -4206,12 +4263,12 @@ function heroMap(){
   const sel=UI.regions,rand=!sel.length,inA=c=>rand||sel.includes(CITY[c].reg);
   const[vx,vy,vw,vh]=MAPVB.split(' ').map(Number),ex=Math.max(vw,vh)*.12;
   const GP=HMGLOBE?hmGlobe([vx,vy,vw,vh]):null;HM.gp=GP;
-  if(HM.gck!==UI.map+MAPVB+!!GP){HM.gck=UI.map+MAPVB+!!GP;const co=coastOnly(GEO_LAND);HM.gc={cut:co.cut,coast:gPath(co.coast,GP),land:gPath(GEO_LAND,GP),riv:GEO_RIV.map(d=>gPath(d,GP)),terr:Object.fromEntries(Object.entries(TERR).map(([k,d])=>[k,gPath(d,GP)])),grat:GP?GP.grat():[],eq:GP?GP.eq:[]}}
+  if(HM.gck!==UI.map+MAPVB+!!GP){HM.gck=UI.map+MAPVB+!!GP;const co=coastOnly(GEO_LAND);HM.gc={cut:co.cut,coast:gPath(co.coast,GP),land:gPath(GEO_LAND,GP),riv:[],terr:Object.fromEntries(Object.entries(TERR).map(([k,d])=>[k,gPath(d,GP)])),grat:GP?GP.grat():[],eq:GP?GP.eq:[]}}
   const GC=HM.gc,pp=(x,y)=>GP?GP(x,y):[x,y];
   let globe='';if(GP&&GP.limb.length>2){const Lm=GP.limb,ld=Lm.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(''),ty=Math.min(...Lm.map(q=>q[1]));HM.lty=ty;
     globe=`<g mask="url(#hmSphM)"><path class="hm-sph" d="${ld}${GP.full?'':`L${(vx+vw*2.5).toFixed(0)} ${(vy+vh*2.5).toFixed(0)}L${(vx-vw*1.5).toFixed(0)} ${(vy+vh*2.5).toFixed(0)}`}Z" fill="url(#hmSph)"/>${GC.grat.map(d=>`<path class="hm-grat" d="${d}"/>`).join('')}${(GC.eq||[]).map(d=>`<path class="hm-eq" d="${d}"/>`).join('')}<path class="hm-limb2" d="${ld}"/><path class="hm-limb" d="${ld}"/></g>`}
   let g=`<defs><clipPath id="hmLandClip"><path d="${GC.land}"/></clipPath><linearGradient id="hmEdgeG" gradientUnits="userSpaceOnUse" x1="${vx-ex*.5}" y1="0" x2="${vx+vw+ex*.5}" y2="0"><stop offset="0" stop-color="#000"/><stop offset="${(ex*.5/(vw+ex)).toFixed(3)}" stop-color="#fff"/><stop offset="${(1-ex*.5/(vw+ex)).toFixed(3)}" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><mask id="hmEdge" maskUnits="userSpaceOnUse" x="${vx-vw}" y="${vy-vh}" width="${vw*3}" height="${vh*3}"><rect x="${vx-vw}" y="${vy-vh}" width="${vw*3}" height="${vh*3}" fill="url(#hmEdgeG)"/></mask><linearGradient id="hmSphG" x1="0" y1="${GP&&GP.south?1:0}" x2="0" y2="${GP&&GP.south?0:1}"><stop offset="0" stop-color="#fff"/><stop offset=".72" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><mask id="hmSphM" maskUnits="userSpaceOnUse" x="${vx-vw}" y="${vy-vh}" width="${vw*3}" height="${vh*2+ex}"><rect x="${vx-vw}" y="${vy-vh}" width="${vw*3}" height="${vh*2+ex}" fill="url(#hmSphG)"/></mask><linearGradient id="hmLandG" x1="0" y1="0" x2=".4" y2="1"><stop offset="0" stop-color="var(--hm-land0,#1d3346)"/><stop offset="1" stop-color="var(--hm-land1,#122230)"/></linearGradient><linearGradient id="hmSph" gradientUnits="userSpaceOnUse" x1="0" y1="${GP&&HM.lty!=null?HM.lty.toFixed(0):vy}" x2="0" y2="${(vy+vh*.9).toFixed(0)}"><stop offset="0" stop-color="var(--hm-sph2,#4f8fc4)" stop-opacity=".30"/><stop offset=".12" stop-color="var(--hm-sph1,#18324a)" stop-opacity=".22"/><stop offset="1" stop-color="var(--hm-sph0,#0d1720)" stop-opacity=".05"/></linearGradient><radialGradient id="hmG" cx="50%" cy="50%" r="50%"><stop offset="40%" stop-color="#fff"/><stop offset="88%" stop-color="#000"/></radialGradient><mask id="hmFade" maskUnits="userSpaceOnUse" x="${vx-ex}" y="${vy-ex}" width="${vw+2*ex}" height="${vh+2*ex}"><rect x="${vx-ex}" y="${vy-ex}" width="${vw+2*ex}" height="${vh+2*ex}" fill="url(#hmG)"/></mask></defs>${globe}<g mask="url(#hmEdge)"><path class="hm-land" d="${GC.land}"${GC.cut?' mask="url(#hmFade)"':''}/><path class="hm-coast" d="${GC.coast}"/><path class="hm-shore" d="${GC.coast}"/></g><g mask="url(#hmFade)">`;
-  g+=GC.riv.map(d=>`<path class="hm-riv" d="${d}"/>`).join('')+'</g>';
+  g+='</g>';
   g+='<g clip-path="url(#hmLandClip)">'+Object.entries(GC.terr).map(([k,d])=>`<path class="hm-terr${!rand&&sel.includes(k)?' on':''}" d="${d}" style="--rc:${REGIONS[k].col}" data-act="reg" data-r="${k}"/>`).join('')+'</g>';
   HM.fade={cx:vx+vw/2,cy:vy+vh/2,rx:vw/2+ex,ry:vh/2+ex};const G={n:{},adj:{},vb:[vx,vy,vw,vh]};
   EDGE_LIST.forEach(e=>{const a=CITY[e.a],b=CITY[e.b];const on=inA(e.a)&&inA(e.b);g+=GP?`<path class="hm-e${on?' on':''}" d="${gPath('M'+a.x+' '+a.y+'L'+b.x+' '+b.y,GP)}"/>`:`<line class="hm-e${on?' on':''}" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}"/>`;
@@ -5407,7 +5464,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v163';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v164';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
