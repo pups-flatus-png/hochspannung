@@ -2180,6 +2180,46 @@ html.ov-vic :is(#top,#board,#panel,#ticker){visibility:hidden}
 #start.v3:not(.wide) .s3-hero .hero-map{padding-top:108px}
 html:not([data-theme="light"]) #start.v3:not(.wide) .s3-brand{margin:0 4px;padding:10px 12px 12px;border-radius:18px;background:radial-gradient(ellipse 70% 80% at 50% 50%,rgba(10,16,22,.5),rgba(10,16,22,.25) 60%,transparent 100%)}
 [data-theme="light"] #start.v3:not(.wide) .s3-brand{margin:0 4px;padding:10px 12px 12px;border-radius:18px;background:radial-gradient(ellipse 70% 80% at 50% 50%,rgba(255,255,255,.45),transparent 100%)}
+/* v167: Statistik-Erzählung */
+#stats .sth{display:flex;align-items:flex-start;gap:12px;margin:28px 0 12px}
+#stats .sth-n{font:800 13px/1 'Orbitron',var(--display);color:var(--accent);padding-top:4px;text-shadow:0 0 10px rgba(242,179,61,.5)}
+#stats .sth h3{margin:0;font:800 clamp(14px,3.6vw,17px)/1.2 'Orbitron',var(--display);letter-spacing:.05em;text-transform:uppercase}
+html:not([data-theme="light"]) #stats .sth h3{background:linear-gradient(180deg,#fff,#ffd788);-webkit-background-clip:text;background-clip:text;color:transparent}
+#stats .sth p{margin:4px 0 0;font-size:13px;color:var(--muted)}
+.st-rec{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;padding:18px 20px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.012));border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 12px 30px rgba(0,0,0,.25)}
+.sr-ring{position:relative;width:118px;height:118px}
+.sr-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.sr-ring circle{fill:none;stroke-width:9}
+.sr-bg{stroke:rgba(255,255,255,.08)}
+.sr-fg{stroke:var(--accent);stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(242,179,61,.6))}
+.sr-ring>div{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.sr-ring b{font:800 24px/1 'Orbitron',var(--display)}
+.sr-ring small{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.sr-main{display:flex;flex-direction:column;gap:12px;min-width:0}
+.sr-big{font-size:15px;color:var(--muted)}.sr-big b{font:800 20px/1 'Orbitron',var(--display);color:var(--fg)}
+.sr-kv{display:flex;gap:22px;flex-wrap:wrap}.sr-kv span{display:flex;flex-direction:column;gap:3px}
+.sr-kv small,.sr-form small,.sr-life small{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.sr-kv b{font:800 17px/1 'Orbitron',var(--display)}
+.sr-form>div{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.sf{width:26px;height:26px;border-radius:50%;border:0;cursor:pointer;font:800 11px/1 'Orbitron',var(--display);display:grid;place-items:center}
+.sf.p1{background:var(--accent);color:#1a1206;box-shadow:0 0 10px rgba(242,179,61,.6)}
+.sf.p2{background:rgba(200,210,220,.85);color:#111}.sf.p3{background:rgba(205,140,90,.85);color:#111}.sf.p4{background:rgba(255,255,255,.12);color:var(--muted)}
+.sr-life{display:flex;flex-direction:column;gap:8px;padding-left:20px;border-left:1px solid var(--line)}
+.sr-life span{display:flex;flex-direction:column;font-size:12px;color:var(--muted)}.sr-life b{font:800 16px/1.1 'Orbitron',var(--display);color:var(--fg)}
+.hls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.hl{position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"ic t" "ic v" "s s";column-gap:12px;row-gap:2px;text-align:left;padding:14px;border-radius:16px;cursor:pointer;color:inherit;font:inherit;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.012));border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:border-color .2s,box-shadow .2s}
+.hl:hover{border-color:rgba(242,179,61,.55);box-shadow:0 0 22px rgba(242,179,61,.15),inset 0 1px 0 rgba(255,255,255,.06)}
+.hl-ic{grid-area:ic;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(242,179,61,.12);border:1px solid rgba(242,179,61,.35)}
+.hl-ic svg{width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.hl-t{grid-area:t;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);align-self:end;font-weight:600}
+.hl-v{grid-area:v;font:800 21px/1.1 'Orbitron',var(--display)}
+.hl-s{grid-area:s;font-size:11.5px;color:var(--muted);margin-top:6px}
+.st-more{margin-top:10px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+.st-more>summary{cursor:pointer;padding:12px 16px;font-size:13px;font-weight:600;color:var(--muted);list-style:none}
+.st-more>summary::before{content:'▸';margin-right:8px;color:var(--accent)}.st-more[open]>summary::before{content:'▾'}
+.st-more>.card{border:0;background:none;box-shadow:none}
+.st-more.in{margin:4px 0 0;background:none}.st-more.in>summary{padding:8px 4px}.st-more.in h4{display:none}
+@media (max-width:640px){.st-rec{grid-template-columns:auto 1fr;gap:16px;padding:16px}.sr-ring{width:96px;height:96px}.sr-ring b{font-size:20px}.sr-life{grid-column:1/-1;flex-direction:row;justify-content:space-between;padding:12px 0 0;border-left:0;border-top:1px solid var(--line)}.hls{grid-template-columns:1fr 1fr}.hl{padding:12px}.hl-v{font-size:17px}}
 .s3-ver{position:absolute;right:10px;bottom:6px;z-index:4;font:500 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;color:var(--ta9b6bf);opacity:.45;pointer-events:none}
 #start.v3.wide .s3-ver{right:24px;bottom:18px}
 .hero-map::after{content:'';position:absolute;inset:-10%;background:radial-gradient(closest-side,rgba(255,200,90,.32),rgba(242,179,61,.1) 55%,transparent);opacity:0;pointer-events:none;z-index:3}
@@ -5060,6 +5100,29 @@ document.addEventListener('change',e=>{
   if(e.target.id==='stDiff'){UI.statDiff=e.target.value;renderStats()}
   if(e.target.id==='stMap'){UI.statMap=e.target.value;renderStats()}
 });
+/* v167: Statistik-Übersicht als Erzählung – Bilanz, Höhepunkte, Erkenntnisse, Details */
+function stHead(n,de,en,sub){return `<header class="sth"><span class="sth-n">${n}</span><div><h3>${LX(de,en)}</h3>${sub?`<p>${sub}</p>`:''}</div></header>`}
+function stRecord(h){const me_=meOf,n=h.length,wins=h.filter(g=>me_(g).place===1).length,wr=Math.round(wins/n*100);
+  const last=h.slice(-10),tot=k=>h.reduce((s,g)=>s+(me_(g)[k]||0),0),pw=h.reduce((s,g)=>s+(me_(g).powered||0),0),plants=h.reduce((s,g)=>s+((me_(g).auc||[]).length),0);
+  const streak=(()=>{let c=0;for(let i=h.length-1;i>=0&&me_(h[i]).place===1;i--)c++;return c})();
+  return `<section class="st-rec"><div class="sr-ring" style="--p:${wr}"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="sr-bg"/><circle cx="60" cy="60" r="52" class="sr-fg" pathLength="100" style="stroke-dasharray:${wr} 100"/></svg><div><b>${wr} %</b><small>${LX('Siegquote','win rate')}</small></div></div>
+   <div class="sr-main"><div class="sr-big"><b>${wins}</b> ${LX('Siege aus','wins from')} <b>${n}</b> ${n===1?LX('Partie','game'):LX('Partien','games')}</div>
+    <div class="sr-kv"><span><small>${LX('Ø Platz','Avg place')}</small><b>${fmt1(avg(h.map(g=>me_(g).place)))}</b></span><span><small>${LX('Ø Zielerreichung','Avg goal reached')}</small><b>${Math.round(avg(h.map(g=>goalPct(g,me_(g)))))} %</b></span><span><small>${LX('Siegesserie','Win streak')}</small><b>${streak}</b></span></div>
+    <div class="sr-form"><small>${LX('Form · letzte','Form · last')} ${last.length}</small><div>${last.map(g=>{const pl=me_(g).place;return `<button type="button" class="sf p${Math.min(pl,4)}" data-act="statsSel" data-id="${g.id}" title="${LX('Platz','Place')} ${pl}">${pl}</button>`}).join('')}</div></div></div>
+   <div class="sr-life"><small>${LX('Insgesamt','All time')}</small><span><b>${fmt(tot('income'))} €</b>${LX('verdient','earned')}</span><span><b>${fmt(pw)}</b>${LX('Städte versorgt','cities powered')}</span><span><b>${fmt(plants)}</b>${LX('Kraftwerke gekauft','plants bought')}</span></div></section>`}
+function stHighlights(h){const me_=meOf,out=[];
+  const dt=g=>new Date(g.date).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})+' · '+esc(MAPS[g.map||'de'].name);
+  const best=(f,low,arr=h)=>{let b=null,bv=low?1e18:-1e18;arr.forEach(g=>{const v=f(g);if(v==null||!isFinite(v))return;if(low?v<bv:v>bv){bv=v;b=g}});return b?{g:b,v:bv}:null};
+  const add=(ic,de,en,r,val,sub)=>{if(r)out.push(`<button type="button" class="hl" data-act="statsSel" data-id="${r.g.id}"><span class="hl-ic"><svg viewBox="0 0 24 24">${EIC[ic]}</svg></span><span class="hl-t">${LX(de,en)}</span><b class="hl-v">${val(r.v)}</b><span class="hl-s">${sub?sub(r):''}${dt(r.g)}</span></button>`)};
+  add('coin','Meistes Geld verdient','Most money earned',best(g=>me_(g).income||0),v=>fmt(v)+' €',()=>LX('Einnahmen in einer Partie · ','income in one game · '));
+  add('bolt','Bester Zahltag','Best payday',best(g=>me_(g).maxInc||0),v=>fmt(v)+' €',()=>LX('in einer Runde · ','in a single round · '));
+  add('city','Meiste Städte versorgt','Most cities powered',best(g=>me_(g).powered||0),v=>fmt(v),r=>LX('Ziel ','goal ')+goalOf(r.g)+' · ');
+  add('coin','Höchster Kontostand','Richest finish',best(g=>me_(g).money||0),v=>fmt(v)+' €',()=>LX('am Spielende · ','at the end · '));
+  add('city','Größtes Netz','Biggest network',best(g=>me_(g).cities||0),v=>fmt(v),()=>LX('Städte gebaut · ','cities built · '));
+  const wins=h.filter(g=>me_(g).place===1);add('up','Schnellster Sieg','Fastest win',best(g=>g.rounds,true,wins),v=>v+' '+LX('Runden','rounds'),()=>'');
+  const auc=best(g=>Math.max(0,...(me_(g).auc||[]).map(a=>a.price)));if(auc&&auc.v>0){const a=(me_(auc.g).auc||[]).reduce((b,x)=>x.price>(b?b.price:-1)?x:b,null);add('bolt','Teuerstes Kraftwerk','Priciest plant',auc,v=>fmt(v)+' €',()=>LX('Nr. ','No. ')+PN(a.n)+' · ')}
+  add('tag','Günstigstes Netz','Thriftiest network',best(g=>{const m=me_(g),n=(m.built||[]).length;return n?((m.slot||0)+(m.conn||0))/n:null},true),v=>fmt(v)+' €',()=>LX('Ø je Stadt · ','avg per city · '));
+  return `<div class="hls">${out.join('')}</div>`}
 function statsTotal(h){
   const me_=meOf;
   const wins=h.filter(g=>me_(g).place===1);
@@ -5096,20 +5159,22 @@ function statsTotal(h){
   const st2=avg(h.filter(g=>g.step2).map(g=>g.step2)),st3=avg(h.filter(g=>g.step3).map(g=>g.step3));
   const hist=h.map((g,i)=>({g,i})).reverse().map(({g,i})=>{const m=me_(g);const dd=new Date(g.date);return `<button type="button" class="hrow" data-act="statsSel" data-id="${g.id}">${placeBadge(m.place)}<span class="hd"><b>#${i+1} · ${dd.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'})}</b><small>${dd.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})}</small></span><span class="hm">${m.powered} versorgt · ${m.cities} Städte · ${fmt(m.money)} €</span><span class="hx">${g.rounds} R · ${AI_NAME[g.diff]||g.diff} · ${g.n} Sp.</span></button>`}).join('');
   const goalNote=`<p class="hint goalnote">Zielerreichung: versorgte Städte am Ende geteilt durch das Spielziel der Partie (17 Städte bei 3 und 4 Spielern, 15 bei 5, 14 bei 6), damit Partien mit unterschiedlicher Spielerzahl vergleichbar sind.${goals.length===1?`<span> Alle diese Partien hatten das Ziel ${goals[0]}: Ø ${fmt1(avg(h.map(g=>me_(g).powered)))} versorgte Städte.</span>`:''}</p>`;
-  return `${lastBox(h)}${insightsCard(h,auAll)}<h3 class="lthead">Langfristig · ${h.length} ${h.length===1?'Partie':'Partien'}</h3><div class="tiles">${tiles.map(([k,v])=>`<div class="tile"><small>${k}</small><b>${v}</b></div>`).join('')}</div>${goalNote}
-  <h3 class="lthead">Brennstoff &amp; Strom</h3>
+  return `${lastBox(h)}
+  ${stHead('01','Deine Bilanz','Your record',LX('Wie oft du gewinnst und wie deine Form gerade ist.','How often you win and how your current form looks.'))}${stRecord(h)}
+  ${stHead('02','Höhepunkte','Highlights',LX('Deine besten Momente. Tippe eine Karte an, um die Partie zu sehen.','Your best moments. Tap a card to open that game.'))}${stHighlights(h)}
+  ${stHead('03','Was auffällt','What stands out',LX('Muster aus deinen Partien.','Patterns from your games.'))}${insightsCard(h,auAll)}${goalNote}
+  ${stHead('04','Brennstoff & Strom','Fuel & power',LX('Was dich Brennstoff kostet und womit du Strom erzeugst.','What fuel costs you and how you generate power.'))}
   ${fuelCard(h)}
   ${mixCard(h)}
-  ${prefCard(h,auAll,resTot)}
-  <h3 class="lthead">Auktion, Geld &amp; Gegner</h3>
+  <details class="st-more"><summary>${LX('Deine Vorlieben im Detail','Your preferences in detail')}</summary>${prefCard(h,auAll,resTot)}</details>
+  ${stHead('05','Auktion, Geld & Gegner','Auctions, money & opponents',LX('Wofür dein Geld ausgegeben wird und gegen wen du spielst.','Where your money goes and who you play against.'))}
   <div class="st-grid">
    <section class="card"><h3>Kraftwerke</h3><div class="kv2"><div><small>Gekauft</small><b>${auAll.length}</b><span class="kvx">Kraftwerke in ${h.length} ${h.length===1?'Partie':'Partien'}</span></div><div><small>Ø Aufpreis</small><b>+${fmt1(over||0)} €</b><span class="kvx">über dem Mindestgebot</span></div><div><small>Rabattkäufe</small><b>${discN}</b><span class="kvx">ab 1 € ersteigert</span></div><div><small>Lieblingstyp</small><b>${favT?favT.label:'–'}</b><span class="kvx">am häufigsten gekauft</span></div></div>${typeRows.length?`<div class="barcap"><span>Gekaufte Kraftwerke je Typ</span><span>Anzahl · Anteil</span></div>${bars(typeRows)}`:'<p class="hint">Noch keine Käufe.</p>'}<p class="hint">Der Aufpreis ist der Betrag über der Kraftwerksnummer, die das Mindestgebot ist. Rabattkäufe sind Kraftwerke, die du als kleinstes Kraftwerk ab 1 € bekommen hast; sie zählen nicht zum Aufpreis.</p></section>
    <section class="card"><h3>Wirtschaft je Partie</h3><p class="hint">Durchschnitt über alle Partien.</p>${bars([{label:'Einnahmen',v:E('inc'),color:'#58b86a',text:fmt(E('inc'))+' €'},{label:'Kraftwerke',v:E('pl'),text:fmt(E('pl'))+' €'},{label:'Rohstoffe',v:E('res'),text:fmt(E('res'))+' €'},{label:'Netz',v:E('net'),text:fmt(E('net'))+' €'}])}<p class="hint">Vom Netz gingen Ø ${fmt(E('slot'))} € in Stadtplätze und ${fmt(E('conn'))} € in Leitungen.</p></section>
    <section class="card"><h3>Nach KI-Stärke</h3><div class="st-table"><table><thead><tr><th>Stärke</th><th>Partien</th><th>Siege</th><th>Quote</th><th>Ø Ziel</th></tr></thead><tbody>${diffRows.map(r=>`<tr><td>${AI_NAME[r.d]}</td><td>${r.gs.length}</td><td>${r.w}</td><td>${r.gs.length?Math.round(r.w/r.gs.length*100)+' %':'–'}</td><td>${r.gs.length?Math.round(avg(r.gs.map(g=>goalPct(g,me_(g)))))+' %':'–'}</td></tr>`).join('')}</tbody></table></div>${rivalRows.length?`<h4>Wer dich am häufigsten schlägt</h4>${bars(rivalRows)}`:''}</section>
-   <section class="card"><h3>Rekorde</h3><dl class="recs">${rec.map(([k,v,g])=>`<div><dt>${k}</dt><dd>${v}</dd><button type="button" class="linkbtn" data-act="statsSel" data-id="${g.id}">Partie vom ${new Date(g.date).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})}</button></div>`).join('')}</dl></section>
   </div>
   <details class="card wide netd"><summary><h3>Netz &amp; Regionen</h3><span class="hint">Städte und Regionen, in denen du am häufigsten gebaut hast</span></summary><div class="netd-b"><h4>Am häufigsten gebaut</h4>${topCities.length?bars(topCities):'<p class="hint">Noch keine Städte gebaut.</p>'}<h4>Gespielte Regionen</h4>${bars(regRows)}${st2?`<p class="hint">Stufe 2 beginnt bei dir im Schnitt in Runde ${fmt1(st2)}${st3?', Stufe 3 in Runde '+fmt1(st3):''}.</p>`:''}</div></details>
-  <section class="card wide"><h3>Spielhistorie</h3><p class="hint">Tippe eine Partie an, um sie im Detail zu sehen.</p><div class="hist">${hist}</div></section>
+  ${stHead('06','Spielhistorie','Game history',LX('Alle Partien, die neueste zuerst.','All games, newest first.'))}<section class="card wide"><div class="hist">${hist}</div></section>
   <div class="st-foot">${UI.statReset?`<span>Alle ${loadHist().length} Partien löschen?</span><button type="button" class="btn" data-act="statsResetNo">Abbrechen</button><button type="button" class="btn danger" data-act="statsResetYes">Endgültig löschen</button>`:`<button type="button" class="btn" data-act="statsReset">Statistik zurücksetzen</button>`}</div>`;
 }
 
@@ -5139,7 +5204,7 @@ function insightsCard(h,auAll){
   if(!out.length)return '';
   const IC={fuel:'r-oil',city:'i-house',eco:'b-eco',mix:'b-coal',coin:'r-coal',stock:'r-garbage',win:'i-house',bid:'b-oil'};
   const top=out.sort((a,b)=>b.s-a.s).slice(0,6);
-  return `<section class="insights"><h3 class="lthead">Auf einen Blick · ${h.length} ${h.length===1?'Partie':'Partien'}</h3><div class="ins-grid">${top.map(x=>`<div class="ins${x.good===true?' good':x.good===false?' bad':''}"><b>${x.big}</b><span>${x.t}</span></div>`).join('')}</div></section>`;
+  return `<section class="insights"><div class="ins-grid">${top.map(x=>`<div class="ins${x.good===true?' good':x.good===false?' bad':''}"><b>${x.big}</b><span>${x.t}</span></div>`).join('')}</div></section>`;
 }
 function mixCard(h){
   const M=powMix(h),RL=TLAB();
@@ -5151,7 +5216,7 @@ function mixCard(h){
   const free=M.tot?Math.round(((M.t.eco||0)+(M.t.fusion||0))/M.tot*100):0;
   const rows=RES.filter(k=>bought[k]).map(k=>{const b=bought[k],u=burned[k]||0,eff=b?Math.min(100,Math.round(u/b*100)):0;return `<tr><td>${resIcon(k)} ${RL[k]}</td><td>${fmt(b)}</td><td>${hasBurn?fmt(u):'–'}</td><td>${hasBurn?`<span class="effbar"><i style="width:${eff}%;background:${TCOL[k]}"></i></span>${eff} %`:'–'}</td></tr>`}).join('');
   return `<section class="card wide mix"><h3>Dein Strommix</h3>${M.tot?`<p class="hint">${LX(`Welche Kraftwerkstypen deine Städte versorgt haben, über alle Partien. ${fmt(M.tot)} versorgte Städte, davon ${free} % ohne Brennstoff.`,`Which plant types powered your cities, across all games. ${fmt(M.tot)} cities powered, ${free} % of them without fuel.`)}</p><div class="mixbar big">${seg}</div><div class="mixleg">${leg}</div>`:''}
-  ${rows?`<h4>Gekauft und verbrannt</h4><div class="st-table"><table><thead><tr><th>Rohstoff</th><th>Gekauft</th><th>Verbrannt</th><th>Genutzt</th></tr></thead><tbody>${rows}</tbody></table></div><p class="hint">Genutzt: Anteil der gekauften Einheiten, die du tatsächlich für Strom verbrannt hast. Der Rest lag bei Spielende ungenutzt im Lager.</p>`:''}</section>`;
+  ${rows?`<details class="st-more in"><summary>${LX('Gekauft und verbrannt','Bought and burned')}</summary><h4>Gekauft und verbrannt</h4><div class="st-table"><table><thead><tr><th>Rohstoff</th><th>Gekauft</th><th>Verbrannt</th><th>Genutzt</th></tr></thead><tbody>${rows}</tbody></table></div></details><p class="hint">Genutzt: Anteil der gekauften Einheiten, die du tatsächlich für Strom verbrannt hast. Der Rest lag bei Spielende ungenutzt im Lager.</p>`:''}</section>`;
 }
 function fuelCard(h){
   const me_=g=>g.players.find(p=>p.human)||g.players[0];
@@ -5168,7 +5233,7 @@ function fuelCard(h){
   const perRes=RES.map(k=>{let mc=0,mu=0,oc=0,ou=0;h.forEach(g=>{const m=me_(g);g.players.forEach(p=>{const x=(p.res||{})[k]||[0,0];if(p===m){mu+=x[0];mc+=x[1]}else{ou+=x[0];oc+=x[1]}})});return{k,m:mu?mc/mu:null,o:ou?oc/ou:null,mu}}).filter(x=>x.mu||x.o!=null);
   return `<section class="card wide fuel"><h3>Brennstoffkosten</h3><p class="hint">Was dich Kohle, Öl, Müll/Gas und Uran im Schnitt kosten, verglichen mit deinen Gegnern.</p>
   <div class="fuelk"><div><small>Je Einheit</small><b>${mU==null?'–':fmt1(mU)+' €'}</b>${cmp(mU,oU)}${trd(lU,pU)}</div><div><small>Je versorgter Stadt</small><b>${mC==null?'–':fmt1(mC)+' €'}</b>${cmp(mC,oC)}${trd(lC,pC)}</div><div><small>Je Runde</small><b>${fmt1(mR)} €</b></div><div><small>Anteil an Einnahmen</small><b>${isNaN(mI)?'–':Math.round(mI)+' %'}</b></div></div>
-  <div class="st-table"><table><thead><tr><th>Rohstoff</th><th>Du Ø je Einheit</th><th>Gegner Ø</th><th>Unterschied</th><th>in %</th></tr></thead><tbody>${perRes.map(x=>{const d=x.m!=null&&x.o!=null?x.m-x.o:null;return `<tr><td>${resIcon(x.k)} ${x.k==='garbage'?'Müll/Gas':RNAME[x.k]}</td><td>${x.m==null?'–':fmt1(x.m)+' €'}</td><td>${x.o==null?'–':fmt1(x.o)+' €'}</td><td class="${d==null?'':d<-0.05?'up':d>0.05?'down':''}">${d==null?'–':(d>0?'+':'')+fmt1(d)+' €'}</td><td class="${d==null?'':d<-0.05?'up':d>0.05?'down':''}">${pcs(pc(x.m,x.o))}</td></tr>`}).join('')}</tbody></table></div>
+  <details class="st-more in"><summary>${LX('Tabelle je Rohstoff','Table by resource')}</summary><div class="st-table"><table><thead><tr><th>Rohstoff</th><th>Du Ø je Einheit</th><th>Gegner Ø</th><th>Unterschied</th><th>in %</th></tr></thead><tbody>${perRes.map(x=>{const d=x.m!=null&&x.o!=null?x.m-x.o:null;return `<tr><td>${resIcon(x.k)} ${x.k==='garbage'?'Müll/Gas':RNAME[x.k]}</td><td>${x.m==null?'–':fmt1(x.m)+' €'}</td><td>${x.o==null?'–':fmt1(x.o)+' €'}</td><td class="${d==null?'':d<-0.05?'up':d>0.05?'down':''}">${d==null?'–':(d>0?'+':'')+fmt1(d)+' €'}</td><td class="${d==null?'':d<-0.05?'up':d>0.05?'down':''}">${pcs(pc(x.m,x.o))}</td></tr>`}).join('')}</tbody></table></div></details>
   <p class="hint">Grün: du kaufst günstiger ein als deine Gegner. Je versorgter Stadt zählt alle Rohstoffkäufe geteilt durch alle Städte, die du über die Partie versorgt hast.</p></section>`;
 }
 function lastBox(h){
@@ -5471,7 +5536,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v166';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v167';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
