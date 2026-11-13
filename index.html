@@ -3205,7 +3205,7 @@ function endAwards(){const st=S.stats;if(!st||!st.pl)return[];const n=S.players.
   const gr=pls.map(x=>{const t=x.powT||{},all=Object.values(t).reduce((a,b)=>a+b,0);return all?((t.eco||0)+(t.fusion||0))/all:null});
   const g=best(gr);if(g&&g.v>0)A.push({k:'green',ic:'leaf',t:LX('Grüner Strom','Green power'),i:g.i,val:Math.round(g.v*100)+' %',sub:LX('Strom aus Öko & Fusion','power from eco & fusion'),m:g.m});
   add('thrift','tag','Sparfuchs','Thrifty builder',best(pls.map(x=>(x.built||[]).length?((x.slot||0)+(x.conn||0))/x.built.length:null),true),v=>Math.round(v)+' €','pro Stadt im Schnitt','average per city');
-  const se=st.series||[];if(se.length>3){const mid=se[Math.floor(se.length*.6)],rk=a=>{const o=a.map((v,i)=>[v,i]).sort((x,y)=>y[0]-x[0]);const r=[];o.forEach(([v,i],k)=>r[i]=k);return r};const r0=rk(mid.c),r1=[];S.ranking.forEach((id,k)=>r1[id]=k);
+  add('payday','coin','Zahltag','Best payday',best(pls.map(x=>x.maxInc||0)),v=>v+' €','höchste Einnahme in einer Runde','highest income in one round');
     const c=best(S.players.map((_,i)=>r0[i]-r1[i]));if(c&&c.v>0)A.push({k:'comeback',ic:'up',t:LX('Aufholjagd','Comeback'),i:c.i,val:'+'+c.v,sub:LX('Plätze gutgemacht','places gained'),m:c.m+.2})}
   A.sort((a,b)=>b.m-a.m);const out=[],got={};
   for(const pid of S.ranking){const a=A.find(x=>x.i===pid&&!out.includes(x));if(a){out.push(a);got[pid]=1}}
@@ -5316,7 +5316,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v158';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v159';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
