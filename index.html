@@ -2138,6 +2138,27 @@ html:not([data-theme="light"]) #top{background:linear-gradient(180deg,rgba(10,15
 [data-theme="light"] #gmEnd{background:rgba(245,238,224,.8)}
 [data-theme="light"] #gmEnd .eb-v,[data-theme="light"] #gmEnd .eb-n,[data-theme="light"] #gmEnd .ea-v,[data-theme="light"] #gmEnd .ea-p{color:#1f1a12}
 [data-theme="light"] #gmEnd .ea,[data-theme="light"] #gmEnd .ec,[data-theme="light"] #gmEnd .eb-tr{background:rgba(255,255,255,.7);border-color:rgba(0,0,0,.08)}
+/* v161: Siegesflug */
+#gmVic{position:fixed;inset:0;z-index:59;background:radial-gradient(120% 90% at 50% 45%,#0f1b25 0%,#0a1117 60%,#05080b 100%);animation:geIn .35s ease-out both}
+#gmVic svg.vic{position:absolute;inset:0;width:100%;height:100%;transition:filter .9s ease,opacity .9s ease}
+#gmVic.done svg.vic{filter:blur(3px) brightness(.8)}
+#gmVic svg.vic line.edge,#gmVic svg.vic .city,#gmVic svg.vic .clabel,#gmVic svg.vic text{opacity:.35}
+#gmVic .vg{pointer-events:none}
+#gmVic .ve{stroke:var(--wc);stroke-width:7;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 6px var(--wc)) drop-shadow(0 0 14px var(--wc));animation-name:veDraw;animation-timing-function:linear;animation-fill-mode:forwards}
+@keyframes veDraw{to{stroke-dashoffset:0}}
+#gmVic .vc{fill:#fff;stroke:var(--wc);stroke-width:4;opacity:0;filter:drop-shadow(0 0 8px var(--wc));animation:vcOn .45s ease-out forwards}
+@keyframes vcOn{0%{opacity:0;transform:scale(.3)}60%{opacity:1;transform:scale(1.35)}100%{opacity:1;transform:scale(1)}}
+#gmVic .vc,#gmVic .vr{transform-box:fill-box;transform-origin:center}
+#gmVic .vr{fill:none;stroke:var(--wc);stroke-width:3;opacity:0;animation:vrRing .9s ease-out forwards}
+@keyframes vrRing{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(3.2)}}
+#gmVic .vs{fill:#fff;transform-box:fill-box;transform-origin:center;filter:drop-shadow(0 0 12px #fff) drop-shadow(0 0 30px var(--wc));animation:vsFlash 1s ease-out .3s both}
+@keyframes vsFlash{0%{opacity:0;transform:scale(.2)}25%{opacity:1;transform:scale(1.6)}100%{opacity:0;transform:scale(1)}}
+.gv-cap{position:absolute;left:50%;bottom:max(28px,calc(env(safe-area-inset-bottom,0px) + 18px));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;padding:12px 22px;border-radius:16px;background:rgba(10,15,20,.6);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid color-mix(in srgb,var(--pc) 45%,transparent);box-shadow:0 0 30px color-mix(in srgb,var(--pc) 25%,transparent);animation:geUp .6s ease-out 1.6s both;white-space:nowrap;max-width:calc(100% - 32px)}
+.gv-cap span{font:600 10.5px/1 var(--display);letter-spacing:.3em;text-transform:uppercase;color:#93a3ae}
+.gv-cap b{font:800 clamp(18px,5vw,28px)/1.1 'Orbitron',var(--display);color:#fff;text-shadow:0 0 14px var(--pc)}
+.gv-cap em{font-style:normal;font-size:12px;color:#a9b6bf}
+#gmVic.done .gv-cap{opacity:0;transition:opacity .4s}
+#gmVic.skip *{animation-delay:0s!important;animation-duration:.01s!important}
 .s3-ver{position:absolute;right:10px;bottom:6px;z-index:4;font:500 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;color:var(--ta9b6bf);opacity:.45;pointer-events:none}
 #start.v3.wide .s3-ver{right:24px;bottom:18px}
 .hero-map::after{content:'';position:absolute;inset:-10%;background:radial-gradient(closest-side,rgba(255,200,90,.32),rgba(242,179,61,.1) 55%,transparent);opacity:0;pointer-events:none;z-index:3}
@@ -3232,8 +3253,30 @@ function endShow(){if(!S)return;let o=document.getElementById('gmEnd');if(o)o.re
   const tick=now=>{if(!o.isConnected)return;let more=false;for(const e of nums){const d=+e.dataset.d*1000,du=+e.dataset.dur*1000,to=+e.dataset.to;let k=o.classList.contains('skip')?1:Math.min(1,Math.max(0,(now-t0-d)/du));if(k<1)more=true;e.textContent=Math.round(to*(1-Math.pow(1-k,4)))}if(more)requestAnimationFrame(tick)};requestAnimationFrame(tick);
   setTimeout(()=>{if(o.isConnected&&!red&&W!=null){const b=o.querySelector('.eb.win');if(b)b.classList.add('flash')}},1450);
   o.addEventListener('click',e=>{const b=e.target.closest('[data-ge]');if(!b){o.classList.add('skip');return}const a=b.dataset.ge;
-    if(a==='close'){o.remove();return}if(a==='stats'){o.remove();A.stats&&A.stats();return}if(a==='new'){o.remove();UI.sheet='newgame';renderSheet();render()}})}
-function endAuto(){if(S&&S.phase==='end'&&!S.endShown&&start.hidden){S.endShown=true;try{save()}catch(_){}setTimeout(()=>{if(S&&S.phase==='end')endShow()},1100)}}
+    const vv=()=>document.getElementById('gmVic')?.remove();if(a==='close'){o.remove();vv();return}if(a==='stats'){o.remove();vv();A.stats&&A.stats();return}if(a==='new'){o.remove();vv();UI.sheet='newgame';renderSheet();render()}})}
+/* v161: Siegesflug – Kamera startet an der ersten Stadt des Siegers und zoomt heraus, während sein Netz aufleuchtet */
+function endVictory(){if(!S||!S.ranking)return endShow();const W=S.ranking[0],wp=P(W),own=wp.cities||[];const src=document.getElementById('map');
+  if(hmReduced()||!own.length||!src){endShow();return}
+  document.getElementById('gmVic')?.remove();const ov=document.createElement('div');ov.id='gmVic';ov.setAttribute('aria-hidden','true');
+  clearTimeout(window._vicTm);const cl=src.cloneNode(true);cl.setAttribute('preserveAspectRatio','xMidYMid meet');cl.classList.add('vic');ov.appendChild(cl);
+  const first=own[0],F=CITY[first],[vx,vy,vw,vh]=MAPVB.split(' ').map(Number);
+  const D={[first]:0},Q=[first],done={};const adj={};EDGE_LIST.forEach(e=>{(adj[e.a]??=[]).push([e.b,e.c||1]);(adj[e.b]??=[]).push([e.a,e.c||1])});
+  while(Q.length){Q.sort((a,b)=>D[a]-D[b]);const u=Q.shift();if(done[u])continue;done[u]=1;for(const[v,c]of adj[u]||[]){const w=Math.hypot(CITY[u].x-CITY[v].x,CITY[u].y-CITY[v].y)*(own.includes(v)?1:1.6);if(D[v]==null||D[u]+w<D[v]){D[v]=D[u]+w;Q.push(v)}}}
+  const mx=Math.max(1,...own.map(c=>D[c]??0)),T0=.45,TS=2.3,dl=c=>(T0+(D[c]??mx)/mx*TS).toFixed(2);
+  const isOwn=c=>own.includes(c);let g='<g class="vg">';
+  EDGE_LIST.forEach(e=>{if(!isOwn(e.a)||!isOwn(e.b))return;const[a,b]=(D[e.a]??0)<=(D[e.b]??0)?[e.a,e.b]:[e.b,e.a];const A=CITY[a],B=CITY[b];
+    g+=`<line class="ve" pathLength="1" x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" style="animation-delay:${dl(a)}s;animation-duration:${Math.max(.25,((D[b]??0)-(D[a]??0))/mx*TS).toFixed(2)}s"/>`});
+  own.forEach(c=>{const C=CITY[c];g+=`<circle class="vr" cx="${C.x}" cy="${C.y}" r="18" style="animation-delay:${dl(c)}s"/><circle class="vc" cx="${C.x}" cy="${C.y}" r="11" style="animation-delay:${dl(c)}s"/>`});
+  g+=`<circle class="vs" cx="${F.x}" cy="${F.y}" r="16"/></g>`;cl.insertAdjacentHTML('beforeend',g);cl.style.setProperty('--wc',wp.color);
+  ov.insertAdjacentHTML('beforeend',`<div class="gv-cap" style="--pc:${wp.color}"><span>${LX('Das Netz des Siegers','The winning grid')}</span><b>${esc(wp.name)}</b><em>${cityCount(wp)} ${LX('Städte','cities')} · ${LX('erste Stadt','first city')}: ${esc(CITY[first].name||first)}</em></div>`);
+  document.body.appendChild(ov);
+  const z=Math.max(vw,vh)*.16,b0=[F.x-z*(vw/Math.max(vw,vh)),F.y-z*(vh/Math.max(vw,vh)),2*z*(vw/Math.max(vw,vh)),2*z*(vh/Math.max(vw,vh))],b1=[vx,vy,vw,vh],t0=performance.now(),DUR=3000,DL=350;
+  const ease=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;let fin=false;window._vicFin&&window._vicFin();window._vicFin=()=>{fin=true};
+  const step=now=>{if(!ov.isConnected)return;const k=Math.min(1,Math.max(0,(now-t0-DL)/DUR)),e=ease(k);cl.setAttribute('viewBox',b0.map((v,i)=>(v+(b1[i]-v)*e).toFixed(1)).join(' '));if(k<1&&!fin)requestAnimationFrame(step)};
+  cl.setAttribute('viewBox',b0.join(' '));requestAnimationFrame(step);
+  const go=()=>{if(fin)return;fin=true;cl.setAttribute('viewBox',b1.join(' '));ov.classList.add('done');endShow()};
+  const tm=window._vicTm=setTimeout(go,DL+DUR+600);ov.addEventListener('click',()=>{clearTimeout(tm);ov.classList.add('skip');go()})}
+function endAuto(){if(S&&S.phase==='end'&&!S.endShown&&start.hidden){S.endShown=true;try{save()}catch(_){}setTimeout(()=>{if(S&&S.phase==='end')endVictory()},1100)}}
 function renderTop(){endAuto();
   const phases=S.phase==='end'?'<span class="ph cur"><i>✓</i><em>Spielende</em></span>':PH.map((ph,i)=>`<span class="ph${S.phase===ph?' cur':''}${PH.indexOf(S.phase)>i?' past':''}"><i>${i+1}</i><em>${PS[ph]}</em></span>`).join('');
   const m=me();const rank=S.order.indexOf(H)+1;const fin=S.phase==='end'&&S.ranking?S.ranking.indexOf(H)+1:0;
@@ -5315,7 +5358,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v160';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v161';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
