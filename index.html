@@ -3132,6 +3132,11 @@ html #app.pl2 #top:has(.undo) #pl2rd b{font-size:clamp(13px,4vw,16px)}
 /* ---- v199: Karte gestochen scharf (Safari) ---- */
 #map{shape-rendering:geometricPrecision;text-rendering:geometricPrecision}
 #map .city,#map .city *{will-change:auto}
+
+/* ---- v200: Ranglisten-Sync ---- */
+.sync-box{display:flex;align-items:baseline;gap:10px;padding:14px 16px;border-radius:14px;border:1px solid rgba(242,179,61,.4);background:linear-gradient(180deg,rgba(242,179,61,.1),rgba(242,179,61,.02));margin:4px 0 12px}
+.sync-box b{font:800 30px/1 'Orbitron',var(--display);color:#ffd36e}
+.sync-box span{font-size:14px;color:var(--fg)}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -5154,6 +5159,13 @@ ${S&&(S.promos||[]).length?`<div class="rdiff ig"><div class="rd-h"><div><span c
     h=head('Neues Spiel?')+`<p class="hint">Das laufende Spiel wird beendet.</p><div class="row"><button type="button" class="btn" data-act="close">Abbrechen</button><button type="button" class="btn pri grow" data-act="newyes">Neues Spiel einrichten</button></div>`;
   }else if(UI.sheet==='quit'){
     h=head('Partie beenden?')+`<p class="hint">Die laufende Partie wird abgebrochen und gelöscht. Sie zählt nicht in der Statistik.</p><div class="row"><button type="button" class="btn" data-act="close">Weiterspielen</button><button type="button" class="btn pri grow danger" data-act="quityes">Partie beenden</button></div>`;
+  }else if(UI.sheet==='import'&&UI.impMulti){
+    const m=UI.impMulti,n=m.rs.length;h=head(LX('Rangliste synchronisieren','Sync leaderboard'));
+    h+=`<div class="sync-box"><b>${n}</b><span>${LX(n===1?'Partie aus der App':'Partien aus der App',n===1?'game from the app':'games from the app')}</span></div>`;
+    if(!LB.db)h+=`<p class="hint">${LX('Öffne diesen Link in der claude.ai-Version von Grid Master, dann werden die Partien automatisch eingetragen.','Open this link in the claude.ai version of Grid Master and the games are added automatically.')}</p>`;
+    else if(m.status==='denied')h+=`<p class="warn">${LX('Du kannst in dieser Rangliste nichts eintragen.','You can’t add entries to this leaderboard.')}</p>`;
+    else if(m.status!=='done')h+=`<p class="hint">${LX('Wird eingetragen …','Adding …')}</p>`;
+    else h+=`<p class="hint lbok">✓ ${LX(`${m.ok} neu eingetragen`,`${m.ok} added`)}${m.dup?LX(` · ${m.dup} waren schon drin`,` · ${m.dup} already there`):''}${m.bad?LX(` · ${m.bad} fehlgeschlagen`,` · ${m.bad} failed`):''}</p><button type="button" class="btn pri" data-act="close">${LX('Fertig','Done')}</button>`;
   }else if(UI.sheet==='import'){
     const im=UI.imp||{};const r=im.r;
     h=head('Ergebnis übernehmen');
@@ -6510,7 +6522,7 @@ async function lbSubmit(r,src){
   catch(e){if(e&&e.code==='invalid_argument'){LB.canWrite=false;return 'denied'}if(e&&e.code==='quota_exceeded')return 'full';return 'error'}
 }
 const LB_MSG={ok:'In der Rangliste eingetragen.',denied:'Du kannst in dieser Rangliste nichts eintragen. Schick dein Ergebnis stattdessen per Link.',full:'Die Rangliste ist voll. Lösche alte Einträge.',error:'Eintragen hat nicht geklappt. Versuch es gleich noch einmal.',bad:'Dieser Code ist ungültig oder beschädigt.',name:'Gib zuerst einen Namen für die Rangliste ein.'};
-function refreshLB(){if(!$('#stats').hidden&&UI.statView==='board')renderStats();if(UI.sheet==='results'||UI.sheet==='import')renderSheet()}
+function refreshLB(){runMultiImport();if(!$('#stats').hidden&&UI.statView==='board')renderStats();if(UI.sheet==='results'||UI.sheet==='import')renderSheet()}
 function shareLink(r){return BOARD_URL+'#r-'+encodeResult(r)}
 async function shareResult(r,btn){
   const h=lbHuman(r);const url=shareLink(r);
@@ -6518,8 +6530,19 @@ async function shareResult(r,btn){
   if(navigator.share){try{await navigator.share({title:'Grid Master',text,url});UI.lbMsg='Geteilt.';return}catch(e){if(e&&e.name==='AbortError')return}}
   try{await navigator.clipboard.writeText(text+' '+url);UI.lbMsg='Link kopiert. Schick ihn an die Person, die die Rangliste führt.'}catch(_){UI.lbMsg='';UI.lbLink=url}
 }
+/* v200: Ein-Tipp-Synchronisierung – App sammelt, claude.ai trägt alle auf einmal ein */
+function lbSynced(){try{return new Set(JSON.parse(localStorage.getItem('gm-lb-synced')||'[]'))}catch(_){return new Set()}}
+function lbMarkSynced(ids){try{const s=lbSynced();ids.forEach(i=>s.add(String(i)));localStorage.setItem('gm-lb-synced',JSON.stringify([...s].slice(-800)))}catch(_){}}
+function lbPending(nm){const sy=lbSynced();return loadHist().filter(g=>g&&g.players&&g.players.some(p=>p.human)&&!sy.has(String(g.id))).map(g=>[g.id,recToResult(g,nm)]).filter(x=>x[1]).slice(-25)}
+function runMultiImport(){const m=UI.impMulti;if(!m||m.status!=='wait'||!LB.db||LB.status!=='ok')return;
+  if(LB.canWrite===false){m.status='denied';renderSheet();return}
+  m.status='busy';(async()=>{const ids=new Set((LB.docs||[]).map(d=>d.id));let ok=0,dup=0,bad=0;
+    for(const r of m.rs){if(ids.has(r.id)){dup++;continue}const st=await lbSubmit(r,'sync');if(st==='ok'){ok++;ids.add(r.id)}else{bad++;if(st==='denied')break}}
+    m.ok=ok;m.dup=dup;m.bad=bad;m.status='done';try{history.replaceState(null,'',location.pathname+location.search)}catch(_){}renderSheet();if(!$('#stats').hidden)renderStats()})()}
 function checkHashImport(){
-  const h=location.hash||'';if(!h.startsWith('#r-'))return;
+  const h=location.hash||'';
+  if(h.startsWith('#rs-')){const rs=h.slice(4).split('.').map(decodeResult);UI.impMulti={rs:rs.filter(Boolean),badN:rs.filter(x=>!x).length,status:'wait'};UI.sheet='import';renderSheet();runMultiImport();return}
+  if(!h.startsWith('#r-'))return;
   const r=decodeResult(h.slice(3));UI.imp={r,status:r?'ready':'bad'};UI.sheet='import';renderSheet();
 }
 window.addEventListener('hashchange',checkHashImport);
@@ -6539,7 +6562,7 @@ function lbBoxHTML(rec){
   const writer=LB.db&&LB.canWrite!==false;
   let h=`<div class="lbbox"><h3>Gemeinsame Rangliste</h3><label class="lbname" for="lbn">Dein Name in der Rangliste<input id="lbn" maxlength="24" value="${esc(nm)}" placeholder="z. B. Vorname"></label>`;
   if(writer){h+=`<button type="button" class="btn pri" data-act="lbSubmitLast" data-id="${esc(rec.id)}">${UI.lbDone===rec.id?'Erneut eintragen':'In Rangliste eintragen'}</button>`;if(UI.lbDone===rec.id)h+=`<p class="hint lbok">✓ Diese Partie steht in der Rangliste.</p>`}
-  else if(!LB.db)h+=`<ol class="lbsteps"><li>Gib oben deinen Namen ein.</li><li>Tippe auf „Auf claude.ai eintragen“. Hochspannung öffnet sich auf claude.ai, der Ergebnis-Link wird zusätzlich kopiert.</li><li>Tippe dort auf „In Rangliste eintragen“. Kommt kein Fenster, öffne dort Statistik → Gemeinsame Rangliste und füge den Link bei „Ergebnis eintragen“ ein.</li></ol><button type="button" class="btn pri" data-act="lbOpen" data-id="${esc(rec.id)}">Auf claude.ai eintragen</button><button type="button" class="btn" data-act="lbShare" data-id="${esc(rec.id)}">Link an jemand anderen senden</button><p class="hint">Freunde, die die Rangliste nur ansehen dürfen, schicken dir ihren Link. Du trägst ihn genauso ein.</p>`;
+  else if(!LB.db){const pend=lbPending(nm||'x').length;h+=pend?`<button type="button" class="btn pri" data-act="lbSync">${LX(`Rangliste synchronisieren (${pend})`,`Sync leaderboard (${pend})`)}</button><p class="hint">${LX('Öffnet Grid Master auf claude.ai und trägt alle neuen Partien von diesem Gerät auf einmal ein.','Opens Grid Master on claude.ai and adds all new games from this device at once.')}</p>`:`<p class="hint lbok">✓ ${LX('Alle Partien von diesem Gerät sind übertragen.','All games from this device have been sent.')}</p><button type="button" class="btn ghost" data-act="lbResync">${LX('Alle erneut senden','Send all again')}</button>`}
   else h+=`<button type="button" class="btn pri" data-act="lbShare" data-id="${esc(rec.id)}">Ergebnis senden</button><p class="hint">Schick den Link an die Person, die die Rangliste führt. Sie trägt dein Ergebnis mit einem Tipp ein.</p>`;
   if(UI.lbMsg)h+=`<p class="hint lbmsg">${esc(UI.lbMsg)}</p>`;
   if(UI.lbLink)h+=`<input class="lblink" readonly value="${esc(UI.lbLink)}" aria-label="Link zum Ergebnis">`;
@@ -6549,7 +6572,7 @@ function statsBoard(){
   const local=filtHist();
   if(!LB.db){
     const last=local[local.length-1];
-    return `<section class="card wide"><h3>Gemeinsame Rangliste</h3><p class="hint">Die gemeinsame Rangliste liegt in der claude.ai-Version von Hochspannung. Diese App hat keinen Zugriff darauf, deshalb überträgst du jedes Ergebnis per Link.</p>${last?lbBoxHTML(last):'<p class="hint">Beende eine Partie, dann kannst du sie senden.</p>'}</section>`;
+    return `<section class="card wide"><h3>Gemeinsame Rangliste</h3><p class="hint">${LX('Die gemeinsame Rangliste liegt in der claude.ai-Version von Grid Master. Mit einem Tipp überträgst du alle neuen Partien von diesem Gerät dorthin.','The shared leaderboard lives in the claude.ai version of Grid Master. One tap sends all new games from this device there.')}</p>${last?lbBoxHTML(last):'<p class="hint">Beende eine Partie, dann kannst du sie senden.</p>'}</section>`;
   }
   if(LB.status==='loading')return `<section class="card wide"><h3>Gemeinsame Rangliste</h3><p class="hint">Rangliste wird geladen …</p></section>`;
   if(LB.status!=='ok')return `<section class="card wide"><h3>Gemeinsame Rangliste</h3><p class="hint">Die Rangliste ist gerade nicht erreichbar. Öffne die Statistik später noch einmal.</p></section>`;
@@ -6587,7 +6610,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v199';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v200';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -6972,11 +6995,13 @@ const A={
   cPoint:b=>{UI.cSel=UI.cSel===b.dataset.id?null:b.dataset.id;renderStats();return'skip'},
   boardView:()=>{UI.statView='board';renderStats();return'skip'},
   lbSubmitLast:b=>{const nm=($('#lbn')?.value||'').trim();if(isDefaultName(nm)){UI.lbMsg=LB_MSG.name;renderSheet();if(!$('#stats').hidden)renderStats();return'skip'}setLbName(nm);const g=loadHist().find(x=>String(x.id)===b.dataset.id);const r=g&&recToResult(g,nm);lbSubmit(r,'app').then(st=>{UI.lbMsg=LB_MSG[st]||'';if(st==='ok')UI.lbDone=b.dataset.id;renderSheet();if(!$('#stats').hidden)renderStats()});return'skip'},
+  lbSync:()=>{const nm=($('#lbn')?.value||'').trim();if(isDefaultName(nm)){UI.lbMsg=LB_MSG.name;renderSheet();if(!$('#stats').hidden)renderStats();return'skip'}setLbName(nm);const P_=lbPending(nm);if(!P_.length)return'skip';const url=BOARD_URL+'#rs-'+P_.map(x=>encodeResult(x[1])).join('.');lbMarkSynced(P_.map(x=>x[0]));try{navigator.clipboard&&navigator.clipboard.writeText(url).catch(()=>{})}catch(_){}UI.lbMsg=LX(`${P_.length} Partien gesendet. Bestätige auf claude.ai.`,`${P_.length} games sent. Confirm on claude.ai.`);try{window.open(url,'_blank')||(location.href=url)}catch(_){location.href=url}if(!$('#stats').hidden)renderStats();renderSheet();return'skip'},
+  lbResync:()=>{try{localStorage.removeItem('gm-lb-synced')}catch(_){}UI.lbMsg='';if(!$('#stats').hidden)renderStats();renderSheet();return'skip'},
   lbOpen:b=>{const nm=($('#lbn')?.value||'').trim();if(isDefaultName(nm)){UI.lbMsg=LB_MSG.name;renderSheet();if(!$('#stats').hidden)renderStats();return'skip'}setLbName(nm);const g=loadHist().find(x=>String(x.id)===b.dataset.id);const r=g&&recToResult(g,nm);if(!r)return'skip';const url=shareLink(r);
     try{navigator.clipboard.writeText(url).catch(()=>{})}catch(_){}const w=window.open(url,'_blank','noopener');UI.lbMsg=w===null?'':'Link kopiert. Trag das Ergebnis jetzt auf claude.ai ein.';if(w===null)UI.lbLink=url;renderSheet();if(!$('#stats').hidden)renderStats();return'skip'},
   lbShare:b=>{const nm=($('#lbn')?.value||'').trim();if(isDefaultName(nm)){UI.lbMsg=LB_MSG.name;renderSheet();if(!$('#stats').hidden)renderStats();return'skip'}setLbName(nm);const g=loadHist().find(x=>String(x.id)===b.dataset.id);const r=g&&recToResult(g,nm);if(!r)return'skip';shareResult(r).then(()=>{renderSheet();if(!$('#stats').hidden)renderStats()});return'skip'},
   lbImport:()=>{const r=UI.imp&&UI.imp.r;lbSubmit(r,'link').then(st=>{UI.lbMsg=LB_MSG[st]||'';if(st==='ok'){try{history.replaceState(null,'',location.pathname+location.search)}catch(_){}}renderSheet()});return'skip'},
-  lbImportCode:()=>{const raw=($('#lbcode')?.value||'').trim();const code=raw.includes('#r-')?raw.slice(raw.indexOf('#r-')+3):raw.replace(/^r-/,'');const r=decodeResult(code);if(!r){UI.lbMsg=LB_MSG.bad;renderStats();return'skip'}lbSubmit(r,'link').then(st=>{UI.lbMsg=st==='ok'?`${lbHuman(r).name}: eingetragen.`:(LB_MSG[st]||'');renderStats()});return'skip'},
+  lbImportCode:()=>{const raw=($('#lbcode')?.value||'').trim();if(raw.includes('#rs-')){const rs=raw.slice(raw.indexOf('#rs-')+4).split('.').map(decodeResult);UI.impMulti={rs:rs.filter(Boolean),badN:rs.filter(x=>!x).length,status:'wait'};UI.sheet='import';renderSheet();runMultiImport();return'skip'}const code=raw.includes('#r-')?raw.slice(raw.indexOf('#r-')+3):raw.replace(/^r-/,'');const r=decodeResult(code);if(!r){UI.lbMsg=LB_MSG.bad;renderStats();return'skip'}lbSubmit(r,'link').then(st=>{UI.lbMsg=st==='ok'?`${lbHuman(r).name}: eingetragen.`:(LB_MSG[st]||'');renderStats()});return'skip'},
   lbBulk:()=>{(async()=>{const nm=lbName();if(isDefaultName(nm)){UI.lbMsg='Leg zuerst nach einer Partie deinen Namen für die Rangliste fest.';renderStats();return}const ids=new Set((LB.docs||[]).map(r=>r.id));let ok=0;for(const g of loadHist()){const r=recToResult(g,nm);if(!r||ids.has(r.id))continue;const st=await lbSubmit(r,'app');if(st!=='ok'){UI.lbMsg=LB_MSG[st]||'';break}ok++}if(ok)UI.lbMsg=`${ok} ${ok===1?'Partie':'Partien'} eingetragen.`;renderStats()})();return'skip'},
   lbDel:b=>{UI.lbDel=b.dataset.id;renderStats();return'skip'},
   lbDelNo:()=>{UI.lbDel=null;renderStats();return'skip'},
