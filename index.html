@@ -2920,6 +2920,40 @@ html[data-boot] #start.v3:not(.wide) .s3-bar .cta::before{animation-delay:5.6s}
 #panel .actbar .btn:not(.pri){flex:0 1 38%;max-width:40%;white-space:normal;line-height:1.15}
 #panel .actbar .btn.pri{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fxban.pl2{top:calc(env(safe-area-inset-top,0px) + 236px)}
+
+/* ---- v189: Reihenfolge immer sichtbar, aufgeräumte Bauphase (iPhone) ---- */
+.pl2-ord{display:flex;align-items:center;gap:4px;overflow-x:auto;scrollbar-width:none;padding:1px 0}
+.pl2-ord::-webkit-scrollbar{display:none}
+.pl2-ord .po-k{flex:none;font:600 9px/1 Barlow,system-ui;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.pl2-ord .po{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:5px;padding:5px 7px;border-radius:10px;background:var(--panel);border:1px solid var(--line);font-size:11.5px;color:var(--fg)}
+.pl2-ord .po i{font:800 9px/1 'Orbitron',var(--display);font-style:normal;color:var(--muted)}
+.pl2-ord .po .po-lg{--ls:15px}
+.pl2-ord .po b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pl2-ord .po em{margin-left:auto;font:800 10px/1 'Orbitron',var(--display);font-style:normal;color:var(--muted)}
+.pl2-ord .po.cur{border-color:var(--accent);background:linear-gradient(180deg,rgba(242,179,61,.16),rgba(242,179,61,.04));box-shadow:0 0 12px rgba(242,179,61,.25)}
+.pl2-ord .po.cur i{color:var(--accent)}
+.pl2-ord .po.dn{opacity:.45}
+.pl2-ord .po.me b{color:#8fc0ff}
+#app.pl2 #top .wallet .wl small:nth-child(2){display:none}
+#app.pl2 #top{column-gap:8px}
+#app.pl2 #top>*:not(#pl2bar):not(#pl2rd){flex:none}
+#app.pl2 #top .wallet{padding-left:10px;padding-right:10px}
+@media (orientation:portrait) and (max-width:600px){#app.pl2.phbuild:not(.mapmin){grid-template-rows:auto minmax(0,1fr) minmax(0,38%)!important}}
+#app.pl2 .pl2b{padding-top:0!important}
+.pl2b .pb-st{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:2px 0 10px}
+.pl2b .pb-st span{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+.pl2b .pb-st b{font:800 16px/1 'Orbitron',var(--display);color:var(--fg)}
+.pl2b .pb-st span:last-child b{color:var(--accent)}
+.pl2b .pb-st small{font:600 9px/1 Barlow,system-ui;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.pl2b .pb-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pl2b .pb-opts .opt{padding:9px 10px;min-height:0}
+.pl2b .pb-opts .opt .nm{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl2b .pb-opts .opt .cst{font-size:13px!important}
+.pl2b .pb-opts .opt:disabled{opacity:.4}
+#app.pl2 #top{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto auto;grid-auto-flow:row;align-items:center;column-gap:6px}
+#app.pl2 #pl2rd{grid-column:1}
+#app.pl2 #pl2bar{grid-column:1/-1}
+#app.pl2 #top .wallet .wv,#app.pl2 #top .wallet b{font-size:24px}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -4618,10 +4652,18 @@ function cityWhyNot(p,c){/* angetippte Stadt ohne Preisschild: Preis (falls mög
 }
 function panelBuild(a){
   if(!isMine(a)){
+    if(pl2())return `<section class="sec pl2b"><p class="hint">${LX('Gebaut wird in umgekehrter Reihenfolge. Die Farben in den Städten zeigen, wer dort Strom liefert.','Building goes in reverse order. City colours show who supplies them.')}</p></section>`;
     return `<section class="sec"><h3>Netzausbau</h3>${netStatus(me())}<p class="hint">Gebaut wird in umgekehrter Reihenfolge. Die Farben in den Städten zeigen, wer dort Strom liefert.</p></section>`;
   }
   const p=me();const opts=buildOptions(p);
   const tb=S.turnBuilt.length?`<p class="nturn">Diesen Zug: ${S.turnBuilt.length} ${S.turnBuilt.length===1?'Stadt':'Städte'} für ${S.turnBuilt.reduce((s,b)=>s+b.cost,0)} € (${S.turnBuilt.map(b=>CITY[b.city].name).join(', ')})</p>`:'';
+  if(pl2()){const n=cityCount(p),cap=capacity(p),fu=fueledCap(p),g=incomeFor(n+1,fu)-incomeFor(n,fu);
+    let h2=`<section class="sec pl2b"><div class="pb-st"><span><b>${n}</b><small>${LX('Städte','Cities')}</small></span><span><b>${cap}</b><small>${LX('Kapazität','Capacity')}</small></span><span><b>${p.money}€</b><small>${LX('Verfügbar','Available')}</small></span><span><b>${n>=cap?'–':'+'+g+'€'}</b><small>${LX('Nächste Stadt','Next city')}</small></span></div>${tb}${buildRuleHint(p)}`;
+    const sel2=UI.buildSel&&opts.find(o=>o.city===UI.buildSel);if(UI.buildSel&&!sel2)h2+=cityWhyNot(p,UI.buildSel);
+    if(opts.length)h2+=`<div class="mkt-label"><span>${LX('Günstigste Städte','Cheapest cities')}</span><span>${LX('Antippen = auf der Karte zeigen','Tap to show on map')}</span></div><div class="opts pb-opts">${opts.slice(0,6).map(o=>`<button type="button" class="opt${UI.buildSel===o.city?' sel':''}" data-act="bsel" data-city="${o.city}" ${o.cost>p.money?'disabled':''}><span class="nm">${CITY[o.city].name}</span><span class="cst">${o.cost} €</span></button>`).join('')}</div>`;else h2+=`<p class="hint">${LX('Keine Stadt ist für dich frei.','No city is open for you.')}</p>`;
+    if(cityCount(p)+1>=END_AT&&!S.endTriggered)h2+=`<p class="warn">${LX(`Mit ${END_AT} Städten endet das Spiel nach dieser Runde.`,`Reaching ${END_AT} cities ends the game after this round.`)}</p>`;
+    h2+=`</section>`;UI._ab={t:sel2?`${CITY[sel2.city].name} · ${sel2.cost} €`:S.turnBuilt.length?LX(`${S.turnBuilt.length} ${S.turnBuilt.length===1?'Stadt':'Städte'} gebaut`,`${S.turnBuilt.length} ${S.turnBuilt.length===1?'city':'cities'} built`):LX('Stadt auf der Karte antippen','Tap a city on the map'),h:`<div class="row">${S.turnBuilt.length?`<button type="button" class="btn" data-act="breset">${LX('Zurück','Undo')}</button>`:''}${sel2?`<button type="button" class="btn pri grow" data-act="build" data-city="${sel2.city}">${LX('Bauen','Build')} · ${sel2.cost} €</button>`:''}<button type="button" class="btn${sel2?'':' pri grow'}" data-act="bdone">${LX('Fertig','Done')}</button></div>`};
+    return h2}
   let h=`<section class="sec"><h3>Dein Netzausbau</h3>${netStatus(p,tb)}<p class="hint">Tippe auf eine Stadt mit Preisschild. Der Preis enthält den Platz in der Stadt (${MAPS[S.map].cityx?(LANG==='en'?'10–20 € depending on the city':'je nach Stadt 10 bis 20 €'):SLOT_COST.slice(0,S.step).join(' / ')+' €'}) und die günstigste Leitung zu deinem Netz.</p>${buildRuleHint(p)}`;
   const sel=UI.buildSel&&opts.find(o=>o.city===UI.buildSel);
   if(UI.buildSel&&!sel)h+=cityWhyNot(p,UI.buildSel);
@@ -6285,7 +6327,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v188';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v189';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -6540,7 +6582,10 @@ function pl2Bar(){const p=pl2Phase(),N=PL2_NAME(),m=me();
   const goal=END_AT,max=Math.max(goal+4,...S.players.map(cityCount)),pos=v=>Math.min(100,v/max*100),mc=cityCount(m);
   const dots=S.players.map(q=>`<i class="pd${q.human?' me':''}" style="left:${pos(cityCount(q))}%;background:${q.color};color:${q.color}"></i>`).join('');
   const rm=RES.filter(r=>CAP[r]).map(r=>{const np=nextPrice(r);return `<span class="${np==null?'out':''}">${resIcon(r)}${np==null?'–':np}</span>`}).join('');
-  return `<div class="pl2-tabs" role="list" aria-label="${LX('Phasen','Phases')}">${tabs}</div><div class="pl2-trk"><button type="button" class="pl2-ct" data-act="opp" aria-label="${LX('Städte und Gegner','Cities and opponents')}"><span class="m3hd"><small>${LX('Städte','Cities')}</small><b>${mc} / ${goal}</b><span class="m3stp">${[1,2,3].map(k=>`<i class="${S.step===k?'on':''}">${'I'.repeat(k)}</i>`).join('')}</span></span><span class="ln"><span class="fill" style="width:${pos(mc)}%"></span><span class="mk" style="left:${pos(STEP2_AT)}%"><span>${LX('STUFE 2','STEP 2')}</span></span><span class="mk" style="left:${pos(goal)}%"><span>${LX('ENDE','END')}</span></span>${dots}</span></button><button type="button" class="pl2-rm" data-act="markets" aria-label="${LX('Rohstoffmarkt','Resource market')}"><span class="m3hd"><small>${LX('Rohstoffe · nächster Preis','Resources · next price')}</small></span><span class="row">${rm}</span></button></div>`}
+  return `<div class="pl2-tabs" role="list" aria-label="${LX('Phasen','Phases')}">${tabs}</div><div class="pl2-trk"><button type="button" class="pl2-ct" data-act="opp" aria-label="${LX('Städte und Gegner','Cities and opponents')}"><span class="m3hd"><small>${LX('Städte','Cities')}</small><b>${mc} / ${goal}</b><span class="m3stp">${[1,2,3].map(k=>`<i class="${S.step===k?'on':''}">${'I'.repeat(k)}</i>`).join('')}</span></span><span class="ln"><span class="fill" style="width:${pos(mc)}%"></span><span class="mk" style="left:${pos(STEP2_AT)}%"><span>${LX('STUFE 2','STEP 2')}</span></span><span class="mk" style="left:${pos(goal)}%"><span>${LX('ENDE','END')}</span></span>${dots}</span></button><button type="button" class="pl2-rm" data-act="markets" aria-label="${LX('Rohstoffmarkt','Resource market')}"><span class="m3hd"><small>${LX('Rohstoffe · nächster Preis','Resources · next price')}</small></span><span class="row">${rm}</span></button></div>${pl2Order()}`}
+function pl2Order(){const seq=seqForPhase(),a=actor(),cur=a&&S.phase!=='bureau'?a.pid:null,rev=S.phase==='resources'||S.phase==='build';
+  const done=id=>S.phase==='auction'?!!(S.boughtThisRound&&S.boughtThisRound.includes&&S.boughtThisRound.includes(id))||(S.passed&&S.passed.includes&&S.passed.includes(id)):(S.phase==='resources'||S.phase==='build')?(S.seq||[]).indexOf(id)<(S.seqIdx||0):false;
+  return `<div class="pl2-ord" aria-label="${LX('Spielerreihenfolge','Turn order')}"><span class="po-k">${LX('Reihenfolge','Order')}${rev?' ←':' →'}</span>${seq.map((id,i)=>{const q=P(id);return `<span class="po${id===cur?' cur':''}${done(id)?' dn':''}${q.human?' me':''}" style="--pc:${q.color}"><i>${S.order.indexOf(id)+1}</i>${coLogo(logoOf(q),q.color,'po-lg')}<b>${q.human?LX('Du','You'):esc(shortName(q.name))}</b><em>${q.money}€</em></span>`}).join('')}</div>`}
 function pl2Head(a){const p=pl2Phase();if(p>4)return'';const N=PL2_NAME();const mine=a&&P(a.pid)&&P(a.pid).human;
   const sub=S.phase==='bureau'?LX('Wähle deine Kraftwerke','Choose your plants'):mine?({auction:a.kind==='choose'?LX('Du wählst ein Kraftwerk','You pick a plant'):a.kind==='discard'?LX('Wirf ein Kraftwerk ab','Discard a plant'):LX('Du bist dran · biete oder steig aus','Your turn · bid or drop out'),resources:LX('Du kaufst jetzt','You are buying now'),build:LX('Tippe eine Stadt auf der Karte','Tap a city on the map')}[S.phase]||''):(a&&P(a.pid)?esc(P(a.pid).name)+LX(' ist am Zug …',' is playing …'):'');
   return `<div class="pl2-sh"><span class="n">${p}</span><div><b>${N[p]}</b><span>${sub}</span></div></div>`}
