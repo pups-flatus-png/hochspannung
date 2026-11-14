@@ -2671,6 +2671,7 @@ html.gm-ending #panel>*,html.gm-ending #sheet,html.gm-ending .sheet{visibility:h
 @media (prefers-reduced-motion:reduce){.co-brand::after{animation:none}}
 [data-theme="light"] .co-brand{background:linear-gradient(135deg,rgba(79,157,255,.14),#fff 60%);}
 [data-theme="light"] .co-brand .cb-n{color:#10202e}
+[data-theme="light"] .co-brand .cb-k{color:#2f6fc0}[data-theme="light"] .co-brand .cb-s{color:#5f5444}[data-theme="light"] .co-lg{background:#fff;border-color:rgba(0,0,0,.1)}
 
 html #start .s3-ic.s3-ic-logo{background:none;border:0;box-shadow:none;border-radius:0}
 html #start .s3-ic.s3-ic-logo svg{filter:drop-shadow(0 1px 0 rgba(0,0,0,.45))}
@@ -2678,6 +2679,77 @@ html #start .s3-ic.s3-ic-logo svg{filter:drop-shadow(0 1px 0 rgba(0,0,0,.45))}
 #boot .bt-dot.fly{translate:var(--fx) var(--fy);transition:translate .62s cubic-bezier(.55,.05,.25,1)}
 #boot.rise .bt-dot,#boot.rise .bt-line{transition:top .6s cubic-bezier(.5,0,.25,1)}
 #boot.rise .bt-h{transition:height .6s cubic-bezier(.5,0,.25,1)}
+
+/* ---- v179: Spielende im hellen Modus ---- */
+[data-theme="light"] #gmEnd{background:radial-gradient(90% 60% at 50% 30%,rgba(242,179,61,.16),transparent 60%),rgba(246,240,228,.94);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+[data-theme="light"] #gmEnd .ge-k{color:#7a6a52}
+[data-theme="light"] #gmEnd .ge-gm{color:#b9770e;text-shadow:none}
+[data-theme="light"] #gmEnd .ge-wn{background:linear-gradient(180deg,#2a2114,color-mix(in srgb,var(--pc) 70%,#2a2114));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:none}
+[data-theme="light"] #gmEnd .ge-ws{color:#5f5444}
+[data-theme="light"] #gmEnd .ge-x{border-color:rgba(0,0,0,.14);background:rgba(255,255,255,.7);color:#3a3226}
+[data-theme="light"] #gmEnd .ge-b2{background:#fff;border-color:rgba(0,0,0,.12);color:#2a2114}
+[data-theme="light"] #gmEnd .eb-s{color:#6b604f}
+[data-theme="light"] #gmEnd .ea-t{color:#7a6a52}[data-theme="light"] #gmEnd .ea-s{color:#6b604f}
+[data-theme="light"] #gmEnd .ea{box-shadow:0 2px 10px rgba(60,40,10,.08)}
+[data-theme="light"] .ge-daily{color:#2a2114;background:rgba(242,179,61,.12)}
+[data-theme="light"] .ge-daily .gd-r{color:#b23a28}
+[data-theme="light"] .ge-daily.ok .gd-r{color:#1f7a45}
+[data-theme="light"] .ge-ach-i{color:#2a2114;background:#fff}
+[data-theme="light"] .ge-ach-k,[data-theme="light"] .ge-daily .gd-k{color:#b9770e}
+
+/* ---- v179: Grid-Master-Typografie und Layout auch im hellen Modus (Farben bleiben hell) ---- */
+html[data-theme="light"] #intro .ib{border-radius:22px}
+html[data-theme="light"] #intro .ib h2{font-family:'Orbitron',var(--display);font-weight:800;font-size:20px;letter-spacing:.04em}
+html[data-theme="light"] #top .wallet{border-radius:12px}
+html[data-theme="light"] #panel .qb,html[data-theme="light"] #panel .feed,html[data-theme="light"] #panel .bidbox,html[data-theme="light"] #panel .ot{border-radius:14px}
+html[data-theme="light"] .plant{border-radius:12px}
+html[data-theme="light"] #ticker{border-radius:16px}
+html[data-theme="light"] #start .s3-sh h1{font-family:'Orbitron',var(--display)!important;font-weight:800!important;letter-spacing:.06em!important;text-transform:uppercase;font-size:clamp(13px,3.7vw,17px)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-theme="light"] #start .s3-bk{border-radius:50%!important}
+html[data-theme="light"] #start .s3-done{letter-spacing:.12em;text-transform:uppercase;font-size:12px!important}
+html[data-theme="light"] #start .s3-body{counter-reset:sec}
+html[data-theme="light"] #start .gl, html[data-theme="light"] #start .s3-body h3{counter-increment:sec;display:flex!important;align-items:center;gap:10px;font-family:var(--display)!important;font-size:11px!important;letter-spacing:.2em!important;text-transform:uppercase!important}
+html[data-theme="light"] #start .gl::before{content:counter(sec,decimal-leading-zero);font:800 10px/1 'Orbitron',var(--display)}
+html[data-theme="light"] #start .gl::after{content:'';flex:1;height:1px}
+html[data-theme="light"] #start .pcard, html[data-theme="light"] #start .dlv, html[data-theme="light"] #start .dcard, html[data-theme="light"] #start .mcard, html[data-theme="light"] #start .cocard, html[data-theme="light"] #start .rulebox, html[data-theme="light"] #start .toggle, html[data-theme="light"] #start .xpick, html[data-theme="light"] #start .xhead{border-radius:16px!important}
+html[data-theme="light"] #start .pcard.on::after,html[data-theme="light"] #start .dlv.on::after,html[data-theme="light"] #start .dcard.on::after,html[data-theme="light"] #start .mcard.on::after{content:'';width:6px;height:6px;border-radius:50%}
+html[data-theme="light"] #start .pcard b{font-family:'Orbitron',var(--display)!important;font-weight:800!important;font-size:28px!important}
+html[data-theme="light"] #start .dlv b{font-family:'Orbitron',var(--display)!important;font-weight:800!important;font-size:14px!important;letter-spacing:.04em}
+html[data-theme="light"] #start .dcn{font-family:'Orbitron',var(--display)!important;font-weight:800!important;font-size:14px!important;letter-spacing:.04em}
+html[data-theme="light"] #start .mixbar{height:4px!important;border-radius:3px!important}
+html[data-theme="light"] #start .co-emb{border-radius:14px!important}
+html[data-theme="light"] #start .co-in input{font-family:'Orbitron',var(--display)!important;font-weight:800!important;font-size:18px!important;letter-spacing:.03em}
+html[data-theme="light"] #start .s3-bar .btn,html[data-theme="light"] #start .s3-bar>button{border-radius:14px!important;font-family:var(--display)!important;font-weight:700!important;letter-spacing:.24em!important;text-transform:uppercase}
+html[data-theme="light"] #start .s3-new h2{font-family:'Orbitron',var(--display);font-weight:800;font-size:clamp(12px,3.3vw,18px);letter-spacing:.05em;white-space:nowrap;text-transform:uppercase;display:flex;align-items:center;gap:12px}
+html[data-theme="light"] #start.v3.wide .s3:not(.sub) .s3-new h2{font-size:18px;margin-bottom:2px}
+html[data-theme="light"] #start .s3-new h2::after{content:'';flex:1;height:1px;min-width:20px}
+html[data-theme="light"] #start .s3-rows{border-radius:18px}
+html[data-theme="light"] #start .s3-row{padding:14px 16px}
+html[data-theme="light"] #start .s3-row:hover::before,html[data-theme="light"] #start .s3-row:focus-visible::before{content:'';width:3px;border-radius:0 3px 3px 0}
+html[data-theme="light"] #start .s3-ic{width:36px;height:36px;border-radius:11px}
+html[data-theme="light"] #start .s3-ini{width:36px;height:36px;border-radius:11px;font-family:'Orbitron',var(--display);font-weight:800;font-size:12px}
+html[data-theme="light"] #start .s3-rv span{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase}
+html[data-theme="light"] #start .s3-rv b{font-size:15.5px;margin-top:2px}
+html[data-theme="light"] #start .s3-alt{border-radius:14px;font-size:14px;letter-spacing:.22em;text-transform:uppercase}
+html[data-theme="light"] #start .s3-alt::after{content:'→';margin-left:14px;padding-left:14px;letter-spacing:0}
+html[data-theme="light"] #sheet .sheet{border-radius:22px}
+html[data-theme="light"] #sheet .sheet-head h2{font-family:'Orbitron',var(--display);font-weight:800;font-size:clamp(14px,4vw,18px);letter-spacing:.06em;text-transform:uppercase}
+html[data-theme="light"] #sheet .xbtn{border-radius:50%}
+html[data-theme="light"] #sheet .mgl, html[data-theme="light"] #sheet .sec>h3{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:11px;letter-spacing:.2em;text-transform:uppercase}
+html[data-theme="light"] #sheet .mgl::after,html[data-theme="light"] #sheet .sec>h3::after{content:'';flex:1;height:1px}
+html[data-theme="light"] .seg{border-radius:12px}
+html[data-theme="light"] .seg button{border-radius:9px}
+html[data-theme="light"] #sheet .btn,html[data-theme="light"] #stats .btn{border-radius:12px}
+html[data-theme="light"] #sheet .btn.pri,html[data-theme="light"] #panel .btn.pri,html[data-theme="light"] #stats .btn.pri{border-radius:13px;font-family:var(--display);font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+html[data-theme="light"] .rank div{border-radius:14px}
+html[data-theme="light"] .rank .pl{font-family:'Orbitron',var(--display);font-weight:800}
+html[data-theme="light"] .rres{border-radius:14px}
+html[data-theme="light"] .st-head h1,html[data-theme="light"] .st-head h2{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+html[data-theme="light"] .st-empty,html[data-theme="light"] #stats .card{border-radius:16px}
+html[data-theme="light"] .st-n{font-family:'Orbitron',var(--display);font-weight:800}
+html[data-theme="light"] #panel .qb,html[data-theme="light"] #panel .feed,html[data-theme="light"] #panel .bidbox,html[data-theme="light"] #panel .ot{border-radius:14px}
+html[data-theme="light"] #top .wallet{border-radius:12px}
+html[data-theme="light"] #start.v3:not(.wide) .s3-brand{margin:0 4px;padding:10px 12px 12px;border-radius:18px}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -6020,7 +6092,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v178';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v179';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
