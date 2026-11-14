@@ -6,6 +6,10 @@ A grid-building strategy game for your phone, playable in English and German.
 
 **Spielen:** https://pups-flatus-png.github.io/hochspannung/
 
+## Grid Master 2
+
+Eigenständige Weiterentwicklung zum Experimentieren, mit eigenen Spielständen und eigener Rangliste: https://pups-flatus-png.github.io/hochspannung/gm2/ – Quelltext und Übergabe-Notiz in `gm2-src/` (siehe `gm2-src/HANDOVER.md`).
+
 ## Als App installieren
 
 1. Die Adresse oben einmal auf dem Handy öffnen (mit Internet).
