@@ -3031,6 +3031,37 @@ html[data-boot] #start.v3:not(.wide) .s3-bar .cta::before{animation-delay:5.6s}
 .gatesec .g-opp{margin:2px 0 10px}
 .gatesec .g-opp .oppp{margin:0;border:0;padding:0;background:none}
 .gatesec .g-opp .opph{pointer-events:none}.gatesec .g-opp .opph svg{display:none}
+
+/* ---- v192: Rundenübersicht als Raster ---- */
+.rgrid{display:flex;flex-direction:column;gap:4px;margin:4px 0 10px}
+.rgrid .rg-r{display:grid;grid-template-columns:minmax(92px,1.5fr) repeat(5,minmax(0,1fr));align-items:center;gap:4px;padding:7px 8px;border-radius:10px;background:var(--panel-2,rgba(255,255,255,.03));border:1px solid var(--line);border-left:3px solid var(--pc,var(--line))}
+.rgrid .rg-hd{background:none;border:0;padding:0 8px 0 11px}
+.rgrid .rg-hd span{font:600 9px/1.1 Barlow,system-ui;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rgrid .rg-r.me{background:linear-gradient(90deg,rgba(242,179,61,.12),rgba(242,179,61,.02));border-color:rgba(242,179,61,.45);border-left-color:var(--pc)}
+.rgrid .rg-n{display:flex;align-items:center;gap:6px;min-width:0}
+.rgrid .rg-n .tk-logo{--ls:18px;flex:none}
+.rgrid .rg-n b{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rgrid .rg-c{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.rgrid .rg-c b{font:800 13px/1 'Orbitron',var(--display);color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.rgrid .rg-c small{font-size:10.5px;line-height:1;color:var(--muted);white-space:nowrap}
+.rgrid .rg-c.pw small{color:#5fd48c;font-weight:600}
+.rgrid .rg-c.cash b{color:#ffd36e}
+[data-theme="light"] .rgrid .rg-c.cash b{color:#9a6208}
+[data-theme="light"] .rgrid .rg-c.pw small{color:#1f8a4c}
+@media (max-width:440px){.pl2-ord .po-k{display:none}.pl2-ord{gap:4px}.pl2-ord .po{padding:5px 6px;gap:4px}}
+@media (max-width:370px){.pl2-ord .po em{display:none}}
+.pl2-ord .po.me b{flex:none}
+@media (max-width:380px){.rgrid .rg-r{grid-template-columns:86px repeat(5,minmax(0,1fr));gap:2px;padding:7px 6px}.rgrid .rg-c b{font-size:12px}.rgrid .rg-c small{font-size:9.5px}.rgrid .rg-n b{font-size:11.5px}.rgrid .rg-n .tk-logo{--ls:16px}}
+/* ---- v192: Kopfzeile iPhone – nie überlappen ---- */
+@media (max-width:600px) and (orientation:portrait){
+html #app.pl2 #top .wallet{flex-direction:column;align-items:flex-end;justify-content:center;gap:3px;padding:6px 11px}
+html #app.pl2 #top .wallet .wl small{font-size:8.5px;letter-spacing:.14em}
+html #app.pl2 #top .wallet .wv,html #app.pl2 #top .wallet b{font-size:26px}
+html #app.pl2 #pl2rd{min-width:0;overflow:hidden}
+html #app.pl2 #pl2rd b{font-size:clamp(14px,4.6vw,18px);overflow:hidden;text-overflow:clip}
+html #app.pl2 #top:has(.undo) .wallet b{font-size:23px}
+html #app.pl2 #top:has(.undo) #pl2rd b{font-size:clamp(13px,4vw,16px)}
+}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -3544,10 +3575,22 @@ const PH_GO={resources:()=>startResources(),build:()=>startBuild(),bureau:()=>st
 let AUTO_NEXT=(()=>{try{return localStorage.getItem('gm-autonext')==='1'}catch(_){return false}})();
 function phaseGate(k){if(!S.players.some(p=>p.human)||window.__fast||AUTO_NEXT){PH_GO[k]();return}S.gate=k}
 function gateGo(){if(!S||!S.gate)return;const k=S.gate;S.gate=null;PH_GO[k]()}
+function roundGrid(){/* v192: Rundenübersicht als Raster */
+  const r=S.round,rs=(S.rs||{})[r]||{},L=LX;
+  const hd=[L('Werk','Plant'),L('Rohst.','Fuel'),L('Bau','Build'),L('Strom','Power'),L('Kasse','Cash')];
+  const rows=S.order.map(P).map(p=>{const q=rs[p.id]||{};const au=(st().pl[p.id].auc||[]).filter(x=>x.r===r);const tr=(S.trades||[]).filter(t=>t.r===r&&t.pid===p.id);const tc=tr.reduce((x,t)=>x+t.total,0),tn=tr.reduce((x,t)=>x+t.parts.reduce((y,[,k])=>y+k,0),0);
+    const c=(m,sm,cls='')=>`<span class="rg-c${cls}"><b>${m}</b><small>${sm||'&nbsp;'}</small></span>`;
+    return `<div class="rg-r${p.human?' me':''}" ${pc(p.id)}><span class="rg-n">${coLogo(logoOf(p),p.color,'tk-logo')}<b>${p.human?L('Du','You'):esc(shortName(p.name))}</b></span>`+
+      c(au.length?au.map(x=>PN(x.n)).join(' + '):'–',au.length?au.reduce((x,a)=>x+a.price,0)+' €':'')+
+      c(tn?tn+'×':'–',tn?tc+' €':'')+
+      c(q.bn?'+'+q.bn:'–',q.bn?q.bc+' €':'')+
+      c((q.pw??p.lastPowered??0)+'',q.inc!=null?'+'+q.inc+' €':'',' pw')+
+      c(p.money+' €',cityCount(p)+' '+L('Städte','cities'),' cash')+`</div>`}).join('');
+  return `<div class="rgrid"><div class="rg-r rg-hd"><span></span>${hd.map(h=>`<span>${h}</span>`).join('')}</div>${rows}</div>`}
 function gateHTML(){const k=S.gate,N={resources:[LX('Auktion abgeschlossen','Auction complete'),LX('Weiter zu Rohstoffe','Continue to resources')],build:[LX('Rohstoffe abgeschlossen','Resources complete'),LX('Weiter zum Bauen','Continue to build')],bureau:[LX('Bauen abgeschlossen','Building complete'),LX('Weiter zum Liefern','Continue to power')],round:[LX(`Runde ${S.round} abgeschlossen`,`Round ${S.round} complete`),LX(`Weiter zu Runde ${S.round+1}`,`Continue to round ${S.round+1}`)]}[k];
   const lines=S.log.filter(l=>l.r===S.round).slice(0,6).map(l=>`<p ${l.pid!=null?pc(l.pid):''}><span class="dot"></span>${esc(tr(l.t))}</p>`).join('');
   UI._ab={t:N[0],h:`<div class="row"><button type="button" class="btn pri grow" data-act="gateGo">${N[1]} →</button></div>`};
-  return `<section class="sec gatesec"><div class="g-h"><span class="g-ok">✓</span><b>${N[0]}</b></div>${k==='resources'?`<div class="g-opp">${oppPlantsHTML(true)}</div>`:''}<div class="g-log">${lines}</div><p class="hint">${LX('Schau dir in Ruhe an, was passiert ist, und tippe dann auf „Weiter“.','Take a look at what happened, then tap “Continue”.')}</p></section>`}
+  return `<section class="sec gatesec"><div class="g-h"><span class="g-ok">✓</span><b>${N[0]}</b></div>${k==='resources'?`<div class="g-opp">${oppPlantsHTML(true)}</div>`:''}${k==='round'?roundGrid():`<div class="g-log">${lines}</div>`}<p class="hint">${LX('Schau dir in Ruhe an, was passiert ist, und tippe dann auf „Weiter“.','Take a look at what happened, then tap “Continue”.')}</p></section>`}
 function startBuild(){S.phase='build';S.seq=[...S.order].reverse();S.seqIdx=0;S.turnBuilt=[];S.builtRound=0}
 function nextSeq(){
   if(S.phase==='resources'&&MR().india){
@@ -3602,7 +3645,7 @@ function doBuild(pid,city){
   const p=P(pid);const o=buildOptions(p).find(x=>x.city===city);
   if(!o||o.cost>p.money)return false;
   if(o.conn>0&&!o.jump){try{const ln=linkPath(p,city);if(ln.length&&!(MR().islands&&o.conn===(MAPS[S.map].islandFee||20)&&!ln.length))p.links=[...new Set([...(p.links||[]),...ln])]}catch(_){}}
-  p.money-=o.cost;p.cities.push(city);(S.owners[city]??=[]).push(pid);if(o.jump)p.jumpUsed=true;S.builtRound=(S.builtRound||0)+1;S.turnBuilt.push({city,cost:o.cost,slot:o.slot,conn:o.conn,jump:!!o.jump});
+  p.money-=o.cost;p.cities.push(city);{const q=rsum(pid);q.bn=(q.bn||0)+1;q.bc=(q.bc||0)+o.cost}(S.owners[city]??=[]).push(pid);if(o.jump)p.jumpUsed=true;S.builtRound=(S.builtRound||0)+1;S.turnBuilt.push({city,cost:o.cost,slot:o.slot,conn:o.conn,jump:!!o.jump});
   const sp=st().pl[pid];sp.slot+=o.slot;sp.conn+=o.conn;sp.built.push(city);
   log(p.name+' baut in '+CITY[city].name+' ('+o.cost+' €)'+(o.jump?' mit dem freien Sprung':'')+'.',pid);
   return true;
@@ -3644,10 +3687,11 @@ function bestPower(p){
   return best.nums;
 }
 function roundIncome(p,powered){let inc=PAY[Math.min(powered,20)];if(S.outage)inc=Math.max(0,inc-3*p.cities.length);return inc}
+function rsum(pid){S.rs=S.rs||{};const r=S.rs[S.round]=S.rs[S.round]||{};return r[pid]=r[pid]||{}}
 function payout(p,use,powered,nums=[]){
   RES.forEach(r=>p.pool[r]-=use[r]);
   {const sp=st().pl[p.id];sp.burn=sp.burn||{coal:0,oil:0,garbage:0,uranium:0};RES.forEach(r=>sp.burn[r]+=use[r]);sp.powT=sp.powT||{};let left=powered;nums.slice().sort((a,b)=>PLANTS[b][2]-PLANTS[a][2]).forEach(n=>{const c=Math.min(left,PLANTS[n][2]);if(c>0){const t=PLANTS[n][0];sp.powT[t]=(sp.powT[t]||0)+c;left-=c}})}
-  const inc=roundIncome(p,powered);p.money+=inc;p.lastPowered=powered;const sp=st().pl[p.id];sp.income+=inc;sp.maxInc=Math.max(sp.maxInc,inc);
+  const inc=roundIncome(p,powered);p.money+=inc;p.lastPowered=powered;{const q=rsum(p.id);q.inc=inc;q.pw=powered}const sp=st().pl[p.id];sp.income+=inc;sp.maxInc=Math.max(sp.maxInc,inc);
   log(p.name+' versorgt '+powered+(powered===1?' Stadt':' Städte')+' und verdient '+inc+' €.',p.id);
   (UI.fx=UI.fx||[]).push({t:'pay',pid:p.id,inc,powered});
 }
@@ -4934,7 +4978,7 @@ function renderPanel(){
   }
   if(P2)h+=`</div>`;
   /* v186: in der Auktion steht „Dein Betrieb“ direkt unter dem Kraftwerksmarkt, vor den letzten Zügen */
-  h+=S.gate?after+panelMine():S.phase==='auction'?panelMine()+feedHTML()+phaseRulesHTML()+after:feedHTML()+phaseRulesHTML()+after+panelMine();
+  h+=S.gate?after+panelMine():S.phase==='auction'?panelMine()+after+feedHTML()+phaseRulesHTML():feedHTML()+phaseRulesHTML()+after+panelMine();
   if(UI._ab&&(isMine(a)||S.gate))h+=`<div class="actbar" role="region" aria-label="${LX('Dein Zug','Your move')}"><div class="ab-t"><span class="dot"></span>${UI._ab.t}</div>${UI._ab.h}</div>`;
   const st=panel.scrollTop,anc=panelAnchor();panel.innerHTML=h;panel.scrollTop=st;panelRestore(anc);aucScroll(a);orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
 }
@@ -6419,7 +6463,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v191';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v192';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
