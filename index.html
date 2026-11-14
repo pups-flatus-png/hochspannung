@@ -2750,6 +2750,36 @@ html[data-theme="light"] .st-n{font-family:'Orbitron',var(--display);font-weight
 html[data-theme="light"] #panel .qb,html[data-theme="light"] #panel .feed,html[data-theme="light"] #panel .bidbox,html[data-theme="light"] #panel .ot{border-radius:14px}
 html[data-theme="light"] #top .wallet{border-radius:12px}
 html[data-theme="light"] #start.v3:not(.wide) .s3-brand{margin:0 4px;padding:10px 12px 12px;border-radius:18px}
+
+/* ---- v181: Rohstoffmarkt als Energiebörse ---- */
+.rhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rhead .meta{flex:1 1 auto}
+.rx{display:inline-flex;align-items:center;gap:8px;margin-left:auto}
+.rx-sp{width:64px;height:22px}
+.rx-sp path{fill:none;stroke:var(--accent);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.rx-p{font:800 19px/1 'Orbitron',var(--display);color:var(--fg);font-variant-numeric:tabular-nums}
+.rx-t{font:800 10px/1 'Orbitron',var(--display);padding:4px 6px;border-radius:6px}
+.rx-t.up{background:rgba(255,95,90,.15);color:#ff7a70}
+.rx-t.dn{background:rgba(70,195,123,.15);color:#5fd48c}
+.track{position:relative;padding-top:6px}
+.track .pg{position:relative;background:hsla(var(--h),65%,42%,.13);border-color:hsla(var(--h),70%,55%,.24)}
+.track .pg .pp{color:hsl(var(--h),75%,72%)}
+.track .pg.sold{background:transparent;border-color:hsla(var(--h),40%,55%,.18)}
+.track .pg.sold .pp{color:var(--muted)}
+.track .pg.next{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset,0 0 14px rgba(242,179,61,.25)}
+.track .pg.next .pp{color:var(--accent)}
+.track .pg.fc::after{content:"";position:absolute;inset:0;border-radius:inherit;background:repeating-linear-gradient(135deg,rgba(255,255,255,.12) 0 3px,transparent 3px 7px);border:1px dashed rgba(255,255,255,.35);pointer-events:none}
+.nxp{position:absolute;top:-10px;left:50%;transform:translateX(-50%);z-index:2;height:15px;padding:0 5px;border-radius:99px;background:var(--accent);color:#1a1206;font:800 7.5px/15px 'Orbitron',var(--display);letter-spacing:.08em;white-space:nowrap;box-shadow:0 0 10px rgba(242,179,61,.6)}
+.fcl{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:11.5px;color:var(--muted)}
+.fcl b{color:#ffd36e;font-weight:600}
+.fxtok{position:fixed;z-index:9000;width:16px;height:16px;pointer-events:none;filter:drop-shadow(0 0 6px var(--cc))}
+.fxtok svg{width:16px;height:16px}
+.fxspark{position:fixed;z-index:9000;width:6px;height:6px;border-radius:50%;pointer-events:none}
+[data-theme="light"] .track .pg{background:hsla(var(--h),65%,50%,.12);border-color:hsla(var(--h),55%,40%,.28)}
+[data-theme="light"] .track .pg .pp{color:hsl(var(--h),60%,32%)}
+[data-theme="light"] .track .pg.next .pp{color:#9a6208}
+[data-theme="light"] .fcl b{color:#9a6208}
+[data-theme="light"] .rx-sp path{stroke:#b9770e}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -3256,7 +3286,7 @@ function endAuctionPhase(){
 }
 
 /* --- Rohstoffe & Bauen --- */
-function startResources(){S.phase='resources';S.seq=[...S.order].reverse();S.seqIdx=0;S.rpass=[];S.lastBuyN=null}
+function startResources(){{S.ph=S.ph||{};RES.forEach(r=>{if(!CAP[r])return;const v=nextPrice(r);(S.ph[r]=S.ph[r]||[]).push(v==null?null:v);if(S.ph[r].length>14)S.ph[r].shift()})}S.phase='resources';S.seq=[...S.order].reverse();S.seqIdx=0;S.rpass=[];S.lastBuyN=null}
 function startBuild(){S.phase='build';S.seq=[...S.order].reverse();S.seqIdx=0;S.turnBuilt=[];S.builtRound=0}
 function nextSeq(){
   if(S.phase==='resources'&&MR().india){
@@ -3269,7 +3299,7 @@ function nextSeq(){
 function buyResources(pid,cart){
   const p=P(pid);let total=0;const parts=[];
   RES.forEach(r=>{const k=cart[r];if(!k)return;const c=buyCost(r,k,S.resMarket,p);total+=c;const sr=st().pl[pid].res[r];sr[0]+=k;sr[1]+=c;S.resMarket[r]-=k;p.pool[r]+=k;parts.push(k+' '+RNAME[r])});
-  p.money-=total;S.lastBuyN=RES.reduce((x,r)=>x+(cart[r]||0),0);
+  p.money-=total;S.lastBuyN=RES.reduce((x,r)=>x+(cart[r]||0),0);if(S.lastBuyN)UI.lastBuyer=pid;
   log(parts.length?p.name+' kauft '+parts.join(', ')+' für '+total+' €.':p.name+' kauft keine Rohstoffe.',pid);
 }
 function linkPath(p,target){/* kürzeste Leitung vom eigenen Netz zur neuen Stadt – für die Netzlinien auf der Karte */
@@ -3751,12 +3781,23 @@ function kSideSeg(){if(!S.resNorth)return '';const sd=UI.kside||'south',en=LANG=
     const ls=p.lastSide&&p.lastSide.s===side&&p.lastSide.r===S.round-1;return `<button type="button" class="kr-c${on?' on':''}" data-act="kSide" data-s="${side}" aria-pressed="${on}"><span class="kr-h"><b>${side==='north'?(en?'North':'Nord'):(en?'South':'Süd')}</b><span class="kr-tag">${on?(en?'You buy here':'Du kaufst hier'):(en?'Switch here':'Hierher wechseln')}</span></span>${ls?`<span class="kr-last">↺ ${en?'You bought here last round':'Hier hast du letzte Runde gekauft'}</span>`:''}${rows}<span class="kr-f">${en?'Refill':'Nachschub'} ${refill(side)}</span></button>`};
   return `<div class="kr2"><div class="kr-g">${col('south')}${col('north')}</div><p class="hint kr-n">${en?'Prices show the next unit. <b>One market per turn</b>, you may switch next turn. Both share one supply; the North refills first, so a busy South can run dry. Highlighted: fuel your plants use.':'Preise gelten für die nächste Einheit. <b>Pro Zug nur ein Markt</b>, beim nächsten Zug darfst du wechseln. Beide teilen sich den Vorrat; der Norden wird zuerst nachgefüllt, im Süden kann es dann knapp werden. Hervorgehoben: Brennstoff deiner Kraftwerke.'}</p></div>`}
 function kSideSeg0(){if(!S.resNorth)return '';const sd=UI.kside||'south',en=LANG==='en';return `<div class="kside"><div class="seg">${[['south',en?'South market':'Südmarkt'],['north',en?'North market':'Nordmarkt']].map(([k,l])=>`<button type="button" data-act="kSide" data-s="${k}" class="${sd===k?'on':''}">${l}</button>`).join('')}</div><span class="hint">${en?'One side per turn. Uranium only in the South.':'Pro Zug nur eine Seite. Uran gibt es nur im Süden.'}</span></div>`}
+/* v181: Energiebörse – Prognose, Kurs mit Trend und Verlauf */
+function oppNeedBefore(r){if(!S||S.phase==='end')return 0;const seq=[...S.order].reverse(),hi=seq.indexOf(H);if(hi<0)return 0;
+  let from=0;if(S.phase==='resources'){if((S.seq||[]).indexOf(H)<(S.seqIdx||0))return 0;from=S.seqIdx||0}
+  let n=0;seq.slice(from,hi).forEach(id=>{const q=P(id);if(!q||q.human)return;const d=fuelNeed(q);n+=Math.max(0,(d[r]||0)-(q.pool[r]||0))});return Math.min(n,S.resMarket[r])}
+function rxHTML(r,np){const h=((S.ph||{})[r]||[]).filter(v=>v!=null),pts=h.concat(np==null?[]:[np]);const prev=h.length?h[h.length-1]:null;
+  const d=np!=null&&prev!=null&&S.phase!=='resources'?np-prev:(np!=null&&h.length>1?np-h[h.length-2]:0);
+  let sp='';if(pts.length>1){const mx=Math.max(...pts),mn=Math.min(...pts);sp=`<svg class="rx-sp" viewBox="0 0 64 22" aria-hidden="true"><path d="M${pts.map((v,i)=>`${(i/(pts.length-1)*62+1).toFixed(1)} ${(20-(v-mn)/(mx-mn||1)*18).toFixed(1)}`).join(' L')}"/></svg>`}
+  return `<span class="rx">${sp}<b class="rx-p">${np==null?'–':np+' €'}</b>${d?`<span class="rx-t ${d>0?'up':'dn'}">${d>0?'▲ +'+d:'▼ '+(-d)}</span>`:''}</span>`}
 function trackHTML(r,k=0){
   const first=CAP[r]-S.resMarket[r],nx=first+k;let groups='';
   const sl=i=>i>=first?`<svg class="sl${i<first+k?' cart':''}" aria-hidden="true"><use href="#r-${r}"/></svg>`:'<i class="sl"></i>';
-  const pcap=priceCap();const cell=(lo,hi,price)=>{let s='';for(let i=lo;i<hi;i++)s+=sl(i);const st=(hi<=first?' sold':(nx>=lo&&nx<hi?' next':''))+(price>pcap?' capped':'');return `<div class="pg${st}"><b class="pp">${price}<small>€</small></b><div class="slots">${s}</div></div>`};
+  const pcap=priceCap();const fn=k?0:oppNeedBefore(r),fe=first+fn;const ng=new Set(PRICES[r]).size;let gi=0;
+  const cell=(lo,hi,price)=>{let s='';for(let i=lo;i<hi;i++)s+=sl(i);const isN=nx>=lo&&nx<hi&&nx<CAP[r];const st=(hi<=first?' sold':(isN?' next':''))+(price>pcap?' capped':'')+(fn&&lo<fe&&hi>first?' fc':'');const h=Math.round(150-(gi/Math.max(1,ng-1))*150);gi++;
+    return `<div class="pg${st}" style="--h:${h}">${isN?`<span class="nxp">${LX('NÄCHSTE','NEXT')}</span>`:''}<b class="pp">${price}<small>€</small></b><div class="slots">${s}</div></div>`};
   let g=0;for(let i=0;i<CAP[r];){let j=i;while(j<CAP[r]&&PRICES[r][j]===PRICES[r][i])j++;groups+=cell(i,j,PRICES[r][i]);g++;i=j}
-  return `<div class="track${g>9?' u':''}" style="grid-template-columns:repeat(${g},minmax(0,1fr))" aria-label="${RNAME[r]}: ${S.resMarket[r]} am Markt">${groups}</div>`;
+  const lk=fn?nextPrice(r,fn):null;
+  return `<div class="track${g>9?' u':''}" data-r="${r}" style="grid-template-columns:repeat(${g},minmax(0,1fr))" aria-label="${RNAME[r]}: ${S.resMarket[r]} am Markt">${groups}</div>${fn?`<div class="fcl"><span>${LX(`Gegner kaufen vor dir voraussichtlich ~${fn}`,`Opponents likely buy ~${fn} before you`)}</span><span>${lk==null?LX('dann ausverkauft','then sold out'):LX('dann ca. ','then about ')+'<b>'+lk+' €</b>'}</span></div>`:''}`;
 }
 const pc=id=>`style="--pc:${P(id).color}"`;
 
@@ -4378,7 +4419,7 @@ function panelResources0(a){
   for(const r of RES){if(!CAP[r])continue;
     const k=mine?cartTot(r):0;const np=nextPrice(r,k);
     const dsc=mine?resDisc(me(),r):0;
-    h+=`<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)}${np!=null?' · nächste '+(dsc?Math.max(1,np-dsc):np)+' €':''}${k?' · '+k+' im Korb':''}</span>${dsc?`<span class="rdisc" title="${LX('Du hast eine Stadt in Wien','You have a city in Vienna')}">${LX(`−${dsc} € für dich (Wien)`,`−${dsc} € for you (Vienna)`)}</span>`:''}</div>${trackHTML(r,k)}</div>`;
+    h+=`<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)}${np!=null?' · nächste '+(dsc?Math.max(1,np-dsc):np)+' €':''}${k?' · '+k+' im Korb':''}</span>${rxHTML(r,np)}${dsc?`<span class="rdisc" title="${LX('Du hast eine Stadt in Wien','You have a city in Vienna')}">${LX(`−${dsc} € für dich (Wien)`,`−${dsc} € for you (Vienna)`)}</span>`:''}</div>${trackHTML(r,k)}</div>`;
   }
   h+=umkHTML()+`</section>`;
   if(!mine)return h;
@@ -4643,7 +4684,7 @@ function renderSheet(){
   }else if(UI.sheet==='plant'){
     h=head('Kraftwerk '+PN(UI.pnum))+plantInfo(UI.pnum);
   }else if(UI.sheet==='markets'){
-    const resCard=r=>{const hold=S.players.filter(p=>p.pool[r]>0);return `<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)} · ${r==='uranium'&&S.noUranium?'Kein Uran-Nachschub mehr (Atomausstieg)':'Nachschub +'+RSUP(r)}</span></div>${trackHTML(r)}${marketDemand(r)}<div class="holders">${hold.length?hold.map(p=>`<span ${pc(p.id)}><i class="dot"></i>${esc(p.name)} ${p.pool[r]}</span>`).join(''):'<span>Niemand lagert '+RNAME[r]+'.</span>'}</div></div>`};const resSec=(title)=>`<div class="sec"><h3>${title}</h3>${RES.filter(r=>CAP[r]).map(resCard).join('')}${title==='Rohstoffe'||title==='Rohstoffe · Süd'?umkHTML():''}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`;
+    const resCard=r=>{const hold=S.players.filter(p=>p.pool[r]>0);return `<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)} · ${r==='uranium'&&S.noUranium?'Kein Uran-Nachschub mehr (Atomausstieg)':'Nachschub +'+RSUP(r)}</span>${rxHTML(r,nextPrice(r))}</div>${trackHTML(r)}${marketDemand(r)}<div class="holders">${hold.length?hold.map(p=>`<span ${pc(p.id)}><i class="dot"></i>${esc(p.name)} ${p.pool[r]}</span>`).join(''):'<span>Niemand lagert '+RNAME[r]+'.</span>'}</div></div>`};const resSec=(title)=>`<div class="sec"><h3>${title}</h3>${RES.filter(r=>CAP[r]).map(resCard).join('')}${title==='Rohstoffe'||title==='Rohstoffe · Süd'?umkHTML():''}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`;
     h=head('Märkte','markets')+(S.resNorth?`<div class="sec"><div class="mk-two"><h3>${LX('Rohstoffe · Süd','Resources · South')}</h3><h3>${LX('Rohstoffe · Nord','Resources · North')}</h3>${RES.map(r=>{const a=CAP[r]?resCard(r):'',b=withSide('north',()=>CAP[r]?resCard(r):'');return a||b?(a||'<div></div>')+(b||'<div></div>'):''}).join('')}</div>${umkHTML()}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`:resSec('Rohstoffe'))+`<div class="mk-sep"></div>`+marketHTML(null);
   }else if(UI.sheet==='log'){
     h=head('Protokoll')+`<div class="loglist">${S.log.map(l=>`<p ${l.pid!=null?pc(l.pid):''}><span class="r">R${l.r}</span><span class="dot"></span>${esc(l.t)}</p>`).join('')}</div>`;
@@ -6093,7 +6134,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v180';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v181';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -6123,7 +6164,7 @@ function layoutMap(){
   mb.setAttribute('aria-expanded',String(!min));
   if(was!==min&&UI.vb)requestAnimationFrame(applyVB);
 }
-function render(){if(!S)return;const flip0=fxMkSnap();normAlloc(me());layoutMap();renderTop();renderMap();renderPanel();renderSheet();renderTicker();fxMkFlip(flip0);
+function render(){if(!S)return;const flip0=fxMkSnap(),res0=fxResSnap();normAlloc(me());layoutMap();renderTop();renderMap();renderPanel();renderSheet();renderTicker();fxMkFlip(flip0);fxResFlip(res0);
   if(UI.fx&&UI.fx.length){const q=UI.fx;UI.fx=[];if(!fxOff())requestAnimationFrame(()=>fxRun(q))}
   const pm=UI.prevMoney||{};
   S.players.forEach(p=>{if(pm[p.id]!=null&&pm[p.id]!==p.money){const d=p.money-pm[p.id];floatText(document.querySelector(`[data-pid="${p.id}"]`),(d>0?'+':'−')+Math.abs(d)+' €',d>0?'#8fe39c':'#ff8a80')}});
@@ -6134,6 +6175,18 @@ function render(){if(!S)return;const flip0=fxMkSnap();normAlloc(me());layoutMap(
 /* ==== v174: Spielgefühl – Zahltag, Marktnachschub, Kraftwerksmarkt ==== */
 function fxOff(){return !!(window.__fast||document.hidden||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))}
 function fxVis(r){return r&&r.width>0&&r.bottom>0&&r.top<innerHeight&&r.right>0&&r.left<innerWidth}
+function fxResSnap(){const o={m:S?{...S.resMarket}:null,p:{}};if(fxOff())return o;document.querySelectorAll('.track[data-r] .nxp').forEach(e=>{const t=e.closest('.track');const k=t.dataset.r+(t.closest('#sheet')?'s':'p');o.p[k]=e.getBoundingClientRect()});return o}
+function fxResFlip(o){if(!o||!o.m||!S||fxOff())return;
+  document.querySelectorAll('.track[data-r]').forEach(t=>{const r=t.dataset.r,k=r+(t.closest('#sheet')?'s':'p'),pill=t.querySelector('.nxp'),pr=o.p[k];
+    if(pill&&pr){const nr=pill.getBoundingClientRect();const dx=pr.left-nr.left;if(Math.abs(dx)>2)pill.animate([{transform:`translateX(calc(-50% + ${dx}px))`},{transform:'translateX(-50%)'}],{duration:600,easing:'cubic-bezier(.3,.9,.3,1)'})}
+    const was=o.m[r],now=S.resMarket[r];if(was==null||was===now)return;const sls=[...t.querySelectorAll('.sl')];const f0=CAP[r]-was,f1=CAP[r]-now;
+    if(now>was){for(let i=f1;i<f0;i++){const e=sls[i];if(e)e.animate([{transform:'translateY(-26px)',opacity:0},{transform:'translateY(2px)',opacity:1,offset:.75},{transform:'none'}],{duration:520,delay:120+(i-f1)*90,easing:'cubic-bezier(.3,.9,.3,1.2)',fill:'backwards'})}}
+    else{const by=UI.lastBuyer!=null?P(UI.lastBuyer):null,col=by?by.color:'#f2b33d';const tg=by&&by.human?document.querySelector('#panel .sec.mine')||document.querySelector('#top .wallet'):null;const tr=tg&&tg.getBoundingClientRect();
+      for(let i=f0;i<f1;i++){const e=sls[i];if(!e)continue;const rc=e.getBoundingClientRect();if(!fxVis(rc))continue;const cx=rc.left+rc.width/2,cy=rc.top+rc.height/2;
+        if(tr&&fxVis(tr)){const c=document.createElement('i');c.className='fxtok';c.style.cssText=`left:${cx}px;top:${cy}px;--cc:${col}`;c.innerHTML=`<svg><use href="#r-${r}"/></svg>`;document.body.appendChild(c);const tx=tr.left+tr.width/2-cx,ty=tr.top+Math.min(40,tr.height/2)-cy;
+          c.animate([{transform:'translate(-50%,-50%) scale(1.2)'},{transform:`translate(calc(-50% + ${tx/2}px),calc(-50% + ${ty/2-50}px)) scale(1.4)`,offset:.5},{transform:`translate(calc(-50% + ${tx}px),calc(-50% + ${ty}px)) scale(.7)`,opacity:.6}],{duration:850,delay:(i-f0)*110,easing:'cubic-bezier(.45,0,.3,1)',fill:'both'}).onfinish=()=>c.remove()}
+        else for(let j=0;j<8;j++){const sp=document.createElement('i');sp.className='fxspark';sp.style.cssText=`left:${cx}px;top:${cy}px;background:${col};box-shadow:0 0 8px ${col}`;document.body.appendChild(sp);const a=Math.random()*6.28,dd=12+Math.random()*14;
+          sp.animate([{transform:'translate(-50%,-50%) scale(1)',opacity:1},{transform:`translate(calc(-50% + ${Math.cos(a)*dd}px),calc(-50% + ${Math.sin(a)*dd}px)) scale(.3)`,opacity:0}],{duration:620,delay:(i-f0)*90,easing:'ease-out',fill:'both'}).onfinish=()=>sp.remove()}}}})}
 /* Kraftwerksmarkt: Karten gleiten an ihren neuen Platz (FLIP), neue Karten schieben sich von rechts herein */
 function fxMkSnap(){const m=new Map();if(fxOff())return m;document.querySelectorAll('.cards [data-num]').forEach(e=>{const k=e.dataset.num;if(!m.has(k)){const r=e.getBoundingClientRect();if(r.width)m.set(k,r)}});m.mk=S?S.market.join(','):'';return m}
 function fxMkFlip(m){if(!m||!m.size||!S||m.mk===S.market.join(','))return;const seen=new Set();
