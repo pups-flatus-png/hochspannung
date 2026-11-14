@@ -5561,7 +5561,8 @@ function bootStart(){if(hmReduced()||document.getElementById('boot'))return;cons
   const o=document.createElement('div');o.id='boot';if(BOOT.keep)o.className='keep';o.style.setProperty('--by',(innerHeight/2).toFixed(1)+'px');o.setAttribute('aria-hidden','true');o.innerHTML='<div class="bt-h bt-t"></div><div class="bt-h bt-b"></div><i class="bt-dot"></i><i class="bt-line"></i><i class="bt-flash"></i>';document.body.appendChild(o);
   /* erst loslegen, wenn die App wirklich sichtbar und gezeichnet ist (iOS zeigt beim Start zuerst einen eigenen Startbildschirm) */
   let gone=false;const go=()=>{if(gone||!document.getElementById('boot'))return;if(document.hidden){document.addEventListener('visibilitychange',go,{once:true});return}gone=true;
-    requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>{if(!document.getElementById('boot'))return;bootAnchor(o);r.dataset.boot='run';if(HM.intro)HM.intro.hold=false;BOOT.tm.push(setTimeout(bootFly,1850),setTimeout(()=>{const d=document.querySelector('#boot .bt-dot');if(d)d.classList.add('gone')},2800),setTimeout(()=>bootEnd(),7000))},260)))};
+    const fr=(document.fonts&&document.fonts.ready)?Promise.race([document.fonts.ready,new Promise(r_=>setTimeout(r_,900))]):Promise.resolve();
+    fr.then(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>{if(!document.getElementById('boot'))return;bootAnchor(o);r.dataset.boot='run';if(HM.intro)HM.intro.hold=false;BOOT.tm.push(setTimeout(bootFly,1850),setTimeout(()=>{const d=document.querySelector('#boot .bt-dot');if(d)d.classList.add('gone')},2800),setTimeout(()=>bootEnd(),7000))},260))))};
   if(document.readyState==='complete')go();else addEventListener('load',go,{once:true});
   BOOT.tm.push(setTimeout(()=>{if(!gone){gone=false;go()}},4000))}
 /* iPhone: der Standby-Punkt bleibt in der Mitte – die Stadt direkt darunter wird zur Startstadt, von der aus das Netz zündet */
@@ -5576,10 +5577,18 @@ function bootFly(){const d=document.querySelector('#boot .bt-dot'),I=HM.intro,M=
   if(BOOT.v==='a'){/* Punkt gleitet nach dem Öffnen zur Startstadt */
     BOOT.tm.push(setTimeout(()=>{d.style.setProperty('--fx',(best[1]-cx).toFixed(1)+'px');d.style.setProperty('--fy',(best[2]-cy).toFixed(1)+'px');d.classList.add('fly')},300));return}
   /* b/c: Karte (noch hinter den Blenden) so verschieben, dass die Stadt genau unter dem Punkt liegt; nach dem Zünden hebt sie sich mit dem Netz an ihren Platz */
-  hm.style.transition='none';hm.style.translate=`${(cx-best[1]).toFixed(1)}px ${(cy-best[2]).toFixed(1)}px`;
+  const hm0_=hm;hm.style.transition='none';hm.style.translate=`${(cx-best[1]).toFixed(1)}px ${(cy-best[2]).toFixed(1)}px`;
   const far=Math.hypot(cx-best[1],cy-best[2])>60;
-  BOOT.tm.push(setTimeout(()=>{hm.style.transition=`translate ${far?1.5:2.4}s cubic-bezier(.5,0,.2,1)`;hm.style.translate='0px 0px';BOOT.tm.push(setTimeout(()=>{hm.style.transition='';hm.style.translate=''},2500))},far?1300:1500))}
-function bootEnd(skip){BOOT.tm.forEach(clearTimeout);BOOT.tm=[];const hm0=document.querySelector('#start .s3-hero .hero-map');if(hm0&&hm0.style.translate){hm0.style.transition=skip?'':'translate 1.2s cubic-bezier(.45,0,.25,1)';hm0.style.translate=skip?'':'0px 0px';if(!skip)setTimeout(()=>{hm0.style.transition='';hm0.style.translate=''},1300)}if(HM.intro)HM.intro.hold=false;const o=document.getElementById('boot');if(o)o.remove();delete document.documentElement.dataset.boot;document.querySelectorAll('#start .bootlog').forEach(e=>e.remove())}
+  /* v207: Stadt bis zum Anheben in jedem Frame unter dem Punkt halten – iOS verschiebt das Layout beim Start noch (Schriften, App-Höhe) */
+  {let tx=cx-best[1],ty=cy-best[2],lastEl=hm;const src=best[0];BOOT.lock=true;
+   const lock=()=>{if(!BOOT.lock)return;const h2=document.querySelector('#start .s3-hero .hero-map'),dd=document.querySelector('#boot .bt-dot'),G2=HM.g,M2=HM.mp;
+     if(h2&&dd&&G2&&M2&&G2.n[src]){const br=h2.getBoundingClientRect(),n=G2.n[src],q=HM.gp?HM.gp(n.x,n.y):[n.x,n.y],dr=dd.getBoundingClientRect();
+       const ex=(dr.left+dr.width/2)-(br.left+M2.ox+q[0]*M2.s),ey=(dr.top+dr.height/2)-(br.top+M2.oy+q[1]*M2.s);
+       if(h2!==lastEl){lastEl=h2;const cur=(h2.style.translate||'0px 0px').split(' ').map(parseFloat);tx=cur[0]||0;ty=cur[1]||0}
+       if(Math.abs(ex)+Math.abs(ey)>.4){tx+=ex;ty+=ey;h2.style.transition='none';h2.style.translate=`${tx.toFixed(1)}px ${ty.toFixed(1)}px`}}
+     requestAnimationFrame(lock)};requestAnimationFrame(lock)}
+  BOOT.tm.push(setTimeout(()=>{BOOT.lock=false;const hm=document.querySelector('#start .s3-hero .hero-map')||hm0_;hm.style.transition=`translate ${far?1.5:2.4}s cubic-bezier(.5,0,.2,1)`;hm.style.translate='0px 0px';BOOT.tm.push(setTimeout(()=>{hm.style.transition='';hm.style.translate=''},2500))},far?1300:1500))}
+function bootEnd(skip){BOOT.lock=false;BOOT.tm.forEach(clearTimeout);BOOT.tm=[];const hm0=document.querySelector('#start .s3-hero .hero-map');if(hm0&&hm0.style.translate){hm0.style.transition=skip?'':'translate 1.2s cubic-bezier(.45,0,.25,1)';hm0.style.translate=skip?'':'0px 0px';if(!skip)setTimeout(()=>{hm0.style.transition='';hm0.style.translate=''},1300)}if(HM.intro)HM.intro.hold=false;const o=document.getElementById('boot');if(o)o.remove();delete document.documentElement.dataset.boot;document.querySelectorAll('#start .bootlog').forEach(e=>e.remove())}
 /* Neues Spiel: Kamera fliegt auf das Startgebiet zu, dann erscheint der Spielplan */
 function hmZoomGo(go){const hm=document.querySelector('#start .s3-hero .hero-map');if(!BOOT.zoom||!hm||hmReduced()||!HM.g||!HM.mp){go();return}
   const ids=Object.keys(HM.g.n);let cx=0,cy=0;ids.forEach(k=>{cx+=HM.g.n[k].x;cy+=HM.g.n[k].y});cx/=ids.length||1;cy/=ids.length||1;
@@ -6687,7 +6696,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v206';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v207';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -7235,6 +7244,7 @@ window.addEventListener('resize',()=>{if(S){applyVB();if(UI.sheet)renderSheet()}
 /* --- Start --- */
 function boot(data){
   /* Startbildschirm: bei jedem Öffnen ein zufälliger Spielplan */
+  try{const q=new URLSearchParams(location.search).get('bootmap');if(q&&MAPS[q])UI.map=q}catch(_){}
   if(!UI.map){const ks=Object.keys(MAPS);UI.map=ks[Math.random()*ks.length|0];if(MAPS[UI.map].paris&&(UI.deck==='mix'||UI.deck==='mix1'))UI.deck='std'}
   if(data&&data.S)S=data.S;
   else{try{const raw=localStorage.getItem(SAVE_KEY);if(raw){const s=JSON.parse(raw);if(s&&s.v===1)S=s}}catch(_){}}
