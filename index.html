@@ -2889,6 +2889,16 @@ html[data-boot] #start.v3:not(.wide) .s3-bar .cta::before{animation-delay:5.6s}
 [data-theme="light"] .pl2-sh div span{color:#9a6208}
 [data-theme="light"] .pl2-tabs i,[data-theme="light"] .pl2-ct .m3stp i{border-color:rgba(0,0,0,.18)}
 [data-theme="light"] #app.pl2 .pl2-sec{background:linear-gradient(180deg,rgba(242,179,61,.12),#fff 120px)}
+
+/* v187: Bieten und Aussteigen in einer Reihe, farblich getrennt */
+.aucact{margin-bottom:12px}
+.aucact .row{flex-wrap:nowrap!important;gap:6px}
+.aucact .row .stepper{flex:none}
+.aucact .row .grow{flex:1 1 0!important;min-width:0;padding-left:8px;padding-right:8px}
+.aucact .row .bdrop{flex:none;padding:0 12px;background:rgba(255,95,90,.10)!important;border:1px solid rgba(255,110,100,.55)!important;color:#ff9b8f!important;box-shadow:none!important}
+.aucact .row .bdrop:active{background:rgba(255,95,90,.22)!important}
+[data-theme="light"] .aucact .row .bdrop{background:rgba(214,60,50,.08)!important;border-color:rgba(200,60,50,.5)!important;color:#b23a28!important}
+@media (max-width:380px){.aucact .row .stepper button{width:30px}.aucact .row .stepper output{min-width:44px}}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -4461,7 +4471,7 @@ function panelAuction(a){
       const key=auc.plant+'-'+auc.bid;
       if(UI.bidKey!==key){UI.bidKey=key;UI.bid=auc.bid+1}
       const can=me().money>=auc.bid+1;
-      h+=aucAct({t:LX(`Höchstgebot ${auc.bid} € · erhöhen oder aussteigen`,`Highest bid ${auc.bid} € · raise or drop out`),h:(can?`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=auc.bid+1?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=me().money?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="raise">${LX('Bieten','Bid')} ${UI.bid} €</button><button type="button" class="btn" data-act="drop">Aussteigen</button></div>`:`<p class="hint">Du hast nicht genug Geld, um zu erhöhen.</p><button type="button" class="btn" data-act="drop">Aussteigen</button>`)});
+      h+=aucAct({t:LX(`Höchstgebot ${auc.bid} € · erhöhen oder aussteigen`,`Highest bid ${auc.bid} € · raise or drop out`),h:(can?`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=auc.bid+1?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=me().money?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="raise">${LX('Bieten','Bid')} ${UI.bid} €</button><button type="button" class="btn bdrop" data-act="drop">Aussteigen</button></div>`:`<p class="hint">Du hast nicht genug Geld, um zu erhöhen.</p><button type="button" class="btn" data-act="drop">Aussteigen</button>`)});
       /* v116: Erklärtext unter den Gebotsknöpfen entfernt */
     }
     h+=`</section>`;
@@ -6254,7 +6264,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v186';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v187';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
