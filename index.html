@@ -2803,14 +2803,16 @@ html[data-theme="light"] #start.v3:not(.wide) .s3-brand{margin:0 4px;padding:10p
 }
 
 /* ---- v183: Startsequenz – Spielaufbau fährt erst nach dem Kartenlift von unten herein (schmale Bildschirme) ---- */
-html[data-boot] #start.v3:not(.wide) .s3-side>*,html[data-boot] #start.v3:not(.wide) .s3-bar{animation:bSlideUp .95s cubic-bezier(.2,.85,.25,1) 4.7s both}
+html[data-boot] #start.v3:not(.wide) .s3-side>*,html[data-boot] #start.v3:not(.wide) .s3-bar{animation:bSlideUp 2.8s cubic-bezier(.55,0,.2,1) 2.25s both}
+/* v185: Karte während der Startsequenz nicht am unteren Rand des Kartenbereichs abschneiden (kein oberer/unterer Block) */
+html[data-boot] #start.v3:not(.wide) .s3-hero,html[data-boot] #start.v3:not(.wide) .s3-hero .hero-map,html[data-boot] #start.v3:not(.wide) .s3-hero .hero-map svg{overflow:visible!important}
 @keyframes bSlideUp{from{transform:translateY(105vh)}to{transform:none}}
 html[data-boot] #start.v3:not(.wide) .s3-rows{animation-delay:5.2s}
 html[data-boot] #start.v3:not(.wide) .s3-row:nth-child(1){animation-delay:5.5s}html[data-boot] #start.v3:not(.wide) .s3-row:nth-child(1) .s3-rv b{animation-delay:5.6s}
 html[data-boot] #start.v3:not(.wide) .s3-row:nth-child(2){animation-delay:5.6s}html[data-boot] #start.v3:not(.wide) .s3-row:nth-child(2) .s3-rv b{animation-delay:5.7s}
 html[data-boot] #start.v3:not(.wide) .s3-row:nth-child(3){animation-delay:5.7s}html[data-boot] #start.v3:not(.wide) .s3-row:nth-child(3) .s3-rv b{animation-delay:5.8s}
 html[data-boot] #start.v3:not(.wide) .s3-row:nth-child(4){animation-delay:5.8s}html[data-boot] #start.v3:not(.wide) .s3-row:nth-child(4) .s3-rv b{animation-delay:5.9s}
-html[data-boot] #start.v3:not(.wide) .s3-new h2,html[data-boot] #start.v3:not(.wide) .s3-res,html[data-boot] #start.v3:not(.wide) .sb-sum{animation-delay:5.3s}
+html[data-boot] #start.v3:not(.wide) .s3-new h2,html[data-boot] #start.v3:not(.wide) .sb-sum{animation-delay:5.3s}
 html[data-boot] #start.v3:not(.wide) .s3-bar .cta{animation:bOn .3s linear 5.5s both,bReady 1s ease-out 6.4s both}
 html[data-boot] #start.v3:not(.wide) .s3-bar .cta::before{animation-delay:5.6s}
 
@@ -4420,7 +4422,7 @@ function phaseRuleItems(){
 function phaseRulesHTML(){
   if(!S||S.phase==='end')return '';const items=phaseRuleItems();if(!items.length)return '';
   const en=LANG==='en',M=MAPS[S.map],key=S.map+':'+S.phase;let seen={};try{seen=JSON.parse(localStorage.getItem('hochspannung-seen')||'{}')}catch(_){}
-  const first=!seen[key];const open=UI.mrOpen&&UI.mrOpen[key]!=null?UI.mrOpen[key]:false;
+  const first=false;const open=UI.mrOpen&&UI.mrOpen[key]!=null?UI.mrOpen[key]:false;
   const name=M.exp?(en&&M.en?M.en:M.name):(en?'This game':'Diese Partie');
   const li=items.map(x=>`<li class="rd-i c-${RCAT[x.ic]||'plant'}"><span class="rd-ic" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16">${RICON[x.ic]||RICON.plant}</svg></span><div class="rd-tx"><b>${x.t}</b>${open?`<span>${x.d}</span>`:''}${x.st?`<em>${x.st}</em>`:''}</div></li>`).join('');
   return `<section class="mrule${open?' open':''}${first?' first':''}"><button type="button" class="mr-h" data-act="mrTog" data-k="${key}" aria-expanded="${open}"><span class="mr-k">${first?(en?'New in this phase':'Neu in dieser Phase'):(en?'Board rules now':'Kartenregeln jetzt')} · ${esc(name)}${open?'':`<small class="mr-more">${en?'Tap for details':'Tippen für Details'}</small>`}</span><span class="mr-n">${items.length}</span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="transform:rotate(${open?180:0}deg)"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg></button><ul class="rd-list">${li}</ul>${first?`<button type="button" class="btn sm mr-ok" data-act="mrSeen" data-k="${key}">${en?'Got it':'Verstanden'}</button>`:''}</section>`}
@@ -4754,7 +4756,7 @@ function aucScroll(a){/* Handy: eigene Auktionsrunde – Gebotsbereich ins Bild 
     if(r.top>=visTop&&r.top+Math.min(r.height,260)<=visBot)return;
     panel.scrollTo({top:panel.scrollTop+r.top-visTop-44,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}catch(_){}}
 function renderPanel(){
-  const a=actor();UI._ab=null;const P2=pl2();let h=P2?phaseRulesHTML():qbarHTML()+orderHTML(a)+phaseRulesHTML()+turnLine(a);
+  const a=actor();UI._ab=null;const P2=pl2();let h=P2?'':qbarHTML()+orderHTML(a)+turnLine(a);
   if(P2)h+=`<div class="pl2-sec">${pl2Head(a)}${turnLine(a)}`;
   const after=oppPlantsHTML();
   if(S.subPick!=null){h+=panelSub(a)}else if(S.xauc){h+=panelX(a)}else
@@ -4766,7 +4768,7 @@ function renderPanel(){
     case'end':h+=`<section class="sec"><h3>Spielende</h3><p class="hint">${esc(P(S.ranking[0]).name)} gewinnt.</p><button type="button" class="btn pri" data-act="results">Ergebnis ansehen</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button></section>`;break;
   }
   if(P2)h+=`</div>`;
-  h+=feedHTML()+after+panelMine();
+  h+=feedHTML()+phaseRulesHTML()+after+panelMine();
   if(UI._ab&&isMine(a))h+=`<div class="actbar" role="region" aria-label="${LX('Dein Zug','Your move')}"><div class="ab-t"><span class="dot"></span>${UI._ab.t}</div>${UI._ab.h}</div>`;
   const st=panel.scrollTop,anc=panelAnchor();panel.innerHTML=h;panel.scrollTop=st;panelRestore(anc);aucScroll(a);orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
 }
@@ -6251,7 +6253,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v184';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v185';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
