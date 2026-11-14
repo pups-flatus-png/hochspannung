@@ -3184,6 +3184,36 @@ html[data-boot],html[data-boot] body{background:#030507}
 @keyframes fxShine{to{transform:translateX(120%)}}
 [data-theme="light"] .fxcard{background:linear-gradient(180deg,#fffaf0,#fff);border-color:rgba(208,138,24,.6)}
 [data-theme="light"] .fxcard .fc-t{color:#2a2f35}[data-theme="light"] .fxcard .fc-v{color:#9a6208;text-shadow:none}
+
+/* ---- v206: Karte „Night grid“ – ruhiges Land, leichte Regionsfarbe, Spielerfarben als Hauptfarbe, Gold = handeln ---- */
+html:not([data-theme="light"]) #map.atlas .rcell{opacity:1;fill-opacity:.06;stroke-opacity:.35;stroke-width:1.1;stroke-dasharray:5 4}
+html:not([data-theme="light"]) #map.atlas .rcell.off{fill:#000!important;fill-opacity:.35;stroke:none!important}
+html:not([data-theme="light"]) #map.atlas .terr{display:none}
+html:not([data-theme="light"]) #map.atlas .land{fill:#101920}
+html:not([data-theme="light"]) #map.atlas .land-tex,html:not([data-theme="light"]) #map.atlas .land-eng{display:none}
+html:not([data-theme="light"]) #map.atlas .relief{opacity:.3}
+html:not([data-theme="light"]) #map.atlas .coast{stroke:#7f9db3;stroke-opacity:.45}
+html:not([data-theme="light"]) #map.atlas .coast-glow{opacity:.35}
+html:not([data-theme="light"]) #map.atlas .river{opacity:.45}
+html:not([data-theme="light"]) #map.atlas .edge:not(.own):not(.glow){stroke:#2a3946;stroke-width:1.4;opacity:.8}
+html:not([data-theme="light"]) #map.atlas .edge.off:not(.own):not(.glow){opacity:.16}
+html:not([data-theme="light"]) #map.atlas .edge.own{stroke-width:3}
+html:not([data-theme="light"]) #map.atlas .edge.glow{stroke-width:10;opacity:.55}
+html:not([data-theme="light"]) #map.atlas .pylons{opacity:.25}
+html:not([data-theme="light"]) #map.atlas:not(.building) .ecost{display:none}
+html:not([data-theme="light"]) #map.atlas .city .cshadow,html:not([data-theme="light"]) #map.atlas .city .rtick,html:not([data-theme="light"]) #map.atlas .city .inner{display:none}
+html:not([data-theme="light"]) #map.atlas .city .body{fill:#121c24;stroke-opacity:.9;stroke-width:1.8}
+html:not([data-theme="light"]) #map.atlas .city .sl.open{fill:none;stroke:rgba(200,215,228,.75);stroke-width:1}
+html:not([data-theme="light"]) #map.atlas .city .sl.lock{stroke:rgba(170,192,212,.18);stroke-dasharray:none}
+html:not([data-theme="light"]) #map.atlas .city .sl:not(.open):not(.lock){filter:drop-shadow(0 0 3px currentColor)}
+html:not([data-theme="light"]) #map.atlas .city.can .body{stroke:#f2b33d!important;stroke-width:2.2;stroke-opacity:1;filter:drop-shadow(0 0 5px rgba(242,179,61,.6))}
+html:not([data-theme="light"]) #map.atlas .city.sel .body{stroke:#ffd36e!important;stroke-width:2.6;stroke-opacity:1}
+html:not([data-theme="light"]) #map.atlas .city .mine{display:inline;fill:none;stroke-width:1.2;stroke-dasharray:2 3;opacity:.7}
+html:not([data-theme="light"]) #map.atlas .city.off circle{fill:#26333d}
+html:not([data-theme="light"]) #map.atlas .city .cname{font-weight:500;fill:#c9d4dc;letter-spacing:.03em}
+html:not([data-theme="light"]) #map.atlas .rlabel{opacity:.5;letter-spacing:.42em}
+html:not([data-theme="light"]) #map.atlas .clights{opacity:.35}
+html:not([data-theme="light"]) #board:has(#map.atlas){background:radial-gradient(130% 100% at 50% 42%,#0c141a 0%,#070b0e 70%,#04070a 100%)}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -4609,11 +4639,11 @@ function renderMap(){
     const occ=S.owners[id]||[];const cr=cityRule(id);
     let sl='';
     SP.forEach(([sx,sy],i)=>{if(i>=cr.costs.length)return;
-      if(occ[i]!=null){const fr=fresh.has(id+':'+i);sl+=`<circle class="sl" cx="${sx}" cy="${sy}" r="${MAPSTYLE==='atlas'?4.1:5}" style="fill:${P(occ[i]).color};stroke:${P(occ[i]).color}"/>`;if(fr)bursts.push([id,P(occ[i]).color])}
-      else sl+=`<circle class="sl ${i<cr.max?'open':'lock'}" cx="${sx}" cy="${sy}" r="${MAPSTYLE==='atlas'?3.7:4.5}"/>`;
+      if(occ[i]!=null){const fr=fresh.has(id+':'+i);sl+=`<circle class="sl" cx="${sx}" cy="${sy}" r="${NIGHT()?3.8:MAPSTYLE==='atlas'?4.1:5}" style="fill:${P(occ[i]).color};stroke:${P(occ[i]).color}"/>`;if(fr)bursts.push([id,P(occ[i]).color])}
+      else sl+=`<circle class="sl ${i<cr.max?'open':'lock'}" cx="${sx}" cy="${sy}" r="${NIGHT()?3.1:MAPSTYLE==='atlas'?3.7:4.5}"/>`;
     });
     const o=opts[id],sel=building&&UI.buildSel===id;
-    g+=`<g class="city${o?' can':''}${sel?' sel':''}" data-city="${id}" transform="translate(${c.x.toFixed(1)},${c.y.toFixed(1)})"><circle class="halo" r="24"/><circle class="cshadow" r="20"/><circle class="body" r="17" style="stroke:${REGIONS[c.reg].col}"/><circle class="rtick" r="17" transform="rotate(-130)" style="stroke:${REGIONS[c.reg].col}"/>${occ.includes(H)?'<circle class="mine" r="20.5" style="stroke:'+me().color+'"/>':''}<circle class="inner" r="13.5"/>${sl}${(()=>{const q=LY&&LY.city[id];if(q){clab+=`<text class="cname" x="${(c.x+q.x).toFixed(1)}" y="${(c.y+q.y).toFixed(1)}" style="text-anchor:${q.an}">${c.name}</text>`;return ''}return `<text class="cname" y="32">${c.name}</text>`})()}${o?`<g class="cost${o.jump?' jump':''}" transform="translate(0,-25)"><rect x="${o.jump?-21:-15}" y="-8" width="${o.jump?42:30}" height="15" rx="7.5"/><text y="3.5">${o.jump?'↷ ':''}${o.cost}</text></g>`:''}${MAPS[S.map].startCities&&MAPS[S.map].startCities.includes(id)?'<text class="cstar" x="15" y="-12">★</text>':''}${cr.trans?`<g class="ctrans${S.step<2?' lk':''}" transform="translate(-27,-21)"><title>${LX('Jenseits der Grenze: erst ab Stufe 2 bebaubar','Across the border: buildable from step 2')}</title><rect width="${S.step<2?30:22}" height="13" rx="6.5"/><text x="${S.step<2?15:11}" y="9.5">${S.step<2?LX('ab II','from II'):'II'}</text></g>`:''}${MR().wien===id?`<g class="cwien" transform="translate(12,-23)"><title>${LX('Wien: Müll 1 € billiger für Spieler mit Stadt hier','Vienna: garbage 1 € cheaper for players with a city here')}</title><rect width="34" height="13" rx="6.5"/><text x="17" y="9.5">${LX('Müll −1','Garb. −1')}</text></g>`:''}</g>`;
+    g+=`<g class="city${o?' can':''}${sel?' sel':''}" data-city="${id}" transform="translate(${c.x.toFixed(1)},${c.y.toFixed(1)})"><circle class="halo" r="24"/><circle class="cshadow" r="20"/><circle class="body" r="${NIGHT()?13.5:17}" style="stroke:${REGIONS[c.reg].col}"/><circle class="rtick" r="17" transform="rotate(-130)" style="stroke:${REGIONS[c.reg].col}"/>${occ.includes(H)?'<circle class="mine" r="'+(NIGHT()?16.5:20.5)+'" style="stroke:'+me().color+'"/>':''}<circle class="inner" r="13.5"/>${sl}${(()=>{const q=LY&&LY.city[id];if(q){clab+=`<text class="cname" x="${(c.x+q.x).toFixed(1)}" y="${(c.y+q.y).toFixed(1)}" style="text-anchor:${q.an}">${c.name}</text>`;return ''}return `<text class="cname" y="32">${c.name}</text>`})()}${o?`<g class="cost${o.jump?' jump':''}" transform="translate(0,-25)"><rect x="${o.jump?-21:-15}" y="-8" width="${o.jump?42:30}" height="15" rx="7.5"/><text y="3.5">${o.jump?'↷ ':''}${o.cost}</text></g>`:''}${MAPS[S.map].startCities&&MAPS[S.map].startCities.includes(id)?'<text class="cstar" x="15" y="-12">★</text>':''}${cr.trans?`<g class="ctrans${S.step<2?' lk':''}" transform="translate(-27,-21)"><title>${LX('Jenseits der Grenze: erst ab Stufe 2 bebaubar','Across the border: buildable from step 2')}</title><rect width="${S.step<2?30:22}" height="13" rx="6.5"/><text x="${S.step<2?15:11}" y="9.5">${S.step<2?LX('ab II','from II'):'II'}</text></g>`:''}${MR().wien===id?`<g class="cwien" transform="translate(12,-23)"><title>${LX('Wien: Müll 1 € billiger für Spieler mit Stadt hier','Vienna: garbage 1 € cheaper for players with a city here')}</title><rect width="34" height="13" rx="6.5"/><text x="17" y="9.5">${LX('Müll −1','Garb. −1')}</text></g>`:''}</g>`;
   }
   if(clab)g+=`<g class="city clab" pointer-events="none">${clab}</g>`;
   /* v180: immer komplett neu aufbauen – Safari verliert sonst die Maske der Küstenlinien und die Karte wird blau überzogen */
@@ -6657,7 +6687,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v205';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v206';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -6693,6 +6723,8 @@ function mkFloor(){if(!S)return;const a=actor(),inRes=S.phase==='resources'&&!S.
   if(inRes&&!mine&&UI.mkClosedR!==S.round&&(UI.sheet==null||UI.sheet==='markets')){if(UI.sheet!=='markets')UI.mkTab=null;UI.sheet='markets';UI.mkAuto=true}
   else if(UI.mkAuto&&UI.sheet==='markets'&&(mine||!inRes)){if(mine&&mkHold()||S.gate==='build'&&S.phase==='resources'){}else{UI.sheet=null;UI.mkAuto=false}}
   else if(UI.sheet!=='markets')UI.mkAuto=false}
+function NIGHT(){return MAPSTYLE==='atlas'&&THEME_EFF()!=='light'}
+function THEME_EFF(){return document.documentElement.dataset.theme==='light'?'light':'dark'}
 function fitChips(){/* v205: Breite messen statt Container-Abfragen (Safari misst diese falsch) */document.querySelectorAll('.pl2-ord .po').forEach(po=>{po.classList.remove('c124','c100','c72','c52');const w=po.getBoundingClientRect().width;if(!w)return;if(w<124)po.classList.add('c124');if(w<100)po.classList.add('c100');if(w<72)po.classList.add('c72');if(w<52)po.classList.add('c52')});document.querySelectorAll('.pl2-rm').forEach(e=>{const w=e.getBoundingClientRect().width;e.classList.toggle('c230',!!w&&w<230)})}
 addEventListener('resize',()=>{try{fitChips()}catch(_){}});
 function pl2Top(){const t=document.getElementById('top');if(!t)return;let b=document.getElementById('pl2bar');if(!pl2()){if(b)b.remove();document.getElementById('pl2rd')?.remove();return}if(!b){b=document.createElement('div');b.id='pl2bar';t.appendChild(b)}else if(b.parentNode!==t)t.appendChild(b);b.innerHTML=pl2Bar();let r=document.getElementById('pl2rd');if(!r||r.parentNode!==t){r=document.createElement('div');r.id='pl2rd';t.insertBefore(r,t.firstChild)}r.innerHTML=`<b>GRID MASTER</b><small>${LX('Runde','Round')} ${S.round}${S.phase==='end'?' · '+LX('Spielende','Game over'):''}</small>`}
