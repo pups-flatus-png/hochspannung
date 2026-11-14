@@ -3062,6 +3062,7 @@ html #app.pl2 #pl2rd b{font-size:clamp(14px,4.6vw,18px);overflow:hidden;text-ove
 html #app.pl2 #top:has(.undo) .wallet b{font-size:23px}
 html #app.pl2 #top:has(.undo) #pl2rd b{font-size:clamp(13px,4vw,16px)}
 }
+.gatesec .g-opp .opr.me{margin:0 -8px 6px;padding:8px;border-radius:10px;background:linear-gradient(90deg,rgba(242,179,61,.12),rgba(242,179,61,.02));box-shadow:inset 0 0 0 1px rgba(242,179,61,.4)}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -4924,8 +4925,8 @@ function oppPlantsHTML(force){
   if(!S||S.phase==='end')return '';
   if(S.gate==='resources'&&!force)return '';
   let open=true;try{open=localStorage.getItem('hochspannung-opp-open')!=='0'}catch(_){}if(S.phase!=='auction'){const o=(UI.oppPh||{})[S.round+S.phase];open=o!=null?o:false}if(force)open=true;
-  const opps=S.order.map(P).filter(p=>!p.human);
-  const head=`<button type="button" class="opph" data-act="oppToggle" aria-expanded="${open}"><span>Kraftwerke der Gegner</span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="transform:rotate(${open?180:0}deg)"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg></button>`;
+  const opps=S.order.map(P).filter(p=>force||!p.human);
+  const head=`<button type="button" class="opph" data-act="oppToggle" aria-expanded="${open}"><span>${force?LX('Kraftwerke aller Firmen','All power plants'):'Kraftwerke der Gegner'}</span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="transform:rotate(${open?180:0}deg)"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg></button>`;
   if(!open)return `<div class="oppp closed">${head}</div>`;
   const rows=opps.map(p=>{
     const sv=normAlloc(p);const newN=(st().pl[p.id].auc||[]).filter(x=>x.r===S.round).map(x=>x.n);
@@ -4933,7 +4934,7 @@ function oppPlantsHTML(force){
       const need=FREE(t)?resIcon(t):t==='flux'?`${k}★`:HYB[t]?`${k}${resIcon(HYB[t][0])}<i>/</i>${resIcon(HYB[t][1])}`:`${k}${resIcon(t)}`;
       const ok=FREE(t)||stor.length>=k;
       return `<button type="button" class="pm t-${t}${newN.includes(n)?' nw':''}" data-act="pinfo" data-num="${n}" aria-label="Kraftwerk ${PN(n)}, ${TYPE_NAME[t]}, versorgt ${c}, Lager ${stor.length}"><span class="pmn">${Math.floor(n)}</span><span class="pmq">${need}<span class="pma">→</span><b>${c+(p.sub===n?1:0)}</b></span>${p.sub===n?'<span class="pmsub">+1</span>':''}<span class="pms${ok?'':' low'}">${FREE(t)?'<small>frei</small>':stor.length?stor.map(r=>resIcon(r)).join(''):'<small>leer</small>'}</span>${newN.includes(n)?'<span class="pmt">neu</span>':''}</button>`}).join('')+(p.park?`<span class="pm pmpark" title="${LX('Freizeitpark: zählt als eine Stadt','Amusement park: counts as one city')}"><span class="pmn">${HOUSE}</span><small>${LX('Freizeitpark','Park')}</small></span>`:'')||'<span class="pmnone">Noch kein Kraftwerk</span>';
-    return `<div class="opr" ${pc(p.id)}>${promoChips(p)}<div class="oprh"><i class="dot"></i><b>${esc(p.name)}</b>${p.style&&STYLES[p.style]?`<span class="stag" title="${STYLES[p.style].note}">${STYLES[p.style].name}</span>`:''}<span>${p.money} €</span><span>${cityCount(p)}${HOUSE}</span><span class="opcap">${BOLT}${capacity(p)}</span><span class="opfu">Brennstoff für ${fueledCap(p)}</span></div><div class="pmrow">${tiles}</div></div>`}).join('');
+    return `<div class="opr${p.human?' me':''}" ${pc(p.id)}>${promoChips(p)}<div class="oprh"><i class="dot"></i><b>${esc(p.name)}</b>${p.style&&STYLES[p.style]?`<span class="stag" title="${STYLES[p.style].note}">${STYLES[p.style].name}</span>`:''}<span>${p.money} €</span><span>${cityCount(p)}${HOUSE}</span><span class="opcap">${BOLT}${capacity(p)}</span><span class="opfu">Brennstoff für ${fueledCap(p)}</span></div><div class="pmrow">${tiles}</div></div>`}).join('');
   return `<div class="oppp">${head}${rows}</div>`;
 }
 function qbarHTML(){
@@ -4978,7 +4979,7 @@ function renderPanel(){
   }
   if(P2)h+=`</div>`;
   /* v186: in der Auktion steht „Dein Betrieb“ direkt unter dem Kraftwerksmarkt, vor den letzten Zügen */
-  h+=S.gate?after+panelMine():S.phase==='auction'?panelMine()+after+feedHTML()+phaseRulesHTML():feedHTML()+phaseRulesHTML()+after+panelMine();
+  h+=S.gate?after+(S.gate==='resources'?'':panelMine()):S.phase==='auction'?panelMine()+after+feedHTML()+phaseRulesHTML():feedHTML()+phaseRulesHTML()+after+panelMine();
   if(UI._ab&&(isMine(a)||S.gate))h+=`<div class="actbar" role="region" aria-label="${LX('Dein Zug','Your move')}"><div class="ab-t"><span class="dot"></span>${UI._ab.t}</div>${UI._ab.h}</div>`;
   const st=panel.scrollTop,anc=panelAnchor();panel.innerHTML=h;panel.scrollTop=st;panelRestore(anc);aucScroll(a);orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
 }
@@ -6463,7 +6464,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v192';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v193';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
