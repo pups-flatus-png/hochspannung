@@ -2899,6 +2899,27 @@ html[data-boot] #start.v3:not(.wide) .s3-bar .cta::before{animation-delay:5.6s}
 .aucact .row .bdrop:active{background:rgba(255,95,90,.22)!important}
 [data-theme="light"] .aucact .row .bdrop{background:rgba(214,60,50,.08)!important;border-color:rgba(200,60,50,.5)!important;color:#b23a28!important}
 @media (max-width:380px){.aucact .row .stepper button{width:30px}.aucact .row .stepper output{min-width:44px}}
+
+/* ---- v188: Spielbildschirm – einheitliche Typografie (Zahlen Orbitron, Titel Orbitron versal, Labels Barlow versal) ---- */
+:is(#panel,#sheet,#top,#board) :is(.bidbox .big,.aucact .stepper output,.rctl output,.mrow .stat b,.stat>b,.income b,.opt .cst,.pmn,.pmq b,.cv b,.nchip b,.ct b,.log .r,.loglist .r){font-family:'Orbitron',var(--display)!important;font-weight:800!important;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+#panel .netst .nsn b,#panel .stock-row .stock,#sheet .rres b{font-family:'Orbitron',var(--display)!important;font-weight:800!important}
+#panel .bidbox .big{font-size:24px!important}
+#panel .aucact .stepper output{font-size:17px!important}
+#panel .mrow .stat b{font-size:20px!important}
+.loglist .r{font-size:10px!important}
+#panel .btn,#sheet .btn,#panel .actbar .btn{font-family:'Orbitron',var(--display)!important;font-weight:800!important;text-transform:uppercase;letter-spacing:.1em;font-size:12.5px!important}
+#panel .aucact .row .bdrop{font-size:12px!important}
+#panel .sec>h3,#sheet .sec>h3,#panel .aucsec>h3{font-family:'Orbitron',var(--display)!important;font-weight:800!important;font-size:13px!important;letter-spacing:.1em!important;text-transform:uppercase}
+#app.pl2 .pl2-sec section.sec:first-of-type>h3:first-child{display:none}
+:is(#panel,#sheet) :is(.mkt-label,.mkt-label span,.mgl,.cxl,.dl,.ss>small){font-family:var(--body,Barlow),Barlow,system-ui!important;font-weight:600!important;font-size:10.5px!important;letter-spacing:.14em!important;text-transform:uppercase;color:var(--muted)}
+.pl2-tabs span,.pl2-trk .m3hd small,.pl2-ct .ln .mk span,#app.pl2 #pl2rd small{font-family:Barlow,system-ui!important;font-weight:600}
+#panel .actbar .ab-t{font-family:Barlow,system-ui!important;font-weight:600}
+#app.pl2 #board>.mapbar{font-family:Barlow,system-ui!important}
+#panel .actbar .btn{letter-spacing:.05em!important;font-size:11.5px!important;padding-left:12px;padding-right:12px;min-width:0}
+#panel .actbar .btn.pri{flex:1 1 auto}
+#panel .actbar .btn:not(.pri){flex:0 1 38%;max-width:40%;white-space:normal;line-height:1.15}
+#panel .actbar .btn.pri{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fxban.pl2{top:calc(env(safe-area-inset-top,0px) + 236px)}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -6264,7 +6285,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v187';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v188';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -6348,7 +6369,7 @@ function fxPay(e){const p=P(e.pid);if(!p)return;
     tg.animate([{transform:'scale(1)',boxShadow:'0 0 0 0 rgba(242,179,61,0)'},{transform:'scale(1.07)',boxShadow:'0 0 0 2px rgba(242,179,61,.95),0 0 34px rgba(242,179,61,.7)',offset:.25},{transform:'scale(1)',boxShadow:'0 0 0 0 rgba(242,179,61,0)'}],{duration:1100,easing:'cubic-bezier(.2,.9,.3,1)'});
     const rc=tg.getBoundingClientRect(),f=document.createElement('div');f.className='fxpay';f.textContent='+'+e.inc+' €';f.style.left=(rc.left+rc.width/2)+'px';f.style.top=(rc.top+4)+'px';document.body.appendChild(f);
     f.animate([{transform:'translate(-50%,0) scale(.6)',opacity:0},{transform:'translate(-50%,-26px) scale(1.15)',opacity:1,offset:.25},{transform:'translate(-50%,-40px) scale(1)',opacity:1,offset:.7},{transform:'translate(-50%,-56px) scale(1)',opacity:0}],{duration:1800,easing:'ease-out',fill:'both'}).onfinish=()=>f.remove()},last-60)}
-function fxBanner(txt){const b=document.createElement('div');b.className='fxban';b.innerHTML=`<span>${txt}</span>`;document.body.appendChild(b);
+function fxBanner(txt){const b=document.createElement('div');b.className='fxban'+(typeof pl2==='function'&&pl2()?' pl2':'');b.innerHTML=`<span>${txt}</span>`;document.body.appendChild(b);
   b.animate([{opacity:0,transform:'translate(-50%,-10px) scale(.96)'},{opacity:1,transform:'translate(-50%,0) scale(1)',offset:.15},{opacity:1,offset:.75},{opacity:0,transform:'translate(-50%,-6px)'}],{duration:2200,easing:'ease-out',fill:'both'}).onfinish=()=>b.remove()}
 /* Marktnachschub: die Preise im Markt-Kärtchen leuchten auf, „+n" steigt auf */
 function fxRefill(add){const qs=[...document.querySelectorAll('.qbar .qrow:first-child .qp, .qbar > button:first-child .qv > .qp')];
