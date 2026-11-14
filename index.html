@@ -2496,6 +2496,53 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .ge-ach-i svg{width:24px;height:24px;padding:4px;box-sizing:border-box;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe7a8,#f2b33d 55%,#a8690b);fill:none;stroke:#2a1a04;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .ge-ach-i b{font-weight:600}
 @keyframes achPop{0%{transform:scale(.6);opacity:0}100%{transform:none;opacity:1}}
+
+/* ---- v175: Tagesziel-Karte, Erfolge in Bronze/Silber/Gold ---- */
+.s3-daily .dc-t{white-space:normal;line-height:1.3}
+.s3-daily .dc-ok{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#46c37b;color:#06130b;font-weight:800;font-size:11px}
+.s3-daily .dc-st.won{color:#8fe39c}
+.s3-daily.done{border-color:rgba(70,195,123,.45);background:linear-gradient(135deg,rgba(70,195,123,.12),rgba(70,195,123,.02) 55%),var(--t121b22)}
+:root{--br0:#f1c39a;--br1:#b8733a;--br2:#6e3d17;--sv0:#ffffff;--sv1:#b9c4cf;--sv2:#5d6975;--gd0:#ffe7a8;--gd1:#f2b33d;--gd2:#a8690b}
+#stats .ach-sum{gap:18px;align-items:center}
+#stats .ach-cnt{display:flex;align-items:center;gap:7px}
+#stats .ach-cnt b{font:800 22px/1 'Orbitron',var(--display);color:var(--fg)}
+#stats .ach-cnt small{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+#stats .ach-of{font-size:12px;color:var(--muted);margin-left:auto}
+.medal{display:inline-block;width:16px;height:16px;border-radius:50%}
+.medal.bronze{background:radial-gradient(circle at 35% 30%,var(--br0),var(--br1) 55%,var(--br2))}
+.medal.silver{background:radial-gradient(circle at 35% 30%,var(--sv0),var(--sv1) 55%,var(--sv2))}
+.medal.gold{background:radial-gradient(circle at 35% 30%,var(--gd0),var(--gd1) 55%,var(--gd2));box-shadow:0 0 10px rgba(242,179,61,.5)}
+#stats .ach-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#stats .pips{display:flex;gap:4px;flex:none}
+#stats .pip{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
+#stats .pip.on.bronze{background:var(--br1);border-color:var(--br0)}
+#stats .pip.on.silver{background:var(--sv1);border-color:var(--sv0)}
+#stats .pip.on.gold{background:var(--gd1);border-color:var(--gd0);box-shadow:0 0 6px rgba(242,179,61,.6)}
+#stats .ach.t-none .ach-tx b{opacity:.6}
+#stats .ach:not(.t-none) .ach-tx b{opacity:1}
+#stats .ach.t-bronze{background:linear-gradient(135deg,rgba(184,115,58,.12),rgba(184,115,58,.02));border-color:rgba(184,115,58,.4)}
+#stats .ach.t-silver{background:linear-gradient(135deg,rgba(185,196,207,.12),rgba(185,196,207,.02));border-color:rgba(185,196,207,.4)}
+#stats .ach.t-gold{background:linear-gradient(135deg,rgba(242,179,61,.14),rgba(242,179,61,.02));border-color:rgba(242,179,61,.5)}
+#stats .ach.t-bronze .ach-ic{background:radial-gradient(circle at 35% 30%,var(--br0),var(--br1) 55%,var(--br2));border-color:var(--br0);color:#2a1406}
+#stats .ach.t-silver .ach-ic{background:radial-gradient(circle at 35% 30%,var(--sv0),var(--sv1) 55%,var(--sv2));border-color:var(--sv0);color:#161c22}
+#stats .ach.t-gold .ach-ic{background:radial-gradient(circle at 35% 30%,var(--gd0),var(--gd1) 55%,var(--gd2));border-color:var(--gd0);color:#2a1a04;box-shadow:0 0 14px rgba(242,179,61,.45)}
+#stats .ach-pg.bronze>span{background:linear-gradient(90deg,var(--br2),var(--br1))}
+#stats .ach-pg.silver>span{background:linear-gradient(90deg,var(--sv2),var(--sv1))}
+#stats .ach-pg.gold>span{background:linear-gradient(90deg,var(--gd2),var(--gd1))}
+#stats .ach.t-gold .ach-d{color:var(--accent)}
+#stats .ach.ok{background:none}
+.ge-daily{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center}
+.ge-daily .gd-k{grid-column:1;font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.ge-daily .gd-t{grid-column:1;font-weight:600}
+.ge-daily .gd-r{grid-column:1;color:#ff9b8a;font-size:12.5px}
+.ge-daily.ok .gd-r{color:#8fe39c;font-weight:600}
+.ge-daily .ge-b2{grid-column:2;grid-row:1/4}
+.ge-daily.ok{border-color:rgba(70,195,123,.5);background:rgba(70,195,123,.1)}
+.ge-ach-i small{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+.ge-ach-i.bronze{border-color:rgba(241,195,154,.55);background:rgba(184,115,58,.14)}
+.ge-ach-i.bronze svg{background:radial-gradient(circle at 35% 30%,var(--br0),var(--br1) 55%,var(--br2))}
+.ge-ach-i.silver{border-color:rgba(255,255,255,.5);background:rgba(185,196,207,.12)}
+.ge-ach-i.silver svg{background:radial-gradient(circle at 35% 30%,var(--sv0),var(--sv1) 55%,var(--sv2));stroke:#161c22}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -3560,9 +3607,9 @@ function endAwards(){const st=S.stats;if(!st||!st.pl)return[];const n=S.players.
   for(const a of A){if(out.length>=Math.max(4,n))break;if(!out.includes(a)&&(got[a.i]||0)<2){out.push(a);got[a.i]=(got[a.i]||0)+1}}
   return out.slice(0,Math.max(4,Math.min(n,5)))}
 const EIC={city:'<path d="M4 20V10l5-3v13M9 20V5l6-2v17M15 20v-9l5 2v7M2 20h20"/>',coin:'<circle cx="12" cy="12" r="8"/><path d="M15 9.5a3.5 3.5 0 1 0 0 5M8 11h5M8 13h5"/>',bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',fuel:'<path d="M5 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h14M8 8h4M15 9h2a2 2 0 0 1 2 2v6a1.5 1.5 0 0 0 3 0V9l-3-3"/>',leaf:'<path d="M5 19C5 10 11 5 20 4c-1 9-6 15-15 15zM5 19l7-7"/>',tag:'<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/>',up:'<path d="M4 17l6-6 4 4 7-8M15 7h6v6"/>'};
-function endExtras(){const h=loadHist(),last=h[h.length-1];if(!last||!S||!S.recorded)return'';const nw=achNewFor(h);let o='';
-  if(S.daily){const b=dailyBest(S.daily);o+=`<div class="ge-daily"><span>${LX('Tägliche Herausforderung','Daily challenge')}${b?` · ${LX('Bestes Ergebnis heute','Best today')}: ${LX('Platz','place')} ${b.m.place}, ${b.m.powered} ${LX('versorgt','powered')}`:''}</span><button type="button" class="ge-b2" data-act="dailyShare" data-k="${S.daily}">${LX('Ergebnis teilen','Share result')}</button></div>`}
-  if(nw.length)o+=`<div class="ge-ach"><span class="ge-ach-k">${nw.length===1?LX('Neuer Erfolg','New achievement'):LX('Neue Erfolge','New achievements')}</span>${nw.map(a=>`<span class="ge-ach-i">${achIcon(a)}<b>${(LANG==='en'?a.en:a.de)[0]}</b></span>`).join('')}</div>`;
+function endExtras(){const h=loadHist(),last=h[h.length-1];if(!last||!S||!S.recorded)return'';const k=dayOf(last),G=dailyGoal(k),ok=G.ok(last),before=dailyHit(k,h.slice(0,-1));let o='';
+  if(k===dailyKey())o+=`<div class="ge-daily${ok?' ok':''}"><span class="gd-k">${LX('Tagesziel','Daily goal')}</span><span class="gd-t">${esc(goalText(G))}</span><span class="gd-r">${ok?`✓ ${before?LX('Wieder geschafft','Completed again'):LX('Geschafft!','Completed!')}`:before?`✓ ${LX('Heute schon geschafft','Already completed today')}`:`✗ ${LX('Nicht erreicht','Not reached')} · ${esc(G.note(last))}`}</span>${ok||before?`<button type="button" class="ge-b2" data-act="dailyShare" data-k="${k}">${LX('Teilen','Share')}</button>`:''}</div>`;
+  const nw=achNewFor(h);if(nw.length)o+=`<div class="ge-ach"><span class="ge-ach-k">${nw.length===1?LX('Neuer Erfolg','New achievement'):LX('Neue Erfolge','New achievements')}</span>${nw.map(x=>`<span class="ge-ach-i ${TIERS[x.tier]}">${achIcon(x.a)}<b>${achName(x.a)}</b><small>${TIER_N[TIERS[x.tier]][LANG==='en'?1:0]}</small></span>`).join('')}</div>`;
   return o}
 function endShow(){if(!S||!S.ranking)return;let o=document.getElementById('gmEnd');if(o)o.remove();
   const se=(S.stats&&S.stats.series)||[],last=se[se.length-1],rk=S.ranking,n=S.players.length;
@@ -5278,7 +5325,7 @@ function saveHist(a){try{localStorage.setItem(STATS_KEY,JSON.stringify(a.slice(-
 function onGameEnd(){
   if(!S||S.recorded||!S.players.some(p=>p.human))return;
   S.recorded=true;const t=st();
-  const rec={v:1,id:Date.now()+'-'+Math.floor(Math.random()*1e4),daily:S.daily||undefined,date:t.start,end:t.end||Date.now(),rounds:S.round,diff:S.ai||'normal',map:S.map||'de',deck:S.deckId||'std',n:S.n,regions:S.regions.slice(),step2:t.step2,step3:t.step3,partial:!!t.partial,
+  const rec={v:1,id:Date.now()+'-'+Math.floor(Math.random()*1e4),date:t.start,end:t.end||Date.now(),rounds:S.round,diff:S.ai||'normal',map:S.map||'de',deck:S.deckId||'std',n:S.n,regions:S.regions.slice(),step2:t.step2,step3:t.step3,partial:!!t.partial,
     players:S.players.map(p=>({name:p.name,color:p.color,human:!!p.human,powered:p.lastPowered,cities:p.cities.length,money:p.money,plants:p.plants.slice(),place:S.ranking.indexOf(p.id)+1,...t.pl[p.id]})),
     series:t.series};
   const h=loadHist();h.push(rec);saveHist(h);UI.statSel=rec.id;UI.statView='total';UI.lbMsg='';UI.lbLink='';
@@ -5817,7 +5864,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v174';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v175';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -5887,59 +5934,88 @@ function fxRefill(add){const qs=[...document.querySelectorAll('.qbar .qrow:first
     const f=document.createElement('div');f.className='fxplus';f.textContent='+'+n;f.style.left=(rc.left+rc.width/2)+'px';f.style.top=rc.top+'px';document.body.appendChild(f);
     f.animate([{transform:'translate(-50%,0)',opacity:0},{transform:'translate(-50%,-14px)',opacity:1,offset:.3},{transform:'translate(-50%,-30px)',opacity:0}],{duration:1300,delay:i*90,fill:'both'}).onfinish=()=>f.remove()})}
 
-/* ==== v174: Tägliche Herausforderung – gleicher Plan, gleiches Kraftwerksdeck, gleiche Gegner für alle an einem Tag ==== */
+/* ==== v175: Tagesziel – jeden Tag ein Ziel, in einer beliebigen eigenen Partie zu erfüllen (kein fester Spielplan) ==== */
 function dailyKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function hash32(str){let h=2166136261>>>0;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h>>>0}
-function seededRand(a){a=a>>>0;return function(){a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
-function dailyCfg(k=dailyKey()){const r=seededRand(hash32('gm-daily|'+k));const maps=Object.keys(MAPS).sort();const map=maps[Math.floor(r()*maps.length)];const nAI=2+Math.floor(r()*3);const diff=r()<.55?'hard':'expert';return{k,map,nAI,diff,seed:hash32('gm-seed|'+k)}}
-function dailyGames(k){return loadHist().filter(g=>g.daily===k)}
-function dailyBest(k){const a=dailyGames(k).map(g=>({g,m:meOf(g)}));a.sort((x,y)=>x.m.place-y.m.place||y.m.powered-x.m.powered||y.m.money-x.m.money);return a[0]||null}
-function dailyStreak(){const set=new Set(loadHist().filter(g=>g.daily).map(g=>g.daily));const d=new Date();if(!set.has(dailyKey(d)))d.setDate(d.getDate()-1);let n=0;while(set.has(dailyKey(d))){n++;d.setDate(d.getDate()-1)}return n}
 function dailyDate(k){const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)}
-function dailyText(k,b){const D=dailyCfg(k),M=MAPS[D.map],dt=dailyDate(k).toLocaleDateString(LOC(),{day:'numeric',month:'long',year:'numeric'}),m=b.m;
-  return LX(`Grid Master · Tägliche Herausforderung ${dt}\n${M.name} · ${D.nAI+1} Spieler · KI ${AI_NAME[D.diff]}\nPlatz ${m.place} von ${b.g.players.length} · ${m.powered} Städte versorgt · ${fmt(m.money)} € · ${b.g.rounds} Runden`,
-    `Grid Master · Daily challenge ${dt}\n${tr(M.name)} · ${D.nAI+1} players · ${tr(AI_NAME[D.diff])} AI\nPlace ${m.place} of ${b.g.players.length} · ${m.powered} cities powered · ${fmt(m.money)} € · ${b.g.rounds} rounds`)}
-async function dailyShare(btn){const k=(btn&&btn.dataset.k)||dailyKey(),b=dailyBest(k);if(!b)return;const text=dailyText(k,b);
+/* Hilfen für Spielauswertungen */
+function gOwned(g){const m=meOf(g);return[...new Set([...(m.auc||[]).map(a=>a.n),...(m.plants||[])])].filter(n=>PLANTS[n])}
+function gUsesFuel(g,r){return gOwned(g).some(n=>{const t=PLANTS[n][0];return t===r||(HYB[t]||[]).includes(r)})}
+function gGreen(g){const p=meOf(g).powT||{};const tot=Object.values(p).reduce((a,b)=>a+b,0);return tot?Math.round((p.eco||0)/tot*100):0}
+function gFuel(g){const r=meOf(g).res||{};return Object.values(r).reduce((a,x)=>a+((x&&x[1])||0),0)}
+function gWin(g){return meOf(g).place===1}
+function gOverbid(g){return Math.max(0,...(meOf(g).auc||[]).map(a=>a.price-Math.max(a.min||0,Math.floor(a.n))))}
+const DGOALS=[
+  {id:'nooil',de:'Gewinne ohne ein einziges Ölkraftwerk',en:'Win without ever owning an oil plant',ok:g=>gWin(g)&&!gUsesFuel(g,'oil'),note:g=>gUsesFuel(g,'oil')?LX('Ölkraftwerk im Besitz','owned an oil plant'):LX('nicht gewonnen','did not win')},
+  {id:'nocoal',de:'Gewinne ohne ein einziges Kohlekraftwerk',en:'Win without ever owning a coal plant',ok:g=>gWin(g)&&!gUsesFuel(g,'coal'),note:g=>gUsesFuel(g,'coal')?LX('Kohlekraftwerk im Besitz','owned a coal plant'):LX('nicht gewonnen','did not win')},
+  {id:'nonuke',de:'Gewinne ohne Atomkraftwerk',en:'Win without a nuclear plant',ok:g=>gWin(g)&&!gUsesFuel(g,'uranium'),note:g=>gUsesFuel(g,'uranium')?LX('Atomkraftwerk im Besitz','owned a nuclear plant'):LX('nicht gewonnen','did not win')},
+  {id:'green40',de:'Erzeuge mindestens 40 % deines Stroms erneuerbar',en:'Generate at least 40 % of your power from renewables',ok:g=>gGreen(g)>=40,note:g=>gGreen(g)+' % '+LX('erneuerbar','renewable')},
+  {id:'green25w',de:'Gewinne mit mindestens 25 % erneuerbarem Strom',en:'Win with at least 25 % renewable power',ok:g=>gWin(g)&&gGreen(g)>=25,note:g=>gGreen(g)+' % '+LX('erneuerbar','renewable')},
+  {id:'rich250',de:'Gewinne mit 250 € oder mehr am Spielende',en:'Win with 250 € or more at the end',ok:g=>gWin(g)&&meOf(g).money>=250,note:g=>fmt(meOf(g).money)+' €'},
+  {id:'fast10',de:'Gewinne in 10 Runden oder weniger',en:'Win in 10 rounds or fewer',ok:g=>gWin(g)&&g.rounds<=10,note:g=>g.rounds+' '+LX('Runden','rounds')},
+  {id:'mega17',de:'Versorge in der letzten Runde 17 oder mehr Städte',en:'Power 17 or more cities in the final round',ok:g=>meOf(g).powered>=17,note:g=>meOf(g).powered+' '+LX('versorgt','powered')},
+  {id:'pay110',de:'Verdiene 110 € oder mehr in einer einzigen Runde',en:'Earn 110 € or more in a single round',ok:g=>(meOf(g).maxInc||0)>=110,note:g=>fmt(meOf(g).maxInc||0)+' €'},
+  {id:'fair',de:'Gewinne, ohne je mehr als 5 € über das Mindestgebot zu zahlen',en:'Win without ever paying more than 5 € above the minimum bid',ok:g=>gWin(g)&&gOverbid(g)<=5,note:g=>'+'+gOverbid(g)+' € '+LX('höchster Aufschlag','highest premium')},
+  {id:'fuel150',de:'Gewinne mit weniger als 150 € Brennstoffkosten',en:'Win spending less than 150 € on fuel',ok:g=>gWin(g)&&gFuel(g)<150,note:g=>fmt(gFuel(g))+' € '+LX('Brennstoff','fuel')},
+  {id:'net18',de:'Baue 18 oder mehr Städte',en:'Build 18 or more cities',ok:g=>meOf(g).cities>=18,note:g=>meOf(g).cities+' '+LX('Städte','cities')},
+  {id:'expert',de:'Gewinne gegen die KI-Stufe Experte',en:'Beat the Expert AI',ok:g=>gWin(g)&&g.diff==='expert',note:g=>g.diff!=='expert'?LX('nicht auf Experte','not on Expert'):LX('nicht gewonnen','did not win')}
+];
+function dailyGoal(k=dailyKey()){const i=hash32('gm-goal|'+k)%DGOALS.length;const d=dailyDate(k);d.setDate(d.getDate()-1);const y=hash32('gm-goal|'+dailyKey(d))%DGOALS.length;return DGOALS[i===y?(i+1)%DGOALS.length:i]}
+function dayOf(g){return dailyKey(new Date(g.end||g.date))}
+function dailyGamesOn(k,h=loadHist()){return h.filter(g=>dayOf(g)===k)}
+function dailyHit(k,h=loadHist()){const G=dailyGoal(k);return dailyGamesOn(k,h).find(g=>G.ok(g))||null}
+function dailyDoneKeys(h=loadHist()){const ks=new Set(h.map(dayOf));return [...ks].filter(k=>dailyHit(k,h)).sort()}
+function dailyStreak(h=loadHist()){const set=new Set(dailyDoneKeys(h));const d=new Date();if(!set.has(dailyKey(d)))d.setDate(d.getDate()-1);let n=0;while(set.has(dailyKey(d))){n++;d.setDate(d.getDate()-1)}return n}
+function goalText(G){return LANG==='en'?G.en:G.de}
+function dailyText(k){const G=dailyGoal(k),g=dailyHit(k),dt=dailyDate(k).toLocaleDateString(LOC(),{day:'numeric',month:'long',year:'numeric'});if(!g)return'';const m=meOf(g),stk=dailyStreak();
+  return LX(`Grid Master · Tagesziel ${dt} ✓\n„${G.de}“\n${MAPS[g.map||'de'].name} · Platz ${m.place} von ${g.players.length} · ${m.powered} Städte versorgt · ${fmt(m.money)} €${stk>1?`\n${stk} Tage in Folge`:''}`,
+    `Grid Master · Daily goal ${dt} ✓\n“${G.en}”\n${tr(MAPS[g.map||'de'].name)} · place ${m.place} of ${g.players.length} · ${m.powered} cities powered · ${fmt(m.money)} €${stk>1?`\n${stk}-day streak`:''}`)}
+async function dailyShare(btn){const k=(btn&&btn.dataset.k)||dailyKey(),text=dailyText(k);if(!text)return;
   if(navigator.share){try{await navigator.share({title:'Grid Master',text});return}catch(e){if(e&&e.name==='AbortError')return}}
   try{await navigator.clipboard.writeText(text);if(btn){const o=btn.innerHTML;btn.textContent=LX('Kopiert ✓','Copied ✓');setTimeout(()=>{if(btn.isConnected)btn.innerHTML=o},1600)}}catch(_){}}
-function dailyCardHTML(){const k=dailyKey(),D=dailyCfg(k),M=MAPS[D.map],b=dailyBest(k),stk=dailyStreak(),dt=dailyDate(k);
+function dailyCardHTML(){const k=dailyKey(),G=dailyGoal(k),hit=dailyHit(k),tries=dailyGamesOn(k).length,stk=dailyStreak(),dt=dailyDate(k);
   const day=dt.toLocaleDateString(LOC(),{day:'2-digit'}),mon=dt.toLocaleDateString(LOC(),{month:'short'}).replace('.','');
-  const st=b?`<span class="dc-st won">${placeBadge(b.m.place)}<span>${LX('Heute','Today')}: ${b.m.powered} ${LX('versorgt','powered')} · ${fmt(b.m.money)} €</span></span>`:`<span class="dc-st">${LX('Heute noch nicht gespielt','Not played yet today')}</span>`;
-  return `<section class="s3-daily"><div class="dc-date"><b>${day}</b><span>${mon}</span></div><div class="dc-main"><span class="dc-k">${LX('Tägliche Herausforderung','Daily challenge')}${stk>1?`<i class="dc-stk">${stk} ${LX('Tage in Folge','day streak')}</i>`:''}</span><b class="dc-t">${esc(tr(M.name))} · ${D.nAI+1} ${LX('Spieler','players')} · ${LX('KI','AI')} ${tr(AI_NAME[D.diff])}</b>${st}</div>
-  <div class="dc-act">${b?`<button type="button" class="btn dc-sh" data-act="dailyShare" data-k="${k}">${LX('Teilen','Share')}</button>`:''}<button type="button" class="btn pri dc-go" data-act="dailyGo">${b?LX('Nochmal','Retry'):LX('Spielen','Play')}</button></div></section>`}
+  const st=hit?`<span class="dc-st won"><i class="dc-ok">✓</i>${LX('Geschafft','Completed')} · ${esc(tr(MAPS[hit.map||'de'].name))}</span>`:`<span class="dc-st">${tries?LX(`Noch nicht geschafft · ${tries} ${tries===1?'Partie':'Partien'} heute`,`Not done yet · ${tries} ${tries===1?'game':'games'} today`):LX('Gilt für jede Partie, die du heute beendest','Counts for any game you finish today')}</span>`;
+  return `<section class="s3-daily${hit?' done':''}"><div class="dc-date"><b>${day}</b><span>${mon}</span></div><div class="dc-main"><span class="dc-k">${LX('Tagesziel','Daily goal')}${stk>1?`<i class="dc-stk">${stk} ${LX('Tage in Folge','day streak')}</i>`:''}</span><b class="dc-t">${esc(goalText(G))}</b>${st}</div>
+  <div class="dc-act">${hit?`<button type="button" class="btn dc-sh" data-act="dailyShare" data-k="${k}">${LX('Teilen','Share')}</button>`:''}<button type="button" class="btn pri dc-go" data-act="dailyGo">${hit?LX('Neues Spiel','New game'):LX('Spielen','Play')}</button></div></section>`}
 
-/* ==== v174: Erfolge – werden aus der Spielhistorie berechnet (auch rückwirkend) ==== */
+/* ==== v175: Erfolge in Bronze, Silber und Gold – aus der Spielhistorie berechnet (auch rückwirkend) ==== */
 const ACH_IC={medal:'<circle cx="12" cy="14" r="6"/><path d="M8.5 9 6 3h4l2 4 2-4h4l-2.5 6"/>',star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>',cal:'<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',fire:'<path d="M12 21c4 0 6.5-2.6 6.5-6.2 0-3.6-2.6-5.4-3.7-8.8-1.6 1.6-2 3.4-2 4.6-1.2-1-2.3-3.4-1.8-6.6C7.6 6.2 5.5 10 5.5 14.6 5.5 18.4 8 21 12 21Z"/>'};
-function achIsWin(g){return meOf(g).place===1}
-function achPlantTypes(g){return(meOf(g).plants||[]).map(n=>PLANTS[n]&&PLANTS[n][0]).filter(Boolean)}
+const TIERS=['bronze','silver','gold'];
+const TIER_N={bronze:['Bronze','Bronze'],silver:['Silber','Silver'],gold:['Gold','Gold']};
+const maxOf=(h,f)=>h.reduce((a,g)=>Math.max(a,f(g)||0),0),countOf=(h,f)=>h.filter(f).length;
+/* lo:true = kleiner ist besser (z. B. Runden bis zum Sieg) */
 const ACH=[
-  {id:'first',ic:'bolt',de:['Erster Strom','Eine Partie zu Ende gespielt'],en:['First power','Finish a game'],test:h=>h.length>=1},
-  {id:'win',ic:'medal',de:['Netzbetreiber Nr. 1','Eine Partie gewinnen'],en:['Grid operator no. 1','Win a game'],test:h=>h.some(achIsWin)},
-  {id:'expert',ic:'star',de:['Expertenbezwinger','Gegen KI Experte gewinnen'],en:['Expert slayer','Beat the Expert AI'],test:h=>h.some(g=>achIsWin(g)&&g.diff==='expert')},
-  {id:'full',ic:'city',de:['Volles Haus','Ein Spiel mit 5 oder 6 Spielern gewinnen'],en:['Full house','Win a 5- or 6-player game'],test:h=>h.some(g=>achIsWin(g)&&g.players.length>=5)},
-  {id:'fast',ic:'up',de:['Blitzsieg','In 9 Runden oder weniger gewinnen'],en:['Blitz win','Win in 9 rounds or fewer'],test:h=>h.some(g=>achIsWin(g)&&g.rounds<=9)},
-  {id:'mega',ic:'city',de:['Großversorger','17 oder mehr Städte in einer Partie versorgen'],en:['Mega supplier','Power 17+ cities in one game'],test:h=>h.some(g=>(meOf(g).powered||0)>=17)},
-  {id:'green',ic:'leaf',de:['Grüner Sieg','Nur mit Öko-Kraftwerken gewinnen'],en:['Green victory','Win with only renewable plants'],test:h=>h.some(g=>{const t=achPlantTypes(g);return achIsWin(g)&&t.length&&t.every(x=>FREE(x))})},
-  {id:'nocoal',ic:'fuel',de:['Kohleausstieg','Ohne Kohlekraftwerk im Endaufbau gewinnen'],en:['Coal phase-out','Win without a coal plant at the end'],test:h=>h.some(g=>{const t=achPlantTypes(g);return achIsWin(g)&&t.length&&!t.includes('coal')})},
-  {id:'pay',ic:'coin',de:['Großer Zahltag','100 € oder mehr in einer Runde verdienen'],en:['Big payday','Earn 100 €+ in one round'],test:h=>h.some(g=>(meOf(g).maxInc||0)>=100)},
-  {id:'rich',ic:'coin',de:['Kassensturz','Eine Partie mit 200 € oder mehr beenden'],en:['Cash pile','Finish a game with 200 €+'],test:h=>h.some(g=>(meOf(g).money||0)>=200)},
-  {id:'streak3',ic:'fire',de:['Siegesserie','3 Partien in Folge gewinnen'],en:['Winning streak','Win 3 games in a row'],prog:h=>{let b=0,c=0;h.forEach(g=>{c=achIsWin(g)?c+1:0;b=Math.max(b,c)});return[Math.min(b,3),3]}},
-  {id:'maps5',ic:'globe',de:['Weltreisender','Auf 5 verschiedenen Spielplänen spielen'],en:['Globetrotter','Play on 5 different boards'],prog:h=>[Math.min(new Set(h.map(g=>g.map||'de')).size,5),5]},
-  {id:'maps12',ic:'globe',de:['Kartograf','Auf 12 verschiedenen Spielplänen spielen'],en:['Cartographer','Play on 12 different boards'],prog:h=>[Math.min(new Set(h.map(g=>g.map||'de')).size,12),12]},
-  {id:'vet',ic:'medal',de:['Veteran','25 Partien spielen'],en:['Veteran','Play 25 games'],prog:h=>[Math.min(h.length,25),25]},
-  {id:'daily',ic:'cal',de:['Tagesform','Eine tägliche Herausforderung spielen'],en:['Daily player','Play a daily challenge'],test:h=>h.some(g=>g.daily)},
-  {id:'dailywin',ic:'star',de:['Tagessieger','Eine tägliche Herausforderung gewinnen'],en:['Daily champion','Win a daily challenge'],test:h=>h.some(g=>g.daily&&achIsWin(g))},
-  {id:'dstreak',ic:'fire',de:['Dranbleiben','3 Tage in Folge die Herausforderung spielen'],en:['Keep it up','Play the daily challenge 3 days running'],prog:h=>{const ks=[...new Set(h.filter(g=>g.daily).map(g=>g.daily))].sort();let b=0,c=0,prev=null;ks.forEach(k=>{const d=dailyDate(k);c=prev&&Math.round((d-prev)/864e5)===1?c+1:1;prev=d;b=Math.max(b,c)});return[Math.min(b,3),3]}}
+  {id:'games',ic:'bolt',de:'Dauerstrom',en:'Steady current',dd:'Partien gespielt',de2:'games played',val:h=>h.length,t:[5,25,100]},
+  {id:'wins',ic:'medal',de:'Netzbetreiber Nr. 1',en:'Grid operator no. 1',dd:'Partien gewonnen',de2:'games won',val:h=>countOf(h,gWin),t:[1,10,50]},
+  {id:'expert',ic:'star',de:'Expertenbezwinger',en:'Expert slayer',dd:'Siege gegen KI Experte',de2:'wins against Expert AI',val:h=>countOf(h,g=>gWin(g)&&g.diff==='expert'),t:[1,5,20]},
+  {id:'full',ic:'city',de:'Volles Haus',en:'Full house',dd:'Siege mit 5–6 Spielern',de2:'wins with 5–6 players',val:h=>countOf(h,g=>gWin(g)&&g.players.length>=5),t:[1,5,15]},
+  {id:'mega',ic:'city',de:'Großversorger',en:'Mega supplier',dd:'versorgte Städte in einer Partie',de2:'cities powered in one game',val:h=>maxOf(h,g=>meOf(g).powered),t:[17,20,23]},
+  {id:'fast',ic:'up',de:'Blitzsieg',en:'Blitz win',dd:'Runden bis zum Sieg (höchstens)',de2:'rounds to win (at most)',lo:true,val:h=>{const w=h.filter(gWin).map(g=>g.rounds);return w.length?Math.min(...w):null},t:[11,9,8]},
+  {id:'net',ic:'city',de:'Netzbaumeister',en:'Network master',dd:'gebaute Städte in einer Partie',de2:'cities built in one game',val:h=>maxOf(h,g=>meOf(g).cities),t:[17,20,23]},
+  {id:'pay',ic:'coin',de:'Großer Zahltag',en:'Big payday',dd:'€ in einer Runde verdient',de2:'€ earned in one round',val:h=>maxOf(h,g=>meOf(g).maxInc),t:[100,130,150]},
+  {id:'rich',ic:'coin',de:'Kassensturz',en:'Cash pile',dd:'€ am Spielende',de2:'€ at the end of a game',val:h=>maxOf(h,g=>meOf(g).money),t:[150,250,400]},
+  {id:'green',ic:'leaf',de:'Grüner Sieg',en:'Green victory',dd:'% erneuerbarer Strom in einem Sieg',de2:'% renewable power in a win',val:h=>maxOf(h.filter(gWin),gGreen),t:[25,50,100]},
+  {id:'nocoal',ic:'fuel',de:'Kohleausstieg',en:'Coal phase-out',dd:'Siege ganz ohne Kohlekraftwerk',de2:'wins without any coal plant',val:h=>countOf(h,g=>gWin(g)&&!gUsesFuel(g,'coal')),t:[1,5,15]},
+  {id:'streak',ic:'fire',de:'Siegesserie',en:'Winning streak',dd:'Siege in Folge',de2:'wins in a row',val:h=>{let b=0,c=0;h.forEach(g=>{c=gWin(g)?c+1:0;b=Math.max(b,c)});return b},t:[3,5,10]},
+  {id:'maps',ic:'globe',de:'Weltreisender',en:'Globetrotter',dd:'verschiedene Spielpläne',de2:'different boards',val:h=>new Set(h.map(g=>g.map||'de')).size,t:[3,8,15]},
+  {id:'daily',ic:'cal',de:'Tagesform',en:'Daily form',dd:'Tagesziele geschafft',de2:'daily goals completed',val:h=>dailyDoneKeys(h).length,t:[1,7,30]},
+  {id:'dstreak',ic:'fire',de:'Dranbleiben',en:'Keep it up',dd:'Tagesziele in Folge',de2:'daily goals in a row',val:h=>{let b=0,c=0,prev=null;dailyDoneKeys(h).forEach(k=>{const d=dailyDate(k);c=prev&&Math.round((d-prev)/864e5)===1?c+1:1;prev=d;b=Math.max(b,c)});return b},t:[3,7,14]}
 ];
-function achState(h){return ACH.map(a=>{if(a.prog){const[v,m]=a.prog(h);return{a,ok:v>=m,v,m}}return{a,ok:!!a.test(h)}})}
-function achUnlockedIds(h){return new Set(achState(h).filter(x=>x.ok).map(x=>x.a.id))}
-function achDates(h){const out={};for(let i=1;i<=h.length;i++){const u=achUnlockedIds(h.slice(0,i));u.forEach(id=>{if(!out[id])out[id]=h[i-1].date})}return out}
-function achNewFor(h){if(!h.length)return[];const a=achUnlockedIds(h.slice(0,-1)),b=achUnlockedIds(h);return ACH.filter(x=>b.has(x.id)&&!a.has(x.id))}
+function achTier(a,v){if(v==null)return -1;let t=-1;a.t.forEach((x,i)=>{if(a.lo?v<=x:v>=x)t=i});return t}
+function achState(h){return ACH.map(a=>{const v=a.val(h);return{a,v,tier:achTier(a,v)}})}
+function achDates(h){const out={};for(let i=1;i<=h.length;i++){achState(h.slice(0,i)).forEach(x=>{for(let t=0;t<=x.tier;t++){const k=x.a.id+t;if(!out[k])out[k]=h[i-1].date}})}return out}
+function achNewFor(h){if(!h.length)return[];const A=achState(h.slice(0,-1)),B=achState(h);return B.filter((x,i)=>x.tier>A[i].tier).map(x=>({a:x.a,tier:x.tier}))}
 function achIcon(a){return `<svg viewBox="0 0 24 24" aria-hidden="true">${ACH_IC[a.ic]||EIC[a.ic]||''}</svg>`}
-function stAchievements(h){const S_=achState(h),dates=achDates(h),n=S_.filter(x=>x.ok).length;
-  const cards=S_.map(({a,ok,v,m})=>{const[t,d]=LANG==='en'?a.en:a.de;const dt=ok&&dates[a.id]?new Date(dates[a.id]).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'}):'';
-    return `<div class="ach${ok?' ok':''}"><span class="ach-ic">${achIcon(a)}</span><span class="ach-tx"><b>${t}</b><small>${d}</small>${ok?`<i class="ach-d">${dt}</i>`:m?`<span class="ach-pg"><span style="width:${Math.round(v/m*100)}%"></span></span><i class="ach-d">${v} / ${m}</i>`:''}</span></div>`}).join('');
-  return `<section class="card wide ach-card"><div class="ach-sum"><b>${n}</b><span>/ ${ACH.length} ${LX('freigeschaltet','unlocked')}</span><span class="ach-bar"><span style="width:${Math.round(n/ACH.length*100)}%"></span></span></div><div class="ach-grid">${cards}</div></section>`}
+function achName(a){return LANG==='en'?a.en:a.de}
+function stAchievements(h){const S_=achState(h),dates=achDates(h),cnt=[0,1,2].map(t=>S_.filter(x=>x.tier>=t).length);
+  const cards=S_.map(({a,v,tier})=>{const tn=tier>=0?TIERS[tier]:'none',nx=tier<2?a.t[tier+1]:null;
+    const pct=nx==null?100:a.lo?(v==null?0:Math.max(0,Math.min(100,Math.round((a.t[0]+4-v)/(a.t[0]+4-nx)*100)))):Math.max(0,Math.min(100,Math.round((v||0)/nx*100)));
+    const pips=TIERS.map((t,i)=>`<i class="pip ${t}${i<=tier?' on':''}" title="${TIER_N[t][LANG==='en'?1:0]}: ${a.lo?'≤ ':''}${a.t[i]}"></i>`).join('');
+    const sub=nx==null?`<i class="ach-d">${TIER_N.gold[LANG==='en'?1:0]} · ${dates[a.id+2]?new Date(dates[a.id+2]).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'}):''}</i>`
+      :`<span class="ach-pg ${TIERS[tier+1]}"><span style="width:${pct}%"></span></span><i class="ach-d">${v==null?'–':fmt(v)} / ${a.lo?'≤ ':''}${nx} · ${LX('nächste Stufe','next')}: ${TIER_N[TIERS[tier+1]][LANG==='en'?1:0]}</i>`;
+    return `<div class="ach t-${tn}"><span class="ach-ic">${achIcon(a)}</span><span class="ach-tx"><span class="ach-h"><b>${achName(a)}</b><span class="pips">${pips}</span></span><small>${a.t.map(x=>(a.lo?'≤':'')+x).join(' · ')} ${LANG==='en'?a.de2:a.dd}</small>${sub}</span></div>`}).join('');
+  return `<section class="card wide ach-card"><div class="ach-sum">${TIERS.slice().reverse().map((t,j)=>{const i=2-j;return `<span class="ach-cnt ${t}"><i class="medal ${t}"></i><b>${cnt[i]}</b><small>${TIER_N[t][LANG==='en'?1:0]}</small></span>`}).join('')}<span class="ach-of">${LX('von','of')} ${ACH.length}</span></div><div class="ach-grid">${cards}</div></section>`}
 function showIntro(){
   if(!S||!UI.intro)return;const en=LANG==='en';let ov=document.getElementById('intro');if(ov)ov.remove();
   ov=document.createElement('div');ov.id='intro';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-label',en?'Drawing the turn order':'Spielerreihenfolge wird ausgelost');
@@ -6091,7 +6167,7 @@ const A={
   statsNav:b=>{const h=filtHist();const i=h.findIndex(g=>g.id===UI.statSel);const j=Math.max(0,Math.min(h.length-1,(i<0?h.length-1:i)+ +b.dataset.d));UI.statSel=h[j].id;UI.statView='game';renderStats();return'skip'},
   statsReset:()=>{UI.statReset=true;renderStats();return'skip'},
   statsResetNo:()=>{UI.statReset=false;renderStats();return'skip'},
-  dailyGo:b=>{UI.dailyNext=true;return A.start(b)},
+  dailyGo:b=>A.start(b),
   dailyShare:b=>{dailyShare(b);return'skip'},
   statsResetYes:()=>{saveHist([]);try{localStorage.removeItem(STATS_KEY)}catch(_){}UI.statReset=false;renderStats();return'skip'},
   menu:()=>UI.sheet='menu',close:()=>{UI.sheet=UI.back||null;UI.back=null;if(!UI.sheet&&UI.rulesFromStart){UI.rulesFromStart=false;renderSheet();renderStart(true);return'skip'}},opp:()=>{UI.sheet=UI.sheet==='opp'&&isDock()?null:'opp'},oppToggle:b=>{if(S&&S.phase!=='auction'){UI.oppPh=UI.oppPh||{};const k=S.round+S.phase;UI.oppPh[k]=!(UI.oppPh[k]??false);return}try{const o=localStorage.getItem('hochspannung-opp-open')!=='0';localStorage.setItem('hochspannung-opp-open',o?'0':'1')}catch(_){}},oppjump:b=>{const el=document.getElementById('opp-'+b.dataset.pid);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return'skip'},log:()=>UI.sheet='log',rules:()=>UI.sheet='rules',
@@ -6108,9 +6184,8 @@ const A={
   regpick:()=>{if(!UI.regions.length){const n=regionCount(UI.nAI+1);const ks=Object.keys(REGIONS);for(let t=0;t<200;t++){const c=shuffle(ks).slice(0,n);if(regionsValid(c,n)&&(!MAPS[MAPID].mustRegion||c.includes(MAPS[MAPID].mustRegion))){UI.regions=c;break}}}UI.name=nmVal();renderStart(true);return'skip'},
   markets:()=>{UI.sheet=UI.sheet==='markets'&&isDock()?null:'markets'},
   pinfo:b=>{UI.back=isDock()?UI.sheet:null;UI.pnum=+b.dataset.num;UI.sheet='plant'},
-  start:b=>{const D=UI.dailyNext?dailyCfg():null;if(!D&&!regionsOk())return'skip';if(BOOT.zoom&&!UI.zooming&&!start.hidden&&!hmReduced()){UI.zooming=1;hmZoomGo(()=>{b&&b.click?b.click():null;UI.zooming=0});return'skip'}UI.dailyNext=false;UI.name=nmVal().trim();saveName(UI.name);const NM=UI.name||(LANG==='en'?'Your company':'Dein Betrieb');
-  if(D){const R0=Math.random;Math.random=seededRand(D.seed);try{newGame(NM,D.nAI,D.diff,null,D.map,{phaseOut:true,deck:'std',styles:true,promos:[],discount:'rech'})}finally{Math.random=R0}S.daily=D.k}
-  else newGame(NM,UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false);UI.intro=true;setTimeout(showIntro,30)},
+  start:b=>{if(!regionsOk())return'skip';if(BOOT.zoom&&!UI.zooming&&!start.hidden&&!hmReduced()){UI.zooming=1;hmZoomGo(()=>{b&&b.click?b.click():null;UI.zooming=0});return'skip'}UI.name=nmVal().trim();saveName(UI.name);const NM=UI.name||(LANG==='en'?'Your company':'Dein Betrieb');
+  newGame(NM,UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';renderStart(false);UI.intro=true;setTimeout(showIntro,30)},
   cont:()=>{UI.rulesFromStart=false;loadMap(S.map||'de');loadDeck(S.deckKeys||deckKeys('std'));applyPlantOv();applyMapN(S.n);applyGameMods();UI.vb=null;renderStart(false)},
   zin:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.3);return'skip'},
   zout:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.3);return'skip'},
