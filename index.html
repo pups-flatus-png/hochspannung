@@ -2671,6 +2671,13 @@ html.gm-ending #panel>*,html.gm-ending #sheet,html.gm-ending .sheet{visibility:h
 @media (prefers-reduced-motion:reduce){.co-brand::after{animation:none}}
 [data-theme="light"] .co-brand{background:linear-gradient(135deg,rgba(79,157,255,.14),#fff 60%);}
 [data-theme="light"] .co-brand .cb-n{color:#10202e}
+
+html #start .s3-ic.s3-ic-logo{background:none;border:0;box-shadow:none;border-radius:0}
+html #start .s3-ic.s3-ic-logo svg{filter:drop-shadow(0 1px 0 rgba(0,0,0,.45))}
+/* v178: Startsequenz-Varianten */
+#boot .bt-dot.fly{translate:var(--fx) var(--fy);transition:translate .62s cubic-bezier(.55,.05,.25,1)}
+#boot.rise .bt-dot,#boot.rise .bt-line{transition:top .6s cubic-bezier(.5,0,.25,1)}
+#boot.rise .bt-h{transition:height .6s cubic-bezier(.5,0,.25,1)}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -3958,7 +3965,7 @@ function renderMap(){
   const opts=building?Object.fromEntries(buildOptions(me()).map(o=>[o.city,o])):{};
   const ATL=MAPSTYLE==='atlas',LY=ATL?atlasLayout(act,opts):null;
   let g='<defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" class="gridline"/></pattern><pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r=".9" class="landdot"/></pattern><filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter><radialGradient id="vig" cx="50%" cy="45%" r="70%"><stop offset="60%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".45"/></radialGradient>'+(ATL?`<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0V7" class="hatchl"/></pattern><pattern id="nnhatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><path d="M0 0V9" class="nnhl"/></pattern><pattern id="eng" width="56" height="56" patternUnits="userSpaceOnUse"><path class="engl" d="M5 11q4-3 8 0q4 3 8 0M31 33q4-3 8 0q4 3 8 0M15 45q3-2 6 0M40 8q3-2 6 0M9 27q3-2 6 0M46 49q3-2 6 0"/><circle class="engd" cx="26" cy="20" r=".7"/><circle class="engd" cx="50" cy="26" r=".6"/><circle class="engd" cx="4" cy="50" r=".6"/><circle class="engd" cx="34" cy="52" r=".5"/></pattern><clipPath id="landclip"><path d="${GEO_LAND}"/></clipPath><clipPath id="cityland"><path d="${CLAND||GEO_LAND}"/></clipPath>`:'')+`<clipPath id="reliefclip"><path d="${GEO_LAND}"/></clipPath><radialGradient id="clightG"><stop offset="0" stop-color="#fff3c4" stop-opacity=".95"/><stop offset=".35" stop-color="#ffc861" stop-opacity=".45"/><stop offset="1" stop-color="#ff9f2e" stop-opacity="0"/></radialGradient>`+'</defs><rect x="-800" y="-800" width="2400" height="2600" fill="url(#grid)"/>';
-  if(GEO_OUT)g+=`<path class="land-out" d="${GEO_OUT}"/>`;
+  if(GEO_OUT&&MAPID==='bw')g+=`<path class="land-out" d="${GEO_OUT}"/>`;
   g+=waterlines();
   g+=`<path class="land-shadow" d="${GEO_LO}"/><path class="land" d="${GEO_LAND}"/><path class="land-tex" d="${GEO_LAND}"/>`;
   /* v176: Geländerelief (NASA Blue Marble Topographie) als Licht-und-Schatten-Ebene, auf das Land zugeschnitten */
@@ -4518,7 +4525,7 @@ function aucScroll(a){/* Handy: eigene Auktionsrunde – Gebotsbereich ins Bild 
     if(r.top>=visTop&&r.top+Math.min(r.height,260)<=visBot)return;
     panel.scrollTo({top:panel.scrollTop+r.top-visTop-44,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}catch(_){}}
 function renderPanel(){
-  const a=actor();UI._ab=null;let h=qbarHTML()+orderHTML(a)+feedHTML()+phaseRulesHTML()+turnLine(a);
+  const a=actor();UI._ab=null;let h=qbarHTML()+orderHTML(a)+phaseRulesHTML()+turnLine(a);
   const after=oppPlantsHTML();
   if(S.subPick!=null){h+=panelSub(a)}else if(S.xauc){h+=panelX(a)}else
   switch(S.phase){
@@ -4528,7 +4535,7 @@ function renderPanel(){
     case'bureau':h+=panelBureau();break;
     case'end':h+=`<section class="sec"><h3>Spielende</h3><p class="hint">${esc(P(S.ranking[0]).name)} gewinnt.</p><button type="button" class="btn pri" data-act="results">Ergebnis ansehen</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button></section>`;break;
   }
-  h+=after+panelMine();
+  h+=feedHTML()+after+panelMine();
   if(UI._ab&&isMine(a))h+=`<div class="actbar" role="region" aria-label="${LX('Dein Zug','Your move')}"><div class="ab-t"><span class="dot"></span>${UI._ab.t}</div>${UI._ab.h}</div>`;
   const st=panel.scrollTop,anc=panelAnchor();panel.innerHTML=h;panel.scrollTop=st;panelRestore(anc);aucScroll(a);orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
 }
@@ -4828,7 +4835,7 @@ function s3Chips(){
   if(lm&&LM)c.push(LX(`Zuletzt: Platz ${lm.place} auf ${LM.name}`,`Last: ${lm.place}${['st','nd','rd'][lm.place-1]||'th'} on ${LM.en||tr(LM.name)}`));
   return `<button type="button" class="s3-chips" data-act="stats" aria-label="${LX('Statistik öffnen','Open statistics')}">${c.map(x=>`<span>${esc(x)}</span>`).join('')}</button>`;
 }
-function s3Row(sv,ic,k,v,bad){return `<button type="button" class="s3-row" data-act="sv" data-v="${sv}"><span class="s3-ic">${ic}</span><span class="s3-rv"><span>${k}</span><b${bad?' class="bad"':''}>${esc(v)}</b></span>${S3I.chev}</button>`}
+function s3Row(sv,ic,k,v,bad){return `<button type="button" class="s3-row" data-act="sv" data-v="${sv}"><span class="s3-ic${ic.includes('class="logo')?' s3-ic-logo':''}">${ic}</span><span class="s3-rv"><span>${k}</span><b${bad?' class="bad"':''}>${esc(v)}</b></span>${S3I.chev}</button>`}
 function s3Caption(){const M=MAPS[UI.map],en=LANG==='en',nr=Object.keys(M.regions||{}).length,nc=(M.cities||[]).length;
   return `<div class="s3-cap" aria-hidden="true"><span class="s3-cap-k">${M.exp?LX('Erweiterung','Expansion'):M.deluxe?'Deluxe':LX('Grundspiel','Base game')}</span><b>${esc(tr(en&&M.en?M.en:M.name))}</b><span>${nc} ${LX('Städte','cities')} · ${nr} ${LX('Regionen','regions')} · ${LX('du spielst','you play')} ${UI.regions.length||regionCount(UI.nAI+1)}</span></div>`}
 function renderStart3(){
@@ -4890,9 +4897,10 @@ function hmIntro(G,long){const ids=Object.keys(G.n);if(!ids.length)return;
   if(long){document.documentElement.dataset.hmi='pre';if(BOOT.on){BOOT.keep=true;HM.intro.delay=2.8;bootStart()}}}
 /* Hochfahren der ganzen Oberfläche: Standby-Punkt → Lichtlinie → Bild öffnet sich → Netz, Instrumente, Statuszeilen */
 const BOOT={on:true,zoom:true,tm:[]};
-/* v177: Punkt und Linie sitzen in der Mitte der Karte (bei laufender Partie liegt die Karte höher) – nicht hinter der Fortsetzen-Karte */
-function bootAnchor(o){try{const el=document.querySelector('#start .s3-hero .hero-map .hm-land')||document.querySelector('#start .s3-hero .hero-map');const b=el&&el.getBoundingClientRect();
-  if(!b||!b.height)return;const H=innerHeight;let y=b.top+b.height*.5;y=Math.max(H*.18,Math.min(H*.82,y));BOOT.by=y;o.style.setProperty('--by',y.toFixed(1)+'px')}catch(_){}}
+/* v178: Startsequenz – Punkt beginnt immer in der Bildschirmmitte. Varianten: a = Punkt gleitet zur Startstadt, b = Kamera hebt die Karte mit an, c = Linie steigt mit dem Punkt zur Karte */
+BOOT.v=(()=>{try{const q=new URLSearchParams(location.search).get('bootv');if(q)return q;return localStorage.getItem('gm-bootv')||'b'}catch(_){return'b'}})();
+function bootMapCenter(){const el=document.querySelector('#start .s3-hero .hero-map .hm-land')||document.querySelector('#start .s3-hero .hero-map');const b=el&&el.getBoundingClientRect();if(!b||!b.height)return null;const H=innerHeight;return[b.left+b.width/2,Math.max(H*.15,Math.min(H*.85,b.top+b.height*.5))]}
+function bootAnchor(o){BOOT.by=innerHeight/2;if(BOOT.v!=='c')return;const c=bootMapCenter();if(!c)return;BOOT.tm.push(setTimeout(()=>{o.classList.add('rise');o.style.setProperty('--by',c[1].toFixed(1)+'px');BOOT.by=c[1]},1350))}
 function bootStart(){if(hmReduced()||document.getElementById('boot'))return;const r=document.documentElement;r.dataset.boot='hold';if(HM.intro)HM.intro.hold=true;
   const o=document.createElement('div');o.id='boot';if(BOOT.keep)o.className='keep';o.setAttribute('aria-hidden','true');o.innerHTML='<div class="bt-h bt-t"></div><div class="bt-h bt-b"></div><i class="bt-dot"></i><i class="bt-line"></i><i class="bt-flash"></i>';document.body.appendChild(o);
   /* erst loslegen, wenn die App wirklich sichtbar und gezeichnet ist (iOS zeigt beim Start zuerst einen eigenen Startbildschirm) */
@@ -4903,13 +4911,18 @@ function bootStart(){if(hmReduced()||document.getElementById('boot'))return;cons
 /* iPhone: der Standby-Punkt bleibt in der Mitte – die Stadt direkt darunter wird zur Startstadt, von der aus das Netz zündet */
 function bootFly(){const d=document.querySelector('#boot .bt-dot'),I=HM.intro,M=HM.mp,G=HM.g,hm=document.querySelector('#start .s3-hero .hero-map');
   if(!d||!BOOT.keep)return;if(!I||!M||!hm||!G){d.classList.add('gone');return}
-  const b=hm.getBoundingClientRect(),cx=innerWidth/2,cy=BOOT.by||innerHeight/2;let best=null,bd=1e9;
-  for(const k in G.n){const n=G.n[k],q=HM.gp?HM.gp(n.x,n.y):[n.x,n.y],px=b.left+M.ox+q[0]*M.s,py=b.top+M.oy+q[1]*M.s,dd=Math.hypot(px-cx,py-cy);if(dd<bd){bd=dd;best=[k,px,py]}}
+  const b=hm.getBoundingClientRect(),cx=innerWidth/2,cy=BOOT.by||innerHeight/2,mc=bootMapCenter()||[cx,cy];
+  /* Startstadt: für a/b die Stadt nahe der Kartenmitte, für c die Stadt unter dem (hochgestiegenen) Punkt */
+  const tx=BOOT.v==='c'?cx:mc[0],ty=BOOT.v==='c'?cy:mc[1];let best=null,bd=1e9;
+  for(const k in G.n){const n=G.n[k],q=HM.gp?HM.gp(n.x,n.y):[n.x,n.y],px=b.left+M.ox+q[0]*M.s,py=b.top+M.oy+q[1]*M.s,dd=Math.hypot(px-tx,py-ty);if(dd<bd){bd=dd;best=[k,px,py]}}
   if(!best)return;window.__bd=bd;
-  /* Karte (noch hinter den geschlossenen Blenden) so verschieben, dass die Stadt genau unter dem Punkt liegt; nach dem Zünden gleitet sie sanft zurück */
+  if(best[0]!==I.src){I.src=best[0];const r=hmDist(G,I.src,I.sf);I.D=r.D;I.mx=r.mx}
+  if(BOOT.v==='a'){/* Punkt gleitet nach dem Öffnen zur Startstadt */
+    BOOT.tm.push(setTimeout(()=>{d.style.setProperty('--fx',(best[1]-cx).toFixed(1)+'px');d.style.setProperty('--fy',(best[2]-cy).toFixed(1)+'px');d.classList.add('fly')},300));return}
+  /* b/c: Karte (noch hinter den Blenden) so verschieben, dass die Stadt genau unter dem Punkt liegt; nach dem Zünden hebt sie sich mit dem Netz an ihren Platz */
   hm.style.transition='none';hm.style.translate=`${(cx-best[1]).toFixed(1)}px ${(cy-best[2]).toFixed(1)}px`;
-  BOOT.tm.push(setTimeout(()=>{hm.style.transition='translate 2.6s cubic-bezier(.45,0,.25,1)';hm.style.translate='0px 0px';BOOT.tm.push(setTimeout(()=>{hm.style.transition='';hm.style.translate=''},2700))},1500));
-  if(best[0]!==I.src){I.src=best[0];const r=hmDist(G,I.src,I.sf);I.D=r.D;I.mx=r.mx}}
+  const far=Math.hypot(cx-best[1],cy-best[2])>60;
+  BOOT.tm.push(setTimeout(()=>{hm.style.transition=`translate ${far?1.5:2.4}s cubic-bezier(.5,0,.2,1)`;hm.style.translate='0px 0px';BOOT.tm.push(setTimeout(()=>{hm.style.transition='';hm.style.translate=''},2500))},far?1300:1500))}
 function bootEnd(skip){BOOT.tm.forEach(clearTimeout);BOOT.tm=[];const hm0=document.querySelector('#start .s3-hero .hero-map');if(hm0&&hm0.style.translate){hm0.style.transition=skip?'':'translate 1.2s cubic-bezier(.45,0,.25,1)';hm0.style.translate=skip?'':'0px 0px';if(!skip)setTimeout(()=>{hm0.style.transition='';hm0.style.translate=''},1300)}if(HM.intro)HM.intro.hold=false;const o=document.getElementById('boot');if(o)o.remove();delete document.documentElement.dataset.boot;document.querySelectorAll('#start .bootlog').forEach(e=>e.remove())}
 /* Neues Spiel: Kamera fliegt auf das Startgebiet zu, dann erscheint der Spielplan */
 function hmZoomGo(go){const hm=document.querySelector('#start .s3-hero .hero-map');if(!BOOT.zoom||!hm||hmReduced()||!HM.g||!HM.mp){go();return}
@@ -6007,7 +6020,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v177';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v178';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -6125,7 +6138,7 @@ function dailyCardHTML(){const k=dailyKey(),G=dailyGoal(k),hit=dailyHit(k),tries
   const day=dt.toLocaleDateString(LOC(),{day:'2-digit'}),mon=dt.toLocaleDateString(LOC(),{month:'short'}).replace('.','');
   const st=hit?`<span class="dc-st won"><i class="dc-ok">✓</i>${LX('Geschafft','Completed')} · ${esc(tr(MAPS[hit.map||'de'].name))}</span>`:`<span class="dc-st">${tries?LX(`Noch nicht geschafft · ${tries} ${tries===1?'Partie':'Partien'} heute`,`Not done yet · ${tries} ${tries===1?'game':'games'} today`):LX('Gilt für jede Partie, die du heute beendest','Counts for any game you finish today')}</span>`;
   return `<section class="s3-daily${hit?' done':''}"><div class="dc-date"><b>${day}</b><span>${mon}</span></div><div class="dc-main"><span class="dc-k">${LX('Tagesziel','Daily goal')}${stk>1?`<i class="dc-stk">${stk} ${LX('Tage in Folge','day streak')}</i>`:''}</span><b class="dc-t">${esc(goalText(G))}</b>${st}</div>
-  <div class="dc-act">${hit?`<button type="button" class="btn dc-sh" data-act="dailyShare" data-k="${k}">${LX('Teilen','Share')}</button>`:''}<button type="button" class="btn pri dc-go" data-act="dailyGo">${hit?LX('Neues Spiel','New game'):LX('Spielen','Play')}</button></div></section>`}
+  ${hit?`<div class="dc-act"><button type="button" class="btn dc-sh" data-act="dailyShare" data-k="${k}">${LX('Teilen','Share')}</button></div>`:''}</section>`}
 
 /* ==== v175: Erfolge in Bronze, Silber und Gold – aus der Spielhistorie berechnet (auch rückwirkend) ==== */
 const ACH_IC={medal:'<circle cx="12" cy="14" r="6"/><path d="M8.5 9 6 3h4l2 4 2-4h4l-2.5 6"/>',star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>',cal:'<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',fire:'<path d="M12 21c4 0 6.5-2.6 6.5-6.2 0-3.6-2.6-5.4-3.7-8.8-1.6 1.6-2 3.4-2 4.6-1.2-1-2.3-3.4-1.8-6.6C7.6 6.2 5.5 10 5.5 14.6 5.5 18.4 8 21 12 21Z"/>'};
