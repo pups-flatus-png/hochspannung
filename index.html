@@ -3142,21 +3142,19 @@ html #app.pl2 #top:has(.undo) #pl2rd b{font-size:clamp(13px,4vw,16px)}
 .actbar .btn.bundo{flex:0 0 auto!important;width:52px;min-width:52px!important;max-width:52px!important;padding:0!important;display:inline-flex;align-items:center;justify-content:center}
 .actbar .row:has(.bundo) .btn[data-act=bdone]:not(.pri){flex:0 0 auto;max-width:34%;padding-left:16px;padding-right:16px}
 .pl2-rm .m3hd small .sh{display:none}
-.pl2-rm{container-type:inline-size}
-@container (max-width:230px){.pl2-rm .m3hd small .lg{display:none}.pl2-rm .m3hd small .sh{display:inline}}
-@container (max-width:100px){.pl2-ord .po em:not(.po-hi):not(.po-bt):not(.po-in){display:none}.pl2-ord .po{padding-left:5px;padding-right:5px}}
-@container (max-width:72px){.pl2-ord .po b{display:none!important}.pl2-ord .po .po-lg{display:inline-flex!important}}
+.pl2-rm.c230 .m3hd small .lg{display:none}.pl2-rm.c230 .m3hd small .sh{display:inline}
+.pl2-ord .po.c100 em:not(.po-hi):not(.po-bt):not(.po-in){display:none}.pl2-ord .po.c100{padding-left:5px;padding-right:5px}
+.pl2-ord .po.c72 b{display:none!important}.pl2-ord .po.c72 .po-lg{display:inline-flex!important}
 @media (orientation:landscape) and (max-height:520px) and (max-width:760px){html #app.pl2 #pl2rd b{display:none}html #app.pl2 #pl2rd small{font-size:9px;writing-mode:horizontal-tb}html #app.pl2 #top{gap:6px}}
-@container (max-width:52px){.pl2-ord .po em .tri{display:none}.pl2-ord .po{padding-left:3px!important;padding-right:3px!important;justify-content:center}.pl2-ord .po .po-lg{display:none!important}.pl2-ord .po em.po-hi,.pl2-ord .po em.po-bt{font-size:8px;padding:2px 2px;margin:0}}
+.pl2-ord .po.c52 em .tri{display:none}.pl2-ord .po.c52{padding-left:3px!important;padding-right:3px!important;justify-content:center}.pl2-ord .po.c52:has(em.po-hi,em.po-bt,em.po-in) .po-lg{display:none!important}.pl2-ord .po.c52:not(:has(em.po-hi,em.po-bt,em.po-in)) .po-lg{display:inline-flex!important}.pl2-ord .po.c52 em.po-hi,.pl2-ord .po.c52 em.po-bt{font-size:8px;padding:2px 2px;margin:0}
 /* ---- v201: Reihenfolge – nichts ragt aus den Chips ---- */
 .pl2-ord .po{overflow:hidden;min-width:0}
 .pl2-ord .po>*{flex:none}
 .pl2-ord .po b{flex:1 1 auto!important;min-width:0}
 .pl2-ord .po.me b{flex:1 1 auto!important;min-width:1.4em}
-.pl2-ord .po{container-type:inline-size}
 .pl2-ord .po>*{min-width:0}
-@container (max-width:124px){.pl2-ord .po .po-lg{display:none!important}}
-@container (max-width:100px){.pl2-ord .po>i{display:none}.pl2-ord .po em.po-hi,.pl2-ord .po em.po-bt{font-size:8.5px;padding:2px 3px}.pl2-ord .po{gap:3px}}
+.pl2-ord .po.c124:not(.c72) .po-lg{display:none!important}
+.pl2-ord .po.c100>i{display:none}.pl2-ord .po.c100 em.po-hi,.pl2-ord .po.c100 em.po-bt{font-size:8.5px;padding:2px 3px}.pl2-ord .po.c100{gap:3px}
 .pl2-ord .po em.po-in{display:inline-flex!important;align-items:center;justify-content:center;width:12px;height:12px;padding:0;margin-left:auto}
 .pl2-ord .po em.po-in i{display:block;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px rgba(242,179,61,.9);animation:trPulse 1.2s ease-in-out infinite}
 .pl2-ord .po.out{opacity:.45}
@@ -6659,7 +6657,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v204';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v205';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -6695,8 +6693,10 @@ function mkFloor(){if(!S)return;const a=actor(),inRes=S.phase==='resources'&&!S.
   if(inRes&&!mine&&UI.mkClosedR!==S.round&&(UI.sheet==null||UI.sheet==='markets')){if(UI.sheet!=='markets')UI.mkTab=null;UI.sheet='markets';UI.mkAuto=true}
   else if(UI.mkAuto&&UI.sheet==='markets'&&(mine||!inRes)){if(mine&&mkHold()||S.gate==='build'&&S.phase==='resources'){}else{UI.sheet=null;UI.mkAuto=false}}
   else if(UI.sheet!=='markets')UI.mkAuto=false}
+function fitChips(){/* v205: Breite messen statt Container-Abfragen (Safari misst diese falsch) */document.querySelectorAll('.pl2-ord .po').forEach(po=>{po.classList.remove('c124','c100','c72','c52');const w=po.getBoundingClientRect().width;if(!w)return;if(w<124)po.classList.add('c124');if(w<100)po.classList.add('c100');if(w<72)po.classList.add('c72');if(w<52)po.classList.add('c52')});document.querySelectorAll('.pl2-rm').forEach(e=>{const w=e.getBoundingClientRect().width;e.classList.toggle('c230',!!w&&w<230)})}
+addEventListener('resize',()=>{try{fitChips()}catch(_){}});
 function pl2Top(){const t=document.getElementById('top');if(!t)return;let b=document.getElementById('pl2bar');if(!pl2()){if(b)b.remove();document.getElementById('pl2rd')?.remove();return}if(!b){b=document.createElement('div');b.id='pl2bar';t.appendChild(b)}else if(b.parentNode!==t)t.appendChild(b);b.innerHTML=pl2Bar();let r=document.getElementById('pl2rd');if(!r||r.parentNode!==t){r=document.createElement('div');r.id='pl2rd';t.insertBefore(r,t.firstChild)}r.innerHTML=`<b>GRID MASTER</b><small>${LX('Runde','Round')} ${S.round}${S.phase==='end'?' · '+LX('Spielende','Game over'):''}</small>`}
-function render(){if(!S)return;document.getElementById('app').classList.toggle('pl2',pl2());mkFloor();const flip0=fxMkSnap(),res0=fxResSnap();normAlloc(me());layoutMap();renderTop();renderMap();renderPanel();renderSheet();renderTicker();fxMkFlip(flip0);fxResFlip(res0);pl2Top();
+function render(){if(!S)return;document.getElementById('app').classList.toggle('pl2',pl2());mkFloor();const flip0=fxMkSnap(),res0=fxResSnap();normAlloc(me());layoutMap();renderTop();renderMap();renderPanel();renderSheet();renderTicker();fxMkFlip(flip0);fxResFlip(res0);pl2Top();fitChips();
   if(UI.fx&&UI.fx.length){const q=UI.fx;UI.fx=[];if(!fxOff())requestAnimationFrame(()=>fxRun(q))}
   const pm=UI.prevMoney||{};
   S.players.forEach(p=>{if(pm[p.id]!=null&&pm[p.id]!==p.money){const d=p.money-pm[p.id];if(d>0&&S.phase==='bureau'&&typeof PAYV!=='undefined'&&PAYV!=='coins')return;floatText(document.querySelector(`[data-pid="${p.id}"]`),(d>0?'+':'−')+Math.abs(d)+' €',d>0?'#8fe39c':'#ff8a80')}});
