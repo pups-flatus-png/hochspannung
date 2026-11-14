@@ -2853,7 +2853,7 @@ html[data-boot] #start.v3:not(.wide) .s3-bar .cta::before{animation-delay:5.6s}
 .pl2-tabs i{font:800 10px/1 'Orbitron',var(--display);font-style:normal;width:19px;height:19px;border-radius:50%;display:grid;place-items:center;border:1.3px solid #2c3a45}
 .pl2-tabs .done{color:#9fb0bb}
 .pl2-tabs .done i{border-color:rgba(242,179,61,.6);color:#f2b33d;font-size:0}
-.pl2-tabs .done i::after{content:"✓";font-size:10px}
+.pl2-tabs .done i::after{content:"";display:block;width:4px;height:8px;margin-top:-2px;border:solid currentColor;border-width:0 1.8px 1.8px 0;transform:rotate(45deg)}
 .pl2-tabs .on{color:var(--fg);background:linear-gradient(180deg,rgba(242,179,61,.18),rgba(242,179,61,.05));box-shadow:inset 0 0 0 1px rgba(242,179,61,.65)}
 .pl2-tabs .on i{background:var(--accent);border-color:var(--accent);color:#1a1206;box-shadow:0 0 10px rgba(242,179,61,.6)}
 .pl2-trk{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:6px}
@@ -2962,6 +2962,75 @@ html[data-boot] #start.v3:not(.wide) .s3-bar .cta::before{animation-delay:5.6s}
 .gatesec .g-log{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px}
 .gatesec .g-log p{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.35;color:var(--fg);margin:0}
 .gatesec .g-log .dot{flex:none;width:8px;height:8px;margin-top:5px;border-radius:50%;background:var(--pc,var(--muted))}
+
+/* ---- v191: Phasen-Layout auf Mac/iPad ---- */
+@media (min-width:601px){
+#app.pl2 #top{grid-template-columns:auto minmax(0,1fr) auto auto!important;grid-template-areas:"rd tabs wal men" "bar bar bar bar";column-gap:18px!important;padding:10px 16px 10px!important}
+#app.pl2 #pl2rd{grid-area:rd}
+#app.pl2 #pl2bar{grid-area:bar;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,560px);gap:10px;align-items:stretch}
+#app.pl2 #pl2bar .pl2-tabs{position:absolute;left:50%;top:10px;transform:translateX(-50%);width:min(640px,calc(100vw - 560px));grid-template-columns:repeat(4,1fr)}
+#app.pl2 #pl2bar .pl2-tabs span{flex-direction:row;justify-content:center;gap:8px;padding:9px 8px;font-size:11.5px}
+#app.pl2 #pl2bar .pl2-trk{grid-column:2;grid-row:1}
+#app.pl2 #pl2bar .pl2-ord{grid-column:1;grid-row:1;align-self:stretch}
+#app.pl2 #pl2bar .pl2-ord .po{padding:8px 10px;font-size:13px;height:100%;box-sizing:border-box}
+#app.pl2 #pl2bar .pl2-ord .po .po-lg{--ls:20px}
+#app.pl2 #pl2bar .pl2-ord .po em{font-size:12px}
+#app.pl2 #pl2bar .pl2-ord .po-k{font-size:10px}
+#app.pl2 #pl2rd b{font-size:22px}
+#app.pl2 #pl2rd small{font-size:10.5px}
+}
+@media (min-width:601px) and (max-width:1023px){
+#app.pl2 #top{grid-template-columns:minmax(0,1fr) auto auto!important;grid-template-areas:"rd wal men" "bar bar bar"}
+#app.pl2 #pl2bar{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+#app.pl2 #pl2bar .pl2-tabs{position:static;transform:none;width:auto;grid-column:1/-1;grid-row:1}
+#app.pl2 #pl2bar .pl2-ord{grid-column:1/-1;grid-row:2}
+#app.pl2 #pl2bar .pl2-trk{grid-column:1/-1;grid-row:3}
+}
+
+/* ---- v191: Rohstoffeinkauf – Markt oben, Kraftwerke darunter ---- */
+.rm2,.pc2{padding:12px!important}
+.rm2-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.rm2-h b{font:600 10px/1 Barlow,system-ui;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.rm2-h>span{font-size:11px;color:var(--muted);text-align:right}
+.rm2-g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rm2-c{border-radius:12px;background:var(--panel-2,rgba(255,255,255,.03));border:1px solid var(--line);padding:8px 10px;min-width:0}
+.rm2-c .t{display:flex;align-items:center;gap:6px}.rm2-c .t .ri{width:15px;height:15px}
+.rm2-c .t b{font-size:13px;font-weight:600}
+.rm2-c .t .rdisc{font-size:10px;padding:2px 5px;border-radius:5px;background:rgba(95,212,140,.15);color:#5fd48c}
+.rm2-c .t em{margin-left:auto;font:800 17px/1 'Orbitron',var(--display);font-style:normal;color:var(--fg);white-space:nowrap}
+.rm2-c .tr{display:flex;gap:3px;margin:8px 0 6px;justify-content:space-between}
+.rm2-c .g{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;flex:1;min-width:0;padding:3px 0 2px;border-radius:5px}
+.rm2-c .g.nx{background:rgba(242,179,61,.12);box-shadow:inset 0 0 0 1px rgba(242,179,61,.5)}
+.rm2-c .g.cap{opacity:.35}
+.rm2-c .g .d{display:flex;flex-direction:column-reverse;gap:2px}
+.rm2-c .g i{display:block;width:9px;height:9px;box-sizing:border-box;border-radius:50%;border:1px solid #33424e}
+.rm2-c[data-r=coal] i.av{background:#a0703f;border-color:#a0703f}.rm2-c[data-r=oil] i.av{background:#5b8bd0;border-color:#5b8bd0}.rm2-c[data-r=garbage] i.av{background:#d8c040;border-color:#d8c040}.rm2-c[data-r=uranium] i.av{background:#e2504a;border-color:#e2504a}
+.rm2-c .g i.ct{background:#fff3c4;border:2px solid #f2b33d;box-shadow:0 0 8px rgba(255,211,110,1)}
+.rm2-c .g small{font:700 8px/1 'Orbitron',var(--display);color:var(--muted)}
+.rm2-c .g.sold small{opacity:.4}
+.rm2-c .f{display:flex;justify-content:space-between;gap:6px;font-size:11px;color:var(--muted)}
+.rm2-c .f .cart{color:#ffd36e;font-weight:600}
+.rm2-c .f .opp{color:#ffb38a}
+.pc2 .lk{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.pc2 .chip{all:unset;cursor:pointer;white-space:nowrap;font:600 11px/1 Barlow,system-ui;color:var(--fg);padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel)}
+.pc2-g{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:8px}
+.pc2-c{display:flex;flex-direction:column;align-items:center;gap:6px;border-radius:12px;background:var(--panel-2,rgba(255,255,255,.03));border:1px solid var(--line);padding:8px 6px;min-width:0}
+.pc2-c .pslots{justify-content:center;min-height:16px;flex-wrap:wrap;gap:2px}
+.pc2-c .pslots .ri,.pc2-c .pslots i{width:13px!important;height:13px!important}
+.pc2-c .st{display:flex;align-items:center;gap:5px}.pc2-c .st .ri{width:14px;height:14px}
+.pc2-c .st .mini{width:30px;height:30px;border-radius:7px;border:1px solid var(--line);background:var(--panel);font-size:16px;color:var(--fg);cursor:pointer}
+.pc2-c .st .mini[disabled]{opacity:.3}
+.pc2-c .st output{font:800 14px/1 'Orbitron',var(--display);min-width:14px;text-align:center}
+[data-theme="light"] .rm2-c .g i{border-color:#c9cfd4}
+[data-theme="light"] .rm2-c .f .cart{color:#9a6208}
+[data-theme="light"] .rm2-c .g i.ct{background:#ffe9a8;border-color:#d08a18}
+
+/* ---- v191: iPhone – Schriftzug und Geldfeld etwas größer ---- */
+@media (max-width:600px) and (orientation:portrait){html #app.pl2 #pl2rd b{font-size:18px}html #app.pl2 #pl2rd small{font-size:10.5px}html #app.pl2 #top .wallet .wv,html #app.pl2 #top .wallet b{font-size:28px}html #app.pl2 #top .wallet{padding-top:7px;padding-bottom:7px;padding-left:12px;padding-right:12px}html #app.pl2 #top .wallet small{font-size:9.5px}}
+
+.gatesec .g-opp{margin:2px 0 10px}
+.gatesec .g-opp .oppp{margin:0;border:0;padding:0;background:none}
+.gatesec .g-opp .opph{pointer-events:none}.gatesec .g-opp .opph svg{display:none}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -3478,7 +3547,7 @@ function gateGo(){if(!S||!S.gate)return;const k=S.gate;S.gate=null;PH_GO[k]()}
 function gateHTML(){const k=S.gate,N={resources:[LX('Auktion abgeschlossen','Auction complete'),LX('Weiter zu Rohstoffe','Continue to resources')],build:[LX('Rohstoffe abgeschlossen','Resources complete'),LX('Weiter zum Bauen','Continue to build')],bureau:[LX('Bauen abgeschlossen','Building complete'),LX('Weiter zum Liefern','Continue to power')],round:[LX(`Runde ${S.round} abgeschlossen`,`Round ${S.round} complete`),LX(`Weiter zu Runde ${S.round+1}`,`Continue to round ${S.round+1}`)]}[k];
   const lines=S.log.filter(l=>l.r===S.round).slice(0,6).map(l=>`<p ${l.pid!=null?pc(l.pid):''}><span class="dot"></span>${esc(tr(l.t))}</p>`).join('');
   UI._ab={t:N[0],h:`<div class="row"><button type="button" class="btn pri grow" data-act="gateGo">${N[1]} →</button></div>`};
-  return `<section class="sec gatesec"><div class="g-h"><span class="g-ok">✓</span><b>${N[0]}</b></div><div class="g-log">${lines}</div><p class="hint">${LX('Schau dir in Ruhe an, was passiert ist, und tippe dann auf „Weiter“.','Take a look at what happened, then tap “Continue”.')}</p></section>`}
+  return `<section class="sec gatesec"><div class="g-h"><span class="g-ok">✓</span><b>${N[0]}</b></div>${k==='resources'?`<div class="g-opp">${oppPlantsHTML(true)}</div>`:''}<div class="g-log">${lines}</div><p class="hint">${LX('Schau dir in Ruhe an, was passiert ist, und tippe dann auf „Weiter“.','Take a look at what happened, then tap “Continue”.')}</p></section>`}
 function startBuild(){S.phase='build';S.seq=[...S.order].reverse();S.seqIdx=0;S.turnBuilt=[];S.builtRound=0}
 function nextSeq(){
   if(S.phase==='resources'&&MR().india){
@@ -4611,28 +4680,33 @@ function slotsHTML(n,stored,cart){
   return h;
 }
 function panelResources(a){return withSide(S.resNorth?(UI.kside||'south'):'south',()=>panelResources0(a))}
-function panelResources0(a){
-  const mine=isMine(a);const p=me();
+function panelResources0(a){/* v191: Markt oben (2×2), eigene Kraftwerke als Einkaufswagen darunter */
+  const mine=isMine(a);const p=me();const L=LX;
   if(mine&&UI.cartKey!==S.round+'r'+(UI.kside||'')+(MR().india?S.log.length:'')){UI.cartKey=S.round+'r'+(UI.kside||'')+(MR().india?S.log.length:'');UI.pcart={}}
-  let h=`<section class="sec"><h3>Rohstoffmarkt${S.resNorth?((UI.kside||'south')==='north'?(LANG==='en'?' · North':' · Nord'):(LANG==='en'?' · South':' · Süd')):''}</h3>${mine?'':kSideSeg()}${MR().india?`<p class="hint brule">${LANG==='en'?`One unit per turn, in turn. Only spaces up to ${priceCap()} € are open in this step.`:`Reihum je eine Einheit. In dieser Stufe sind nur Felder bis ${priceCap()} € offen.`}</p>`:''}`;
+  const side=S.resNorth?((UI.kside||'south')==='north'?L(' · Nord',' · North'):L(' · Süd',' · South')):'';
+  let h=`<section class="sec rm2"><div class="rm2-h"><b>${L('Rohstoffmarkt','Resource market')}${side}</b><span>${mine?L('Hell = im Korb','Bright = in your cart'):''}</span></div>${kSideSeg()}${MR().india?`<p class="hint brule">${L(`Reihum je eine Einheit. In dieser Stufe sind nur Felder bis ${priceCap()} € offen.`,`One unit per turn, in turn. Only spaces up to ${priceCap()} € are open in this step.`)}</p>`:''}<div class="rm2-g">`;
+  const pcap=priceCap();
   for(const r of RES){if(!CAP[r])continue;
-    const k=mine?cartTot(r):0;const np=nextPrice(r,k);
-    const dsc=mine?resDisc(me(),r):0;
-    h+=`<div class="rres"><div class="rhead">${resIcon(r)}<b class="rn">${RNAME[r]}</b><span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)}${np!=null?' · nächste '+(dsc?Math.max(1,np-dsc):np)+' €':''}${k?' · '+k+' im Korb':''}</span>${rxHTML(r,np)}${dsc?`<span class="rdisc" title="${LX('Du hast eine Stadt in Wien','You have a city in Vienna')}">${LX(`−${dsc} € für dich (Wien)`,`−${dsc} € for you (Vienna)`)}</span>`:''}</div>${trackHTML(r,k)}</div>`;
-  }
-  h+=umkHTML()+`</section>`;
+    const k=mine?cartTot(r):0,first=CAP[r]-S.resMarket[r],dsc=resDisc(p,r),dp=v=>v==null?null:(dsc?Math.max(1,v-dsc):v);
+    const np=dp(nextPrice(r,0)),na=dp(nextPrice(r,k)),cost=k?buyCost(r,k,S.resMarket,p):0,fn=k?0:oppNeedBefore(r);
+    let gr='';for(let i=0;i<CAP[r];){let j=i;while(j<CAP[r]&&PRICES[r][j]===PRICES[r][i])j++;let d='';for(let x=i;x<j;x++)d+=`<i class="${x<first?'so':x<first+k?'ct':'av'}"></i>`;
+      const nxt=first+k>=i&&first+k<j;gr+=`<span class="g${j<=first?' sold':''}${nxt?' nx':''}${PRICES[r][i]>pcap?' cap':''}"><span class="d">${d}</span><small>${PRICES[r][i]}</small></span>`;i=j}
+    const foot=k?`<span class="cart">${L('Korb','Cart')} ${k} · ${cost} €</span><span>${L('danach','then')} ${na==null?L('leer','empty'):na+' €'}</span>`
+      :fn?`<span class="opp">${L(`Gegner vorher ~${fn}`,`Opponents first ~${fn}`)}</span><span>${L('dann','then')} ${nextPrice(r,fn)==null?L('leer','empty'):dp(nextPrice(r,fn))+' €'}</span>`
+      :`<span>${S.resMarket[r]} ${L('am Markt','on market')}</span><span>${L('Vorrat','Supply')} ${supply(r)}</span>`;
+    h+=`<div class="rm2-c" data-r="${r}"><div class="t">${resIcon(r)}<b>${RNAME[r]}</b>${dsc?`<span class="rdisc" title="${L('Du hast eine Stadt in Wien','You have a city in Vienna')}">−${dsc} €</span>`:''}<em>${np==null?'–':np+' €'}</em></div><div class="tr" role="img" aria-label="${RNAME[r]}: ${S.resMarket[r]} ${L('am Markt','on market')}">${gr}</div><div class="f">${foot}</div></div>`}
+  h+=`</div>${umkHTML()}</section>`;
   if(!mine)return h;
-  const mk=h;h='';
   const plants=p.plants.filter(n=>!FREE(PLANTS[n][0]));
-  h+=`<section class="sec"><h3>Einlagern pro Kraftwerk</h3>${kSideSeg()}<p class="hint">Kauf für jedes Kraftwerk gezielt ein. Du bekommst immer die billigsten Einheiten zuerst, jedes Kraftwerk lagert das Doppelte seines Bedarfs.</p>`;
-  if(!plants.length)h+=`<p class="hint">Deine Kraftwerke brauchen keine Rohstoffe.</p>`;
-  for(const n of plants){
-    const[t,k]=PLANTS[n];const c=UI.pcart[n]||{};const types=hybFor(t,p)||[t];
-    h+=`<div class="prow">${plantCard(n,{sm:true,act:'pinfo'})}<div class="pcol"><div class="pslots" aria-label="Lager von Kraftwerk ${PN(n)}">${slotsHTML(n,p.alloc[n]||[],c)}</div><div class="pctl">${types.map(r=>`<div class="rctl">${resIcon(r)}<button type="button" class="mini" data-act="cartm" data-n="${n}" data-r="${r}" ${(c[r]||0)>0?'':'disabled'} aria-label="${RNAME[r]} für Kraftwerk ${n} weniger">−</button><output>${c[r]||0}</output><button type="button" class="mini" data-act="cartp" data-n="${n}" data-r="${r}" ${canAddP(n,r)?'':'disabled'} aria-label="${RNAME[r]} für Kraftwerk ${n} mehr">+</button></div>`).join('')}</div></div></div>`;
-  }
+  h+=`<section class="sec pc2"><div class="rm2-h"><b>${L('Deine Kraftwerke','Your power plants')}</b><span>${plants.length?L('Tippe + und sieh oben, was es kostet','Tap + and watch the price above'):''}</span></div>`;
+  if(!plants.length)h+=`<p class="hint">${L('Deine Kraftwerke brauchen keine Rohstoffe.','Your power plants need no resources.')}</p>`;
+  else{h+=`<div class="pc2-g" style="--n:${plants.length}">`;
+    for(const n of plants){const[t]=PLANTS[n];const c=UI.pcart[n]||{};const types=hybFor(t,p)||[t];
+      h+=`<div class="pc2-c">${plantCard(n,{sm:true,act:'pinfo'})}<div class="pslots" aria-label="${L('Lager von Kraftwerk','Storage of plant')} ${PN(n)}">${slotsHTML(n,p.alloc[n]||[],c)}</div>${types.map(r=>`<div class="st">${resIcon(r)}<button type="button" class="mini" data-act="cartm" data-n="${n}" data-r="${r}" ${(c[r]||0)>0?'':'disabled'} aria-label="${RNAME[r]} ${L('weniger','less')}">−</button><output>${c[r]||0}</output><button type="button" class="mini" data-act="cartp" data-n="${n}" data-r="${r}" ${canAddP(n,r)?'':'disabled'} aria-label="${RNAME[r]} ${L('mehr','more')}">+</button></div>`).join('')}</div>`}
+    h+=`</div><div class="lk"><button type="button" class="chip" data-act="suggest">↻ ${L('Eine Runde Brennstoff','One round of fuel')}</button><button type="button" class="chip" data-act="realloc">⇄ ${L('Lager umsortieren','Rearrange storage')}</button></div>`}
   const tot=cartCost();
-  h+=`<div class="row"><button type="button" class="btn" data-act="suggest">Bedarf für eine Runde</button><button type="button" class="btn" data-act="realloc">Lager neu verteilen</button></div>`;h+=aucAct({t:tot?LX(`Einkauf: ${tot} €`,`Shopping: ${tot} €`):LX('Rohstoffe wählen','Pick resources'),h:`<div class="row"><button type="button" class="btn" data-act="skipbuy">${MR().india?'Passen (für diese Runde fertig)':'Nichts kaufen'}</button><button type="button" class="btn pri grow" data-act="buy" ${tot?'':'disabled'}>${MR().india?'1 Einheit kaufen':'Kaufen'} · ${tot} €</button></div>`})+`</section>`;
-  return h+mk;
+  h+=aucAct({t:tot?L(`Einkauf: ${tot} €`,`Shopping: ${tot} €`):L('Rohstoffe wählen','Pick resources'),h:`<div class="row"><button type="button" class="btn" data-act="skipbuy">${MR().india?L('Passen','Pass'):L('Nichts kaufen','Buy nothing')}</button><button type="button" class="btn pri grow" data-act="buy" ${tot?'':'disabled'}>${MR().india?L('1 kaufen','Buy 1'):L('Kaufen','Buy')} · ${tot} €</button></div>`})+`</section>`;
+  return h;
 }
 function incomeFor(c,f){return PAY[Math.min(c,f,20)]}
 function netStatus(p,extra){
@@ -4802,9 +4876,10 @@ function seatHTML(a){
 function panelSub(a){const en=LANG==='en';if(!a||a.pid!==H){return `<section class="sec"><p class="hint">${esc(P(S.subPick).name)} ${en?'is attaching the substation.':'schließt das Umspannwerk an.'}</p></section>`}
   const p=me(),hp=heldPlants(p).filter(n=>PLANTS[n][0]!=='mine');
   return `<section class="sec xauc"><h3>${en?'Attach substation':'Umspannwerk anschließen'}</h3><p class="hint">${en?'Pick the plant it goes on. That plant powers one more city whenever it produces power. If you scrap the plant, the substation goes with it.':'Wähle das Kraftwerk, an das es kommt. Dieses Kraftwerk versorgt eine Stadt mehr, sobald es Strom liefert. Legst du es still, ist auch das Umspannwerk weg.'}</p><div class="cards">${hp.map(n=>plantCard(n,{lg:true,act:'subpick'})).join('')}</div></section>`}
-function oppPlantsHTML(){
+function oppPlantsHTML(force){
   if(!S||S.phase==='end')return '';
-  let open=true;try{open=localStorage.getItem('hochspannung-opp-open')!=='0'}catch(_){}if(S.phase!=='auction'){const o=(UI.oppPh||{})[S.round+S.phase];open=o!=null?o:false}
+  if(S.gate==='resources'&&!force)return '';
+  let open=true;try{open=localStorage.getItem('hochspannung-opp-open')!=='0'}catch(_){}if(S.phase!=='auction'){const o=(UI.oppPh||{})[S.round+S.phase];open=o!=null?o:false}if(force)open=true;
   const opps=S.order.map(P).filter(p=>!p.human);
   const head=`<button type="button" class="opph" data-act="oppToggle" aria-expanded="${open}"><span>Kraftwerke der Gegner</span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="transform:rotate(${open?180:0}deg)"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg></button>`;
   if(!open)return `<div class="oppp closed">${head}</div>`;
@@ -4887,7 +4962,7 @@ function renderSheet(){
   if(!UI.sheet){sheet.hidden=true;sheet.innerHTML='';undock();return}
   let h='';const head=(t,tb)=>`<div class="sheet-head${tb?' tabs':''}"><h2>${t}</h2><button type="button" class="xbtn" data-act="close" aria-label="Schließen" title="Schließen"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 3l12 12M15 3 3 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>${tb?`<div class="seg stabs">${[['markets','Märkte'],['opp','Gegner']].map(([k,l])=>`<button type="button" data-act="${k}" class="${tb===k?'on':''}">${l}</button>`).join('')}</div>`:''}</div>`;
   if(UI.sheet==='menu'){
-    h=head('Menü')+`<div class="menu"><div class="mgl">Darstellung</div><div class="seg">${[['dark','Dunkel'],['light','Hell'],['auto','Automatisch']].map(([k,l])=>`<button type="button" data-act="theme" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">${LX('Tempo der Gegner','Opponent speed')}</div><div class="seg seg4">${[['fast',LX('Schnell','Fast')],['normal','Normal'],['slow',LX('Langsam','Slow')],['step',LX('Schritt','Step')]].map(([k,l])=>`<button type="button" data-act="speedSel" data-s="${k}" class="${SPEED===k?'on':''}">${l}</button>`).join('')}</div><p class="hint mnote">${SPEED==='step'?LX('Jeder Gegnerzug wartet auf „Nächster Zug“ oder die Leertaste.','Each opponent move waits for “Next move” or the space bar.'):LX('Wie lange jeder Gegnerzug sichtbar bleibt.','How long each opponent move stays on screen.')}</p><div class="mgl">${LX('Kartenstil','Map style')}</div><div class="seg">${[['atlas',LX('Atlas (neu)','Atlas (new)')],['classic',LX('Klassisch','Classic')]].map(([k,l])=>`<button type="button" data-act="mapStyle" data-m="${k}" class="${MAPSTYLE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Karte bei Auktion und Rohstoffkauf</div><div class="seg">${[['auto','Verkleinern'],['always','Immer groß']].map(([k,l])=>`<button type="button" data-act="mapMode" data-m="${k}" class="${MAPMODE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">${LX('Abstand unten (iPhone)','Bottom margin (iPhone)')}</div><div class="seg">${[['auto',LX('Automatisch','Automatic')],['lift',LX('Höher setzen','Lift up')]].map(([k,l])=>`<button type="button" data-act="botMode" data-m="${k}" class="${BOTMODE===k?'on':''}">${l}</button>`).join('')}</div><p class="hint diag" style="margin:2px 0 6px;font-size:11px;opacity:.7">${viewDiag()}</p><div class="mgl">Sprache · Language</div><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">${LX('Nächste Phase','Next phase')}</div><div class="seg">${[[false,LX('Selbst weiter','Tap to continue')],[true,LX('Automatisch','Automatic')]].map(([k,l])=>`<button type="button" data-act="autoNext" data-v="${k?1:0}" class="${AUTO_NEXT===k?'on':''}" ${AUTO_NEXT===k?'disabled':''}>${l}</button>`).join('')}</div><div class="mgl">${navigator.vibrate?'Vibration beim Überbieten':'Signal beim Überbieten'}</div><div class="seg">${[[true,LANG==='en'?'On':'An'],[false,LANG==='en'?'Off':'Aus']].map(([k,l])=>`<button type="button" data-act="vibToggle" class="${!!UI.vib===k?'on':''}" ${!!UI.vib===k?'disabled':''}>${l}</button>`).join('')}</div><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn quitb" data-act="quit">Partie beenden</button>':''}</div>`;
+    h=head('Menü')+`<div class="menu"><div class="mgl">Darstellung</div><div class="seg">${[['dark','Dunkel'],['light','Hell'],['auto','Automatisch']].map(([k,l])=>`<button type="button" data-act="theme" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">${LX('Tempo der Gegner','Opponent speed')}</div><div class="seg seg4">${[['fast',LX('Schnell','Fast')],['normal','Normal'],['slow',LX('Langsam','Slow')],['step',LX('Schritt','Step')]].map(([k,l])=>`<button type="button" data-act="speedSel" data-s="${k}" class="${SPEED===k?'on':''}">${l}</button>`).join('')}</div><p class="hint mnote">${SPEED==='step'?LX('Jeder Gegnerzug wartet auf „Nächster Zug“ oder die Leertaste.','Each opponent move waits for “Next move” or the space bar.'):LX('Wie lange jeder Gegnerzug sichtbar bleibt.','How long each opponent move stays on screen.')}</p><div class="mgl">${LX('Kartenstil','Map style')}</div><div class="seg">${[['atlas',LX('Atlas (neu)','Atlas (new)')],['classic',LX('Klassisch','Classic')]].map(([k,l])=>`<button type="button" data-act="mapStyle" data-m="${k}" class="${MAPSTYLE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Karte bei Auktion und Rohstoffkauf</div><div class="seg">${[['auto','Verkleinern'],['always','Immer groß']].map(([k,l])=>`<button type="button" data-act="mapMode" data-m="${k}" class="${MAPMODE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">${LX('Abstand unten (iPhone)','Bottom margin (iPhone)')}</div><div class="seg">${[['auto',LX('Automatisch','Automatic')],['lift',LX('Höher setzen','Lift up')]].map(([k,l])=>`<button type="button" data-act="botMode" data-m="${k}" class="${BOTMODE===k?'on':''}">${l}</button>`).join('')}</div><p class="hint diag" style="margin:2px 0 6px;font-size:11px;opacity:.7">${viewDiag()}</p><div class="mgl">Sprache · Language</div><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div>${PL2_MQ.matches?'':`<div class="mgl">${LX('Layout','Layout')}</div><div class="seg">${[['phases',LX('Phasen','Phases')],['classic',LX('Klassisch','Classic')]].map(([k,l])=>{const on=(k==='classic')===WIDE_CLASSIC;return`<button type="button" data-act="wideLayout" data-v="${k}" class="${on?'on':''}" ${on?'disabled':''}>${l}</button>`}).join('')}</div>`}<div class="mgl">${LX('Nächste Phase','Next phase')}</div><div class="seg">${[[false,LX('Selbst weiter','Tap to continue')],[true,LX('Automatisch','Automatic')]].map(([k,l])=>`<button type="button" data-act="autoNext" data-v="${k?1:0}" class="${AUTO_NEXT===k?'on':''}" ${AUTO_NEXT===k?'disabled':''}>${l}</button>`).join('')}</div><div class="mgl">${navigator.vibrate?'Vibration beim Überbieten':'Signal beim Überbieten'}</div><div class="seg">${[[true,LANG==='en'?'On':'An'],[false,LANG==='en'?'Off':'Aus']].map(([k,l])=>`<button type="button" data-act="vibToggle" class="${!!UI.vib===k?'on':''}" ${!!UI.vib===k?'disabled':''}>${l}</button>`).join('')}</div><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn quitb" data-act="quit">Partie beenden</button>':''}</div>`;
   }else if(UI.sheet==='opp'){
     h=head('Gegner und Betriebe','opp')+oppCompare()+S.order.map(id=>{const p=P(id);const sv=storeOf(p);const pool=RES.filter(r=>p.pool[r]>0).map(r=>`<span class="stock">${resIcon(r)}${p.pool[r]}</span>`).join('')||'<span class="hint">leer</span>';
       return `<div class="opp" id="opp-${id}" ${pc(id)}><div class="h"><b>${esc(p.name)}</b>${p.style&&STYLES[p.style]?`<span class="stag">${STYLES[p.style].name}</span><span class="hint">${STYLES[p.style].note}</span>`:''}<span>${p.money} €</span><span>${cityCount(p)} Städte</span><span>Kapazität ${capacity(p)}</span>${p.lastPowered?`<span>zuletzt ${p.lastPowered} versorgt</span>`:''}</div><div class="cards">${p.plants.map(n=>plantCard(n,{lg:true,store:sv[n]||[],act:'pinfo'})).join('')||'<span class="hint">noch keine Kraftwerke</span>'}</div><div class="stock-row"><span class="lbl">Lager</span>${pool}</div></div>`}).join('');
@@ -6344,7 +6419,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v190';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v191';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -6365,11 +6440,11 @@ let MAPMODE=(()=>{try{return localStorage.getItem('hochspannung-map')||'always'}
 function layoutMap(){
   const k=S.round+S.phase;if(UI.peekKey!==k){UI.peek=false;UI.peekKey=k}
   const quiet=S.phase==='auction'||S.phase==='resources';
-  const min=quiet&&(MAPMODE==='auto'||pl2())&&!UI.peek;
+  const min=quiet&&(MAPMODE==='auto'||pl2Narrow())&&!UI.peek;
   const app=$('#app'),was=app.classList.contains('mapmin');
   app.classList.toggle('mapmin',min);
   {const pb=S.phase==='build',wasB=app.classList.contains('phbuild');app.classList.toggle('phbuild',pb);if(wasB!==pb&&matchMedia('(orientation:landscape) and (max-height:520px)').matches){UI.vb=null}}
-  const mb=$('#mapbar');mb.hidden=!(quiet&&(MAPMODE==='auto'||pl2()));
+  const mb=$('#mapbar');mb.hidden=!(quiet&&(MAPMODE==='auto'||pl2Narrow()));
   $('#mapbarT').textContent=pl2()?(min?LX('Karte','Map')+' · '+cityCount(me())+' '+LX('Städte im Netz','cities in network'):LX('Karte einklappen','Collapse map')):(min?'Karte zeigen':'Karte verkleinern');
   mb.setAttribute('aria-expanded',String(!min));
   if(was!==min&&UI.vb)requestAnimationFrame(applyVB);
@@ -6591,7 +6666,9 @@ function logoPicker(){return `<div class="co-brand"><div class="cb-glow"></div>$
 
 /* ==== v184: iPhone-Layout mit Phasenleiste, Mini-Trackern, eingeklappter Karte und einem Abschnitt pro Phase ==== */
 const PL2_MQ0=0;const PL2_MQ=window.matchMedia?matchMedia('(max-width:600px) and (orientation:portrait)'):{matches:false,addEventListener(){}};
-function pl2(){return !!(S&&PL2_MQ.matches&&UI.pl2!==false)}
+let WIDE_CLASSIC=(()=>{try{return localStorage.getItem('gm-layout')==='classic'}catch(_){return false}})();
+function pl2(){return !!(S&&UI.pl2!==false&&(PL2_MQ.matches||!WIDE_CLASSIC))}
+function pl2Narrow(){return pl2()&&PL2_MQ.matches}
 function pl2Phase(){if(!S)return 1;return{auction:1,resources:2,build:3,bureau:4,end:5}[S.phase]||1}
 const PL2_NAME=()=>[null,LX('Auktion','Auction'),LX('Rohstoffe','Resources'),LX('Bauen','Build'),LX('Liefern','Power')];
 function pl2Bar(){const p=pl2Phase(),N=PL2_NAME(),m=me();
@@ -6759,6 +6836,7 @@ const A={
   statsReset:()=>{UI.statReset=true;renderStats();return'skip'},
   statsResetNo:()=>{UI.statReset=false;renderStats();return'skip'},
   gateGo:()=>{gateGo()},
+  wideLayout:b=>{WIDE_CLASSIC=b.dataset.v==='classic';try{localStorage.setItem('gm-layout',WIDE_CLASSIC?'classic':'phases')}catch(_){}render()},
   autoNext:b=>{AUTO_NEXT=b.dataset.v==='1';try{localStorage.setItem('gm-autonext',AUTO_NEXT?'1':'0')}catch(_){}if(AUTO_NEXT&&S&&S.gate)gateGo()},
   dailyGo:b=>A.start(b),
   dailyShare:b=>{dailyShare(b);return'skip'},
