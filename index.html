@@ -3072,6 +3072,23 @@ html #app.pl2 #top:has(.undo) #pl2rd b{font-size:clamp(13px,4vw,16px)}
 .po-lg-k{display:flex;justify-content:flex-end;margin-top:-2px}
 .po-lg-k span{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--muted)}
 .po-lg-k .po-bt{font-style:normal;color:#1a1206;background:var(--accent);padding:1px 4px;border-radius:4px;font:800 8.5px/1.2 'Orbitron',var(--display)}
+
+/* ---- v195: Rohstoffkäufe nachvollziehbar ---- */
+@media (max-width:380px){.gatesec .g-h b{font-size:12.5px;letter-spacing:.05em}}
+.tg{display:flex;flex-direction:column;gap:4px}
+.tg-r{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:6px 9px;border-radius:9px;background:var(--panel-2,rgba(255,255,255,.03));border:1px solid var(--line);border-left:3px solid var(--pc)}
+.tg-r.me{background:linear-gradient(90deg,rgba(242,179,61,.12),rgba(242,179,61,.02));border-color:rgba(242,179,61,.45);border-left-color:var(--pc)}
+.tg-r .tk-logo{--ls:18px}
+.tg-r b{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tg-w{display:flex;gap:8px;justify-content:flex-end}
+.tg-w span{display:inline-flex;align-items:center;gap:3px;font:800 12px/1 'Orbitron',var(--display);color:var(--fg)}
+.tg-w .ri{width:14px;height:14px}
+.tg-w i{font-style:normal;font-size:11.5px;color:var(--muted)}
+.tg-c{font:800 12.5px/1 'Orbitron',var(--display);color:#ffd36e;min-width:38px;text-align:right}
+[data-theme="light"] .tg-c{color:#9a6208}
+.tgsec{padding:12px!important}
+.gatesec .g-sub{font:600 10px/1 Barlow,system-ui;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:2px 0 8px}
+.gatesec .tg{margin-bottom:10px}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -3600,7 +3617,7 @@ function roundGrid(){/* v192: Rundenübersicht als Raster */
 function gateHTML(){const k=S.gate,N={resources:[LX('Auktion abgeschlossen','Auction complete'),LX('Weiter zu Rohstoffe','Continue to resources')],build:[LX('Rohstoffe abgeschlossen','Resources complete'),LX('Weiter zum Bauen','Continue to build')],bureau:[LX('Bauen abgeschlossen','Building complete'),LX('Weiter zum Liefern','Continue to power')],round:[LX(`Runde ${S.round} abgeschlossen`,`Round ${S.round} complete`),LX(`Weiter zu Runde ${S.round+1}`,`Continue to round ${S.round+1}`)]}[k];
   const lines=S.log.filter(l=>l.r===S.round).slice(0,6).map(l=>`<p ${l.pid!=null?pc(l.pid):''}><span class="dot"></span>${esc(tr(l.t))}</p>`).join('');
   UI._ab={t:N[0],h:`<div class="row"><button type="button" class="btn pri grow" data-act="gateGo">${N[1]} →</button></div>`};
-  return `<section class="sec gatesec"><div class="g-h"><span class="g-ok">✓</span><b>${N[0]}</b></div>${k==='resources'?`<div class="g-opp">${oppPlantsHTML(true)}</div>`:''}${k==='round'?roundGrid():`<div class="g-log">${lines}</div>`}<p class="hint">${LX('Schau dir in Ruhe an, was passiert ist, und tippe dann auf „Weiter“.','Take a look at what happened, then tap “Continue”.')}</p></section>`}
+  return `<section class="sec gatesec"><div class="g-h"><span class="g-ok">✓</span><b>${N[0]}</b></div>${k==='resources'?`<div class="g-opp">${oppPlantsHTML(true)}</div>`:''}${k==='round'?roundGrid():k==='build'?`<div class="g-sub">${LX('Wer hat was gekauft','Who bought what')}</div>${tradeGrid(true)}`:`<div class="g-log">${lines}</div>`}<p class="hint">${LX('Schau dir in Ruhe an, was passiert ist, und tippe dann auf „Weiter“.','Take a look at what happened, then tap “Continue”.')}</p></section>`}
 function startBuild(){S.phase='build';S.seq=[...S.order].reverse();S.seqIdx=0;S.turnBuilt=[];S.builtRound=0}
 function nextSeq(){
   if(S.phase==='resources'&&MR().india){
@@ -4098,6 +4115,12 @@ function kSideSeg(){if(!S.resNorth)return '';const sd=UI.kside||'south',en=LANG=
   return `<div class="kr2"><div class="kr-g">${col('south')}${col('north')}</div><p class="hint kr-n">${en?'Prices show the next unit. <b>One market per turn</b>, you may switch next turn. Both share one supply; the North refills first, so a busy South can run dry. Highlighted: fuel your plants use.':'Preise gelten für die nächste Einheit. <b>Pro Zug nur ein Markt</b>, beim nächsten Zug darfst du wechseln. Beide teilen sich den Vorrat; der Norden wird zuerst nachgefüllt, im Süden kann es dann knapp werden. Hervorgehoben: Brennstoff deiner Kraftwerke.'}</p></div>`}
 function kSideSeg0(){if(!S.resNorth)return '';const sd=UI.kside||'south',en=LANG==='en';return `<div class="kside"><div class="seg">${[['south',en?'South market':'Südmarkt'],['north',en?'North market':'Nordmarkt']].map(([k,l])=>`<button type="button" data-act="kSide" data-s="${k}" class="${sd===k?'on':''}">${l}</button>`).join('')}</div><span class="hint">${en?'One side per turn. Uranium only in the South.':'Pro Zug nur eine Seite. Uran gibt es nur im Süden.'}</span></div>`}
 /* v181: Energiebörse – Prognose, Kurs mit Trend und Verlauf */
+function tradeGrid(full){/* v195: Rohstoffkäufe der Runde als Liste */
+  const L=LX,tr=(S.trades||[]).filter(t=>t.r===S.round);const by={};tr.forEach(t=>{(by[t.pid]=by[t.pid]||[]).push(t)});
+  const ids=(full?[...S.order].reverse():Object.keys(by).map(Number)).filter(id=>full||by[id]);
+  if(!ids.length)return'';
+  return `<div class="tg">${ids.map(id=>{const q=P(id),ts=by[id]||[];const parts={};ts.forEach(t=>t.parts.forEach(([r,k])=>parts[r]=(parts[r]||0)+k));const tot=ts.reduce((x,t)=>x+t.total,0);const keys=RES.filter(r=>parts[r]);
+    return `<div class="tg-r${q.human?' me':''}" ${pc(id)}>${coLogo(logoOf(q),q.color,'tk-logo')}<b>${q.human?L('Du','You'):esc(shortName(q.name))}</b><span class="tg-w">${keys.length?keys.map(r=>`<span>${resIcon(r)}${parts[r]}</span>`).join(''):`<i>${ts.length?L('nichts','nothing'):'–'}</i>`}</span><span class="tg-c">${tot?tot+' €':''}</span></div>`}).join('')}</div>`}
 function tradesHTML(){if(!S)return'';const tr=(S.trades||[]).filter(t=>t.r===S.round);const inRes=S.phase==='resources';if(!inRes&&!tr.length)return'';
   const a=actor(),cur=inRes&&a?P(a.pid):null,seen=UI.trSeen||0;
   const rows=tr.slice().reverse().map(t=>{const q=P(t.pid);const what=t.parts.length?t.parts.map(([r,k])=>`${resIcon(r)}<span>${k}</span>`).join(''):`<i>${LX('kauft nichts','buys nothing')}</i>`;
@@ -4753,6 +4776,7 @@ function panelResources0(a){/* v191: Markt oben (2×2), eigene Kraftwerke als Ei
     h+=`<div class="rm2-c" data-r="${r}"><div class="t">${resIcon(r)}<b>${RNAME[r]}</b>${dsc?`<span class="rdisc" title="${L('Du hast eine Stadt in Wien','You have a city in Vienna')}">−${dsc} €</span>`:''}<em>${np==null?'–':np+' €'}</em></div><div class="tr" role="img" aria-label="${RNAME[r]}: ${S.resMarket[r]} ${L('am Markt','on market')}">${gr}</div><div class="f">${foot}</div></div>`}
   h+=`</div>${umkHTML()}</section>`;
   if(!mine)return h;
+  {const tg=tradeGrid(false);if(tg)h=`<section class="sec tgsec"><div class="rm2-h"><b>${L('Vor dir gekauft','Bought before you')}</b><span>${L('Runde','Round')} ${S.round}</span></div>${tg}</section>`+h}
   const plants=p.plants.filter(n=>!FREE(PLANTS[n][0]));
   h+=`<section class="sec pc2"><div class="rm2-h"><b>${L('Deine Kraftwerke','Your power plants')}</b><span>${plants.length?L('Tippe + und sieh oben, was es kostet','Tap + and watch the price above'):''}</span></div>`;
   if(!plants.length)h+=`<p class="hint">${L('Deine Kraftwerke brauchen keine Rohstoffe.','Your power plants need no resources.')}</p>`;
@@ -6475,7 +6499,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v194';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v195';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -6780,7 +6804,7 @@ function schedule(){
   _aiRun=run;
   if(SPEED==='step'&&!window.__fast){UI.stepWait=a.pid;stepUI();return}
   const f=window.__fast?0:SPEEDF[SPEED]||1;
-  timer=setTimeout(run,window.__fast?20:Math.round((a.kind==="bid"?650:950)*f));
+  timer=setTimeout(run,window.__fast?20:S.phase==='resources'?Math.max(1400,Math.round(1500*f)):Math.round((a.kind==="bid"?650:950)*f));
 }
 /* v125: Tempo der Gegnerzüge (Menü) und Einzelschritt */
 let _aiRun=null;try{UI.tkCol=!!localStorage.getItem('hochspannung-tkcol')}catch(_){}
