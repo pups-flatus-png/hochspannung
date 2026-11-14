@@ -2270,12 +2270,14 @@ html:not([data-theme="light"]) #top{background:linear-gradient(180deg,rgba(10,15
 [data-theme="light"] #gmEnd .ea,[data-theme="light"] #gmEnd .ec,[data-theme="light"] #gmEnd .eb-tr{background:rgba(255,255,255,.7);border-color:rgba(0,0,0,.08)}
 /* v161: Siegesflug */
 #gmVic{position:fixed;inset:0;z-index:59;background:radial-gradient(120% 90% at 50% 45%,#0f1b25 0%,#0a1117 60%,#05080b 100%);animation:geIn .35s ease-out both}
-#gmVic .vstage{position:absolute;inset:0;will-change:transform;transition:opacity .5s ease}
+#gmVic .vstage{position:absolute;inset:0;transition:opacity .5s ease}
 #gmVic .vstage svg.vic,#gmVic .vstage .vfx{position:absolute;inset:0;width:100%;height:100%}
 #gmVic.done .vstage{opacity:0}
 #gmVic .vfx{position:absolute;inset:0;width:100%;height:100%;transition:opacity .5s ease}
 #gmVic svg.vic *{filter:none!important}
 #gmVic svg.vic text{display:none}
+#gmVic svg.vic .clights,#gmVic svg.vic .city .halo,#gmVic svg.vic .city .cshadow,#gmVic svg.vic .city .rtick,#gmVic svg.vic .pylons,#gmVic svg.vic .edge.glow,#gmVic svg.vic .rcells{display:none!important}
+#gmVic svg.vic .edge.own{opacity:.5}
 #gmVic.done .vfx{opacity:0}
 #gmVic.done{background:radial-gradient(120% 90% at 50% 45%,#0c151d 0%,#070b0f 70%)}
 #gmVic svg.vic line.edge, #gmVic svg.vic .city, #gmVic svg.vic text{opacity:.35}
@@ -3125,6 +3127,41 @@ html #app.pl2 #top:has(.undo) #pl2rd b{font-size:clamp(13px,4vw,16px)}
   #stats .sf{width:22px;height:22px;font-size:10px}
   #stats .lbs b,#stats .fuelk b{font-size:17px}
 }
+
+@media (orientation:landscape) and (max-height:520px){#gmVic .gv-cap,.gv-cap{left:max(14px,env(safe-area-inset-left,0px))!important;right:auto!important;top:12px!important;bottom:auto!important;transform:none!important;padding:8px 14px!important;text-align:left}.gv-cap b{font-size:16px!important}}
+/* ---- v196: iPhone quer – kompakte Kopfzeile, Platz für Karte und Phase ---- */
+@media (orientation:landscape) and (max-height:520px){
+html #app.pl2 #top{display:flex!important;align-items:center;flex-wrap:nowrap;gap:8px;padding:5px max(10px,env(safe-area-inset-right,0px)) 5px max(10px,env(safe-area-inset-left,0px))!important;min-height:0}
+html #app.pl2 #top>*{flex:none}
+html #app.pl2 #pl2rd{order:0;gap:2px}
+html #app.pl2 #pl2rd b{font-size:14px}
+html #app.pl2 #pl2rd small{font-size:8.5px}
+html #app.pl2 #pl2bar{order:1;flex:1 1 auto!important;min-width:0;display:flex!important;flex-direction:row;align-items:center;gap:8px}
+html #app.pl2 #pl2bar .pl2-tabs{position:static!important;transform:none!important;width:auto!important;flex:none;display:flex;padding:3px;gap:2px;border-radius:11px}
+html #app.pl2 #pl2bar .pl2-tabs span{flex-direction:row;gap:6px;padding:4px 7px;font-size:0;border-radius:8px}
+html #app.pl2 #pl2bar .pl2-tabs span.on{font-size:10px;padding:4px 10px 4px 6px}
+html #app.pl2 #pl2bar .pl2-tabs i{width:17px;height:17px}
+html #app.pl2 #pl2bar .pl2-trk{display:none!important}
+html #app.pl2 #pl2bar .pl2-ord{flex:1 1 auto;min-width:0;grid-column:auto;grid-row:auto}
+html #app.pl2 #pl2bar .pl2-ord .po-k{display:none}
+html #app.pl2 #pl2bar .pl2-ord .po{padding:4px 6px;font-size:11px;height:auto}
+html #app.pl2 #pl2bar .pl2-ord .po .po-lg{--ls:14px}
+html #app.pl2 #pl2bar .pl2-ord .po em{font-size:9.5px}
+html #app.pl2 #top .wallet{order:2;flex-direction:row;align-items:center;gap:6px;padding:4px 9px!important}
+html #app.pl2 #top .wallet .wl{display:none}
+html #app.pl2 #top .wallet .wv,html #app.pl2 #top .wallet b{font-size:18px!important}
+html #app.pl2 #top .undo{order:3;width:34px;height:34px;padding:0;justify-content:center}
+html #app.pl2 #top .undo span{display:none}
+html #app.pl2 #top [data-act=menu]{order:4;width:34px;height:34px}
+html #app.pl2 #rtag .cr{display:none}
+html #app.pl2 #rtag{transform:scale(.8);transform-origin:right bottom}
+html #app.pl2 .pl2b .pb-opts{grid-template-columns:1fr}
+html #app.pl2 .pl2b .pb-st small{font-size:8px;letter-spacing:.06em;white-space:nowrap}
+html #app.pl2 #panel>.actbar{padding-top:6px;padding-bottom:max(6px,env(safe-area-inset-bottom,0px))}
+html #app.pl2 #panel>.actbar .ab-t{font-size:13px;margin-bottom:4px}
+html #app.pl2 #panel>.actbar .btn{min-height:40px;padding-top:8px;padding-bottom:8px}
+}
+.pl2b .pb-opts .opt .cst{white-space:nowrap}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -4243,38 +4280,42 @@ function mapSnapshot(src,W,H){return new Promise((res,rej)=>{try{
   cl.removeAttribute('id');cl.setAttribute('width',W);cl.setAttribute('height',H);cl.setAttribute('xmlns','http://www.w3.org/2000/svg');cl.removeAttribute('class');cl.removeAttribute('style');
   const xml=new XMLSerializer().serializeToString(cl);box.remove();
   const url=URL.createObjectURL(new Blob([xml],{type:'image/svg+xml'})),img=new Image();img.onload=()=>{try{const c=document.createElement('canvas');c.width=W;c.height=H;c.getContext('2d').drawImage(img,0,0,W,H);res(c)}catch(e){res(img)}setTimeout(()=>URL.revokeObjectURL(url),1000)};img.onerror=rej;img.src=url}catch(e){rej(e)}})}
-function endVictoryStage(){if(!S||!S.ranking)return endShow();const W=S.ranking[0],wp=P(W),own=wp.cities||[];const src=document.getElementById('map');
+function endVictoryStage(){/* v196: scharf – Kamerafahrt über den Bildausschnitt statt CSS-Skalierung; Kopie trägt die Kartenstile */
+  if(!S||!S.ranking)return endShow();const W=S.ranking[0],wp=P(W),own=wp.cities||[];const src=document.getElementById('map');
   if(hmReduced()||!own.length||!src){endShow();return}
   clearTimeout(window._vicTm);document.getElementById('gmVic')?.remove();const ov=document.createElement('div');ov.id='gmVic';ov.setAttribute('aria-hidden','true');
   const stg=document.createElement('div');stg.className='vstage';ov.appendChild(stg);
-  const cl=src.cloneNode(true);cl.removeAttribute('id');cl.setAttribute('preserveAspectRatio','xMidYMid meet');cl.setAttribute('viewBox',MAPVB);cl.classList.add('vic','moving');stg.appendChild(cl);
+  const cl=src.cloneNode(true);cl.setAttribute('preserveAspectRatio','xMidYMid meet');cl.classList.add('vic','moving');cl.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));stg.appendChild(cl);
   const cv=document.createElement('canvas');cv.className='vfx';stg.appendChild(cv);
   const first=own[0],F=CITY[first],[vx,vy,vw,vh]=MAPVB.split(' ').map(Number);
   const D={[first]:0},Q=[first],done={},adj={};EDGE_LIST.forEach(e=>{(adj[e.a]??=[]).push(e.b);(adj[e.b]??=[]).push(e.a)});
   while(Q.length){Q.sort((a,b)=>D[a]-D[b]);const u=Q.shift();if(done[u])continue;done[u]=1;for(const v of adj[u]||[]){const w=Math.hypot(CITY[u].x-CITY[v].x,CITY[u].y-CITY[v].y)*(own.includes(v)?1:1.6);if(D[v]==null||D[u]+w<D[v]){D[v]=D[u]+w;Q.push(v)}}}
-  const mx=Math.max(1,...own.map(c=>D[c]??0)),T0=.45,TS=2.3,dl=c=>T0+(D[c]??mx)/mx*TS;
+  const mx=Math.max(1,...own.map(c=>D[c]??0)),DL=.35,DUR=3,T0=.45,TS=2.3,dl=c=>DL+T0+(D[c]??mx)/mx*TS;
   const E=[];EDGE_LIST.forEach(e=>{if(!own.includes(e.a)||!own.includes(e.b))return;const[a,b]=(D[e.a]??0)<=(D[e.b]??0)?[e.a,e.b]:[e.b,e.a];E.push([CITY[a],CITY[b],dl(a),Math.max(.25,((D[b]??0)-(D[a]??0))/mx*TS)])});
   const C=own.map(c=>[CITY[c],dl(c)]);
   ov.insertAdjacentHTML('beforeend',`<div class="gv-cap" style="--pc:${wp.color}"><span>${LX('Das Netz des Siegers','The winning grid')}</span><b>${esc(wp.name)}</b><em>${cityCount(wp)} ${LX('Städte','cities')} · ${LX('erste Stadt','first city')}: ${esc(CITY[first].name||first)}</em></div>`);
-  document.body.appendChild(ov);
+  document.body.appendChild(ov);cl.id='map';/* gleiche Stile wie die Spielkarte; getElementById liefert weiter das Original (steht früher im Dokument) */
   let fin=false;window._vicFin&&window._vicFin();window._vicFin=()=>{fin=true};
-  const DL=350,DUR=3000,col=wp.color,hot=`color-mix(in srgb,${col} 50%,#fff)`;
-  const r=stg.getBoundingClientRect(),M=cl.getScreenCTM(),dpr=Math.min(2,devicePixelRatio||1);cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.height*dpr);
-  const sc=M?M.a:1,X=p=>((M?M.a*p.x+M.e:p.x)-r.left)*dpr,Y=p=>((M?M.d*p.y+M.f:p.y)-r.top)*dpr,u=sc*dpr;
-  const x=cv.getContext('2d');let t0=null;
-  const draw=now=>{if(!ov.isConnected)return;if(t0==null)t0=now;const t=fin?99:(now-t0)/1000;x.clearRect(0,0,cv.width,cv.height);x.lineCap='round';
+  const col=wp.color,hot=`color-mix(in srgb,${col} 50%,#fff)`;
+  const r=stg.getBoundingClientRect(),SW=r.width,SH=r.height,dpr=Math.min(3,devicePixelRatio||1);cv.width=Math.round(SW*dpr);cv.height=Math.round(SH*dpr);
+  const z=Math.max(vw,vh)/3.1,asp=SW/SH,b0w=asp>=1?z*asp:z,b0h=asp>=1?z:z/asp,b0=[F.x-b0w/2,F.y-b0h/2,b0w,b0h],b1=[vx,vy,vw,vh];
+  const ease=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+  const x=cv.getContext('2d');let t0=null,lastVb='';
+  const draw=now=>{if(!ov.isConnected)return;if(t0==null)t0=now;const t=fin?99:(now-t0)/1000;
+    const e=ease(Math.min(1,Math.max(0,(t-DL)/DUR))),vb=b0.map((v,i)=>v+(b1[i]-v)*e),s=Math.min(SW/vb[2],SH/vb[3]),sox=(SW-vb[2]*s)/2,soy=(SH-vb[3]*s)/2;
+    const vbs=vb.map(v=>v.toFixed(2)).join(' ');if(vbs!==lastVb){cl.setAttribute('viewBox',vbs);cl.style.setProperty('--wu',(1/s).toFixed(4)+'px');lastVb=vbs}
+    const X=p=>((p.x-vb[0])*s+sox)*dpr,Y=p=>((p.y-vb[1])*s+soy)*dpr,u=s*dpr;
+    x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,cv.width,cv.height);x.lineCap='round';x.lineJoin='round';
     const P1=new Path2D();for(const[A,B,d,du]of E){const k=Math.min(1,Math.max(0,(t-d)/du));if(k<=0)continue;P1.moveTo(X(A),Y(A));P1.lineTo(X(A)+(X(B)-X(A))*k,Y(A)+(Y(B)-Y(A))*k)}
-    x.strokeStyle=col;x.globalAlpha=.28;x.lineWidth=20*u;x.stroke(P1);x.globalAlpha=1;x.lineWidth=6*u;x.strokeStyle=hot;x.stroke(P1);
-    for(const[c,d]of C){const e=t-d;if(e<0)continue;
-      if(e<.9){const k=e/.9;x.globalAlpha=(1-k)*.9;x.strokeStyle=col;x.lineWidth=3*u;x.beginPath();x.arc(X(c),Y(c),18*u*(.4+2.8*k),0,6.2832);x.stroke()}
-      const k=Math.min(1,e/.45),s=k<.6?.3+k/.6*1.05:1.35-(k-.6)/.4*.35;x.globalAlpha=Math.min(1,k*1.7);x.fillStyle='#fff';x.strokeStyle=col;x.lineWidth=5*u;x.beginPath();x.arc(X(c),Y(c),11*u*s,0,6.2832);x.fill();x.stroke()}
-    const fe=t-.3;if(fe>0&&fe<1){const k=fe,s=k<.25?.2+k/.25*1.4:1.6-(k-.25)/.75*.6;x.globalAlpha=k<.25?k/.25:1-(k-.25)/.75;x.fillStyle='#fff';x.strokeStyle=col;x.lineWidth=10*u;x.beginPath();x.arc(X(F),Y(F),16*u*s,0,6.2832);x.fill();x.stroke()}
-    x.globalAlpha=1;if(t<T0+TS+1.2&&!fin)requestAnimationFrame(draw)};
+    x.strokeStyle=col;x.globalAlpha=.22;x.lineWidth=22*u;x.stroke(P1);x.globalAlpha=.45;x.lineWidth=11*u;x.stroke(P1);x.globalAlpha=1;x.lineWidth=4.5*u;x.strokeStyle=hot;x.stroke(P1);
+    for(const[c,d]of C){const q=t-d;if(q<0)continue;
+      if(q<.9){const k=q/.9;x.globalAlpha=(1-k)*.9;x.strokeStyle=col;x.lineWidth=2.5*u;x.beginPath();x.arc(X(c),Y(c),16*u*(.4+2.6*k),0,6.2832);x.stroke()}
+      const k=Math.min(1,q/.45),sc=k<.6?.3+k/.6*1.05:1.35-(k-.6)/.4*.35;x.globalAlpha=Math.min(1,k*1.7);x.fillStyle='#fff';x.strokeStyle=col;x.lineWidth=4*u;x.beginPath();x.arc(X(c),Y(c),9*u*sc,0,6.2832);x.fill();x.stroke()}
+    const fe=t-DL-.3;if(fe>0&&fe<1){const k=fe,sc=k<.25?.2+k/.25*1.4:1.6-(k-.25)/.75*.6;x.globalAlpha=k<.25?k/.25:1-(k-.25)/.75;x.fillStyle='#fff';x.strokeStyle=col;x.lineWidth=8*u;x.beginPath();x.arc(X(F),Y(F),14*u*sc,0,6.2832);x.fill();x.stroke()}
+    x.globalAlpha=1;if(t<DL+T0+TS+1.4&&!fin)requestAnimationFrame(draw)};
   requestAnimationFrame(draw);
-  if(M){const fx=M.a*F.x+M.e-r.left,fy=M.d*F.y+M.f-r.top,s0=3.1,cx=r.width/2,cy=r.height/2;stg.style.transformOrigin=fx+'px '+fy+'px';
-    stg.animate([{transform:`translate(${cx-fx}px,${cy-fy}px) scale(${s0})`},{transform:'none'}],{duration:DUR,delay:DL,easing:'cubic-bezier(.65,0,.35,1)',fill:'both'})}
-  const go=()=>{if(fin)return;fin=true;stg.getAnimations().forEach(a=>a.finish());requestAnimationFrame(draw);ov.classList.add('done');endShow()};
-  const tm=window._vicTm=setTimeout(go,DL+DUR+600);ov.addEventListener('click',()=>{clearTimeout(tm);ov.classList.add('skip');go()})}
+  const go=()=>{if(fin)return;fin=true;requestAnimationFrame(draw);ov.classList.add('done');endShow()};
+  const tm=window._vicTm=setTimeout(go,(DL+DUR+.6)*1000);ov.addEventListener('click',()=>{clearTimeout(tm);ov.classList.add('skip');go()})}
 function endVictory(){if(innerWidth<900)return endVictoryStage();if(!S||!S.ranking)return endShow();const W=S.ranking[0],wp=P(W),own=wp.cities||[];const src=document.getElementById('map');
   if(hmReduced()||!own.length||!src){endShow();return}
   clearTimeout(window._vicTm);document.getElementById('gmVic')?.remove();const ov=document.createElement('div');ov.id='gmVic';ov.setAttribute('aria-hidden','true');
@@ -6499,7 +6540,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v195';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v196';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
