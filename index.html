@@ -2780,6 +2780,27 @@ html[data-theme="light"] #start.v3:not(.wide) .s3-brand{margin:0 4px;padding:10p
 [data-theme="light"] .track .pg.next .pp{color:#9a6208}
 [data-theme="light"] .fcl b{color:#9a6208}
 [data-theme="light"] .rx-sp path{stroke:#b9770e}
+
+/* v182: Börsen-Kopfzeile robust auch in schmalen Spalten */
+.rres .rhead{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"ic nm rx" "mt mt mt";align-items:center;column-gap:8px;row-gap:3px}
+.rres .rhead>svg:first-child,.rres .rhead>.ri,.rres .rhead>img:first-child{grid-area:ic}
+.rres .rhead .rn{grid-area:nm;font-weight:600;text-align:left;justify-self:start;white-space:nowrap}
+.rres .rhead .rx{grid-area:rx;margin-left:0}
+.rres .rhead .meta{grid-area:mt;margin:0!important;text-align:left;justify-self:start}
+.rres .rhead .rdisc{grid-column:1/-1;justify-self:start}
+.mk-two .rres .rx-sp{width:44px}
+.mk-two .rres .rx-p{font-size:16px}
+.fcl{flex-wrap:wrap;row-gap:2px}
+.fcl>span:last-child{white-space:nowrap}
+
+.rx-p{white-space:nowrap}
+.rres .rhead .rn .sd{display:none;font-style:normal;margin-left:6px;padding:2px 6px;border-radius:99px;font:600 9.5px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 55%,transparent)}
+@media (max-width:700px){
+  .mk-two{grid-template-columns:minmax(0,1fr)!important}
+  .mk-two>h3{display:none}
+  .mk-two .rres .rhead .rn .sd{display:inline-block}
+  .mk-two .rres .rx-sp{width:64px}.mk-two .rres .rx-p{font-size:19px}
+}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -3067,7 +3088,8 @@ function STO(n){const d=PLANTS[n];return d?(d[3]??2*d[1]):0}
 function applyPlantOv(){if(S&&S.plantOv)for(const[k,v]of Object.entries(S.plantOv))PLANTS[k]=v}
 function applyMapN(n){const r=applyRulesN(n);const s2=MR().s2;if(s2&&s2[n])STEP2_AT=s2[n];return r}
 function islandOf(c){const x=(MAPS[S.map].cityx||{})[c];return x&&x.isl}
-function withSide(side,fn){if(side!=='north'||!S.resNorth)return fn();const sw=()=>{for(const r of RES){[PRICES[r],PRICES_N[r]]=[PRICES_N[r],PRICES[r]];[CAP[r],CAP_N[r]]=[CAP_N[r],CAP[r]]}[S.resMarket,S.resNorth]=[S.resNorth,S.resMarket]};sw();try{return fn()}finally{sw()}}
+let MSIDE='';
+function withSide(side,fn){if(side!=='north'||!S.resNorth)return fn();const sw=()=>{MSIDE=MSIDE==='n'?'':'n';for(const r of RES){[PRICES[r],PRICES_N[r]]=[PRICES_N[r],PRICES[r]];[CAP[r],CAP_N[r]]=[CAP_N[r],CAP[r]]}[S.resMarket,S.resNorth]=[S.resNorth,S.resMarket]};sw();try{return fn()}finally{sw()}}
 function priceCap(){const m=MAPS[S.map].maxPrice;return m?m[S.step-1]:Infinity}
 const CO2P=[3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,9,9,9,10,10,10];
 function applyGameMods(){if(!S)return;if(S.co2)for(const r of ['coal','oil','garbage'])PRICES[r]=CO2P.slice(-CAP[r]);}
@@ -3286,7 +3308,7 @@ function endAuctionPhase(){
 }
 
 /* --- Rohstoffe & Bauen --- */
-function startResources(){{S.ph=S.ph||{};RES.forEach(r=>{if(!CAP[r])return;const v=nextPrice(r);(S.ph[r]=S.ph[r]||[]).push(v==null?null:v);if(S.ph[r].length>14)S.ph[r].shift()})}S.phase='resources';S.seq=[...S.order].reverse();S.seqIdx=0;S.rpass=[];S.lastBuyN=null}
+function startResources(){{S.ph=S.ph||{};const rec=()=>RES.forEach(r=>{if(!CAP[r])return;const v=nextPrice(r),k=r+MSIDE;(S.ph[k]=S.ph[k]||[]).push(v==null?null:v);if(S.ph[k].length>14)S.ph[k].shift()});rec();if(S.resNorth)withSide('north',rec)}S.phase='resources';S.seq=[...S.order].reverse();S.seqIdx=0;S.rpass=[];S.lastBuyN=null}
 function startBuild(){S.phase='build';S.seq=[...S.order].reverse();S.seqIdx=0;S.turnBuilt=[];S.builtRound=0}
 function nextSeq(){
   if(S.phase==='resources'&&MR().india){
@@ -3783,11 +3805,11 @@ function kSideSeg(){if(!S.resNorth)return '';const sd=UI.kside||'south',en=LANG=
 function kSideSeg0(){if(!S.resNorth)return '';const sd=UI.kside||'south',en=LANG==='en';return `<div class="kside"><div class="seg">${[['south',en?'South market':'Südmarkt'],['north',en?'North market':'Nordmarkt']].map(([k,l])=>`<button type="button" data-act="kSide" data-s="${k}" class="${sd===k?'on':''}">${l}</button>`).join('')}</div><span class="hint">${en?'One side per turn. Uranium only in the South.':'Pro Zug nur eine Seite. Uran gibt es nur im Süden.'}</span></div>`}
 /* v181: Energiebörse – Prognose, Kurs mit Trend und Verlauf */
 function oppNeedBefore(r){if(!S||S.phase==='end')return 0;const seq=[...S.order].reverse(),hi=seq.indexOf(H);if(hi<0)return 0;
-  let from=0;if(S.phase==='resources'){if((S.seq||[]).indexOf(H)<(S.seqIdx||0))return 0;from=S.seqIdx||0}
-  let n=0;seq.slice(from,hi).forEach(id=>{const q=P(id);if(!q||q.human)return;const d=fuelNeed(q);n+=Math.max(0,(d[r]||0)-(q.pool[r]||0))});return Math.min(n,S.resMarket[r])}
-function rxHTML(r,np){const h=((S.ph||{})[r]||[]).filter(v=>v!=null),pts=h.concat(np==null?[]:[np]);const prev=h.length?h[h.length-1]:null;
+  if(S.phase!=='resources')return 0;if((S.seq||[]).indexOf(H)<(S.seqIdx||0))return 0;const from=S.seqIdx||0;
+  let n=0;seq.slice(from,hi).forEach(id=>{const q=P(id);if(!q||q.human)return;const d=fuelNeed(q);n+=Math.max(0,(d[r]||0)-(q.pool[r]||0))});if(S.resNorth)n=Math.ceil(n/2);return Math.min(n,S.resMarket[r])}
+function rxHTML(r,np){const h=((S.ph||{})[r+MSIDE]||[]).filter(v=>v!=null),pts=h.concat(np==null?[]:[np]);const prev=h.length?h[h.length-1]:null;
   const d=np!=null&&prev!=null&&S.phase!=='resources'?np-prev:(np!=null&&h.length>1?np-h[h.length-2]:0);
-  let sp='';if(pts.length>1){const mx=Math.max(...pts),mn=Math.min(...pts);sp=`<svg class="rx-sp" viewBox="0 0 64 22" aria-hidden="true"><path d="M${pts.map((v,i)=>`${(i/(pts.length-1)*62+1).toFixed(1)} ${(20-(v-mn)/(mx-mn||1)*18).toFixed(1)}`).join(' L')}"/></svg>`}
+  let sp='';if(pts.length>2&&new Set(pts).size>1){const mx=Math.max(...pts),mn=Math.min(...pts);sp=`<svg class="rx-sp" viewBox="0 0 64 22" aria-hidden="true"><path d="M${pts.map((v,i)=>`${(i/(pts.length-1)*62+1).toFixed(1)} ${(20-(v-mn)/(mx-mn||1)*18).toFixed(1)}`).join(' L')}"/></svg>`}
   return `<span class="rx">${sp}<b class="rx-p">${np==null?'–':np+' €'}</b>${d?`<span class="rx-t ${d>0?'up':'dn'}">${d>0?'▲ +'+d:'▼ '+(-d)}</span>`:''}</span>`}
 function trackHTML(r,k=0){
   const first=CAP[r]-S.resMarket[r],nx=first+k;let groups='';
@@ -4419,7 +4441,7 @@ function panelResources0(a){
   for(const r of RES){if(!CAP[r])continue;
     const k=mine?cartTot(r):0;const np=nextPrice(r,k);
     const dsc=mine?resDisc(me(),r):0;
-    h+=`<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)}${np!=null?' · nächste '+(dsc?Math.max(1,np-dsc):np)+' €':''}${k?' · '+k+' im Korb':''}</span>${rxHTML(r,np)}${dsc?`<span class="rdisc" title="${LX('Du hast eine Stadt in Wien','You have a city in Vienna')}">${LX(`−${dsc} € für dich (Wien)`,`−${dsc} € for you (Vienna)`)}</span>`:''}</div>${trackHTML(r,k)}</div>`;
+    h+=`<div class="rres"><div class="rhead">${resIcon(r)}<b class="rn">${RNAME[r]}</b><span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)}${np!=null?' · nächste '+(dsc?Math.max(1,np-dsc):np)+' €':''}${k?' · '+k+' im Korb':''}</span>${rxHTML(r,np)}${dsc?`<span class="rdisc" title="${LX('Du hast eine Stadt in Wien','You have a city in Vienna')}">${LX(`−${dsc} € für dich (Wien)`,`−${dsc} € for you (Vienna)`)}</span>`:''}</div>${trackHTML(r,k)}</div>`;
   }
   h+=umkHTML()+`</section>`;
   if(!mine)return h;
@@ -4684,7 +4706,7 @@ function renderSheet(){
   }else if(UI.sheet==='plant'){
     h=head('Kraftwerk '+PN(UI.pnum))+plantInfo(UI.pnum);
   }else if(UI.sheet==='markets'){
-    const resCard=r=>{const hold=S.players.filter(p=>p.pool[r]>0);return `<div class="rres"><div class="rhead">${resIcon(r)}${RNAME[r]}<span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)} · ${r==='uranium'&&S.noUranium?'Kein Uran-Nachschub mehr (Atomausstieg)':'Nachschub +'+RSUP(r)}</span>${rxHTML(r,nextPrice(r))}</div>${trackHTML(r)}${marketDemand(r)}<div class="holders">${hold.length?hold.map(p=>`<span ${pc(p.id)}><i class="dot"></i>${esc(p.name)} ${p.pool[r]}</span>`).join(''):'<span>Niemand lagert '+RNAME[r]+'.</span>'}</div></div>`};const resSec=(title)=>`<div class="sec"><h3>${title}</h3>${RES.filter(r=>CAP[r]).map(resCard).join('')}${title==='Rohstoffe'||title==='Rohstoffe · Süd'?umkHTML():''}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`;
+    const resCard=r=>{const hold=S.players.filter(p=>p.pool[r]>0);return `<div class="rres"><div class="rhead">${resIcon(r)}<b class="rn">${RNAME[r]}${S.resNorth?`<i class="sd">${MSIDE?LX('Nord','North'):LX('Süd','South')}</i>`:''}</b><span class="meta">${S.resMarket[r]} am Markt · Vorrat ${supply(r)} · ${r==='uranium'&&S.noUranium?'Kein Uran-Nachschub mehr (Atomausstieg)':'Nachschub +'+RSUP(r)}</span>${rxHTML(r,nextPrice(r))}</div>${trackHTML(r)}${marketDemand(r)}<div class="holders">${hold.length?hold.map(p=>`<span ${pc(p.id)}><i class="dot"></i>${esc(p.name)} ${p.pool[r]}</span>`).join(''):'<span>Niemand lagert '+RNAME[r]+'.</span>'}</div></div>`};const resSec=(title)=>`<div class="sec"><h3>${title}</h3>${RES.filter(r=>CAP[r]).map(resCard).join('')}${title==='Rohstoffe'||title==='Rohstoffe · Süd'?umkHTML():''}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`;
     h=head('Märkte','markets')+(S.resNorth?`<div class="sec"><div class="mk-two"><h3>${LX('Rohstoffe · Süd','Resources · South')}</h3><h3>${LX('Rohstoffe · Nord','Resources · North')}</h3>${RES.map(r=>{const a=CAP[r]?resCard(r):'',b=withSide('north',()=>CAP[r]?resCard(r):'');return a||b?(a||'<div></div>')+(b||'<div></div>'):''}).join('')}</div>${umkHTML()}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`:resSec('Rohstoffe'))+`<div class="mk-sep"></div>`+marketHTML(null);
   }else if(UI.sheet==='log'){
     h=head('Protokoll')+`<div class="loglist">${S.log.map(l=>`<p ${l.pid!=null?pc(l.pid):''}><span class="r">R${l.r}</span><span class="dot"></span>${esc(l.t)}</p>`).join('')}</div>`;
@@ -6134,7 +6156,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v181';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v182';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
