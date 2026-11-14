@@ -2954,6 +2954,14 @@ html[data-boot] #start.v3:not(.wide) .s3-bar .cta::before{animation-delay:5.6s}
 #app.pl2 #pl2rd{grid-column:1}
 #app.pl2 #pl2bar{grid-column:1/-1}
 #app.pl2 #top .wallet .wv,#app.pl2 #top .wallet b{font-size:24px}
+
+/* ---- v190: Phasenabschluss mit „Weiter“ ---- */
+.gatesec .g-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.gatesec .g-ok{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#1a1206;font-weight:800;box-shadow:0 0 12px rgba(242,179,61,.5)}
+.gatesec .g-h b{font:800 14px/1.1 'Orbitron',var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--fg)}
+.gatesec .g-log{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px}
+.gatesec .g-log p{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.35;color:var(--fg);margin:0}
+.gatesec .g-log .dot{flex:none;width:8px;height:8px;margin-top:5px;border-radius:50%;background:var(--pc,var(--muted))}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -3457,19 +3465,28 @@ function endAuctionPhase(){
   if(S.step3Pending)startStep3();
   if(MR().orderAfterAuction){determineOrder();log('Neue Spielerreihenfolge nach der Versteigerung.')}
   else if(S.round===1&&!MAPS[S.map].keepR1Order)determineOrder();
-  startResources();
+  phaseGate('resources');
 }
 
 /* --- Rohstoffe & Bauen --- */
 function startResources(){{S.ph=S.ph||{};const rec=()=>RES.forEach(r=>{if(!CAP[r])return;const v=nextPrice(r),k=r+MSIDE;(S.ph[k]=S.ph[k]||[]).push(v==null?null:v);if(S.ph[k].length>14)S.ph[k].shift()});rec();if(S.resNorth)withSide('north',rec)}S.phase='resources';S.seq=[...S.order].reverse();S.seqIdx=0;S.rpass=[];S.lastBuyN=null}
+/* v190: Phasenwechsel erst, wenn der Spieler weitertippt */
+const PH_GO={resources:()=>startResources(),build:()=>startBuild(),bureau:()=>startBureau(),round:()=>{S.round++;if(!MR().orderAfterAuction)determineOrder();startAuctionPhase()}};
+let AUTO_NEXT=(()=>{try{return localStorage.getItem('gm-autonext')==='1'}catch(_){return false}})();
+function phaseGate(k){if(!S.players.some(p=>p.human)||window.__fast||AUTO_NEXT){PH_GO[k]();return}S.gate=k}
+function gateGo(){if(!S||!S.gate)return;const k=S.gate;S.gate=null;PH_GO[k]()}
+function gateHTML(){const k=S.gate,N={resources:[LX('Auktion abgeschlossen','Auction complete'),LX('Weiter zu Rohstoffe','Continue to resources')],build:[LX('Rohstoffe abgeschlossen','Resources complete'),LX('Weiter zum Bauen','Continue to build')],bureau:[LX('Bauen abgeschlossen','Building complete'),LX('Weiter zum Liefern','Continue to power')],round:[LX(`Runde ${S.round} abgeschlossen`,`Round ${S.round} complete`),LX(`Weiter zu Runde ${S.round+1}`,`Continue to round ${S.round+1}`)]}[k];
+  const lines=S.log.filter(l=>l.r===S.round).slice(0,6).map(l=>`<p ${l.pid!=null?pc(l.pid):''}><span class="dot"></span>${esc(tr(l.t))}</p>`).join('');
+  UI._ab={t:N[0],h:`<div class="row"><button type="button" class="btn pri grow" data-act="gateGo">${N[1]} →</button></div>`};
+  return `<section class="sec gatesec"><div class="g-h"><span class="g-ok">✓</span><b>${N[0]}</b></div><div class="g-log">${lines}</div><p class="hint">${LX('Schau dir in Ruhe an, was passiert ist, und tippe dann auf „Weiter“.','Take a look at what happened, then tap “Continue”.')}</p></section>`}
 function startBuild(){S.phase='build';S.seq=[...S.order].reverse();S.seqIdx=0;S.turnBuilt=[];S.builtRound=0}
 function nextSeq(){
   if(S.phase==='resources'&&MR().india){
     const cur=S.seq[S.seqIdx];if(!S.lastBuyN&&!S.rpass.includes(cur))S.rpass.push(cur);S.lastBuyN=null;S.turnBuilt=[];
-    if(S.rpass.length>=S.seq.length){startBuild();return}
+    if(S.rpass.length>=S.seq.length){phaseGate('build');return}
     let g=0;do{S.seqIdx=(S.seqIdx+1)%S.seq.length}while(S.rpass.includes(S.seq[S.seqIdx])&&g++<12);return}
   S.seqIdx++;S.turnBuilt=[];
-  if(S.seqIdx>=S.seq.length){if(S.phase==='resources')startBuild();else endBuild()}
+  if(S.seqIdx>=S.seq.length){if(S.phase==='resources')phaseGate('build');else endBuild()}
 }
 function buyResources(pid,cart){
   const p=P(pid);let total=0;const parts=[];
@@ -3534,7 +3551,7 @@ function endBuild(){
   if(m>=END_AT&&!S.endTriggered){S.endTriggered=true;log('Ein Netz hat '+END_AT+' Städte erreicht. Dies ist die letzte Stromlieferung.')}
   {const tot=S.players.reduce((x,p)=>x+p.cities.length,0);S.idle=tot===S.lastTot?(S.idle||0)+1:0;S.lastTot=tot;
    if(!S.endTriggered&&S.idle>=3&&S.round>=12){S.endTriggered=true;log('Drei Runden ohne Netzausbau: Das Spiel endet mit dieser Stromlieferung.')}}
-  startBureau();
+  phaseGate('bureau');
 }
 
 /* --- Bürokratie --- */
@@ -3590,7 +3607,7 @@ function finishBureau(){
     if(hi!=null){S.market=S.market.filter(x=>x!==hi);S.deck.push(hi);drawToMarket()}
   }
   removeLowCities();
-  S.round++;if(!MR().orderAfterAuction)determineOrder();startAuctionPhase();
+  phaseGate('round');
 }
 function endGame(){
   S.phase='end';
@@ -3865,7 +3882,7 @@ function storageView(p){
   return out;
 }
 function actor(){
-  if(!S)return null;
+  if(!S||S.gate)return null;
   if(S.subPick!=null&&S.phase!=='end')return{pid:S.subPick,kind:'subpick'};
   if(S.xauc&&S.phase!=='end')return{pid:S.xauc.bidders[S.xauc.turn],kind:'xbid'};
   switch(S.phase){
@@ -4492,7 +4509,7 @@ function phaseRulesHTML(){
   const li=items.map(x=>`<li class="rd-i c-${RCAT[x.ic]||'plant'}"><span class="rd-ic" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16">${RICON[x.ic]||RICON.plant}</svg></span><div class="rd-tx"><b>${x.t}</b>${open?`<span>${x.d}</span>`:''}${x.st?`<em>${x.st}</em>`:''}</div></li>`).join('');
   return `<section class="mrule${open?' open':''}${first?' first':''}"><button type="button" class="mr-h" data-act="mrTog" data-k="${key}" aria-expanded="${open}"><span class="mr-k">${first?(en?'New in this phase':'Neu in dieser Phase'):(en?'Board rules now':'Kartenregeln jetzt')} · ${esc(name)}${open?'':`<small class="mr-more">${en?'Tap for details':'Tippen für Details'}</small>`}</span><span class="mr-n">${items.length}</span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="transform:rotate(${open?180:0}deg)"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg></button><ul class="rd-list">${li}</ul>${first?`<button type="button" class="btn sm mr-ok" data-act="mrSeen" data-k="${key}">${en?'Got it':'Verstanden'}</button>`:''}</section>`}
 function turnLine(a){
-  if(!a)return '';
+  if(!a||S.gate)return '';
   const AB=`<button type="button" class="advbtn${UI.adv?' on':''}" data-act="advToggle" aria-pressed="${!!UI.adv}"><svg width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><path d="M7 1a5 5 0 0 0-3 9c.6.5 1 1.2 1 2h4c0-.8.4-1.5 1-2a5 5 0 0 0-3-9Z" fill="currentColor"/><path d="M5 13.5h4M5.6 15.2h2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Berater</button>`;
   const ob=UI.outbid&&Date.now()-UI.outbid.t<6000&&S.phase==='auction'&&S.auc.mode==='bid'&&S.auc.high!==H?`<div class="outbid" role="alert">Überboten! ${esc(UI.outbid.name)} bietet ${UI.outbid.amt} €</div>`:'';
   const tst=UI.toast?`<div class="toast">${UI.toast}</div>`:'';UI.toast=null;
@@ -4832,7 +4849,7 @@ function renderPanel(){
   const a=actor();UI._ab=null;const P2=pl2();let h=P2?'':qbarHTML()+orderHTML(a)+turnLine(a);
   if(P2)h+=`<div class="pl2-sec">${pl2Head(a)}${turnLine(a)}`;
   const after=oppPlantsHTML();
-  if(S.subPick!=null){h+=panelSub(a)}else if(S.xauc){h+=panelX(a)}else
+  if(S.gate){h+=gateHTML()}else if(S.subPick!=null){h+=panelSub(a)}else if(S.xauc){h+=panelX(a)}else
   switch(S.phase){
     case'auction':h+=panelAuction(a);break;
     case'resources':h+=panelResources(a);break;
@@ -4842,8 +4859,8 @@ function renderPanel(){
   }
   if(P2)h+=`</div>`;
   /* v186: in der Auktion steht „Dein Betrieb“ direkt unter dem Kraftwerksmarkt, vor den letzten Zügen */
-  h+=S.phase==='auction'?panelMine()+feedHTML()+phaseRulesHTML()+after:feedHTML()+phaseRulesHTML()+after+panelMine();
-  if(UI._ab&&isMine(a))h+=`<div class="actbar" role="region" aria-label="${LX('Dein Zug','Your move')}"><div class="ab-t"><span class="dot"></span>${UI._ab.t}</div>${UI._ab.h}</div>`;
+  h+=S.gate?after+panelMine():S.phase==='auction'?panelMine()+feedHTML()+phaseRulesHTML()+after:feedHTML()+phaseRulesHTML()+after+panelMine();
+  if(UI._ab&&(isMine(a)||S.gate))h+=`<div class="actbar" role="region" aria-label="${LX('Dein Zug','Your move')}"><div class="ab-t"><span class="dot"></span>${UI._ab.t}</div>${UI._ab.h}</div>`;
   const st=panel.scrollTop,anc=panelAnchor();panel.innerHTML=h;panel.scrollTop=st;panelRestore(anc);aucScroll(a);orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
 }
 
@@ -4870,7 +4887,7 @@ function renderSheet(){
   if(!UI.sheet){sheet.hidden=true;sheet.innerHTML='';undock();return}
   let h='';const head=(t,tb)=>`<div class="sheet-head${tb?' tabs':''}"><h2>${t}</h2><button type="button" class="xbtn" data-act="close" aria-label="Schließen" title="Schließen"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 3l12 12M15 3 3 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>${tb?`<div class="seg stabs">${[['markets','Märkte'],['opp','Gegner']].map(([k,l])=>`<button type="button" data-act="${k}" class="${tb===k?'on':''}">${l}</button>`).join('')}</div>`:''}</div>`;
   if(UI.sheet==='menu'){
-    h=head('Menü')+`<div class="menu"><div class="mgl">Darstellung</div><div class="seg">${[['dark','Dunkel'],['light','Hell'],['auto','Automatisch']].map(([k,l])=>`<button type="button" data-act="theme" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">${LX('Tempo der Gegner','Opponent speed')}</div><div class="seg seg4">${[['fast',LX('Schnell','Fast')],['normal','Normal'],['slow',LX('Langsam','Slow')],['step',LX('Schritt','Step')]].map(([k,l])=>`<button type="button" data-act="speedSel" data-s="${k}" class="${SPEED===k?'on':''}">${l}</button>`).join('')}</div><p class="hint mnote">${SPEED==='step'?LX('Jeder Gegnerzug wartet auf „Nächster Zug“ oder die Leertaste.','Each opponent move waits for “Next move” or the space bar.'):LX('Wie lange jeder Gegnerzug sichtbar bleibt.','How long each opponent move stays on screen.')}</p><div class="mgl">${LX('Kartenstil','Map style')}</div><div class="seg">${[['atlas',LX('Atlas (neu)','Atlas (new)')],['classic',LX('Klassisch','Classic')]].map(([k,l])=>`<button type="button" data-act="mapStyle" data-m="${k}" class="${MAPSTYLE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Karte bei Auktion und Rohstoffkauf</div><div class="seg">${[['auto','Verkleinern'],['always','Immer groß']].map(([k,l])=>`<button type="button" data-act="mapMode" data-m="${k}" class="${MAPMODE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">${LX('Abstand unten (iPhone)','Bottom margin (iPhone)')}</div><div class="seg">${[['auto',LX('Automatisch','Automatic')],['lift',LX('Höher setzen','Lift up')]].map(([k,l])=>`<button type="button" data-act="botMode" data-m="${k}" class="${BOTMODE===k?'on':''}">${l}</button>`).join('')}</div><p class="hint diag" style="margin:2px 0 6px;font-size:11px;opacity:.7">${viewDiag()}</p><div class="mgl">Sprache · Language</div><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">${navigator.vibrate?'Vibration beim Überbieten':'Signal beim Überbieten'}</div><div class="seg">${[[true,LANG==='en'?'On':'An'],[false,LANG==='en'?'Off':'Aus']].map(([k,l])=>`<button type="button" data-act="vibToggle" class="${!!UI.vib===k?'on':''}" ${!!UI.vib===k?'disabled':''}>${l}</button>`).join('')}</div><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn quitb" data-act="quit">Partie beenden</button>':''}</div>`;
+    h=head('Menü')+`<div class="menu"><div class="mgl">Darstellung</div><div class="seg">${[['dark','Dunkel'],['light','Hell'],['auto','Automatisch']].map(([k,l])=>`<button type="button" data-act="theme" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">${LX('Tempo der Gegner','Opponent speed')}</div><div class="seg seg4">${[['fast',LX('Schnell','Fast')],['normal','Normal'],['slow',LX('Langsam','Slow')],['step',LX('Schritt','Step')]].map(([k,l])=>`<button type="button" data-act="speedSel" data-s="${k}" class="${SPEED===k?'on':''}">${l}</button>`).join('')}</div><p class="hint mnote">${SPEED==='step'?LX('Jeder Gegnerzug wartet auf „Nächster Zug“ oder die Leertaste.','Each opponent move waits for “Next move” or the space bar.'):LX('Wie lange jeder Gegnerzug sichtbar bleibt.','How long each opponent move stays on screen.')}</p><div class="mgl">${LX('Kartenstil','Map style')}</div><div class="seg">${[['atlas',LX('Atlas (neu)','Atlas (new)')],['classic',LX('Klassisch','Classic')]].map(([k,l])=>`<button type="button" data-act="mapStyle" data-m="${k}" class="${MAPSTYLE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">Karte bei Auktion und Rohstoffkauf</div><div class="seg">${[['auto','Verkleinern'],['always','Immer groß']].map(([k,l])=>`<button type="button" data-act="mapMode" data-m="${k}" class="${MAPMODE===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">${LX('Abstand unten (iPhone)','Bottom margin (iPhone)')}</div><div class="seg">${[['auto',LX('Automatisch','Automatic')],['lift',LX('Höher setzen','Lift up')]].map(([k,l])=>`<button type="button" data-act="botMode" data-m="${k}" class="${BOTMODE===k?'on':''}">${l}</button>`).join('')}</div><p class="hint diag" style="margin:2px 0 6px;font-size:11px;opacity:.7">${viewDiag()}</p><div class="mgl">Sprache · Language</div><div class="seg lang">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button type="button" data-act="lang" data-l="${k}" class="${LANG===k?'on':''}">${l}</button>`).join('')}</div><div class="mgl">${LX('Nächste Phase','Next phase')}</div><div class="seg">${[[false,LX('Selbst weiter','Tap to continue')],[true,LX('Automatisch','Automatic')]].map(([k,l])=>`<button type="button" data-act="autoNext" data-v="${k?1:0}" class="${AUTO_NEXT===k?'on':''}" ${AUTO_NEXT===k?'disabled':''}>${l}</button>`).join('')}</div><div class="mgl">${navigator.vibrate?'Vibration beim Überbieten':'Signal beim Überbieten'}</div><div class="seg">${[[true,LANG==='en'?'On':'An'],[false,LANG==='en'?'Off':'Aus']].map(([k,l])=>`<button type="button" data-act="vibToggle" class="${!!UI.vib===k?'on':''}" ${!!UI.vib===k?'disabled':''}>${l}</button>`).join('')}</div><button type="button" class="btn" data-act="rules">Spielregeln</button><button type="button" class="btn" data-act="opp">Alle Betriebe</button><button type="button" class="btn" data-act="log">Protokoll</button><button type="button" class="btn" data-act="stats">Statistik</button><button type="button" class="btn" data-act="newgame">Neues Spiel</button>${S&&S.phase!=='end'?'<button type="button" class="btn quitb" data-act="quit">Partie beenden</button>':''}</div>`;
   }else if(UI.sheet==='opp'){
     h=head('Gegner und Betriebe','opp')+oppCompare()+S.order.map(id=>{const p=P(id);const sv=storeOf(p);const pool=RES.filter(r=>p.pool[r]>0).map(r=>`<span class="stock">${resIcon(r)}${p.pool[r]}</span>`).join('')||'<span class="hint">leer</span>';
       return `<div class="opp" id="opp-${id}" ${pc(id)}><div class="h"><b>${esc(p.name)}</b>${p.style&&STYLES[p.style]?`<span class="stag">${STYLES[p.style].name}</span><span class="hint">${STYLES[p.style].note}</span>`:''}<span>${p.money} €</span><span>${cityCount(p)} Städte</span><span>Kapazität ${capacity(p)}</span>${p.lastPowered?`<span>zuletzt ${p.lastPowered} versorgt</span>`:''}</div><div class="cards">${p.plants.map(n=>plantCard(n,{lg:true,store:sv[n]||[],act:'pinfo'})).join('')||'<span class="hint">noch keine Kraftwerke</span>'}</div><div class="stock-row"><span class="lbl">Lager</span>${pool}</div></div>`}).join('');
@@ -6327,7 +6344,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v189';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v190';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -6357,7 +6374,7 @@ function layoutMap(){
   mb.setAttribute('aria-expanded',String(!min));
   if(was!==min&&UI.vb)requestAnimationFrame(applyVB);
 }
-function mkFloor(){if(!S)return;const a=actor(),inRes=S.phase==='resources'&&!S.xauc&&S.subPick==null,mine=inRes&&a&&P(a.pid)&&P(a.pid).human;
+function mkFloor(){if(!S)return;const a=actor(),inRes=S.phase==='resources'&&!S.gate&&!S.xauc&&S.subPick==null,mine=inRes&&a&&P(a.pid)&&P(a.pid).human;
   if(UI.mkClosedR!=null&&UI.mkClosedR!==S.round)UI.mkClosedR=null;
   if(inRes&&!mine&&UI.mkClosedR!==S.round&&(UI.sheet==null||UI.sheet==='markets')){if(UI.sheet!=='markets')UI.mkTab=null;UI.sheet='markets';UI.mkAuto=true}
   else if(UI.mkAuto&&UI.sheet==='markets'&&(mine||!inRes)){UI.sheet=null;UI.mkAuto=false}
@@ -6586,7 +6603,7 @@ function pl2Bar(){const p=pl2Phase(),N=PL2_NAME(),m=me();
 function pl2Order(){const seq=seqForPhase(),a=actor(),cur=a&&S.phase!=='bureau'?a.pid:null,rev=S.phase==='resources'||S.phase==='build';
   const done=id=>S.phase==='auction'?!!(S.boughtThisRound&&S.boughtThisRound.includes&&S.boughtThisRound.includes(id))||(S.passed&&S.passed.includes&&S.passed.includes(id)):(S.phase==='resources'||S.phase==='build')?(S.seq||[]).indexOf(id)<(S.seqIdx||0):false;
   return `<div class="pl2-ord" aria-label="${LX('Spielerreihenfolge','Turn order')}"><span class="po-k">${LX('Reihenfolge','Order')}${rev?' ←':' →'}</span>${seq.map((id,i)=>{const q=P(id);return `<span class="po${id===cur?' cur':''}${done(id)?' dn':''}${q.human?' me':''}" style="--pc:${q.color}"><i>${S.order.indexOf(id)+1}</i>${coLogo(logoOf(q),q.color,'po-lg')}<b>${q.human?LX('Du','You'):esc(shortName(q.name))}</b><em>${q.money}€</em></span>`}).join('')}</div>`}
-function pl2Head(a){const p=pl2Phase();if(p>4)return'';const N=PL2_NAME();const mine=a&&P(a.pid)&&P(a.pid).human;
+function pl2Head(a){const p=pl2Phase();if(p>4||S.gate)return'';const N=PL2_NAME();const mine=a&&P(a.pid)&&P(a.pid).human;
   const sub=S.phase==='bureau'?LX('Wähle deine Kraftwerke','Choose your plants'):mine?({auction:a.kind==='choose'?LX('Du wählst ein Kraftwerk','You pick a plant'):a.kind==='discard'?LX('Wirf ein Kraftwerk ab','Discard a plant'):LX('Du bist dran · biete oder steig aus','Your turn · bid or drop out'),resources:LX('Du kaufst jetzt','You are buying now'),build:LX('Tippe eine Stadt auf der Karte','Tap a city on the map')}[S.phase]||''):(a&&P(a.pid)?esc(P(a.pid).name)+LX(' ist am Zug …',' is playing …'):'');
   return `<div class="pl2-sh"><span class="n">${p}</span><div><b>${N[p]}</b><span>${sub}</span></div></div>`}
 function showIntro(){
@@ -6741,6 +6758,8 @@ const A={
   statsNav:b=>{const h=filtHist();const i=h.findIndex(g=>g.id===UI.statSel);const j=Math.max(0,Math.min(h.length-1,(i<0?h.length-1:i)+ +b.dataset.d));UI.statSel=h[j].id;UI.statView='game';renderStats();return'skip'},
   statsReset:()=>{UI.statReset=true;renderStats();return'skip'},
   statsResetNo:()=>{UI.statReset=false;renderStats();return'skip'},
+  gateGo:()=>{gateGo()},
+  autoNext:b=>{AUTO_NEXT=b.dataset.v==='1';try{localStorage.setItem('gm-autonext',AUTO_NEXT?'1':'0')}catch(_){}if(AUTO_NEXT&&S&&S.gate)gateGo()},
   dailyGo:b=>A.start(b),
   dailyShare:b=>{dailyShare(b);return'skip'},
   statsResetYes:()=>{saveHist([]);try{localStorage.removeItem(STATS_KEY)}catch(_){}UI.statReset=false;renderStats();return'skip'},
