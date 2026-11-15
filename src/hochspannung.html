@@ -3593,6 +3593,18 @@ html .plant.lg.st .pa.pa2{height:calc(100% - 48px)!important}
   html #app.pl2 .pl2-trk:has(.pl2-x.pl2-rm)>.pl2-rm{flex:1 1 0!important}
   html #app.pl2 .pl2-trk>.pl2-rm .row{max-width:300px}
 }
+/* ---- v229: Leitungen sichtbarer, schärfere Städtenamen, Plan-Schild weg (Phone), Phasentitel höher ---- */
+html #map.clean line.edge:not(.own):not(.glow){stroke:#557189!important;stroke-width:1.5px!important;vector-effect:non-scaling-stroke;opacity:.95!important}
+html #map.clean.building line.edge:not(.own):not(.glow){stroke:#6a879e!important}
+html:not([data-theme="light"]) #map.atlas .city .cname{font-weight:600;fill:#eef3f6;letter-spacing:.025em;stroke:rgba(6,10,14,.9);stroke-width:max(2.8px,calc(var(--wu,1px)*2.3));stroke-linejoin:round;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}
+@media (max-width:600px) and (orientation:portrait),(orientation:landscape) and (max-height:520px){
+  html #app.pl2 #rtag{display:none!important}
+}
+@media (max-width:600px) and (orientation:portrait){
+  html #app.pl2 #panel::before{display:none!important}
+  html #app.pl2 #panel{padding-top:8px!important}
+  html #app.pl2 #panel>.pl2-sec:first-child{margin-top:0!important}
+}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -7237,7 +7249,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v228';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v229';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
