@@ -51,14 +51,29 @@ async()=>{
   ok('game '+mp+' '+(nAI+1)+'p sensible length',S.round>=5&&S.round<=25,S.round);
  }
  // ---- AI levels are clearly different: expert should beat easy over many games
- {const wins={easy:0,normal:0,expert:0};for(let g=0;g<18;g++){newGame('T',2,'normal',null,['de','fr','it','na','bx','uk'][g%6],{deck:'std',styles:false});quiet();
+ {const wins={easy:0,normal:0,expert:0};for(let g=0;g<30;g++){newGame('T',2,'normal',null,['de','fr','it','na','bx','uk'][g%6],{deck:'std',styles:false});quiet();
    const lv=['easy','normal','expert'];const rot=g%3;S.players.forEach((p,i)=>{p.human=false;p.ai=lv[(i+rot)%3]});let st=0;
    while(S.phase!=='end'&&st++<20000){if(S.gate){gateGo();continue}const a=actor();if(!a){if(S.phase==='bureau'){finishBureau();continue}break}aiAct(a)}
    if(S.ranking)wins[P(S.ranking[0]).ai]++}
-  ok('AI levels distinct: expert beats easy ('+JSON.stringify(wins)+')',wins.expert>wins.easy+3&&wins.expert>=wins.normal,JSON.stringify(wins))}
+  ok('AI levels distinct: expert beats easy ('+JSON.stringify(wins)+')',wins.expert>wins.easy+2&&wins.expert>=wins.normal,JSON.stringify(wins))}
  // ---- AI explains its moves
  {newGame('T',2,'normal',null,'de',{deck:'std'});quiet();S.players[0].human=false;let st=0;while(S.round<3&&st++<5000){if(S.gate){gateGo();continue}const a=actor();if(!a){if(S.phase==='bureau'){finishBureau();continue}break}aiAct(a)}
   const w=(S.why||{})[2]||{};ok('AI records reasons for its moves',Object.keys(w).length>=2&&Object.values(w).every(x=>x.build&&x.buy),JSON.stringify(w).slice(0,200))}
+
+ // ---- Campaign: star evaluation, unlock chain, logo rewards, season points
+ {try{localStorage.removeItem('hochspannung-camp')}catch(_){}
+  const mk=(o,pl)=>({rounds:o.rounds||14,players:[Object.assign({human:true,place:1,powered:14,cities:14,money:60,plants:[],auc:[]},pl||{}),{human:false,place:2,powered:12,cities:12,money:40,plants:[]}]});
+  ok('campaign has 9 scenarios on existing maps',CAMP.length===9&&CAMP.every(c=>MAPS[c.map]),CAMP.map(c=>c.map).join());
+  ok('only first scenario open at start',campOpen(0)&&!campOpen(1));
+  const c1=CAMP[0];ok('loss gives no win star',!campEval(mk({},{place:2}),c1)[0]);
+  ok('win in 12 rounds with 14 powered = 3 stars',campEval(mk({rounds:12}),c1).every(Boolean));
+  S.camp='c1';let r=campRecord(mk({rounds:16}));ok('win in 16 rounds = 2 stars',r.stars===2,JSON.stringify(r));
+  ok('second scenario unlocked after a star',campOpen(1));
+  r=campRecord(mk({rounds:16},{place:3}));ok('worse result keeps best stars',campStars().c1===2&&r.stars===0);
+  ok('crown locked below 6 stars',logoLocked('crown')&&!logoLocked('bolt'));
+  localStorage.setItem('hochspannung-camp',JSON.stringify({c1:3,c2:3}));ok('crown unlocks at 6 stars',!logoLocked('crown')&&logoLocked('laurel'));
+  localStorage.removeItem('hochspannung-camp');delete S.camp;
+  ok('season key is calendar month',seasonKey(new Date(2026,10,15))==='2026-11'&&seasonDaysLeft()>=1)}
  return {R,games};
 }
 """

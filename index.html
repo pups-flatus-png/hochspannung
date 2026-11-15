@@ -3318,6 +3318,41 @@ html:not([data-theme="light"]) #board:has(#map.atlas){background:radial-gradient
 .s3-tut b{font:800 14px/1.1 'Orbitron',var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--fg)}
 .s3-tut small{font-size:12.5px;line-height:1.35;color:var(--muted)}
 .s3-tut .tu-go{flex:none;color:var(--accent);font-size:18px}
+
+/* ---- v215: Kampagne und Saison ---- */
+.s3-camp .tu-i{background:linear-gradient(180deg,#fff1c2,#e9a92e)}
+.camp .cp-sum{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 8px;padding:12px 14px;margin-bottom:12px;border-radius:14px;border:1px solid rgba(242,179,61,.4);background:linear-gradient(180deg,rgba(242,179,61,.1),rgba(242,179,61,.02))}
+.camp .cp-sum b{font:800 28px/1 'Orbitron',var(--display);color:#ffd36e}
+.camp .cp-sum span{font-size:14px;color:var(--fg)}
+.camp .cp-sum small{flex-basis:100%;font-size:12px;color:var(--muted);line-height:1.6}
+.camp .cp-sum em{font-style:normal;white-space:nowrap;padding:1px 6px;border-radius:6px;border:1px solid var(--line);margin-right:4px;opacity:.6}
+.camp .cp-sum em.on{opacity:1;border-color:rgba(242,179,61,.6);color:#ffd36e}
+.cp-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.cp-it{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--panel-2,rgba(255,255,255,.03));border:1px solid var(--line)}
+.cp-it.full{border-color:rgba(242,179,61,.5)}
+.cp-it.locked{opacity:.45}
+.cp-n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:800 13px/1 'Orbitron',var(--display);background:rgba(255,255,255,.06);color:var(--fg)}
+.cp-tx{display:flex;flex-direction:column;gap:3px;min-width:0}
+.cp-tx b{font:800 13.5px/1.2 'Orbitron',var(--display);color:var(--fg);letter-spacing:.02em}
+.cp-tx small{font-size:12.5px;color:var(--muted);line-height:1.35}
+.cp-meta{font-size:11px;color:var(--muted);letter-spacing:.04em}
+.cp-g{display:grid;grid-template-columns:auto 1fr;gap:2px 6px;margin-top:4px;font-size:11.5px;color:var(--muted)}
+.cp-g i{font-style:normal;color:rgba(255,255,255,.18)}.cp-g i.on{color:#ffd36e}
+.cp-go{min-height:38px;padding:8px 14px}
+.cp-lock{font-size:18px;opacity:.7}
+.co-lg.locked{position:relative;opacity:.4;filter:grayscale(1);cursor:default}
+.co-lg.locked i{position:absolute;right:-4px;bottom:-4px;font:800 9px/1.3 'Orbitron',var(--display);font-style:normal;padding:1px 4px;border-radius:5px;background:#1a2129;color:#ffd36e;filter:none}
+.ge-camp{margin:6px auto 12px;max-width:420px;padding:12px 14px;border-radius:14px;border:1px solid rgba(242,179,61,.45);background:rgba(242,179,61,.07);text-align:center}
+.ge-camp .gc-k{display:block;font:600 10.5px/1 Barlow,system-ui;letter-spacing:.2em;text-transform:uppercase;color:#d9b267}
+.ge-camp .gc-st{margin:8px 0 6px;font-size:34px;line-height:1;letter-spacing:6px}
+.ge-camp .gc-st i{font-style:normal;color:rgba(255,255,255,.15)}
+.ge-camp .gc-st i.on{color:#ffd36e;text-shadow:0 0 18px rgba(242,179,61,.7);animation:gcPop .5s cubic-bezier(.2,1.6,.4,1) both;animation-delay:var(--d)}
+@keyframes gcPop{from{transform:scale(0);opacity:0}}
+.ge-camp ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:#8fa0ad}
+.ge-camp li::before{content:"○ ";color:#5d6b77}.ge-camp li.ok{color:#e8edf1}.ge-camp li.ok::before{content:"✓ ";color:#5fd48c}
+.ge-camp .gc-new{margin:8px 0 0;font-size:12.5px;color:#ffd36e;font-weight:600}
+.lbseas{margin:0 0 10px}
+@media (max-height:500px) and (orientation:landscape){.ge-camp{max-width:640px;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2px 14px;text-align:left;padding:8px 12px;margin:4px auto 8px}.ge-camp .gc-k{grid-column:1/-1}.ge-camp .gc-st{margin:2px 0;font-size:24px;letter-spacing:3px}.ge-camp ul{font-size:12px}.ge-camp .gc-new{grid-column:1/-1;margin:2px 0 0;font-size:12px}}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -4501,7 +4536,7 @@ function endShow(){document.documentElement.classList.remove('gm-ending');if(!S|
     chart=`<div class="ec"><div class="ec-h">${LX('Städte pro Runde','Cities per round')}</div><svg viewBox="0 0 ${cw} ${chH}" preserveAspectRatio="none">${[.25,.5,.75].map(f=>`<line x1="0" x2="${cw}" y1="${(chH*f).toFixed(0)}" y2="${(chH*f).toFixed(0)}"/>`).join('')}${seat.map(i=>`<polyline class="${i===W?'w':''}" pathLength="1" style="--pc:${P(i).color}" points="${se.map((r,k)=>X(k)+','+Y(r.c[i])).join(' ')}"/>`).join('')}</svg><div class="ec-x"><span>${LX('Runde','Round')} 1</span><span>${se.length}</span></div></div>`}
   const cards=aw.map((a,k)=>`<div class="ea" style="--pc:${P(a.i).color};--d:${(2.1+k*.2).toFixed(2)}s"><span class="ea-ic"><svg viewBox="0 0 24 24">${EIC[a.ic]}</svg></span><span class="ea-t">${a.t}</span><b class="ea-v">${a.val}</b><span class="ea-s">${a.sub}</span><span class="ea-p"><i></i>${esc(P(a.i).name)}</span></div>`).join('');
   o=document.createElement('div');o.id='gmEnd';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label',LX('Spielende','Game over'));
-  o.innerHTML=`<div class="ge-in"><div class="ge-k">${LX('Spielende','Game over')} · ${LX('Runde','Round')} ${S.round}</div>
+  o.innerHTML=`<div class="ge-in"><div class="ge-k">${LX('Spielende','Game over')} · ${LX('Runde','Round')} ${S.round}</div>${campEndHTML()}
    <div class="ge-bars n${n}">${bars}</div>
    <div class="ge-win" ${pc(W)}><span class="ge-gm">GRID MASTER</span><span class="ge-wn">${esc(wp.name)}</span><span class="ge-ws">${pow[W]} ${LX('Städte versorgt','cities powered')}${W===H?' · '+LX('Glückwunsch!','Congratulations!'):''}</span></div>
    ${cards?`<div class="ge-aw">${cards}</div>`:''}
@@ -5379,6 +5414,8 @@ function renderSheet(){
     h=head('Märkte','markets')+tradesHTML()+(S.resNorth?`<div class="sec"><div class="mk-two"><h3>${LX('Rohstoffe · Süd','Resources · South')}</h3><h3>${LX('Rohstoffe · Nord','Resources · North')}</h3>${RES.map(r=>{const a=CAP[r]?resCard(r):'',b=withSide('north',()=>CAP[r]?resCard(r):'');return a||b?(a||'<div></div>')+(b||'<div></div>'):''}).join('')}</div>${umkHTML()}<p class="hint">Der Nachschub kommt nach jeder Stromlieferung und hängt von der Stufe ab. Was im Vorrat fehlt, kann nicht nachgeliefert werden.</p></div>`:resSec('Rohstoffe'))+`<div class="mk-sep"></div>`+marketHTML(null);
   }else if(UI.sheet==='log'){
     h=head('Protokoll')+`<div class="loglist">${S.log.map(l=>`<p ${l.pid!=null?pc(l.pid):''}><span class="r">R${l.r}</span><span class="dot"></span>${esc(l.t)}</p>`).join('')}</div>`;
+  }else if(UI.sheet==='camp'){
+    h=head(LX('Kampagne','Campaign'))+campSheet();
   }else if(UI.sheet==='rules'){
     h=head('So läuft eine Runde')+`<div class="rules">
 <h4>1 · Reihenfolge</h4><p>Wer die meisten Städte hat, ist zuerst dran. Bei Gleichstand entscheidet das größte Kraftwerk. Beim Rohstoffkauf und beim Bauen geht es rückwärts, der Führende kommt also zuletzt.</p>
@@ -5671,6 +5708,7 @@ function renderStart3(){
     ${x.bad?`<p class="s3-warn">${LX('Das Netzgebiet ist noch nicht gültig. Tippe auf „Spielplan & Netzgebiet“.','The play area is not valid yet. Tap “Board & regions”.')}</p>`:''}
     ${res?`<button type="button" class="btn s3-alt" data-act="start" ${x.bad?'disabled':''}>${LX('Neues Spiel starten','Start new game')}</button><p class="s3-note">${LX('Ein neues Spiel ersetzt die laufende Partie.','A new game replaces the one in progress.')}</p>`:''}</section>
     ${dailyCardHTML()}
+    <button type="button" class="s3-tut s3-camp" data-act="campOpen"><span class="tu-i">★</span><span class="tu-t"><b>${LX('Kampagne','Campaign')}</b><small>${LX(`${CAMP.length} Szenarien über die Karten · ${campTotal()} von ${CAMP.length*3} Sternen`,`${CAMP.length} scenarios across the maps · ${campTotal()} of ${CAMP.length*3} stars`)}</small></span><span class="tu-go">→</span></button>
     <button type="button" class="s3-tut" data-act="tutorial"><span class="tu-i">?</span><span class="tu-t"><b>${LX('Tutorial','Tutorial')}</b><small>${LX('Lerne Grid Master in einer geführten Partie gegen zwei leichte Gegner.','Learn Grid Master in a guided game against two easy opponents.')}</small></span><span class="tu-go">→</span></button>
     <div class="s3-app"><span>${LX('Darstellung','Appearance')}</span><div class="seg">${[['dark',LX('Dunkel','Dark')],['light',LX('Hell','Light')],['auto','Auto']].map(([k,l])=>`<button type="button" data-act="themeSel" data-t="${k}" class="${THEME===k?'on':''}">${l}</button>`).join('')}</div></div>
     ${wide?bar:''}</div></div>${wide?'':bar}`;
@@ -6162,7 +6200,7 @@ const TS=Object.entries({'Umspannwerk':'Substation','Lagerhalle':'Warehouse','Fr
 'Atomausstieg: Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt kein Uran mehr nach.':'Nuclear phase-out: once plant 39 is bought, no more uranium is restocked.',
 'Das Basisspiel.':'The base game.','Atomausstieg (Recharged-Regel)':'Nuclear phase-out (Recharged rule)','Mit Atomausstieg':'With phase-out','Ohne':'Without',
 'Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt bis Spielende kein Uran mehr nach.':'Once plant 39 is bought, no more uranium is restocked for the rest of the game.','Uran wird wie im Basisspiel nachgefüllt.':'Uranium is restocked as in the base game.',
-'Alpen':'Alps','Kraftwerksdeck':'Power plant deck','Du darfst nur drei Kraftwerke betreiben. Wähle eines deiner bisherigen Kraftwerke, das du für das neue abgibst. Es verlässt das Spiel endgültig.':'You may only run three plants. Choose one of your existing plants to give up for the new one. It leaves the game for good.','Neu gekauft':'Just bought',' Wer ein viertes kauft, legt eines seiner bisherigen still.':' Whoever buys a fourth retires one of their existing plants.','bleibt in deinem Betrieb':'stays in your company','Bisher in Betrieb':'Already running','eines davon abgeben':'give up one of these','Gemeinsame Rangliste ansehen':'View shared leaderboard','Gemeinsame Rangliste':'Shared leaderboard','Dein Name in der Rangliste':'Your name on the leaderboard','z. B. Vorname':'e.g. first name','In Rangliste eintragen':'Add to leaderboard','Erneut eintragen':'Add again','Ergebnis senden':'Send result',
+'Alpen':'Alps','Punkte':'Points','Kraftwerksdeck':'Power plant deck','Du darfst nur drei Kraftwerke betreiben. Wähle eines deiner bisherigen Kraftwerke, das du für das neue abgibst. Es verlässt das Spiel endgültig.':'You may only run three plants. Choose one of your existing plants to give up for the new one. It leaves the game for good.','Neu gekauft':'Just bought',' Wer ein viertes kauft, legt eines seiner bisherigen still.':' Whoever buys a fourth retires one of their existing plants.','bleibt in deinem Betrieb':'stays in your company','Bisher in Betrieb':'Already running','eines davon abgeben':'give up one of these','Gemeinsame Rangliste ansehen':'View shared leaderboard','Gemeinsame Rangliste':'Shared leaderboard','Dein Name in der Rangliste':'Your name on the leaderboard','z. B. Vorname':'e.g. first name','In Rangliste eintragen':'Add to leaderboard','Erneut eintragen':'Add again','Ergebnis senden':'Send result',
 'Schick den Link an die Person, die die Rangliste führt. Sie trägt dein Ergebnis mit einem Tipp ein.':'Send the link to whoever runs the leaderboard. They add your result with one tap.',
 'In der Rangliste eingetragen.':'Added to the leaderboard.','Du kannst in dieser Rangliste nichts eintragen. Schick dein Ergebnis stattdessen per Link.':'You can’t add entries to this leaderboard. Send your result as a link instead.','Die Rangliste ist voll. Lösche alte Einträge.':'The leaderboard is full. Delete old entries.','Eintragen hat nicht geklappt. Versuch es gleich noch einmal.':'Adding didn’t work. Try again in a moment.','Dieser Code ist ungültig oder beschädigt.':'This code is invalid or damaged.','Gib zuerst einen Namen für die Rangliste ein.':'Enter a name for the leaderboard first.',
 'Link kopiert. Schick ihn an die Person, die die Rangliste führt.':'Link copied. Send it to whoever runs the leaderboard.','Geteilt.':'Shared.','Link zum Ergebnis':'Link to the result',
@@ -6300,12 +6338,46 @@ function setLang(l){
 const STATS_KEY='hochspannung-stats-v1';
 function loadHist(){try{const a=JSON.parse(localStorage.getItem(STATS_KEY)||'[]');return Array.isArray(a)?a:[]}catch(_){return[]}}
 function saveHist(a){try{localStorage.setItem(STATS_KEY,JSON.stringify(a.slice(-150)))}catch(_){}}
+
+/* v215: Kampagne – Szenarien über die Karten mit 1–3 Sternen, Freischaltungen und Saison-Rangliste */
+const CAMP=[
+ {id:'c1',map:'de',n:2,diff:'easy',de:['Erste Leitung','Dein erstes Netz in Deutschland – zwei leichte Gegner.'],en:['First line','Your first network in Germany – two easy opponents.'],g:[['Gewinne','Win',g=>gWin(g)],['Versorge 14 Städte','Power 14 cities',g=>meOf(g).powered>=14],['Gewinne in 12 Runden','Win in 12 rounds',g=>gWin(g)&&g.rounds<=12]]},
+ {id:'c2',map:'bx',n:2,diff:'normal',de:['Benelux im Sprint','Kurze Wege, schnelles Spiel.'],en:['Benelux sprint','Short distances, a fast game.'],g:[['Gewinne','Win',g=>gWin(g)],['Gewinne in 10 Runden','Win in 10 rounds',g=>gWin(g)&&g.rounds<=10],['Ende mit 150 €','Finish with 150 €',g=>gWin(g)&&meOf(g).money>=150]]},
+ {id:'c3',map:'it',n:3,diff:'normal',de:['Grüne Toskana','Italien mit erneuerbarer Energie elektrifizieren.'],en:['Green Tuscany','Electrify Italy with renewable energy.'],g:[['Gewinne','Win',g=>gWin(g)],['25 % erneuerbar','25 % renewable',g=>gGreen(g)>=25],['Gewinne mit 40 % erneuerbar','Win with 40 % renewable',g=>gWin(g)&&gGreen(g)>=40]]},
+ {id:'c4',map:'de',n:3,diff:'normal',de:['Kohleausstieg','Deutschland ohne Kohle versorgen.'],en:['Coal phase-out','Power Germany without coal.'],g:[['Gewinne','Win',g=>gWin(g)],['Gewinne ohne Kohle','Win without coal',g=>gWin(g)&&!gUsesFuel(g,'coal')],['Ohne Kohle und Atom','No coal, no nuclear',g=>gWin(g)&&!gUsesFuel(g,'coal')&&!gUsesFuel(g,'uranium')]]},
+ {id:'c5',map:'na',n:3,diff:'hard',de:['Über den Kontinent','Nordamerika gegen starke Gegner.'],en:['Across the continent','North America against strong opponents.'],g:[['Gewinne','Win',g=>gWin(g)],['Unter 150 € Brennstoff','Under 150 € fuel',g=>gWin(g)&&gFuel(g)<150],['Versorge 17 Städte','Power 17 cities',g=>meOf(g).powered>=17]]},
+ {id:'c6',map:'fr',n:3,diff:'hard',de:['Atomland Frankreich','Wer beherrscht den Uranmarkt?'],en:['Nuclear France','Who controls the uranium market?'],g:[['Gewinne','Win',g=>gWin(g)],['110 € in einer Runde','110 € in one round',g=>(meOf(g).maxInc||0)>=110],['Gewinne mit 200 €','Win with 200 €',g=>gWin(g)&&meOf(g).money>=200]]},
+ {id:'c7',map:'kr',n:3,diff:'hard',de:['Zwei Märkte','Korea mit Nord- und Südmarkt.'],en:['Two markets','Korea with its north and south markets.'],g:[['Gewinne','Win',g=>gWin(g)],['Fair bieten (max. +5 €)','Bid fair (max +5 €)',g=>gWin(g)&&gOverbid(g)<=5],['Gewinne mit 200 €','Win with 200 €',g=>gWin(g)&&meOf(g).money>=200]]},
+ {id:'c8',map:'ru',n:4,diff:'expert',de:['Weites Russland','Vier Experten, riesige Entfernungen.'],en:['Vast Russia','Four experts, huge distances.'],g:[['Gewinne','Win',g=>gWin(g)],['Gewinne in 11 Runden','Win in 11 rounds',g=>gWin(g)&&g.rounds<=11],['Baue 18 Städte','Build 18 cities',g=>meOf(g).cities>=18]]},
+ {id:'c9',map:'eu',n:4,diff:'expert',de:['Meisterprüfung Europa','Der ganze Kontinent gegen vier Experten.'],en:['European masters','The whole continent against four experts.'],g:[['Gewinne','Win',g=>gWin(g)],['Unter 150 € Brennstoff','Under 150 € fuel',g=>gWin(g)&&gFuel(g)<150],['Gewinne mit 25 % erneuerbar','Win with 25 % renewable',g=>gWin(g)&&gGreen(g)>=25]]}
+].filter(c=>MAPS[c.map]);
+function campStars(){try{return JSON.parse(localStorage.getItem('hochspannung-camp')||'{}')}catch(_){return{}}}
+function campTotal(){const s=campStars();return Object.values(s).reduce((a,b)=>a+b,0)}
+function campOpen(i){if(i===0)return true;const s=campStars();return (s[CAMP[i-1].id]||0)>=1}
+function logoLocked(k){const c=LOGOS[k]&&LOGOS[k].camp;return !!c&&campTotal()<c}
+function campEval(rec,c){return c.g.map(x=>{try{return !!x[2](rec)}catch(_){return false}})}
+function campRecord(rec){if(!S||!S.camp)return null;const c=CAMP.find(x=>x.id===S.camp);if(!c)return null;const ok=campEval(rec,c);let st=0;if(ok[0])st=1+(ok[1]?1:0)+(ok[2]?1:0);else st=0;
+  const all=campStars(),old=all[c.id]||0,before=campTotal();if(st>old){all[c.id]=st;try{localStorage.setItem('hochspannung-camp',JSON.stringify(all))}catch(_){}}
+  const after=campTotal(),unl=Object.keys(LOGOS).filter(k=>LOGOS[k].camp&&before<LOGOS[k].camp&&after>=LOGOS[k].camp);
+  return UI.campRes={id:c.id,stars:st,old,ok,unl}}
+function campEndHTML(){const r=UI.campRes;if(!r||!S||S.camp!==r.id)return'';const c=CAMP.find(x=>x.id===r.id),i=CAMP.indexOf(c),T=LANG==='en'?c.en:c.de;
+  return `<div class="ge-camp"><span class="gc-k">${LX('Kampagne','Campaign')} ${i+1} · ${esc(T[0])}</span><div class="gc-st">${[0,1,2].map(k=>`<i class="${k<r.stars?'on':''}" style="--d:${(1+k*.25).toFixed(2)}s">★</i>`).join('')}</div><ul>${c.g.map((x,k)=>`<li class="${r.ok[k]&&(k===0||r.ok[0])?'ok':''}">${LANG==='en'?x[1]:x[0]}</li>`).join('')}</ul>${r.stars>r.old?`<p class="gc-new">${LX('Neuer Bestwert!','New best!')}${i+1<CAMP.length&&r.old===0&&r.stars>0?' '+LX('Nächstes Szenario freigeschaltet.','Next scenario unlocked.'):''}</p>`:''}${r.unl.length?`<p class="gc-new">${LX('Neues Logo freigeschaltet','New logo unlocked')}: ${r.unl.map(k=>logoName(k)).join(', ')}</p>`:''}</div>`}
+function campSheet(){const s=campStars(),tot=campTotal();
+  let h=`<div class="camp"><div class="cp-sum"><b>${tot}</b><span>/ ${CAMP.length*3} ★</span><small>${LX('Sterne schalten neue Firmenlogos frei','Stars unlock new company logos')}: ${Object.keys(LOGOS).filter(k=>LOGOS[k].camp).map(k=>`<em class="${tot>=LOGOS[k].camp?'on':''}">${LOGOS[k].camp}★ ${logoName(k)}</em>`).join(' ')}</small></div><ol class="cp-list">`;
+  CAMP.forEach((c,i)=>{const T=LANG==='en'?c.en:c.de,st=s[c.id]||0,open=campOpen(i),M=MAPS[c.map];
+    h+=`<li class="cp-it${open?'':' locked'}${st===3?' full':''}"><span class="cp-n">${i+1}</span><div class="cp-tx"><b>${esc(T[0])}</b><small>${esc(T[1])}</small><span class="cp-meta">${esc(tr(M.name))} · ${c.n+1} ${LX('Spieler','players')} · ${tr(AI_NAME[c.diff])}</span><span class="cp-g">${c.g.map((x,k)=>`<i class="${k<st?'on':''}">★</i><span>${LANG==='en'?x[1]:x[0]}</span>`).join('')}</span></div>${open?`<button type="button" class="btn pri cp-go" data-act="campGo" data-i="${i}">${st?LX('Nochmal','Replay'):LX('Spielen','Play')}</button>`:`<span class="cp-lock">🔒</span>`}</li>`});
+  return h+`</ol></div>`}
+function seasonKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function seasonName(k=seasonKey()){const[y,m]=k.split('-').map(Number);return new Date(y,m-1,1).toLocaleDateString(LANG==='en'?'en-GB':'de-DE',{month:'long',year:'numeric'})}
+function seasonDaysLeft(){const d=new Date(),e=new Date(d.getFullYear(),d.getMonth()+1,1);return Math.ceil((e-d)/864e5)}
+const SEASON_W={easy:.5,normal:1,hard:1.5,expert:2};
 function onGameEnd(){
   if(!S||S.recorded||!S.players.some(p=>p.human))return;
   S.recorded=true;const t=st();
   const rec={v:1,id:Date.now()+'-'+Math.floor(Math.random()*1e4),date:t.start,end:t.end||Date.now(),rounds:S.round,diff:S.ai||'normal',map:S.map||'de',deck:S.deckId||'std',n:S.n,regions:S.regions.slice(),step2:t.step2,step3:t.step3,partial:!!t.partial,
     players:S.players.map(p=>({name:p.name,color:p.color,human:!!p.human,powered:p.lastPowered,cities:p.cities.length,money:p.money,plants:p.plants.slice(),place:S.ranking.indexOf(p.id)+1,...t.pl[p.id]})),
     series:t.series};
+  if(S.camp)rec.camp=S.camp;try{campRecord(rec)}catch(_){}
   const h=loadHist();h.push(rec);saveHist(h);UI.statSel=rec.id;UI.statView='total';UI.lbMsg='';UI.lbLink='';
   if(LB.db&&LB.canWrite!==false&&!isDefaultName(lbName())){const r=recToResult(rec,lbName());lbSubmit(r,'app').then(st=>{UI.lbMsg=LB_MSG[st]||'';if(st==='ok')UI.lbDone=rec.id;refreshLB()})}
 }
@@ -6377,7 +6449,7 @@ function gameMetrics(g){
     avgPlant:au.length?au.reduce((s,a)=>s+a.n,0)/au.length:0,r7:r7?r7.r:null,income:m.income||0,fuelUnit:fuelOf(g,m).unit,fuelCity:fuelOf(g,m).city};
 }
 function filtHist(){let h=loadHist();if(UI.statDiff&&UI.statDiff!=='all')h=h.filter(g=>g.diff===UI.statDiff);if(UI.statMap&&UI.statMap!=='all')h=h.filter(g=>(g.map||'de')===UI.statMap);return h}
-function gameLabel(g,i){const d=new Date(g.date);return `#${i+1} · ${d.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})} ${d.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})} · ${MAPS[g.map||'de'].name} · Platz ${meOf(g).place} · KI ${AI_NAME[g.diff]||g.diff}`}
+function gameLabel(g,i){const d=new Date(g.date);return `#${i+1} · ${d.toLocaleDateString(LANG==='en'?'en-GB':'de-DE',{day:'2-digit',month:'2-digit'})} ${d.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})} · ${MAPS[g.map||'de'].name} · Platz ${meOf(g).place} · KI ${AI_NAME[g.diff]||g.diff}`}
 function renderStats(){
   const el=$('#stats');const all=loadHist();const h=filtHist();
   const view=UI.statView||'total';
@@ -6416,7 +6488,7 @@ function stRecord(h){const me_=meOf,n=h.length,wins=h.filter(g=>me_(g).place===1
     <div class="sr-form"><small>${LX('Form · letzte','Form · last')} ${last.length}</small><div>${last.map(g=>{const pl=me_(g).place;return `<button type="button" class="sf p${Math.min(pl,4)}" data-act="statsSel" data-id="${g.id}" title="${LX('Platz','Place')} ${pl}">${pl}</button>`}).join('')}</div></div></div>
    <div class="sr-life"><small>${LX('Insgesamt','All time')}</small><span><b>${fmt(tot('income'))} €</b>${LX('verdient','earned')}</span><span><b>${fmt(pw)}</b>${LX('Städte versorgt','cities powered')}</span><span><b>${fmt(plants)}</b>${LX('Kraftwerke gekauft','plants bought')}</span></div></section>`}
 function stHighlights(h){const me_=meOf,out=[];
-  const dt=g=>new Date(g.date).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})+' · '+esc(MAPS[g.map||'de'].name);
+  const dt=g=>new Date(g.date).toLocaleDateString(LANG==='en'?'en-GB':'de-DE',{day:'2-digit',month:'2-digit'})+' · '+esc(MAPS[g.map||'de'].name);
   const best=(f,low,arr=h)=>{let b=null,bv=low?1e18:-1e18;arr.forEach(g=>{const v=f(g);if(v==null||!isFinite(v))return;if(low?v<bv:v>bv){bv=v;b=g}});return b?{g:b,v:bv}:null};
   const add=(ic,de,en,r,val,sub)=>{if(r)out.push(`<button type="button" class="hl" data-act="statsSel" data-id="${r.g.id}"><span class="hl-ic"><svg viewBox="0 0 24 24">${EIC[ic]}</svg></span><span class="hl-t">${LX(de,en)}</span><b class="hl-v">${val(r.v)}</b><span class="hl-s">${sub?sub(r):''}${dt(r.g)}</span></button>`)};
   add('coin','Meistes Geld verdient','Most money earned',best(g=>me_(g).income||0),v=>fmt(v)+' €',()=>LX('Einnahmen in einer Partie · ','income in one game · '));
@@ -6462,7 +6534,7 @@ function statsTotal(h){
   const rivals={};h.forEach(g=>{const w=g.players.find(p=>p.place===1);if(w&&!w.human)rivals[w.name]=(rivals[w.name]||0)+1});
   const rivalRows=Object.entries(rivals).sort((a,b)=>b[1]-a[1]).map(([n,v])=>({label:esc(n),v,color:'var(--edge)',text:v+(v===1?' Sieg':' Siege')}));
   const st2=avg(h.filter(g=>g.step2).map(g=>g.step2)),st3=avg(h.filter(g=>g.step3).map(g=>g.step3));
-  const hist=h.map((g,i)=>({g,i})).reverse().map(({g,i})=>{const m=me_(g);const dd=new Date(g.date);return `<button type="button" class="hrow" data-act="statsSel" data-id="${g.id}">${placeBadge(m.place)}<span class="hd"><b>#${i+1} · ${dd.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'})}</b><small>${dd.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})}</small></span><span class="hm">${m.powered} versorgt · ${m.cities} Städte · ${fmt(m.money)} €</span><span class="hx">${g.rounds} R · ${AI_NAME[g.diff]||g.diff} · ${g.n} Sp.</span></button>`}).join('');
+  const hist=h.map((g,i)=>({g,i})).reverse().map(({g,i})=>{const m=me_(g);const dd=new Date(g.date);return `<button type="button" class="hrow" data-act="statsSel" data-id="${g.id}">${placeBadge(m.place)}<span class="hd"><b>#${i+1} · ${dd.toLocaleDateString(LANG==='en'?'en-GB':'de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'})}</b><small>${dd.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})}</small></span><span class="hm">${m.powered} versorgt · ${m.cities} Städte · ${fmt(m.money)} €</span><span class="hx">${g.rounds} R · ${AI_NAME[g.diff]||g.diff} · ${g.n} Sp.</span></button>`}).join('');
   const goalNote=`<p class="hint goalnote">Zielerreichung: versorgte Städte am Ende geteilt durch das Spielziel der Partie (17 Städte bei 3 und 4 Spielern, 15 bei 5, 14 bei 6), damit Partien mit unterschiedlicher Spielerzahl vergleichbar sind.${goals.length===1?`<span> Alle diese Partien hatten das Ziel ${goals[0]}: Ø ${fmt1(avg(h.map(g=>me_(g).powered)))} versorgte Städte.</span>`:''}</p>`;
   return `${lastBox(h)}
   ${stHead('01','Deine Bilanz','Your record',LX('Wie oft du gewinnst und wie deine Form gerade ist.','How often you win and how your current form looks.'))}${stRecord(h)}
@@ -6554,7 +6626,7 @@ function lastBox(h){
   const verdict=m.place===1?'Gewonnen':`Platz ${m.place} von ${g.players.length}`;
   const by=m.place===1?(g.players.filter(p=>p!==m).sort((a,b)=>b.powered-a.powered)[0]):win;
   const gap=m.place===1?`${m.powered-(by?by.powered:0)} ${Math.abs(m.powered-(by?by.powered:0))===1?'Stadt':'Städte'} Vorsprung vor ${esc(by?by.name:'')}`:`${(win.powered-m.powered)} ${Math.abs(win.powered-m.powered)===1?'Stadt':'Städte'} hinter ${esc(win.name)}`;
-  return `<section class="lastbox${m.place===1?' won':''}"><div class="lbh"><span class="lbt">Letzte Partie</span><span class="lbm">${dd.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})} · ${esc(MAPS[g.map||'de'].name)} · ${AI_NAME[g.diff]||''} · <span>${g.players.length} Spieler</span></span></div>
+  return `<section class="lastbox${m.place===1?' won':''}"><div class="lbh"><span class="lbt">Letzte Partie</span><span class="lbm">${dd.toLocaleDateString(LANG==='en'?'en-GB':'de-DE',{day:'2-digit',month:'2-digit'})} · ${esc(MAPS[g.map||'de'].name)} · ${AI_NAME[g.diff]||''} · <span>${g.players.length} Spieler</span></span></div>
   <div class="lbv">${placeBadge(m.place)}<div><b>${verdict}</b><span>${gap}</span></div></div>
   <div class="lbs"><div><small>Versorgt · Ziel ${goalOf(g)}</small><b>${m.powered}</b>${d(m.powered,avg(h.map(x=>me_(x).powered/goalOf(x)))*goalOf(g))}</div><div><small>Städte</small><b>${m.cities}</b>${d(m.cities,avg(h.map(x=>me_(x).cities/goalOf(x)))*goalOf(g))}</div><div><small>Geld am Ende</small><b>${fmt(m.money)} €</b>${d(m.money,A('money'),' €')}</div><div><small>Runden</small><b>${g.rounds}</b>${d(g.rounds,avg(h.map(x=>x.rounds)),'',true)}</div><div><small>Einnahmen</small><b>${fmt(m.income||0)} €</b>${d(m.income||0,A('income'),' €')}</div><div><small>Ausgaben</small><b>${fmt(spent)} €</b></div></div>
   <div class="lbf"><span class="lbp">${(m.plants||[]).map(n=>`<span class="pchip">${PN(n)}</span>`).join('')}${fav?`<span class="lbfuel">${resIcon(fav)} ${RNAME[fav]}</span>`:''}${fuelOf(g,m).unit!=null?`<span class="lbfuel">Ø ${fmt1(fuelOf(g,m).unit)} € je Einheit</span>`:''}</span><button type="button" class="btn sm" data-act="statsSel" data-id="${g.id}">Details</button></div></section>`;
@@ -6676,7 +6748,7 @@ function statsCustom(h){
     const dir=a<0.2?'':LANG==='en'?(r>0?`The higher “${xl}”, the higher “${yl2}” tends to be.`:`The higher “${xl}”, the lower “${yl2}” tends to be.`):(r>0?`Je höher „${xl}“, desto höher meist „${yl2}“.`:`Je höher „${xl}“, desto niedriger meist „${yl2}“.`);
     h2+=`<div class="cinfo"><b>${str}</b> <span class="cr">r = ${fmt1(r).replace('.',LANG==='en'?'.':',')}</span><p>${dir} ${n<8?'Mit wenigen Partien ist das noch wackelig.':''}</p><p class="hint">r reicht von −1 bis +1: 0 heißt kein Zusammenhang, ±1 ein perfekter. Ein Zusammenhang ist noch kein Beweis für Ursache und Wirkung.</p></div>`}
   const sp=pts.find(p=>p.g.id===UI.cSel);
-  if(sp)h2+=`<div class="cpoint">${placeBadge(sp.pl)}<div><b>Partie #${sp.i+1}</b><span>${new Date(sp.g.date).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'})} · ${esc(MAPS[sp.g.map||'de'].name)} · ${AI_NAME[sp.g.diff]||''}</span><span>${X.l}: <b>${fmtV(sp.x)}${X.u}</b> · ${Y.l}: <b>${fmtV(sp.y)}${Y.u}</b></span></div><button type="button" class="btn sm" data-act="statsSel" data-id="${sp.g.id}">Details</button></div>`;
+  if(sp)h2+=`<div class="cpoint">${placeBadge(sp.pl)}<div><b>Partie #${sp.i+1}</b><span>${new Date(sp.g.date).toLocaleDateString(LANG==='en'?'en-GB':'de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'})} · ${esc(MAPS[sp.g.map||'de'].name)} · ${AI_NAME[sp.g.diff]||''}</span><span>${X.l}: <b>${fmtV(sp.x)}${X.u}</b> · ${Y.l}: <b>${fmtV(sp.y)}${Y.u}</b></span></div><button type="button" class="btn sm" data-act="statsSel" data-id="${sp.g.id}">Details</button></div>`;
   else h2+=`<p class="hint">Tippe auf einen Punkt, um die Partie zu sehen.</p>`;
   return h2+`</section>`;
 }
@@ -6684,7 +6756,7 @@ function statsTrend(h){
   if(h.length<2)return `<div class="st-empty"><b>Noch zu wenig Partien</b><p>Spiel mindestens zwei Partien, um Entwicklungen zu sehen.</p></div>`;
   const M=h.map(gameMetrics);
   const xs=h.map((g,i)=>({i,g,...M[i]}));
-  const opt={xl:x=>'#'+(x.i+1),th:x=>`Partie #${x.i+1} · Platz ${x.place} · ${new Date(x.g.date).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit'})}`};
+  const opt={xl:x=>'#'+(x.i+1),th:x=>`Partie #${x.i+1} · Platz ${x.place} · ${new Date(x.g.date).toLocaleDateString(LANG==='en'?'en-GB':'de-DE',{day:'2-digit',month:'2-digit'})}`};
   const ser=(name,color,k)=>({name,short:name,color,k});
   const mk=(id,title,unit,series,o={})=>{const rows=xs.map(x=>({...x,v:series.map(s=>x[s.k]??0)}));return lineChart(id,title,unit,series,rows,'v',{...opt,...o})};
   let summary;
@@ -6717,7 +6789,7 @@ function statsGame(sel,idx,isLast){
   const gm=gameMetrics(sel);
   const pl=(selMe.auc||[]).reduce((s,a)=>s+a.price,0),res=Object.values(selMe.res||{}).reduce((s,x)=>s+x[1],0);
   const nav=`<div class="gnav"><button type="button" class="btn" data-act="statsNav" data-d="-1" ${idx<=0?'disabled':''}>← Vorherige</button><span>${isLast?'Letzte Partie · ':''}Partie #${idx+1}</span><button type="button" class="btn" data-act="statsNav" data-d="1" ${idx>=filtHist().length-1?'disabled':''}>Nächste →</button></div>`;
-  return `${nav}<section class="card wide"><div class="sel-sum">${placeBadge(selMe.place)}<div><b>${d.toLocaleDateString(LOC(),{day:'numeric',month:'long',year:'numeric'})}</b><span>${MAPS[sel.map||'de'].name} · Deck ${DECKS[sel.deck||'std'].name} · ${sel.rounds} Runden · KI ${AI_NAME[sel.diff]||sel.diff} · ${sel.regions.map(r=>rName(r,MAPS[sel.map||'de'])).join(', ')}${sel.step2?' · Stufe 2 ab Runde '+sel.step2:''}${sel.step3?' · Stufe 3 ab Runde '+sel.step3:''}</span></div></div>
+  return `${nav}<section class="card wide"><div class="sel-sum">${placeBadge(selMe.place)}<div><b>${d.toLocaleDateString(LANG==='en'?'en-GB':'de-DE',{day:'numeric',month:'long',year:'numeric'})}</b><span>${MAPS[sel.map||'de'].name} · Deck ${DECKS[sel.deck||'std'].name} · ${sel.rounds} Runden · KI ${AI_NAME[sel.diff]||sel.diff} · ${sel.regions.map(r=>rName(r,MAPS[sel.map||'de'])).join(', ')}${sel.step2?' · Stufe 2 ab Runde '+sel.step2:''}${sel.step3?' · Stufe 3 ab Runde '+sel.step3:''}</span></div></div>
   <div class="st-table"><table><thead><tr><th>Platz</th><th>Betrieb</th><th>Versorgt</th><th>Städte</th><th>Geld</th><th>Einkommen</th><th>Kraftwerke</th></tr></thead><tbody>${[...sel.players].sort((a,b)=>a.place-b.place).map(p=>`<tr class="${p.human?'me':''}"><td>${p.place}.</td><td><i class="dot" style="background:${p.color}"></i>${esc(p.human?'Du':p.name)}</td><td>${p.powered}</td><td>${p.cities}</td><td>${fmt(p.money)} €</td><td>${fmt(p.income||0)} €</td><td><span class="mps">${(p.plants||[]).map(n=>`<span class="mp t-${ALLPLANTS[n][0]}">${PN(n)}</span>`).join('')}</span></td></tr>`).join('')}</tbody></table></div>${charts}</section>
   <div class="st-grid">
    <section class="card"><h3>Ausgaben dieser Partie</h3>${bars([{label:'Einnahmen',v:gm.income,color:'#58b86a',text:fmt(gm.income)+' €'},{label:'Kraftwerke',v:pl,text:fmt(pl)+' € · '+gm.plPct+' %'},{label:'Rohstoffe',v:res,text:fmt(res)+' € · '+gm.resPct+' %'},{label:'Netz',v:(selMe.slot||0)+(selMe.conn||0),text:fmt((selMe.slot||0)+(selMe.conn||0))+' € · '+gm.netPct+' %'}])}${gm.r7?`<p class="hint">7 Städte hattest du in Runde ${gm.r7}.</p>`:''}</section>
@@ -6819,23 +6891,23 @@ function statsBoard(){
   }
   if(LB.status==='loading')return `<section class="card wide"><h3>Gemeinsame Rangliste</h3><p class="hint">Rangliste wird geladen …</p></section>`;
   if(LB.status!=='ok')return `<section class="card wide"><h3>Gemeinsame Rangliste</h3><p class="hint">Die Rangliste ist gerade nicht erreichbar. Öffne die Statistik später noch einmal.</p></section>`;
-  let docs=(LB.docs||[]).filter(r=>r&&r.players&&lbHuman(r));
+  let docs=(LB.docs||[]).filter(r=>r&&r.players&&lbHuman(r));const SEAS=UI.lbSeason!=='all';if(SEAS){const k=seasonKey();docs=docs.filter(r=>r.date&&seasonKey(new Date(r.date))===k)}
   if(UI.statDiff&&UI.statDiff!=='all')docs=docs.filter(r=>r.diff===UI.statDiff);
   if(UI.statMap&&UI.statMap!=='all')docs=docs.filter(r=>r.map===UI.statMap);
   const by={};
-  docs.forEach(r=>{const h=lbHuman(r);const k=h.name.trim().toLowerCase();const e=by[k]??={name:h.name,g:0,w:0,pl:[],pw:[],best:0};e.g++;if(h.place===1)e.w++;const gl=(RULES_N[r.n]||RULES_N[4]).end;e.pl.push(h.place);e.pw.push(h.powered/gl*100);e.best=Math.max(e.best,Math.round(h.powered/gl*100))});
-  const rows=Object.values(by).sort((a,b)=>(b.w/b.g)-(a.w/a.g)||b.w-a.w||avg(b.pw)-avg(a.pw));
+  docs.forEach(r=>{const h=lbHuman(r);const k=h.name.trim().toLowerCase();const e=by[k]??={name:h.name,g:0,w:0,pl:[],pw:[],best:0,pts:0};e.g++;if(h.place===1)e.w++;e.pts+=Math.round(([0,10,6,3,1,0,0][h.place]||0)*(SEASON_W[r.diff]||1)*((r.n||3)/3));const gl=(RULES_N[r.n]||RULES_N[4]).end;e.pl.push(h.place);e.pw.push(h.powered/gl*100);e.best=Math.max(e.best,Math.round(h.powered/gl*100))});
+  const rows=Object.values(by).sort(SEAS?(a,b)=>b.pts-a.pts||b.w-a.w:(a,b)=>(b.w/b.g)-(a.w/a.g)||b.w-a.w||avg(b.pw)-avg(a.pw));
   const writer=LB.canWrite!==false;
   const localIds=new Set((LB.docs||[]).map(r=>r.id));
   const missing=loadHist().filter(g=>!localIds.has(String(g.id).replace(/[^0-9A-Za-z-]/g,'-'))&&g.players&&g.players.some(p=>p.human));
-  let h=`<section class="card wide"><h3>Gemeinsame Rangliste</h3>`;
+  let h=`<section class="card wide"><h3>Gemeinsame Rangliste</h3><div class="seg lbseas">${[['season',LX('Diese Saison','This season')],['all',LX('Alle Zeit','All time')]].map(([k,l])=>`<button type="button" data-act="lbSeason" data-v="${k}" class="${(UI.lbSeason||'season')===k?'on':''}">${l}</button>`).join('')}</div>${SEAS?`<p class="hint">${LX(`Punkte: Platz 1 = 10, 2 = 6, 3 = 3, 4 = 1 – mal KI-Stärke (Leicht ×0,5 bis Experte ×2) und Spielerzahl. Saison ${seasonName()} endet in ${seasonDaysLeft()} Tagen.`,`Points: 1st = 10, 2nd = 6, 3rd = 3, 4th = 1 – times AI level (Easy ×0.5 to Expert ×2) and player count. Season ${seasonName()} ends in ${seasonDaysLeft()} days.`)}</p>`:''}`;
   if(!rows.length)h+=`<p class="hint">Noch keine Ergebnisse${docs.length!==(LB.docs||[]).length?' mit diesem Filter':''}. Beende eine Partie und trag sie ein, oder füge unten einen Ergebnis-Link ein.</p>`;
-  else h+=`<div class="st-table"><table class="lbt"><thead><tr><th>#</th><th>Name</th><th>Partien</th><th>Siege</th><th>Quote</th><th>Ø Platz</th><th>Ø Ziel</th><th>Bestes Ziel</th></tr></thead><tbody>${rows.map((e,i)=>`<tr><td>${i+1}.</td><td class="lbn">${esc(e.name)}</td><td>${e.g}</td><td>${e.w}</td><td>${Math.round(e.w/e.g*100)} %</td><td>${fmt1(avg(e.pl))}</td><td>${Math.round(avg(e.pw))} %</td><td>${e.best} %</td></tr>`).join('')}</tbody></table></div>`;
+  else h+=`<div class="st-table"><table class="lbt"><thead><tr><th>#</th><th>Name</th>${SEAS?'<th>Punkte</th>':''}<th>Partien</th><th>Siege</th><th>Quote</th><th>Ø Platz</th><th>Ø Ziel</th><th>Bestes Ziel</th></tr></thead><tbody>${rows.map((e,i)=>`<tr><td>${i+1}.</td><td class="lbn">${esc(e.name)}</td>${SEAS?`<td><b>${e.pts}</b></td>`:''}<td>${e.g}</td><td>${e.w}</td><td>${Math.round(e.w/e.g*100)} %</td><td>${fmt1(avg(e.pl))}</td><td>${Math.round(avg(e.pw))} %</td><td>${e.best} %</td></tr>`).join('')}</tbody></table></div>`;
   h+=`</section>`;
   if(docs.length){
     h+=`<section class="card wide"><h3>Letzte Ergebnisse</h3><div class="hist">${docs.slice(0,20).map(r=>{const x=lbHuman(r);const d=new Date(r.date);
       const del=LB.canEdit?(UI.lbDel===r.id?`<span class="lbdel"><button type="button" class="btn" data-act="lbDelNo">Behalten</button><button type="button" class="btn danger" data-act="lbDelYes" data-id="${esc(r.id)}">Löschen</button></span>`:`<button type="button" class="xbtn sm" data-act="lbDel" data-id="${esc(r.id)}" aria-label="Eintrag entfernen" title="Eintrag entfernen"><svg width="12" height="12" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 3l12 12M15 3 3 15" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>`):'';
-      return `<div class="hrow lbrow">${placeBadge(x.place)}<span class="hd"><b>${esc(x.name)}</b><small>${d.toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'})}</small></span><span class="hm">Platz ${x.place} von ${r.n} · ${x.powered} versorgt · ${fmt(x.money)} €</span><span class="hx">${MAPS[r.map]?.name||''} · ${DECKS[r.deck]?.name||''} · ${AI_NAME[r.diff]||''}</span>${del}</div>`}).join('')}</div></section>`;
+      return `<div class="hrow lbrow">${placeBadge(x.place)}<span class="hd"><b>${esc(x.name)}</b><small>${d.toLocaleDateString(LANG==='en'?'en-GB':'de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'})}</small></span><span class="hm">Platz ${x.place} von ${r.n} · ${x.powered} versorgt · ${fmt(x.money)} €</span><span class="hx">${MAPS[r.map]?.name||''} · ${DECKS[r.deck]?.name||''} · ${AI_NAME[r.diff]||''}</span>${del}</div>`}).join('')}</div></section>`;
   }
   if(writer){
     h+=`<section class="card wide lbpaste"><h3>${LX('Partien aus der App','Games from the app')}</h3><p class="hint">${LX('In der App: Statistik → Gemeinsame Rangliste → „Ergebnisse kopieren“. Dann hier einfügen.','In the app: Statistics → Shared leaderboard → “Copy results”. Then paste here.')}</p><button type="button" class="btn pri" data-act="lbPaste">${LX('Aus der App einfügen','Paste from the app')}</button></section>`;
@@ -6854,7 +6926,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v214';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v215';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -7072,14 +7144,14 @@ function dailyHit(k,h=loadHist()){const G=dailyGoal(k);return dailyGamesOn(k,h).
 function dailyDoneKeys(h=loadHist()){const ks=new Set(h.map(dayOf));return [...ks].filter(k=>dailyHit(k,h)).sort()}
 function dailyStreak(h=loadHist()){const set=new Set(dailyDoneKeys(h));const d=new Date();if(!set.has(dailyKey(d)))d.setDate(d.getDate()-1);let n=0;while(set.has(dailyKey(d))){n++;d.setDate(d.getDate()-1)}return n}
 function goalText(G){return LANG==='en'?G.en:G.de}
-function dailyText(k){const G=dailyGoal(k),g=dailyHit(k),dt=dailyDate(k).toLocaleDateString(LOC(),{day:'numeric',month:'long',year:'numeric'});if(!g)return'';const m=meOf(g),stk=dailyStreak();
+function dailyText(k){const G=dailyGoal(k),g=dailyHit(k),dt=dailyDate(k).toLocaleDateString(LANG==='en'?'en-GB':'de-DE',{day:'numeric',month:'long',year:'numeric'});if(!g)return'';const m=meOf(g),stk=dailyStreak();
   return LX(`Grid Master · Tagesziel ${dt} ✓\n„${G.de}“\n${MAPS[g.map||'de'].name} · Platz ${m.place} von ${g.players.length} · ${m.powered} Städte versorgt · ${fmt(m.money)} €${stk>1?`\n${stk} Tage in Folge`:''}`,
     `Grid Master · Daily goal ${dt} ✓\n“${G.en}”\n${tr(MAPS[g.map||'de'].name)} · place ${m.place} of ${g.players.length} · ${m.powered} cities powered · ${fmt(m.money)} €${stk>1?`\n${stk}-day streak`:''}`)}
 async function dailyShare(btn){const k=(btn&&btn.dataset.k)||dailyKey(),text=dailyText(k);if(!text)return;
   if(navigator.share){try{await navigator.share({title:'Grid Master',text});return}catch(e){if(e&&e.name==='AbortError')return}}
   try{await navigator.clipboard.writeText(text);if(btn){const o=btn.innerHTML;btn.textContent=LX('Kopiert ✓','Copied ✓');setTimeout(()=>{if(btn.isConnected)btn.innerHTML=o},1600)}}catch(_){}}
 function dailyCardHTML(){const k=dailyKey(),G=dailyGoal(k),hit=dailyHit(k),tries=dailyGamesOn(k).length,stk=dailyStreak(),dt=dailyDate(k);
-  const day=dt.toLocaleDateString(LOC(),{day:'2-digit'}),mon=dt.toLocaleDateString(LOC(),{month:'short'}).replace('.','');
+  const day=dt.toLocaleDateString(LANG==='en'?'en-GB':'de-DE',{day:'2-digit'}),mon=dt.toLocaleDateString(LANG==='en'?'en-GB':'de-DE',{month:'short'}).replace('.','');
   const st=hit?`<span class="dc-st won"><i class="dc-ok">✓</i>${LX('Geschafft','Completed')} · ${esc(tr(MAPS[hit.map||'de'].name))}</span>`:`<span class="dc-st">${tries?LX(`Noch nicht geschafft · ${tries} ${tries===1?'Partie':'Partien'} heute`,`Not done yet · ${tries} ${tries===1?'game':'games'} today`):LX('Gilt für jede Partie, die du heute beendest','Counts for any game you finish today')}</span>`;
   return `<section class="s3-daily${hit?' done':''}"><div class="dc-date"><b>${day}</b><span>${mon}</span></div><div class="dc-main"><span class="dc-k">${LX('Tagesziel','Daily goal')}${stk>1?`<i class="dc-stk">${stk} ${LX('Tage in Folge','day streak')}</i>`:''}</span><b class="dc-t">${esc(goalText(G))}</b>${st}</div>
   ${hit?`<div class="dc-act"><button type="button" class="btn dc-sh" data-act="dailyShare" data-k="${k}">${LX('Teilen','Share')}</button></div>`:''}</section>`}
@@ -7117,7 +7189,7 @@ function stAchievements(h){const S_=achState(h),dates=achDates(h),cnt=[0,1,2].ma
   const cards=S_.map(({a,v,tier})=>{const tn=tier>=0?TIERS[tier]:'none',nx=tier<2?a.t[tier+1]:null;
     const pct=nx==null?100:a.lo?(v==null?0:Math.max(0,Math.min(100,Math.round((a.t[0]+4-v)/(a.t[0]+4-nx)*100)))):Math.max(0,Math.min(100,Math.round((v||0)/nx*100)));
     const pips=TIERS.map((t,i)=>`<i class="pip ${t}${i<=tier?' on':''}" title="${TIER_N[t][LANG==='en'?1:0]}: ${a.lo?'≤ ':''}${a.t[i]}"></i>`).join('');
-    const sub=nx==null?`<i class="ach-d">${TIER_N.gold[LANG==='en'?1:0]} · ${dates[a.id+2]?new Date(dates[a.id+2]).toLocaleDateString(LOC(),{day:'2-digit',month:'2-digit',year:'2-digit'}):''}</i>`
+    const sub=nx==null?`<i class="ach-d">${TIER_N.gold[LANG==='en'?1:0]} · ${dates[a.id+2]?new Date(dates[a.id+2]).toLocaleDateString(LANG==='en'?'en-GB':'de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'}):''}</i>`
       :`<span class="ach-pg ${TIERS[tier+1]}"><span style="width:${pct}%"></span></span><i class="ach-d">${v==null?'–':fmt(v)} / ${a.lo?'≤ ':''}${nx} · ${LX('nächste Stufe','next')}: ${TIER_N[TIERS[tier+1]][LANG==='en'?1:0]}</i>`;
     return `<div class="ach t-${tn}"><span class="ach-ic">${achIcon(a)}</span><span class="ach-tx"><span class="ach-h"><b>${achName(a)}</b><span class="pips">${pips}</span></span><small>${a.t.map(x=>(a.lo?'≤':'')+x).join(' · ')} ${LANG==='en'?a.de2:a.dd}</small>${sub}</span></div>`}).join('');
   return `<section class="card wide ach-card"><div class="ach-sum">${TIERS.slice().reverse().map((t,j)=>{const i=2-j;return `<span class="ach-cnt ${t}"><i class="medal ${t}"></i><b>${cnt[i]}</b><small>${TIER_N[t][LANG==='en'?1:0]}</small></span>`}).join('')}<span class="ach-of">${LX('von','of')} ${ACH.length}</span></div><div class="ach-grid">${cards}</div></section>`}
@@ -7167,6 +7239,9 @@ function plantArt(n){if(n==null||!PLANTS[n])return'';const gas=!!(S&&MAPS[S.map]
 
 /* ==== v176: Firmenidentitäten – jede Firma hat ein eigenes Logo in ihrer Farbe ==== */
 const LOGOS={
+  crown:{fr:'shield',nm:['Krone','Crown'],f:1,d:'M4.5 17.5h15l1.2-9.5-5.2 4.2L12 5l-3.5 7.2-5.2-4.2z',camp:6},
+  laurel:{fr:'circle',nm:['Lorbeer','Laurel'],d:'M12 20c-5-2-7.2-6.2-7-11.5M12 20c5-2 7.2-6.2 7-11.5M6.8 9.6c1.2.8 2.4.7 3.2-.3M6.4 13.6c1.3.7 3 .5 3.8-.6M17.2 9.6c-1.2.8-2.4.7-3.2-.3M17.6 13.6c-1.3.7-3 .5-3.8-.6',camp:12},
+  trophy:{fr:'hex',nm:['Pokal','Trophy'],d:'M8 4h8v5a4 4 0 0 1-8 0zM8 6H5.5a3 3 0 0 0 2.8 4M16 6h2.5a3 3 0 0 1-2.8 4M12 13v4M9 20h6M10 17h4',camp:20},
   bolt:{fr:'hex',nm:['Voltaic','Voltaic'],f:1,d:'M13.5 2 5 13.2h5.6L9.4 22 19 9.8h-5.7z'},
   wave:{fr:'circle',nm:['Gezeiten','Tidal'],d:'M3 8.5c3-3 6 3 9 0s6 3 9 0M3 15.5c3-3 6 3 9 0s6 3 9 0'},
   sun:{fr:'arch',nm:['Morgenrot','Dawn'],d:'M3.5 17.5h17M7 17.5a5 5 0 0 1 10 0M12 5v3M5.4 8.6l2 2M18.6 8.6l-2 2'},
@@ -7189,7 +7264,7 @@ function logoOf(p){if(!p)return'bolt';if(p.logo&&LOGOS[p.logo])return p.logo;if(
 function logoGlyph(k){const L=LOGOS[k]||LOGOS.bolt;return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${L.d}" class="${L.f?'lg-f':'lg-s'}"/></svg>`}
 function coLogo(k,color,cls=''){const L=LOGOS[k]||LOGOS.bolt;return `<span class="logo ${cls}" data-f="${L.fr||'squircle'}" style="--lc:${color}" aria-hidden="true"><span class="lo-in">${logoGlyph(k)}</span></span>`}
 function logoName(k){const L=LOGOS[k]||LOGOS.bolt;return (L.nm||[k,k])[LANG==='en'?1:0]}
-function logoPicker(){return `<div class="co-brand"><div class="cb-glow"></div>${coLogo(MY_LOGO,'#4f9dff','cb-logo')}<div class="cb-tx"><span class="cb-k">${LX('Marke','Marque')} · ${logoName(MY_LOGO)}</span><b class="cb-n" id="cbName">${esc(nmVal()||LX('Dein Betrieb','Your company'))}</b><span class="cb-s">${LX('Netzbetreiber seit Runde 1','Grid operator since round 1')}</span></div></div><div class="co-logos" role="radiogroup" aria-label="${LX('Logo','Logo')}">${LOGO_KEYS.map(k=>`<button type="button" class="co-lg${k===MY_LOGO?' on':''}" data-act="coLogo" data-l="${k}" role="radio" aria-checked="${k===MY_LOGO}" aria-label="${logoName(k)}">${coLogo(k,'#4f9dff')}<span class="co-ln">${logoName(k)}</span></button>`).join('')}</div>`}
+function logoPicker(){return `<div class="co-brand"><div class="cb-glow"></div>${coLogo(MY_LOGO,'#4f9dff','cb-logo')}<div class="cb-tx"><span class="cb-k">${LX('Marke','Marque')} · ${logoName(MY_LOGO)}</span><b class="cb-n" id="cbName">${esc(nmVal()||LX('Dein Betrieb','Your company'))}</b><span class="cb-s">${LX('Netzbetreiber seit Runde 1','Grid operator since round 1')}</span></div></div><div class="co-logos" role="radiogroup" aria-label="${LX('Logo','Logo')}">${LOGO_KEYS.map(k=>logoLocked(k)?`<span class="co-lg locked" title="${LX(`Kampagne: ${LOGOS[k].camp} Sterne`,`Campaign: ${LOGOS[k].camp} stars`)}">${coLogo(k,'#4f9dff','co-lgi')}<i>${LOGOS[k].camp}★</i></span>`:`<button type="button" class="co-lg${k===MY_LOGO?' on':''}" data-act="coLogo" data-l="${k}" role="radio" aria-checked="${k===MY_LOGO}" aria-label="${logoName(k)}">${coLogo(k,'#4f9dff')}<span class="co-ln">${logoName(k)}</span></button>`).join('')}</div>`}
 
 /* ==== v184: iPhone-Layout mit Phasenleiste, Mini-Trackern, eingeklappter Karte und einem Abschnitt pro Phase ==== */
 const PL2_MQ0=0;const PL2_MQ=window.matchMedia?matchMedia('(max-width:600px) and (orientation:portrait)'):{matches:false,addEventListener(){}};
@@ -7355,7 +7430,7 @@ const A={
   mapPeek:()=>{UI.peek=!UI.peek;UI.peekKey=S.round+S.phase;UI.vb=null},
   theme:b=>{setTheme(b.dataset.t)},
   sv:b=>{if(UI.sv==='co')UI.name=nmVal(),saveName(UI.name);UI.sv=b.dataset.v||'';renderStart(true);start.scrollTop=0;const sd=start.querySelector('.s3-side');if(sd)sd.scrollTop=0;return'skip'},
-  coLogo:b=>{const k=b.dataset.l;if(!LOGOS[k])return'skip';if(UI.sv==='co')UI.name=nmVal(),saveName(UI.name);MY_LOGO=k;try{localStorage.setItem('hochspannung-logo',k)}catch(_){}if(S){const me_=S.players.find(q=>q.human);if(me_)me_.logo=k}renderStart(true);return'skip'},
+  coLogo:b=>{const k=b.dataset.l;if(!LOGOS[k]||logoLocked(k))return'skip';if(UI.sv==='co')UI.name=nmVal(),saveName(UI.name);MY_LOGO=k;try{localStorage.setItem('hochspannung-logo',k)}catch(_){}if(S){const me_=S.players.find(q=>q.human);if(me_)me_.logo=k}renderStart(true);return'skip'},
   coRand:()=>{const cur=nmVal();const pool=CO_NAMES.filter(n=>n!==cur);UI.name=pool[Math.floor(Math.random()*pool.length)];saveName(UI.name);renderStart(true);const i=$('#nm');if(i){i.classList.add('co-flash');setTimeout(()=>i.classList.remove('co-flash'),500)}return'skip'},
   xToggle:()=>{if(MAPS[UI.map].exp)return'skip';UI.xopen=!UI.xopen;UI.name=nmVal();renderStart(true);return'skip'},
   themeSel:b=>{setTheme(b.dataset.t);UI.name=nmVal();renderStart(true);return'skip'},
@@ -7397,6 +7472,10 @@ const A={
   coachOk:b=>{coachMark(b.dataset.id);const c=document.getElementById('coach');c&&c.remove();setTimeout(()=>{try{coachTick()}catch(_){}},0);return'skip'},
   tipsOff:()=>{TIPS=false;try{localStorage.setItem('hochspannung-tips','0')}catch(_){}coachTick();return'skip'},
   tipsSet:b=>{TIPS=b.dataset.v==='1';try{localStorage.setItem('hochspannung-tips',TIPS?'1':'0');if(TIPS)localStorage.removeItem('hochspannung-coach')}catch(_){}},
+  campOpen:()=>{UI.sheet='camp';UI.rulesFromStart=true;renderStart(false);return'rules'},
+  campGo:b=>{const i=+b.dataset.i,c=CAMP[i];if(!c||!campOpen(i))return'skip';UI.sheet=null;UI.rulesFromStart=false;const keep={map:UI.map,nAI:UI.nAI,diff:UI.diff,regions:UI.regions,deck:UI.deck,promos:UI.promos};UI.map=c.map;UI.nAI=c.n;UI.diff=c.diff;UI.regions=[];UI.deck='std';UI.promos=[];loadMap(c.map);BOOT.zoom=false;
+    A.start(null);Object.assign(UI,keep);if(S){S.camp=c.id;save()}},
+  lbSeason:b=>{UI.lbSeason=b.dataset.v;renderStats();return'skip'},
   tutorial:()=>{const keep={map:UI.map,nAI:UI.nAI,diff:UI.diff,regions:UI.regions,deck:UI.deck,promos:UI.promos};UI.map='de';UI.nAI=2;UI.diff='easy';UI.regions=[];UI.deck='std';UI.promos=[];loadMap('de');BOOT.zoom=false;
     A.start(null);Object.assign(UI,keep);if(S){S.tut={seen:[]};S.players.forEach(p=>{if(!p.human)p.style=null});save()}},
   start:b=>{if(!regionsOk())return'skip';if(BOOT.zoom&&!UI.zooming&&!start.hidden&&!hmReduced()){UI.zooming=1;hmZoomGo(()=>{b&&b.click?b.click():null;UI.zooming=0});return'skip'}UI.name=nmVal().trim();saveName(UI.name);const NM=UI.name||(LANG==='en'?'Your company':'Dein Betrieb');
