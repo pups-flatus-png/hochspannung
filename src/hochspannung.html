@@ -3706,6 +3706,39 @@ html #map.plan .city.nb{animation:plStamp .7s cubic-bezier(.3,1.4,.5,1) 1.45s bo
 @keyframes plStamp{0%{opacity:.15}60%{opacity:1}100%{opacity:1}}
 @media (prefers-reduced-motion:reduce){html #map.plan .city.nb{animation:none}}
 @media (orientation:portrait) and (max-width:600px){html #app.pl2 #oppchips .oc-hd{position:sticky;left:0;z-index:3;align-self:stretch;background:linear-gradient(90deg,var(--pl-paper,#0b1014) 82%,transparent);padding-right:8px!important;margin-right:-4px}}
+/* v234: iPhone quer – Städteleiste und nächste Rohstoffpreise neben den Phasen statt leerer Fläche */
+@media (orientation:landscape) and (max-height:520px){
+  html body #app.pl2 #pl2bar .pl2-trk{display:flex!important;flex:1 1 auto;min-width:0;gap:6px;margin:0;align-items:stretch}
+  html body #app.pl2 #pl2bar .pl2-ct{display:flex!important;flex:1 1 0;min-width:0;flex-direction:row!important;align-items:center;gap:8px;box-sizing:border-box;height:33px;min-height:0;padding:0 10px!important;border-radius:11px}
+  html body #app.pl2 #pl2bar .pl2-ct .m3hd{flex:none;display:flex;align-items:center;margin:0}
+  html body #app.pl2 #pl2bar .pl2-ct .m3hd small,html body #app.pl2 #pl2bar .pl2-ct .m3stp,html body #app.pl2 #pl2bar .pl2-ct .ln .mk span{display:none!important}
+  html body #app.pl2 #pl2bar .pl2-ct .m3hd b{font-size:12px}
+  html body #app.pl2 #pl2bar .pl2-ct .ln{flex:1 1 0;min-width:0;position:relative;margin:0!important}
+  html body #app.pl2 #pl2bar .pl2-rm{display:flex!important;flex:0 1 auto;min-width:0;flex-direction:row!important;align-items:center;box-sizing:border-box;height:33px;padding:0 10px!important;border-radius:11px}
+  html body #app.pl2 #pl2bar .pl2-rm .m3hd{display:none!important}
+  html body #app.pl2 #pl2bar .pl2-rm .row{display:flex!important;gap:9px;margin:0}
+  html body #app.pl2 #pl2bar .pl2-rm .row span{font-size:11.5px;gap:3px}
+  html body #app.pl2 #pl2bar .pl2-x{display:none!important}
+}
+@media (orientation:landscape) and (max-height:520px) and (max-width:760px){html body #app.pl2 #pl2bar .pl2-rm{display:none!important}}
+/* v234: Spielerchips quer an den Rand, auf der Seite ohne Kamera-Insel ganz nah */
+@media (orientation:landscape) and (max-height:520px){
+  html #app.pl2 #oppchips{left:max(8px,calc(env(safe-area-inset-left,0px) - 4px))!important}
+  html.isl-r #app.pl2 #oppchips{left:8px!important}
+}
+/* v234: Rohstoffmarkt – Preisleiste über beide Zeilen, Einheiten groß genug zum Zählen */
+html .rm2-c{grid-template-columns:16px minmax(0,86px) minmax(0,1fr) 52px!important;grid-template-areas:"ic nm tr pr" "ic f1 tr f2"!important;row-gap:3px!important}
+html .rm2-c .t>.ri{align-self:center;grid-row:1/3;width:16px!important;height:16px!important}
+html .rm2-c .f{display:contents!important}
+html .rm2-c .f>span:first-child{grid-area:f1;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+html .rm2-c .f>span:last-child:not(:first-child){grid-area:f2;justify-self:end;text-align:right;font-size:10px;white-space:nowrap}
+html .rm2-c .tr{align-self:stretch;min-height:40px}
+html .rm2-c .g{justify-content:flex-end!important;padding:4px 0 3px!important}
+html .rm2-c .g .d{flex-direction:column-reverse!important;flex-wrap:nowrap!important;align-items:center;gap:2px!important;flex:1 1 auto;justify-content:flex-start;align-self:stretch;width:100%}
+html .rm2-c .g i{width:min(14px,calc(100% - 5px))!important;height:7px!important;border-radius:2px!important}
+html .rm2-c[data-r=uranium] .g i{width:min(11px,calc(100% - 3px))!important;height:auto!important;aspect-ratio:1;border-radius:50%!important}
+html .rm2-c .g small{font-size:8px!important}
+@media (min-width:1000px){html .rm2-c{grid-template-columns:18px minmax(0,96px) minmax(0,1fr) 56px!important}html .rm2-c .g i{height:8px!important}html .rm2-c .tr{min-height:46px}}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -7378,7 +7411,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v233';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v234';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -7736,6 +7769,8 @@ function pl2Bar(){const p=pl2Phase(),N=PL2_NAME(),m=me();
   const dots=S.players.map(q=>`<i class="pd${q.human?' me':''}" style="left:${pos(cityCount(q))}%;background:${q.color};color:${q.color}"></i>`).join('');
   const rm=RES.filter(r=>CAP[r]).map(r=>{const np=nextPrice(r);return `<span class="${np==null?'out':''}">${resIcon(r)}${np==null?'–':np}</span>`}).join('');
   return `<div class="pl2-tabs" role="list" aria-label="${LX('Phasen','Phases')}">${tabs}</div><div class="pl2-trk"><button type="button" class="pl2-ct" data-act="opp" aria-label="${LX('Städte und Gegner','Cities and opponents')}"><span class="m3hd"><small>${LX('Städte','Cities')}</small><b>${mc} / ${goal}</b><span class="m3stp">${[1,2,3].map(k=>`<i class="${S.step===k?'on':''}">${'I'.repeat(k)}</i>`).join('')}</span></span><span class="ln" style="--tk:${(100/max).toFixed(4)}%"><span class="ticks"></span><span class="fill" style="width:${pos(mc)}%"></span><span class="mk" style="left:${pos(STEP2_AT)}%"><span>${LX('STUFE 2','STEP 2')}</span></span><span class="mk" style="left:${pos(goal)}%"><span>${LX('ENDE','END')}</span></span>${dots}</span></button><button type="button" class="pl2-rm" data-act="markets" aria-label="${LX('Rohstoffmarkt','Resource market')}"><span class="m3hd"><small><span class="lg">${S.resNorth?LX('Markt Süd · nächster Preis','South market · next price'):LX('Rohstoffe · nächster Preis','Resources · next price')}</span><span class="sh">${S.resNorth?LX('Süd · Preis','South · price'):LX('Nächster Preis','Next price')}</span></small></span><span class="row">${rm}</span></button>${pl2Rule()}</div>`}
+/* v234: Seite der Kamera-Insel im Querformat (iPhone): landscape-secondary = Insel rechts */
+(function(){const f=()=>{try{const t=(screen.orientation&&screen.orientation.type)||'';const w=typeof window.orientation==='number'?window.orientation:null;const right=t==='landscape-secondary'||w===-90;document.documentElement.classList.toggle('isl-r',right&&innerWidth>innerHeight)}catch(_){}};f();addEventListener('orientationchange',()=>setTimeout(f,200));addEventListener('resize',f)})();
 /* v228: statt „Zuletzt passiert" – zweiter Markt (Korea) bzw. Sonderregel der Karte */
 function pl2Rule(){if(!S)return'';const M=MAPS[S.map],R=MR(),en=LANG==='en';
   if(S.resNorth){const rm=['coal','oil','garbage'].map(r=>{let np=null;try{np=withSide('north',()=>nextPrice(r))}catch(_){}return `<span class="${np==null?'out':''}">${resIcon(r)}${np==null?'–':np}</span>`}).join('')+`<span class="out nu" title="${LX('Kein Uran im Norden','No uranium in the North')}">${resIcon('uranium')}–</span>`;
