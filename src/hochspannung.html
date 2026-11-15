@@ -3228,6 +3228,38 @@ html:not([data-theme="light"]) #board:has(#map.atlas){background:radial-gradient
 .proxyon>span:nth-child(2){flex:1;min-width:0}
 .proxyon .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:trPulse 1.2s ease-in-out infinite}
 [data-theme="light"] .warnmsg b{color:#b4561c}
+
+/* ---- v212: Bau-Inszenierung ---- */
+.fxline{position:fixed;inset:0;width:100vw;height:100vh;z-index:8991;pointer-events:none;overflow:visible}
+.fxline path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.fxline .g{stroke:var(--cc);stroke-width:9;opacity:.35;filter:blur(3px)}
+.fxline .c{stroke:color-mix(in srgb,var(--cc) 55%,#fff);stroke-width:3}
+.fxspark{position:fixed;z-index:8992;pointer-events:none;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#fff;box-shadow:0 0 10px 3px var(--cc),0 0 22px 6px color-mix(in srgb,var(--cc) 60%,transparent)}
+.fxhouse{position:fixed;z-index:8993;pointer-events:none;width:13px;height:13px;background:linear-gradient(180deg,color-mix(in srgb,var(--cc) 50%,#fff),var(--cc));clip-path:polygon(50% 0,100% 42%,100% 100%,0 100%,0 42%);filter:drop-shadow(0 0 6px var(--cc))}
+
+/* ---- v212: Endwertung ---- */
+#gmRev{position:fixed;inset:0;z-index:99990;display:grid;place-items:center;padding:20px;background:radial-gradient(120% 90% at 50% 40%,rgba(10,16,22,.985),rgba(3,5,8,.995));animation:rvIn .35s ease-out}
+#gmRev.out{animation:rvOut .38s ease-in forwards}
+@keyframes rvIn{from{opacity:0}}@keyframes rvOut{to{opacity:0}}
+.rv-card{width:min(440px,100%);text-align:center}
+.rv-card small{display:block;font:600 10.5px/1 Barlow,system-ui;letter-spacing:.3em;text-transform:uppercase;color:#d9b267;margin-bottom:10px}
+.rv-card h2{font:800 clamp(17px,4.6vw,22px)/1.2 'Orbitron',var(--display);color:#fff;margin:0 0 18px;letter-spacing:.02em}
+.rv-list{display:flex;flex-direction:column-reverse;gap:8px}
+.rv-row{display:grid;grid-template-columns:28px auto minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-left:3px solid var(--pc);opacity:0;transform:translateY(10px);transition:opacity .4s,transform .45s cubic-bezier(.2,.9,.3,1),background .4s,border-color .4s,box-shadow .4s;text-align:left}
+.rv-row.on{opacity:1;transform:none}
+.rv-row .tk-logo{--ls:22px}
+.rv-row b{font-size:14px;font-weight:600;color:#e8edf1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rv-pl{font:800 13px/1 'Orbitron',var(--display);color:#7f8c97}
+.rv-m{font-size:12px;color:#8fa0ad;white-space:nowrap}
+.rv-c{display:flex;align-items:baseline;gap:5px}
+.rv-c em{font:800 24px/1 'Orbitron',var(--display);font-style:normal;color:#fff;min-width:1.4em;text-align:right;font-variant-numeric:tabular-nums}
+.rv-c i{font-style:normal;font-size:10.5px;color:#8fa0ad;letter-spacing:.06em;text-transform:uppercase}
+.rv-row.win.crown{background:linear-gradient(90deg,rgba(242,179,61,.22),rgba(242,179,61,.05));border-color:rgba(242,179,61,.7);border-left-color:var(--pc);box-shadow:0 0 30px rgba(242,179,61,.25);transform:scale(1.03)}
+.rv-row.win.crown .rv-pl{color:#1a1206;background:linear-gradient(180deg,#ffe08a,#f2b33d);border-radius:50%;width:24px;height:24px;display:grid;place-items:center}
+.rv-row.win.crown .rv-c em{color:#ffd77a;text-shadow:0 0 14px rgba(242,179,61,.6)}
+.rv-tie{margin:14px 0 0;font-size:12.5px;color:#ffd77a}
+.rv-skip{margin:22px 0 0;font-size:11px;color:#5d6b77;letter-spacing:.08em}
+@media (orientation:landscape) and (max-height:520px){.rv-card h2{margin-bottom:10px}.rv-row{padding:7px 12px}.rv-list{gap:5px}.rv-skip{margin-top:10px}}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -3851,8 +3883,8 @@ function buildOptions(p){
 function doBuild(pid,city){
   const p=P(pid);const o=buildOptions(p).find(x=>x.city===city);
   if(!o||o.cost>p.money)return false;
-  if(o.conn>0&&!o.jump){try{const ln=linkPath(p,city);if(ln.length&&!(MR().islands&&o.conn===(MAPS[S.map].islandFee||20)&&!ln.length))p.links=[...new Set([...(p.links||[]),...ln])]}catch(_){}}
-  p.money-=o.cost;p.cities.push(city);{const q=rsum(pid);q.bn=(q.bn||0)+1;q.bc=(q.bc||0)+o.cost}(S.owners[city]??=[]).push(pid);if(o.jump)p.jumpUsed=true;S.builtRound=(S.builtRound||0)+1;S.turnBuilt.push({city,cost:o.cost,slot:o.slot,conn:o.conn,jump:!!o.jump});
+  let fxKeys=[];if(o.conn>0&&!o.jump){try{const ln=linkPath(p,city);fxKeys=ln;if(ln.length&&!(MR().islands&&o.conn===(MAPS[S.map].islandFee||20)&&!ln.length))p.links=[...new Set([...(p.links||[]),...ln])]}catch(_){}}
+  p.money-=o.cost;p.cities.push(city);{const q=rsum(pid);q.bn=(q.bn||0)+1;q.bc=(q.bc||0)+o.cost}(S.owners[city]??=[]).push(pid);if(o.jump)p.jumpUsed=true;S.builtRound=(S.builtRound||0)+1;S.turnBuilt.push({city,cost:o.cost,slot:o.slot,conn:o.conn,jump:!!o.jump});(UI.fx=UI.fx||[]).push({t:'build',pid,city,keys:fxKeys});
   const sp=st().pl[pid];sp.slot+=o.slot;sp.conn+=o.conn;sp.built.push(city);
   log(p.name+' baut in '+CITY[city].name+' ('+o.cost+' €)'+(o.jump?' mit dem freien Sprung':'')+'.',pid);
   return true;
@@ -4460,6 +4492,17 @@ function endVictoryStage(){/* v196: scharf – Kamerafahrt über den Bildausschn
   requestAnimationFrame(draw);
   const go=()=>{if(fin)return;fin=true;requestAnimationFrame(draw);ov.classList.add('done');endShow()};
   const tm=window._vicTm=setTimeout(go,(DL+DUR+.6)*1000);ov.addEventListener('click',()=>{clearTimeout(tm);ov.classList.add('skip');go()})}
+/* v212: Endwertung als Enthüllung – vom letzten Platz zum Sieger, Zähler laufen hoch, dann der Siegesflug */
+function endReveal(done){if(!S||!S.ranking||hmReduced()||window.__fast)return done();document.getElementById('gmRev')?.remove();
+  const L=LX,rk=S.ranking.map(P),n=rk.length,ov=document.createElement('div');ov.id='gmRev';
+  const tie=rk.length>1&&rk[0].lastPowered===rk[1].lastPowered;
+  ov.innerHTML=`<div class="rv-card"><small>${L('Endwertung','Final scoring')}</small><h2>${L('Wer versorgt die meisten Städte?','Who powers the most cities?')}</h2><div class="rv-list">${rk.slice().reverse().map((p,i)=>{const place=n-i;return `<div class="rv-row${place===1?' win':''}" data-i="${i}" ${pc(p.id)}><span class="rv-pl">${place}</span>${coLogo(logoOf(p),p.color,'tk-logo')}<b>${p.human?L('Du','You'):esc(p.name)}</b><span class="rv-m">${p.money} €</span><span class="rv-c"><em data-to="${p.lastPowered|0}">0</em><i>${L('Städte','cities')}</i></span></div>`}).join('')}</div>${tie?`<p class="rv-tie">${L('Gleichstand bei den Städten – mehr Geld entscheidet.','Tie on cities – more money decides.')}</p>`:''}<p class="rv-skip">${L('Tippen zum Überspringen','Tap to skip')}</p></div>`;
+  document.body.appendChild(ov);let fin=false;const tms=[];const go=()=>{if(fin)return;fin=true;tms.forEach(clearTimeout);ov.classList.add('out');setTimeout(()=>{ov.remove();done()},380)};
+  ov.addEventListener('click',go);
+  const rows=[...ov.querySelectorAll('.rv-row')];let t=350;
+  rows.forEach((r,i)=>{const last=i===rows.length-1,dur=last?1300:800;tms.push(setTimeout(()=>{r.classList.add('on');const em=r.querySelector('em'),to=+em.dataset.to,t0=performance.now();
+      const tick=now=>{const k=Math.min(1,(now-t0)/dur);em.textContent=Math.round(to*(1-Math.pow(1-k,3)));if(k<1&&!fin)requestAnimationFrame(tick);else if(last){r.classList.add('crown');buzz&&buzz()}};requestAnimationFrame(tick)},t));t+=last?0:dur*.85+150});
+  tms.push(setTimeout(go,t+1300+(tie?900:0)+1400))}
 function endVictory(){if(innerWidth<900)return endVictoryStage();if(!S||!S.ranking)return endShow();const W=S.ranking[0],wp=P(W),own=wp.cities||[];const src=document.getElementById('map');
   if(hmReduced()||!own.length||!src){endShow();return}
   clearTimeout(window._vicTm);document.getElementById('gmVic')?.remove();const ov=document.createElement('div');ov.id='gmVic';ov.setAttribute('aria-hidden','true');
@@ -4525,7 +4568,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)flowStart(
   if(document.body)go();else addEventListener('DOMContentLoaded',go)})();
 function endAuto(){if(S&&S.phase==='end'&&!S.endShown&&start.hidden){S.endShown=true;try{save()}catch(_){}
   /* v176: direkt in den Siegesflug – kein kurzes Aufblitzen von „Ergebnis ansehen“ im Seitenpanel */
-  document.documentElement.classList.add('gm-ending');setTimeout(()=>{if(S&&S.phase==='end')endVictory();else document.documentElement.classList.remove('gm-ending')},60);setTimeout(()=>document.documentElement.classList.remove('gm-ending'),15000)}}
+  document.documentElement.classList.add('gm-ending');setTimeout(()=>{if(S&&S.phase==='end')endReveal(()=>endVictory());else document.documentElement.classList.remove('gm-ending')},60);setTimeout(()=>document.documentElement.classList.remove('gm-ending'),15000)}}
 function renderTop(){endAuto();flowStart();
   const phases=S.phase==='end'?'<span class="ph cur"><i>✓</i><em>Spielende</em></span>':PH.map((ph,i)=>`<span class="ph${S.phase===ph?' cur':''}${PH.indexOf(S.phase)>i?' past':''}"><i>${i+1}</i><em>${PS[ph]}</em></span>`).join('');
   const m=me();const rank=S.order.indexOf(H)+1;const fin=S.phase==='end'&&S.ranking?S.ranking.indexOf(H)+1:0;
@@ -6740,7 +6783,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v211';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v212';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -6815,7 +6858,25 @@ function fxRun(q){let d=0;const pays=q.filter(e=>e.t==='pay'&&e.inc>0);
   if(PAYV!=='coins'&&pays.length)fxPayday(pays);
   for(const e of q){
     if(PAYV==='coins'&&e.t==='pay'&&e.inc>0){setTimeout(()=>fxPay(e),d);d+=160}
-    if(e.t==='refill')setTimeout(()=>fxRefill(e.add),d+250)}}
+    if(e.t==='refill')setTimeout(()=>fxRefill(e.add),d+250)}
+  let db=0;q.filter(e=>e.t==='build').forEach(e=>{setTimeout(()=>fxBuild(e),db);db+=P(e.pid)&&P(e.pid).human?0:420})}
+/* v212: Bau-Inszenierung – die Leitung zeichnet sich vom Netz in die neue Stadt, dann fällt das Haus in seinen Platz */
+function fxBuild(e){const q=P(e.pid);if(!q)return;const end=fxCityPt(e.city);if(!end)return;const col=q.color;
+  const chain=[e.city];let cur=e.city,keys=(e.keys||[]).slice(),g=0;while(keys.length&&g++<40){const i=keys.findIndex(k=>k.split('|').includes(cur));if(i<0)break;const k=keys.splice(i,1)[0].split('|');cur=k[0]===cur?k[1]:k[0];chain.push(cur)}
+  const pts=chain.reverse().map(fxCityPt);const ok=pts.every(Boolean)&&pts.length>1;
+  const T=ok?Math.min(900,260+pts.length*170):0;
+  if(ok){const ns='http://www.w3.org/2000/svg',sv=document.createElementNS(ns,'svg');sv.setAttribute('class','fxline');sv.style.cssText=`--cc:${col}`;
+    const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join('');
+    sv.innerHTML=`<path class="g" d="${d}"/><path class="c" d="${d}"/>`;document.body.appendChild(sv);
+    const ps=[...sv.querySelectorAll('path')];const len=ps[1].getTotalLength();
+    ps.forEach(x=>{x.style.strokeDasharray=len;x.animate([{strokeDashoffset:len},{strokeDashoffset:0}],{duration:T,easing:'cubic-bezier(.45,0,.2,1)',fill:'both'})});
+    const spark=document.createElement('i');spark.className='fxspark';spark.style.setProperty('--cc',col);document.body.appendChild(spark);
+    spark.animate(pts.map((p,i)=>({left:p[0]+'px',top:p[1]+'px',offset:i/(pts.length-1)})),{duration:T,easing:'cubic-bezier(.45,0,.2,1)',fill:'both'}).onfinish=()=>spark.remove();
+    sv.animate([{opacity:1},{opacity:1,offset:.75},{opacity:0}],{duration:T+900,fill:'both'}).onfinish=()=>sv.remove()}
+  const h=document.createElement('i');h.className='fxhouse';h.style.cssText=`left:${end[0]}px;top:${end[1]}px;--cc:${col}`;document.body.appendChild(h);
+  h.animate([{transform:'translate(-50%,-260%) scale(.7)',opacity:0},{transform:'translate(-50%,-160%) scale(.9)',opacity:1,offset:.35},{transform:'translate(-50%,-50%) scale(1.15,.8)',opacity:1,offset:.7},{transform:'translate(-50%,-62%) scale(.95,1.05)',offset:.85},{transform:'translate(-50%,-50%) scale(1)',opacity:1}],{duration:520,delay:T,easing:'cubic-bezier(.3,0,.4,1)',fill:'both'});
+  h.animate([{opacity:1},{opacity:0}],{duration:350,delay:T+900,fill:'forwards'}).onfinish=()=>h.remove();
+  setTimeout(()=>{fxRing(end[0],end[1],end[2],col,0,true);if(q.human)buzz&&buzz()},T+360)}
 /* v203: Zahltag in der Designsprache – Städte leuchten auf (A) und eine Abrechnungskarte zählt hoch und fliegt in die Kasse (B) */
 let PAYV=(()=>{try{return new URLSearchParams(location.search).get('payv')||'ab'}catch(_){return'ab'}})();/* alte Münzen: ?payv=coins */
 function fxCityPt(c){const el=document.querySelector(`#map .city[data-city="${c}"] .body`);const r=el&&el.getBoundingClientRect();return fxVis(r)?[r.left+r.width/2,r.top+r.height/2,r.width/2]:null}
