@@ -11,7 +11,7 @@ src=re.sub(r'<link rel="preconnect"[^>]*>\n?','',src)
 src=re.sub(r'<link rel="stylesheet" href="https://fonts.googleapis.com[^>]*>\n?','',src)
 title=re.search(r'<title>.*?</title>\n?',src).group(0); src=src.replace(title,'',1)
 ff=''
-for fam,pkg,ws in [('Saira Condensed','saira-condensed',[500,600,700]),('Barlow','barlow',[400,500,600,700]),('Orbitron','orbitron',[800])]:
+for fam,pkg,ws in [('Saira Condensed','saira-condensed',[500,600,700]),('Barlow','barlow',[400,500,600,700]),('Orbitron','orbitron',[800]),('IBM Plex Mono','ibm-plex-mono',[500,600])]:
     for w in ws:
         f=glob.glob(str(REPO/'gm2-src'/'fonts')+f'/{pkg}-latin-{w}-normal.woff2')[0]
         ff+=f"@font-face{{font-family:'{fam}';font-style:normal;font-weight:{w};font-display:swap;src:url(data:font/woff2;base64,{base64.b64encode(open(f,'rb').read()).decode()}) format('woff2')}}\n"
@@ -57,7 +57,7 @@ open(str(OUT)+'/manifest.webmanifest','w').write('''{
   ]
 }
 ''')
-open(str(OUT)+'/sw.js','w').write('''const CACHE='hochspannung-v230';
+open(str(OUT)+'/sw.js','w').write('''const CACHE='hochspannung-v231';
 const FILES=['./','index.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
