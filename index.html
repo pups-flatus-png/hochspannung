@@ -3703,6 +3703,13 @@ html #map.plan.plrev g.city[data-city],html #map.plan.plrev .cname{animation:plF
 @keyframes plFade{from{opacity:0}to{opacity:1}}
 .plsweep{position:fixed;z-index:44;width:3px;pointer-events:none;background:#f2b33d;box-shadow:0 0 14px 3px rgba(242,179,61,.55)}
 @media (prefers-reduced-motion:reduce){html #map.plan .city.can .pring{animation:none}html #map.plan.plrev *{animation:none!important}}
+/* v232: Netzplan – gespielte Zonen heller getönt, der Rest tritt zurück */
+html.gm-plan{--pl-act:#142030;--pl-hatch:rgba(170,200,222,.19)}
+html.gm-planblue{--pl-act:#123056;--pl-hatch:rgba(140,210,255,.2)}
+html #map.plan path.rcell.pt{fill:var(--pl-act)!important}
+html #map.plan path.rcell.off{fill:var(--pl-paper)!important;fill-opacity:.62!important}
+html #map.plan .rlabel{fill-opacity:.75!important}
+html #map.plan .rlabel.off{fill-opacity:.22!important}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -5186,7 +5193,7 @@ function renderMap(){const LIT=litCities();
   if(GEO_REL&&UI.relief!==false)g+=`<image class="relief" href="${GEO_REL.src}" x="${GEO_REL.x}" y="${GEO_REL.y}" width="${GEO_REL.w}" height="${GEO_REL.h}" preserveAspectRatio="none" clip-path="url(#reliefclip)"/>`;
   if(ATL)g+=`<path class="land-eng" d="${GEO_LAND}"/>`;
   const PL=PLAN();if(ATL&&PL)g+=`<defs>${Object.keys(REGIONS).map((rk,i)=>`<pattern id="ph${i}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(${[45,-45,90,0,30,-60][i%6]})"><line class="phl" x1="0" y1="0" x2="0" y2="6"/></pattern>`).join('')}<radialGradient id="plit"><stop offset="0" stop-color="#fff1c9" stop-opacity=".9"/><stop offset=".4" stop-color="#ffc463" stop-opacity=".33"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient></defs>`;
-  if(ATL&&VBORD){g+='<g class="rcells" clip-path="url(#cityland)">';Object.entries(REGIONS).forEach(([rk,r],ri)=>{if(!RCELL[rk])return;const on=S.regions.includes(rk);g+=on?`<path class="rcell" d="${RCELL[rk]}" style="${PL?`fill:url(#ph${ri})`:`fill:${r.col};stroke:${r.col}`}"/>`+((MAPS[S.map].noNuke||[]).includes(rk)?`<path class="rnn" d="${RCELL[rk]}"/>`:''):`<path class="rcell off" d="${RCELL[rk]}"/>`+((MAPS[S.map].noNuke||[]).includes(rk)?`<path class="rnn off" d="${RCELL[rk]}"/>`:'')});g+=`<path class="rbord" d="${VBORD}"/></g>`}
+  if(ATL&&VBORD){g+='<g class="rcells" clip-path="url(#cityland)">';Object.entries(REGIONS).forEach(([rk,r],ri)=>{if(!RCELL[rk])return;const on=S.regions.includes(rk);g+=on?(PL?`<path class="rcell pt" d="${RCELL[rk]}"/>`:'')+`<path class="rcell" d="${RCELL[rk]}" style="${PL?`fill:url(#ph${ri})`:`fill:${r.col};stroke:${r.col}`}"/>`+((MAPS[S.map].noNuke||[]).includes(rk)?`<path class="rnn" d="${RCELL[rk]}"/>`:''):`<path class="rcell off" d="${RCELL[rk]}"/>`+((MAPS[S.map].noNuke||[]).includes(rk)?`<path class="rnn off" d="${RCELL[rk]}"/>`:'')});g+=`<path class="rbord" d="${VBORD}"/></g>`}
   else for(const[rk,r]of Object.entries(REGIONS)){const on=S.regions.includes(rk);g+=`<path class="terr${on?'':' off'}" d="${TERR[rk]}" style="fill:${r.col};stroke:${r.col}"/>`}
   GEO_RIV.forEach(d=>g+=`<path class="river" d="${d}"/>`);
   if(GEO_LAK)g+=`<path class="lake" d="${GEO_LAK}"/>`;
@@ -7375,7 +7382,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v231';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v232';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
