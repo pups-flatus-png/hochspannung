@@ -3774,6 +3774,9 @@ html .rm2-c .g i.ob{animation:obFlash 1.8s ease-out both}
 /* v238: Gleichstand erklären */
 .ge-win .ge-tie{display:flex;flex-direction:column;gap:4px;margin-top:12px;padding:10px 14px;border-radius:12px;border:1px solid rgba(242,179,61,.4);background:rgba(242,179,61,.07);font-size:13px;line-height:1.35;color:#d7dee3;text-align:center;max-width:440px;margin-inline:auto}
 .ge-win .ge-tie b{font:700 10.5px/1.2 Barlow,system-ui;letter-spacing:.16em;text-transform:uppercase;color:#f2b33d}
+/* v239: Startbild – Nachbarländer nur als ganz leise Silhouette statt bläulichem Hof */
+html .hero-map .hm-out{fill:rgba(140,170,200,.04)!important;stroke:none!important}
+html[data-theme="light"] .hero-map .hm-out{fill:rgba(120,95,50,.035)!important}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -7451,7 +7454,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v238';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v239';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
