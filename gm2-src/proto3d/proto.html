@@ -21,7 +21,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:500 15p
 .lb.cost{font:800 8.5px/1 Orbitron,sans-serif;color:#b5c3cc;padding:3px 5px;border-radius:9px;background:rgba(6,10,13,.7);border:1px solid rgba(160,185,200,.22);backdrop-filter:blur(2px)}
 .lb.cost.hl{color:var(--ink);background:var(--accent);border-color:var(--accent)}
 .float{position:absolute;left:0;top:0;font:800 18px/1 Orbitron,sans-serif;text-shadow:0 2px 6px #000;pointer-events:none}
-.float.neg{color:#ff8a7a}.float.pos{color:var(--accent)}
+.float.neg{color:#ff8a7a}.float.sm{font-size:13px}.float.pos{color:var(--accent)}
 .hud{position:fixed;left:0;right:0;display:flex;align-items:center;gap:8px;pointer-events:none;padding-left:calc(10px + var(--sl));padding-right:calc(10px + var(--sr))}
 .hud>*{pointer-events:auto}
 #top{top:0;padding-top:calc(8px + var(--st));justify-content:space-between}
@@ -51,6 +51,11 @@ button:disabled{opacity:.4}
 .row.tot b{color:var(--accent)}
 .why{color:#ff8a7a;padding:4px 0}
 #cBuild{width:100%;margin-top:10px}
+.mrow{display:flex;align-items:center;gap:8px;padding:3px 0}.mrow .sw{width:12px;height:12px;border-radius:3px;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.mrow .nm{font-weight:600;min-width:52px}.mrow .sub{flex:1;min-width:0;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrow .st{min-height:36px;min-width:40px;padding:0;font-size:18px;flex:none}.mrow .n{font:800 14px Orbitron,sans-serif;min-width:18px;text-align:center}
+.coin{position:fixed;left:0;top:0;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff2c4,#f2b33d 45%,#a86f12);color:#5a3a06;font:800 13px/26px Orbitron,sans-serif;text-align:center;box-shadow:0 0 14px rgba(242,179,61,.9);pointer-events:none;z-index:20}
+.money{transition:transform .25s,box-shadow .25s}.money.pop{transform:scale(1.12);box-shadow:0 0 24px rgba(242,179,61,.7)}
 #fps{position:fixed;right:calc(10px + var(--sr));top:calc(56px + var(--st));font:700 10px Orbitron;color:var(--muted)}
 @media (orientation:landscape) and (max-height:500px){
   #top{padding-top:calc(6px + var(--st))}
@@ -68,7 +73,7 @@ button:disabled{opacity:.4}
 <header class="hud" id="top"><div class="brand"><span>GRID MASTER 2</span><small>3D</small></div><div class="money"><span class="dot"></span><b id="money">0</b><i>€</i></div></header>
 <div id="toast"></div>
 <div id="card"><div class="ch"><div id="cName"></div><button id="cX" aria-label="close">✕</button></div><div id="cRows"></div><button id="cBuild" class="gold"></button></div>
-<nav class="hud" id="bot"><button id="bPower"></button><button id="bView"></button><button id="bQ"></button></nav>
+<nav class="hud" id="bot"><button id="bMkt"></button><button id="bPower"></button><button id="bView"></button><button id="bQ"></button></nav>
 <div id="fps" hidden></div>
 <script>/*JS*/</script>
 </body>

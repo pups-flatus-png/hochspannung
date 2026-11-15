@@ -12,6 +12,9 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { mergeVertices, mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import MAP from './de.js';
 import GEO from './geo_de.json';
+import { createSkylines } from './skyline.js';
+import { createMarket, RES, ORDER, MARKET_W } from './market.js';
+let SKY = null;
 
 // ---------- i18n / flags ----------
 const DE = (navigator.language || 'de').toLowerCase().startsWith('de');
@@ -25,7 +28,7 @@ const T = DE ? {
   start: 'Tap a glowing city to build.', paid: 'Income', cities: 'cities', q: 'Graphics'
 };
 const QS = new URLSearchParams(location.search);
-const TESTMODE = QS.has('test');
+const TESTMODE = QS.has('test'); const FDT = +QS.get('fdt') || 0; let SIMT = 0;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // ---------- projection & map data ----------
@@ -86,7 +89,7 @@ const INCOME = [10, 22, 33, 44, 54, 64, 73, 82, 90, 98, 105, 112, 118, 124, 129,
 const app = document.getElementById('app');
 const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
 app.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 { const c = document.createElement('canvas'); c.width = 4; c.height = 256; const x = c.getContext('2d'); const g = x.createLinearGradient(0, 0, 0, 256); g.addColorStop(0, '#0d1720'); g.addColorStop(.55, '#070c11'); g.addColorStop(1, '#030507'); x.fillStyle = g; x.fillRect(0, 0, 4, 256); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; scene.background = t; }
@@ -94,7 +97,7 @@ scene.fog = new THREE.FogExp2(0x05090d, 0.0028);
 const camera = new THREE.PerspectiveCamera(30, 1, 0.5, 900);
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.28;
-scene.add(new THREE.HemisphereLight(0x5a7690, 0x0a0d10, 1.0));
+const hemi = new THREE.HemisphereLight(0x5a7690, 0x0a0d10, 1.0); scene.add(hemi);
 const moon = new THREE.DirectionalLight(0xb4c6ff, 1.9);
 moon.position.set(CX - 45, 70, CZ - 55); moon.target.position.set(CX, 0, CZ);
 moon.castShadow = true; moon.shadow.mapSize.set(2048, 2048);
@@ -154,22 +157,26 @@ function drawLights() {
 }
 
 // ---------- terrain mesh ----------
-const terrainUniforms = { uT: { value: 0 }, uScan: { value: -999 } };
+const terrainUniforms = { uT: { value: 0 }, uScan: { value: -999 }, uWaves: { value: [new THREE.Vector4(0, 0, -99, 0), new THREE.Vector4(0, 0, -99, 0), new THREE.Vector4(0, 0, -99, 0)] } };
+let waveI = 0; function shock(x, z, amp = .35) { terrainUniforms.uWaves.value[waveI++ % 3].set(x, z, terrainUniforms.uT.value, amp); }
 function buildTerrain() {
   const colorTex = bakeColor(); drawLights();
   const mat = new THREE.MeshStandardMaterial({ map: colorTex, emissiveMap: emTex, emissive: new THREE.Color(1, 1, 1), emissiveIntensity: 1.6, roughness: .93, metalness: 0 });
   mat.onBeforeCompile = sh => {
-    sh.uniforms.uT = terrainUniforms.uT; sh.uniforms.uScan = terrainUniforms.uScan;
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP=(modelMatrix*vec4(transformed,1.)).xyz;');
+    sh.uniforms.uT = terrainUniforms.uT; sh.uniforms.uScan = terrainUniforms.uScan; sh.uniforms.uWaves = terrainUniforms.uWaves;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; varying float vWave; uniform float uT; uniform vec4 uWaves[3];')
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+vWave=0.; for(int i=0;i<3;i++){ vec4 w=uWaves[i]; float age=uT-w.z; if(age>0. && age<2.6){ float d=distance(transformed.xz,w.xy); float r=age*11.; float env=exp(-pow(d-r,2.)*.35)*(1.-age/2.6); transformed.y += w.w*env*sin((d-r)*1.6+1.5); vWave+=env; } }`)
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP=(modelMatrix*vec4(transformed,1.)).xyz;');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
-varying vec3 vWP; uniform float uT; uniform float uScan;
+varying vec3 vWP; varying float vWave; uniform float uT; uniform float uScan;
 float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float n2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y);}
 float cloud(vec2 p){return n2(p)*.55+n2(p*2.1+3.)*.3+n2(p*4.3-7.)*.15;}`)
       .replace('#include <map_fragment>', `#include <map_fragment>
 { vec2 cp=vWP.xz*.045+vec2(uT*.012,uT*.006); float cs=smoothstep(.48,.72,cloud(cp)); diffuseColor.rgb*=1.-cs*.22; }`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-{ float d=vWP.z-uScan; float band=exp(-d*d*.08); totalEmissiveRadiance+=vec3(.55,.75,1.)*band*.35; }`);
+{ float d=vWP.z-uScan; float band=exp(-d*d*.08); totalEmissiveRadiance+=vec3(.55,.75,1.)*band*.35+vec3(1.,.8,.45)*vWave*.5; }`);
   };
   const tess = new TessellateModifier(TESTMODE ? 1.1 : .75, 14);
   const parts = [];
@@ -219,6 +226,7 @@ const inlayMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xf2b33d).
 const cupGeo = new THREE.CylinderGeometry(.27, .24, .05, 32); cupGeo.translate(0, .17, 0);
 const cupMat = new THREE.MeshStandardMaterial({ color: 0x141b20, metalness: .6, roughness: .4 });
 function buildCities() {
+  Object.values(CITY).forEach((c, idx) => c.idx = idx);
   for (const c of Object.values(CITY)) {
     c.y = hAt(c.x, c.z); for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) c.y = Math.max(c.y, hAt(c.x + dx, c.z + dz));
     const g = new THREE.Group(); g.position.set(c.x, c.y, c.z);
@@ -367,7 +375,8 @@ function trail(pos, col) { const s = new THREE.Sprite(orbMat(col)); s.position.c
 // ---------- tweens ----------
 const TW_ = [];
 const ease = { out: k => 1 - (1 - k) ** 3, in: k => k * k * k, inout: k => k < .5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2, back: k => { const c = 1.7; return 1 + (c + 1) * (k - 1) ** 3 + c * (k - 1) ** 2; }, spring: k => 1 - Math.cos(k * Math.PI * 4.5) * Math.exp(-k * 6) };
-function tween(dur, fn, delay = 0) { return new Promise(res => TW_.push({ t: -delay, dur: reduced ? Math.min(dur, .12) : dur, fn, done: res })); }
+const PACE = 1.5; // ruhigeres Grundtempo, damit jede Animation lesbar bleibt
+function tween(dur, fn, delay = 0) { return new Promise(res => TW_.push({ t: -delay * PACE, dur: reduced ? Math.min(dur, .12) : dur * PACE, fn, done: res })); }
 const wait = s => tween(s, () => { });
 
 // ---------- build animation ----------
@@ -378,10 +387,13 @@ function routePos(ln, k) {
   return new THREE.Vector3(px, hAt(px, pz) + 1.15, pz);
 }
 function flash(pos, col) { const s = makeOrb(col, .2); s.position.copy(pos); tween(.45, k => { s.scale.setScalar(.2 + Math.sin(k * Math.PI) * 1.1); s.material.opacity = 1 - k; }).then(() => { scene.remove(s); s.material.dispose(); }); }
-async function animLine(ln, speed = 1) {
+let CHASE = null;
+async function animLine(ln, speed = 1, chase = false) {
   const [s0, s1] = ln.pyl, n = s1 - s0, rev = ln.from !== ln.e.a;
   if (rev) ln.wires.forEach(w => { const a = w.geometry.attributes.uv.array; for (let j = 0; j < a.length; j += 2) a[j] = 1 - a[j]; w.geometry.attributes.uv.needsUpdate = true; });
-  const col = PLAYERS[ln.pl].col, orb = makeOrb(col, 1.2), dur = (.55 + ln.L * .045) / speed, raised = new Set(); let lastT = 0;
+  const col = PLAYERS[ln.pl].col, orb = makeOrb(col, 1.2);
+  if (chase) { controls.enabled = false; const A = CITY[ln.from], B = CITY[ln.from === ln.e.a ? ln.e.b : ln.e.a]; CHASE = { orb, dir: new THREE.Vector3(B.x - A.x, 0, B.z - A.z).normalize() }; }
+  const dur = (.55 + ln.L * .045) / speed, raised = new Set(); let lastT = 0;
   await tween(dur, k => {
     const q = ease.inout(k); orb.position.copy(routePos(ln, q));
     if (k - lastT > .02) { trail(orb.position, col); lastT = k; }
@@ -391,18 +403,65 @@ async function animLine(ln, speed = 1) {
   ln.wires.forEach(w => w.material.uniforms.uP.value = 1.01);
   tween(.35, k => { orb.material.opacity = 1 - k; orb.scale.setScalar(1.2 + k * 2); }).then(() => { scene.remove(orb); orb.material.dispose(); });
 }
-async function dropHouse(cid, pl, speed = 1) {
+async function dropHouse(cid, pl, speed = 1, show = false) {
   const c = CITY[cid], slot = c.houses.length; c.houses.push(pl);
   const h = makeHouse(pl), [sx, sz] = SLOTPOS[slot], y0 = .19, col = PLAYERS[pl].col;
-  h.position.set(sx, 7, sz); h.rotation.y = .9; c.g.add(h); c.hm.push(h);
+  h.position.set(sx, 9, sz); h.rotation.y = 2.4; c.g.add(h); c.hm.push(h);
   const bm = beam(c, col);
   await tween(.35 / speed, k => bm.show(k * .9));
-  await tween(.75 / speed, k => { h.position.y = y0 + (7 - y0) * (1 - ease.in(k)); h.rotation.y = .9 * (1 - ease.out(k)); });
-  sparkBurst(new THREE.Vector3(c.x + sx * 1.45, c.y + .3, c.z + sz * 1.45), col, 50, .8); ripple(c, col, 1.2);
-  tween(.5 / speed, k => { const sq = Math.sin(k * Math.PI) * Math.exp(-k * 2); h.scale.set(1.45 * (1 + sq * .22), 1.45 * (1 - sq * .3), 1.45 * (1 + sq * .22)); });
-  tween(.6, k => bm.show(.9 * (1 - k))).then(bm.remove);
+  // streak while falling
+  let lt = 0;
+  await tween(.7 / speed, k => { h.position.y = y0 + (9 - y0) * (1 - ease.in(k)); h.rotation.y = 2.4 * (1 - ease.out(k)); if (k - lt > .08 && k < .9) { lt = k; const p = new THREE.Vector3(); h.getWorldPosition(p); trail(p, col); } });
+  sparkBurst(new THREE.Vector3(c.x + sx * 1.45, c.y + .3, c.z + sz * 1.45), col, show ? 70 : 40, show ? 1 : .7); ripple(c, col, show ? 1.6 : 1.1);
+  shock(c.x, c.z, show ? .45 : .2); if (show) shake(.35);
+  tween(.55 / speed, k => { const sq = Math.sin(k * Math.PI) * Math.exp(-k * 2); h.scale.set(1.45 * (1 + sq * .25), 1.45 * (1 - sq * .32), 1.45 * (1 + sq * .25)); });
+  tween(.7, k => bm.show(.9 * (1 - k))).then(bm.remove);
   igniteCity(c, .8); drawLights();
+  // the skyline takes the owner's colour and powers up floor by floor
+  const st = SKY.state[c.idx]; st.own.set(col); tween(1.2, k => { st.ownA = k * .9; });
+  skylineSweep(c, show ? 1.6 : .8, show ? 1.4 : 1);
+  if (show) { searchlights(c, col); fireworks(c, col, 4); }
 }
+function skylineSweep(c, boost = 1, dur = 1.2) {
+  const st = SKY.state[c.idx]; st.light = 0;
+  tween(.5, k => { st.pulse = Math.sin(k * Math.PI) * 1.0; });
+  tween(dur, k => { st.light = ease.out(k) * 1.12; st.boost = boost * Math.sin(Math.min(1, k * 1.4) * Math.PI / 2); }).then(() => tween(1.6, k => { st.boost = boost * (1 - ease.out(k)); }));
+}
+function searchlights(c, col) {
+  const info = SKY.info[c.idx]; const g = new THREE.Group(); g.position.copy(info.centre); scene.add(g);
+  const mats = [];
+  for (let i = 0; i < 3; i++) {
+    const geo = new THREE.CylinderGeometry(.9, .06, 18, 20, 1, true); geo.translate(0, 9, 0);
+    const m = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, uniforms: { uA: { value: 0 }, uC: { value: new THREE.Color(i ? 0xfff1d0 : col).multiplyScalar(1.2) } },
+      vertexShader: `varying float vY; void main(){ vY=uv.y; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+      fragmentShader: `uniform float uA; uniform vec3 uC; varying float vY; void main(){ float a=pow(1.-vY,1.6)*.32*uA; gl_FragColor=vec4(uC*a,a); }` });
+    const b = new THREE.Mesh(geo, m); const pivot = new THREE.Group(); pivot.add(b); pivot.rotation.y = i * 2.1; b.rotation.z = .35; g.add(pivot); mats.push([m, pivot, b, i]);
+  }
+  tween(3.6, k => { const a = Math.sin(Math.min(1, k * 3) * Math.PI / 2) * (k > .75 ? (1 - k) / .25 : 1); mats.forEach(([m, pv, b, i]) => { m.uniforms.uA.value = a; pv.rotation.y = i * 2.1 + k * 4.2; b.rotation.z = .25 + .25 * Math.sin(k * 7 + i); }); })
+    .then(() => { scene.remove(g); mats.forEach(([m, , b]) => { m.dispose(); b.geometry.dispose(); }); });
+}
+function fireworks(c, col, n = 3) {
+  const top = SKY.info[c.idx].top;
+  for (let i = 0; i < n; i++) {
+    const start = new THREE.Vector3(c.x + (Math.random() - .5) * 1.5, c.y + .5, c.z + (Math.random() - .5) * 1.5);
+    const apex = start.clone().add(new THREE.Vector3((Math.random() - .5) * 3, 6 + Math.random() * 4 + (top.y - c.y), (Math.random() - .5) * 3));
+    const pc = i % 2 ? '#ffe2a0' : col;
+    wait(i * .35).then(async () => {
+      const r = makeOrb(pc, .5); let lt = 0;
+      await tween(.75, k => { const e = ease.out(k); r.position.lerpVectors(start, apex, e); if (k - lt > .05) { lt = k; trail(r.position, pc); } });
+      scene.remove(r); r.material.dispose(); flash(apex, pc); burst(apex, pc);
+    });
+  }
+}
+function burst(pos, col) {
+  const n = 90, g = new THREE.BufferGeometry(), p = new Float32Array(n * 3), v = [];
+  for (let i = 0; i < n; i++) { p.set([pos.x, pos.y, pos.z], i * 3); const u = Math.random() * 2 - 1, a = Math.random() * 6.283, s = 4 + Math.random() * 1.5, q = Math.sqrt(1 - u * u); v.push([Math.cos(a) * q * s, u * s, Math.sin(a) * q * s]); }
+  g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  const m = new THREE.PointsMaterial({ map: TEX_SPARK, color: new THREE.Color(col).multiplyScalar(3.2), size: .35, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+  const pts = new THREE.Points(g, m); scene.add(pts);
+  addFX(1.8, (k, dt) => { for (let i = 0; i < n; i++) { v[i][0] *= .965; v[i][1] = v[i][1] * .965 - 3.2 * dt; v[i][2] *= .965; p[i * 3] += v[i][0] * dt; p[i * 3 + 1] += v[i][1] * dt; p[i * 3 + 2] += v[i][2] * dt; } g.attributes.position.needsUpdate = true; m.opacity = (1 - k) ** 1.3 * (k > .5 ? .6 + .4 * Math.sin(k * 60) : 1); m.size = .35 * (1 - k * .4); }, () => { scene.remove(pts); g.dispose(); m.dispose(); });
+}
+let SHAKE = 0; function shake(a) { SHAKE = Math.max(SHAKE, a); }
 function igniteCity(c, amt = 1) { const p = c.pool; p.material.color.set(0xffb36b).multiplyScalar(1.2); tween(1.6, k => { p.material.opacity = (c.houses.length ? .35 : 0) + Math.sin(Math.min(1, k * 2) * Math.PI / 2) * amt * (1 - k * .55); }); }
 
 // ---------- routing ----------
@@ -423,6 +482,112 @@ function quote(cid) {
   return { ok: total <= PLAYERS[ME].money, why: total > PLAYERS[ME].money ? T.poor : '', line, house, total, path };
 }
 
+// ---------- resource market (3D) ----------
+let MKT = null; const CART = { coal: 0, oil: 0, garbage: 0, uranium: 0 }; let MODE = 'city';
+const RN = k => DE ? RES[k].de : RES[k].en;
+function buildMarket() {
+  MKT = createMarket({ x0: maxX + 5.5 + MARKET_W / 2, z0: CZ - 2, de: DE }); scene.add(MKT.group);
+  $('#cRows').addEventListener('click', e => { const b = e.target.closest('.st'); if (!b || MODE !== 'market') return; CART[b.dataset.k] = Math.max(0, CART[b.dataset.k] + +b.dataset.d); renderMarketCard(); previewCart(); });
+}
+function plantFor(k) { return MKT.PLANTS.find(p => p.res === k); }
+function room(k) { const p = plantFor(k); return p ? p.cap - p.pieces.length : 0; }
+function cartCost() { return ORDER.reduce((s, k) => s + (CART[k] ? MKT.price(k, CART[k]) : 0), 0); }
+function previewCart() {
+  ORDER.forEach(k => { const sel = new Set(MKT.cheapest(k, CART[k])); MKT.pieces[k].forEach(p => { const on = sel.has(p); const ty = MKT.SLOTS[k][p.slot].y + (on ? .45 : 0); tween(.25, q => { p.m.position.y += (ty - p.m.position.y) * q; }); p.m.material.emissive = p.m.material.emissive || new THREE.Color(); if (k !== 'uranium') { p.m.material.emissive.set(on ? 0xf2b33d : 0x000000); p.m.material.emissiveIntensity = on ? .45 : 0; } }); });
+}
+function fitCorners(corners, polar, insetR = 0) {
+  const topF = 1 - 2 * (SAFE.t / VH), botF = -1 + 2 * (SAFE.b / VH), want = (topF + botF) / 2, xr = 1 - 2 * insetR / VW, xl = -.97;
+  let mnx = 1e9, mxx = -1e9, mnz = 1e9, mxz = -1e9; corners.forEach(v => { mnx = Math.min(mnx, v.x); mxx = Math.max(mxx, v.x); mnz = Math.min(mnz, v.z); mxz = Math.max(mxz, v.z); });
+  const tgt = new THREE.Vector3((mnx + mxx) / 2, 0, (mnz + mxz) / 2), cam = camera.clone();
+  const place = d => { cam.position.set(tgt.x, Math.cos(polar) * d, tgt.z + Math.sin(polar) * d); cam.lookAt(tgt); cam.updateMatrixWorld(); };
+  const span = () => { let a = 1e9, b = -1e9, l = 1e9, r = -1e9; for (const c of corners) { const p = c.clone().project(cam); a = Math.min(a, p.y); b = Math.max(b, p.y); l = Math.min(l, p.x); r = Math.max(r, p.x); } return [a, b, l, r]; };
+  let d = 60;
+  for (let it = 0; it < 7; it++) { let lo = 8, hi = 600; for (let k = 0; k < 26; k++) { d = (lo + hi) / 2; place(d); const [a, b, l, r] = span(); if ((r - l) < (xr - xl) * .97 && (b - a) < (topF - botF) * .96) hi = d; else lo = d; } d = hi; place(d); const [a, b, l, r] = span(); const k2 = d * Math.tan(camera.fov * Math.PI / 360); tgt.z += (want - (a + b) / 2) * k2 * .7; tgt.x += (((l + r) / 2) - (xl + xr) / 2) * k2 * camera.aspect * .7; }
+  place(d); return { tgt: tgt.clone(), pos: cam.position.clone() };
+}
+function marketPose() { const b = MKT.bounds; const land = VW > VH && matchMedia('(max-height: 500px)').matches; return fitCorners([[b.minX, b.minZ], [b.maxX, b.minZ], [b.minX, b.maxZ], [b.maxX, b.maxZ]].map(([x, z]) => new THREE.Vector3(x, 0, z)), VW > VH ? .88 : .7, card.classList.contains('on') || MODE === 'market' ? (land ? 300 : 0) : 0); }
+function marketPoseOld() { const b = MKT.bounds, cx = (b.minX + b.maxX) / 2, cz = (b.minZ + b.maxZ) / 2 + 2, pol = .78, d = VW > VH ? 50 : 62; const tgt = new THREE.Vector3(cx + (VW > VH ? 5 : 0), 0, cz); return { tgt, pos: new THREE.Vector3(tgt.x, Math.cos(pol) * d, tgt.z + Math.sin(pol) * d) }; }
+function openMarket() {
+  if (BUSY) return; SEL = null; setHL(new Set()); MODE = 'market'; ORDER.forEach(k => CART[k] = 0);
+  renderMarketCard(); card.classList.add('on'); layoutHUD(); markReachable(); flyTo(marketPose(), 1.1);
+}
+function renderMarketCard() {
+  $('#cName').textContent = DE ? 'Rohstoffe kaufen' : 'Buy resources';
+  const money = PLAYERS[ME].money, cost = cartCost();
+  $('#cRows').innerHTML = ORDER.map(k => {
+    const cap = room(k), n = CART[k], next = MKT.count(k) > n ? RES[k].prices[MKT.cheapest(k, n + 1)[n].slot] : null;
+    const can = cap > n && next !== null && cost + next <= money;
+    const sub = n ? `${MKT.price(k, n)} €` : (cap ? (next !== null ? (DE ? 'ab ' : 'from ') + next + ' €' : (DE ? 'leer' : 'empty')) : '—');
+    return `<div class="mrow"><span class="sw" style="background:${RES[k].col}"></span><span class="nm">${RN(k)}</span><span class="sub">${sub}</span><button class="st" data-k="${k}" data-d="-1" ${n ? '' : 'disabled'} aria-label="−">−</button><b class="n">${n}</b><button class="st" data-k="${k}" data-d="1" ${can ? '' : 'disabled'} aria-label="+">+</button></div>`;
+  }).join('') + `<div class="row tot"><span>${T.total}</span><b>${cost} €</b></div>`;
+  const b = $('#cBuild'); b.disabled = !cost; b.textContent = cost ? `${DE ? 'Kaufen' : 'Buy'} · ${cost} €` : (DE ? 'Kaufen' : 'Buy');
+}
+async function flyPiece(p, k, dest, dur, opts = {}) { // arc flight in market-local space
+  const m = p.m, a = m.position.clone(), b = dest.clone(), peak = Math.max(a.y, b.y) + (opts.h || 4.5);
+  const spin = (Math.random() - .5) * 8; let lt = 0;
+  await tween(dur, q => { const e = ease.inout(q); m.position.lerpVectors(a, b, e); m.position.y = a.y + (b.y - a.y) * e + Math.sin(Math.PI * e) * (peak - Math.max(a.y, b.y)); m.rotation.x = spin * e; m.rotation.z = spin * .6 * e; if (q - lt > .06 && opts.trail) { lt = q; trail(MKT.world(m.position), opts.trail); } });
+  m.rotation.set(0, 0, 0);
+}
+async function buyCart() {
+  const cost = cartCost(); if (!cost || BUSY) return; BUSY = true; MODE = 'city'; card.classList.remove('on'); layoutHUD();
+  PLAYERS[ME].money -= cost; setMoney(PLAYERS[ME].money);
+  const jobs = []; let i = 0;
+  for (const k of ORDER) {
+    if (!CART[k]) continue; const P = plantFor(k); const take = MKT.cheapest(k, CART[k]);
+    for (const p of take) {
+      const pr = RES[k].prices[p.slot]; MKT.pieces[k].splice(MKT.pieces[k].indexOf(p), 1);
+      const slotPos = P.store[P.pieces.length]; P.pieces.push(p);
+      jobs.push(wait(i++ * .22).then(async () => {
+        floatText(`−${pr} €`, MKT.world(p.m.position).add(new THREE.Vector3(0, .8, 0)), 'neg sm');
+        await tween(.25, q => { p.m.position.y += .04; });
+        await flyPiece(p, k, slotPos, .9, { h: 3.5, trail: '#f2b33d' });
+        p.m.material.emissiveIntensity = k === 'uranium' ? .6 : 0; p.m.scale.setScalar(.9);
+        sparkBurst(MKT.world(slotPos).add(new THREE.Vector3(0, .3, 0)), '#f2b33d', 14, .35);
+        tween(.3, q => { const s = .9 * (1 + Math.sin(q * Math.PI) * .2); p.m.scale.set(s, .9 * (1 - Math.sin(q * Math.PI) * .2), s); });
+      }));
+    }
+    CART[k] = 0;
+  }
+  await Promise.all(jobs); await wait(.5);
+  // opponents buy too: their pieces fly across the map into their home cities
+  await opponentBuys([[1, 'coal', 2, 'essen'], [2, 'oil', 2, 'muenchen'], [1, 'garbage', 1, 'essen']]);
+  BUSY = false; markReachable();
+}
+async function opponentBuys(list) {
+  const jobs = []; let i = 0;
+  for (const [pl, k, n, city] of list) for (const p of MKT.cheapest(k, n)) {
+    MKT.pieces[k].splice(MKT.pieces[k].indexOf(p), 1); const C = CITY[city]; const dest = new THREE.Vector3(C.x, C.y + .8, C.z).sub(MKT.group.position);
+    jobs.push(wait(i++ * .2).then(async () => { await flyPiece(p, k, dest, 1.5, { h: 9, trail: PLAYERS[pl].col }); flash(MKT.world(p.m.position), PLAYERS[pl].col); MKT.group.remove(p.m); }));
+  }
+  await Promise.all(jobs);
+}
+async function burnFuel() { // resources on my plants burn and fly as energy into my grid
+  const root = CITY[network(ME)[0]]; if (!root) return; const jobs = []; let i = 0;
+  for (const P of MKT.PLANTS) { const used = P.pieces.splice(0, Math.min(P.pieces.length, P.cap / 2)); for (const p of used) jobs.push(wait(i++ * .18).then(async () => {
+    await tween(.6, q => { p.m.position.y = .22 + ease.out(q) * 1.4; p.m.rotation.y += .25; p.m.material.emissive.set(0xffd27a); p.m.material.emissiveIntensity = q * 3; });
+    const wpos = MKT.world(p.m.position); MKT.group.remove(p.m); flash(wpos, '#ffd27a');
+    const orb = makeOrb('#ffd27a', 1); const dest = new THREE.Vector3(root.x, root.y + 1.2, root.z), a = wpos.clone(); let lt = 0;
+    await tween(1.4, q => { const e = ease.inout(q); orb.position.lerpVectors(a, dest, e); orb.position.y += Math.sin(Math.PI * e) * 10; if (q - lt > .04) { lt = q; trail(orb.position, '#ffd27a'); } });
+    scene.remove(orb); orb.material.dispose(); ripple(root, '#ffd27a', .8);
+  })); }
+  await Promise.all(jobs);
+}
+async function restock(amounts) {
+  const jobs = []; let i = 0;
+  for (const k of ORDER) {
+    const occ = new Set(MKT.pieces[k].map(p => p.slot)); let n = amounts[k];
+    for (let s = MKT.SLOTS[k].length - 1; s >= 0 && n > 0; s--) { if (occ.has(s)) continue; n--; const slot = s;
+      jobs.push(wait(i++ * .14).then(async () => {
+        const m = MKT.makePiece(k), dest = MKT.SLOTS[k][slot]; m.position.set(dest.x, 14, dest.z); m.rotation.set(Math.random() * 3, Math.random() * 3, 0); const p = { m, slot }; MKT.pieces[k].push(p);
+        await tween(.7, q => { m.position.y = dest.y + 14 * (1 - ease.in(q)); m.rotation.x *= .9; m.rotation.z = 0; });
+        m.rotation.set(0, (Math.random() - .5) * .4, 0); sparkBurst(MKT.world(dest).add(new THREE.Vector3(0, .2, 0)), RES[k].col === '#1c1d22' ? '#9aa6ad' : RES[k].col, 12, .3);
+        tween(.3, q => { const s2 = 1 + Math.sin(q * Math.PI) * .18; m.scale.set(s2, 1 - Math.sin(q * Math.PI) * .25, s2); });
+      }));
+    }
+  }
+  await Promise.all(jobs);
+}
+
 // ---------- DOM HUD ----------
 const $ = s => document.querySelector(s);
 const labels = $('#labels'); const LBL = [];
@@ -439,22 +604,32 @@ function floatText(txt, w3, cls) { const d = document.createElement('div'); d.cl
 let SEL = null, BUSY = false;
 const card = $('#card');
 function select(cid) {
-  if (BUSY) return; SEL = cid; const q = quote(cid), c = CITY[cid];
+  if (BUSY) return; if (MODE === 'market') { MODE = 'city'; ORDER.forEach(k => CART[k] = 0); previewCart(); } SEL = cid; const q = quote(cid), c = CITY[cid];
   $('#cName').textContent = c.name;
   if (q.line === undefined) { $('#cRows').innerHTML = `<div class="why">${q.why}</div>`; setHL(new Set()); }
   else { $('#cRows').innerHTML = `<div class="row"><span>${T.line}</span><b>${q.line} €</b></div><div class="row"><span>${T.house} (${q.house})</span><b>${q.house} €</b></div><div class="row tot"><span>${T.total}</span><b>${q.total} €</b></div>${q.ok ? '' : `<div class="why">${q.why}</div>`}`; setHL(new Set(q.path.map(p => p.e))); }
   const b = $('#cBuild'); b.disabled = !q.ok; b.textContent = q.total ? `${T.build} · ${q.total} €` : T.build;
   card.classList.add('on'); layoutHUD(); markReachable();
 }
-function closeCard() { SEL = null; card.classList.remove('on'); setHL(new Set()); markReachable(); }
+function closeCard() { if (MODE === 'market') { MODE = 'city'; ORDER.forEach(k => CART[k] = 0); previewCart(); } SEL = null; card.classList.remove('on'); setHL(new Set()); markReachable(); }
 $('#cX').onclick = closeCard;
 $('#cBuild').onclick = async () => {
+  if (MODE === 'market') return buyCart();
   const q = quote(SEL); if (!q.ok || BUSY) return; const cid = SEL; BUSY = true; closeCard(); hideRings();
   PLAYERS[ME].money -= q.total; setMoney(PLAYERS[ME].money);
   const C = CITY[cid]; floatText(`−${q.total} €`, new THREE.Vector3(C.x, C.y + 1.6, C.z), 'neg');
-  await focusPath(q.path.map(p => p.e), C);
-  for (const st of q.path) { const ln = buildLine(st.e, ME); ln.from = st.from; await animLine(ln, 1); }
-  drawLights(); await dropHouse(cid, ME); await wait(.4);
+  const saved = { pos: camera.position.clone(), tgt: controls.target.clone() };
+  const cine = !reduced;
+  if (!cine) await focusPath(q.path.map(p => p.e), C);
+  for (const st of q.path) { const ln = buildLine(st.e, ME); ln.from = st.from; await animLine(ln, cine ? .8 : 1, cine); }
+  CHASE = null;
+  drawLights();
+  if (cine) { // swing round to a low hero angle on the target city
+    const az = .5, pol = 1.0, d = 15, tgt = new THREE.Vector3(C.x, C.y + .6, C.z);
+    await flyTo({ tgt, pos: new THREE.Vector3(tgt.x + Math.sin(az) * Math.sin(pol) * d, tgt.y + Math.cos(pol) * d, tgt.z + Math.cos(az) * Math.sin(pol) * d) }, .9);
+  }
+  await dropHouse(cid, ME, 1, true); await wait(2.2);
+  if (cine) await flyTo(saved, 1.4);
   BUSY = false; markReachable();
 };
 function hideRings() { Object.values(CITY).forEach(c => c.ringOn = false); }
@@ -464,26 +639,49 @@ function markReachable() {
 }
 $('#bPower').onclick = async () => {
   if (BUSY) return; BUSY = true; closeCard(); hideRings();
-  const jobs = [];
+  // night deepens, city light takes over
+  const L0 = { m: moon.intensity, w: warm.intensity, h: hemi.intensity };
+  await tween(.8, k => { const e = ease.inout(k); moon.intensity = L0.m * (1 - .7 * e); warm.intensity = L0.w * (1 - .8 * e); hemi.intensity = L0.h * (1 - .55 * e); SKY.U.uNight.value = 1 + .9 * e; });
+  const saved = { pos: camera.position.clone(), tgt: controls.target.clone() };
+  await flyTo(fitPose(undefined, true), 1.0);
+  await burnFuel();
+  Object.values(CITY).forEach(c => { if (c.houses.length) { const st = SKY.state[c.idx]; tween(.4, k => st.light = 1.12 * (1 - k * .85)); } });
+  const jobs = [], coins = [];
   PLAYERS.forEach((p, pl) => {
     const set = new Set(network(pl)); if (!set.size) return; const root = network(pl)[0]; const order = [[root, null, null]], seen = new Set([root]);
     for (let i = 0; i < order.length; i++) for (const e of ADJ[order[i][0]]) { if (!e.owners.includes(pl)) continue; const v = e.a === order[i][0] ? e.b : e.a; if (!seen.has(v)) { seen.add(v); order.push([v, order[i][0], e]); } }
     const at = {}; at[root] = 0;
+    const arrive = cid => { const c = CITY[cid]; pulseCity(c, pl); skylineSweep(c, 1.4, .9); shock(c.x, c.z, .12); if (pl === ME) coins.push(flyCoin(c)); };
     order.forEach(([cid, from, e]) => {
-      if (!from) { jobs.push(wait(.2).then(() => pulseCity(CITY[cid], pl))); return; }
-      const L = Math.hypot(CITY[cid].x - CITY[from].x, CITY[cid].z - CITY[from].z), dur = .35 + L * .03, t0 = at[from]; at[cid] = t0 + dur;
-      jobs.push(wait(.2 + t0).then(async () => {
+      if (!from) { jobs.push(wait(.4).then(() => arrive(cid))); return; }
+      const L = Math.hypot(CITY[cid].x - CITY[from].x, CITY[cid].z - CITY[from].z), dur = .4 + L * .035, t0 = at[from]; at[cid] = t0 + dur;
+      jobs.push(wait(.4 + t0).then(async () => {
         const ln = LINES.find(l => l.e === e && l.pl === pl);
-        if (ln) { const orb = makeOrb(PLAYERS[pl].col, .9), fake = { ...ln, from }; let lt = 0; ln.wires.forEach(w => tween(dur + .4, k => w.material.uniforms.uG.value = 1 + Math.sin(k * Math.PI) * 2.5)); await tween(dur, k => { orb.position.copy(routePos(fake, ease.inout(k))); if (k - lt > .05) { trail(orb.position, PLAYERS[pl].col); lt = k; } }); scene.remove(orb); orb.material.dispose(); }
-        if (set.has(cid)) pulseCity(CITY[cid], pl);
+        if (ln) { const orb = makeOrb(PLAYERS[pl].col, 1.1), fake = { ...ln, from }; let lt = 0; ln.wires.forEach(w => tween(dur + .6, k => w.material.uniforms.uG.value = 1 + Math.sin(k * Math.PI) * 3)); await tween(dur, k => { orb.position.copy(routePos(fake, ease.inout(k))); if (k - lt > .04) { trail(orb.position, PLAYERS[pl].col); lt = k; } }); scene.remove(orb); orb.material.dispose(); }
+        if (set.has(cid)) arrive(cid);
       }));
     });
   });
-  bloomBoost(); await Promise.all(jobs); await wait(.5);
+  bloomBoost(); await Promise.all(jobs); await Promise.all(coins); await wait(.3);
   const n = network(ME).length, inc = INCOME[Math.min(n, INCOME.length - 1)]; PLAYERS[ME].money += inc; setMoney(PLAYERS[ME].money);
-  const c0 = CITY[network(ME)[0]]; floatText(`+${inc} €`, new THREE.Vector3(c0.x, c0.y + 1.6, c0.z), 'pos'); toast(`${T.paid}: ${n} ${T.cities} → +${inc} €`);
-  await wait(.5); BUSY = false; markReachable();
+  $('.money').classList.add('pop'); setTimeout(() => $('.money').classList.remove('pop'), 600);
+  toast(`${T.paid}: ${n} ${T.cities} → +${inc} €`);
+  // grid surge, then dawn returns
+  LINES.forEach(l => l.wires.forEach(w => tween(1.2, k => w.material.uniforms.uG.value = 1 + Math.sin(k * Math.PI) * 2)));
+  await wait(1.2);
+  await tween(1.2, k => { const e = ease.inout(k); moon.intensity = L0.m * (.3 + .7 * e); warm.intensity = L0.w * (.2 + .8 * e); hemi.intensity = L0.h * (.45 + .55 * e); SKY.U.uNight.value = 1.9 - .9 * e; });
+  toast(DE ? 'Nachschub für den Rohstoffmarkt' : 'Restocking the resource market', 2400);
+  await flyTo(marketPose(), 1.0); await restock({ coal: 4, oil: 2, garbage: 1, uranium: 1 }); await wait(.6);
+  await flyTo(saved, 1.2);
+  BUSY = false; markReachable();
 };
+function flyCoin(c) {
+  const d = document.createElement('div'); d.className = 'coin'; d.textContent = '€'; document.body.appendChild(d);
+  const p = new THREE.Vector3(c.x, c.y + 1.2, c.z).project(camera); const x0 = (p.x * .5 + .5) * VW, y0 = (-p.y * .5 + .5) * VH;
+  const r = $('.money').getBoundingClientRect(), x1 = r.left + r.width * .3, y1 = r.top + r.height / 2;
+  const cx = (x0 + x1) / 2 + (Math.random() - .5) * 120, cy = Math.min(y0, y1) - 120 - Math.random() * 80;
+  return tween(1.0 + Math.random() * .3, k => { const e = ease.inout(k), u = 1 - e; const x = u * u * x0 + 2 * u * e * cx + e * e * x1, y = u * u * y0 + 2 * u * e * cy + e * e * y1; d.style.transform = `translate(${x}px,${y}px) translate(-50%,-50%) scale(${.6 + Math.sin(k * Math.PI) * .7}) rotate(${k * 540}deg)`; d.style.opacity = k < .1 ? k * 10 : 1; }, .15).then(() => d.remove());
+}
 function pulseCity(c, pl) {
   c.hm.forEach((h, i) => { if (c.houses[i] !== pl) return; const w = h.userData.win, col = new THREE.Color(0xffd28a); tween(2.2, q => { const k = q < .15 ? q / .15 : 1 - (q - .15) / .85 * .6; w.material.color.copy(col).multiplyScalar(.15 + k * 5); h.userData.body.material.emissiveIntensity = .06 + k * .5; }); });
   ripple(c, PLAYERS[pl].col, .7); igniteCity(c, 1.2); c.lit = 1; drawLights();
@@ -498,12 +696,14 @@ controls.minPolarAngle = .25; controls.maxPolarAngle = 1.12; controls.minDistanc
 controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
 controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
 controls.zoomToCursor = true;
-controls.addEventListener('change', () => { const t = controls.target; t.x = Math.max(minX, Math.min(maxX, t.x)); t.z = Math.max(minZ, Math.min(maxZ, t.z)); t.y = 0; });
-function fitPose(polar) {
+controls.addEventListener('change', () => { const t = controls.target; t.x = Math.max(minX, Math.min(MKT ? MKT.bounds.maxX : maxX, t.x)); t.z = Math.max(minZ, Math.min(maxZ, t.z)); t.y = 0; });
+function fitPose(polar, all) {
   if (polar === undefined) polar = VW > VH ? .95 : .78;
   const corners = MAIN.filter((_, i) => i % 3 === 0).map(([x, z]) => new THREE.Vector3(x, 0, z));
+  if (MKT && (all || VW > VH)) { const b = MKT.bounds; [[b.minX, b.minZ], [b.maxX, b.minZ], [b.minX, b.maxZ], [b.maxX, b.maxZ]].forEach(([x, z]) => corners.push(new THREE.Vector3(x, 0, z))); }
+  let mnx = 1e9, mxx = -1e9; corners.forEach(v => { mnx = Math.min(mnx, v.x); mxx = Math.max(mxx, v.x); });
   const topF = 1 - 2 * (SAFE.t / VH), botF = -1 + 2 * (SAFE.b / VH), want = (topF + botF) / 2;
-  const tgt = new THREE.Vector3(CX, 0, CZ), cam = camera.clone();
+  const tgt = new THREE.Vector3((mnx + mxx) / 2, 0, CZ), cam = camera.clone();
   const place = d => { cam.position.set(tgt.x, Math.cos(polar) * d, tgt.z + Math.sin(polar) * d); cam.lookAt(tgt); cam.updateMatrixWorld(); };
   const span = () => { let a = 1e9, b = -1e9, xm = 0; for (const c of corners) { const p = c.clone().project(cam); a = Math.min(a, p.y); b = Math.max(b, p.y); xm = Math.max(xm, Math.abs(p.x)); } return [a, b, xm]; };
   let d = 120;
@@ -525,7 +725,7 @@ $('#bView').onclick = () => flyTo(fitPose(), 1.0);
 
 // ---------- post processing ----------
 const TiltShift = {
-  uniforms: { tDiffuse: { value: null }, uRes: { value: new THREE.Vector2(1, 1) }, uDir: { value: new THREE.Vector2(1, 0) }, uFocus: { value: .5 }, uBand: { value: .2 }, uAmt: { value: 2.2 } },
+  uniforms: { tDiffuse: { value: null }, uRes: { value: new THREE.Vector2(1, 1) }, uDir: { value: new THREE.Vector2(1, 0) }, uFocus: { value: .5 }, uBand: { value: .27 }, uAmt: { value: 2.2 } },
   vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
   fragmentShader: `uniform sampler2D tDiffuse; uniform vec2 uRes, uDir; uniform float uFocus, uBand, uAmt; varying vec2 vUv;
     void main(){ float b=smoothstep(uBand, uBand+.38, abs(vUv.y-uFocus))*uAmt; vec2 o=uDir/uRes*b;
@@ -549,12 +749,12 @@ function setupComposer() {
   composer.addPass(new RenderPass(scene, camera));
   bloomPass = new UnrealBloomPass(new THREE.Vector2(VW * (hi ? 1 : .5), VH * (hi ? 1 : .5)), bloomBase, .6, .9); composer.addPass(bloomPass);
   tsH = new ShaderPass(TiltShift); tsV = new ShaderPass(TiltShift); tsV.uniforms.uDir.value.set(0, 1);
-  [tsH, tsV].forEach(p => { p.uniforms.uRes.value.set(VW * dpr, VH * dpr); p.uniforms.uAmt.value = 2.4 * dpr / 2; p.enabled = hi; composer.addPass(p); });
+  [tsH, tsV].forEach(p => { p.uniforms.uRes.value.set(VW * dpr, VH * dpr); p.uniforms.uAmt.value = 1.7 * dpr / 2; p.enabled = hi; composer.addPass(p); });
   composer.addPass(new ShaderPass(Vignette)); composer.addPass(new OutputPass());
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.3;
   renderer.shadowMap.enabled = hi; moon.castShadow = hi;
   scene.traverse(o => { if (o.material) [].concat(o.material).forEach(m => m.needsUpdate = true); });
-  $('#bQ').textContent = `${T.q}: ${hi ? T.hi : T.lo}`;
+  $('#bQ').textContent = hi ? 'HQ' : 'Eco'; $('#bQ').setAttribute('aria-label', `${T.q}: ${hi ? T.hi : T.lo}`);
 }
 $('#bQ').onclick = () => { QUAL = QUAL === 'hi' ? 'lo' : 'hi'; try { localStorage.setItem('gm2-3d-q', QUAL); } catch (e) { } setupComposer(); layoutHUD(); };
 
@@ -600,19 +800,27 @@ let introRunning = true, introSkip = false;
 function skipIntro() { introSkip = true; TW_.forEach(t => { if (t.t < 0) t.t = 0; t.dur = Math.min(t.dur, .05); }); }
 async function intro() {
   const pose = fitPose();
-  camera.position.set(CX + 10, 160, CZ + 140); controls.target.set(CX, 0, CZ); camera.lookAt(controls.target);
   Object.values(CITY).forEach(c => c.g.scale.set(1, .001, 1));
   moon.intensity = 0; warm.intensity = 0;
-  const fly = flyTo(pose, reduced ? .2 : 2.8);
-  tween(2.2, k => { moon.intensity = 1.9 * ease.out(k); warm.intensity = .55 * ease.out(k); });
-  tween(2.6, k => { terrainUniforms.uScan.value = minZ - 6 + (BH + 12) * ease.inout(k); }, .3).then(() => terrainUniforms.uScan.value = -999);
-  Object.values(CITY).forEach(c => tween(.55, q => c.g.scale.set(1, Math.max(.001, ease.back(q)), 1), .5 + (c.z - minZ) / BH * 2.2));
-  await fly;
+  controls.enabled = false;
+  // sweeping fly-over from the Alps, northwards, then up into the play view
+  const path = new THREE.CatmullRomCurve3([new THREE.Vector3(CX + 22, 7, maxZ + 10), new THREE.Vector3(CX + 8, 14, CZ + 18), new THREE.Vector3(CX - 18, 30, CZ - 4), pose.pos.clone()]);
+  const look = new THREE.CatmullRomCurve3([new THREE.Vector3(CX + 4, 1, maxZ - 12), new THREE.Vector3(CX - 2, 0, CZ + 2), new THREE.Vector3(CX, 0, CZ - 6), pose.tgt.clone()]);
+  const D = reduced ? .2 : 5.2;
+  tween(2.4, k => { moon.intensity = 1.9 * ease.out(k); warm.intensity = .55 * ease.out(k); });
+  tween(3.4, k => { terrainUniforms.uScan.value = maxZ + 6 - (BH + 12) * ease.inout(k); }, .2).then(() => terrainUniforms.uScan.value = -999);
+  Object.values(CITY).forEach(c => {
+    const dl = .4 + (maxZ - c.z) / BH * 3.0, st = SKY.state[c.idx];
+    tween(.55, q => c.g.scale.set(1, Math.max(.001, ease.back(q)), 1), dl);
+    tween(1.1, q => { st.rise = ease.back(q); }, dl + .1).then(() => { st.rise = 1; });
+    tween(1.4, q => { st.light = q * 1.12 * (.6 + .4 * Math.random()); }, dl + .6).then(() => st.light = 1.12);
+  });
+  const fly = tween(D, q => { const e = ease.inout(q); camera.position.copy(path.getPointAt(e)); controls.target.copy(look.getPointAt(e)); camera.lookAt(controls.target); });
+  await fly; controls.enabled = true; controls.update();
   for (const [pl, list] of DEMO) {
-    const jobs = [];
     for (let i = 0; i < list.length; i++) {
-      if (i) { const e = EDGES.find(e => (e.a === list[i] && e.b === list[i - 1]) || (e.b === list[i] && e.a === list[i - 1])); if (e) { const ln = buildLine(e, pl); ln.from = list[i - 1]; jobs.push(animLine(ln, 2.4)); } }
-      jobs.push(wait(i * .25).then(() => dropHouse(list[i], pl, 2)));
+      if (i) { const e = EDGES.find(e => (e.a === list[i] && e.b === list[i - 1]) || (e.b === list[i] && e.a === list[i - 1])); if (e) { const ln = buildLine(e, pl); ln.from = list[i - 1]; animLine(ln, 2.4); } }
+      wait(i * .25).then(() => dropHouse(list[i], pl, 2));
     }
     await wait(introSkip ? 0 : .45);
   }
@@ -623,22 +831,25 @@ async function intro() {
 // ---------- loop ----------
 const clock = new THREE.Clock(); let fpsN = 0, fpsT = 0, autoChecked = false;
 function loop() {
-  const dt = Math.min(TESTMODE ? 1 : .05, clock.getDelta()), t = clock.elapsedTime;
+  const raw = clock.getDelta(); const dt = FDT || Math.min(TESTMODE ? 1 : .05, raw); SIMT += dt; const t = SIMT;
   for (let i = TW_.length - 1; i >= 0; i--) { const w = TW_[i]; w.t += dt; if (w.t < 0) continue; const k = Math.min(1, w.t / w.dur); w.fn(k); if (k >= 1) { TW_.splice(i, 1); w.done(); } }
   for (let i = FX.length - 1; i >= 0; i--) { const f = FX[i]; f.t += dt; const k = Math.min(1, f.t / f.dur); f.up(k, dt); if (k >= 1) { FX.splice(i, 1); f.end(); } }
   terrainUniforms.uT.value = t; groundMat.uniforms.uT.value = t;
   LINES.forEach(l => l.wires.forEach(w => w.material.uniforms.uT.value = t));
   Object.values(CITY).forEach(c => { const r = c.ring, target = c.ringOn ? (c.id === SEL ? 1 : .3 + .14 * Math.sin(t * 2.6 + c.x)) : 0; r.material.opacity += (target - r.material.opacity) * Math.min(1, dt * 8); r.scale.setScalar(c.id === SEL ? 1.12 + .04 * Math.sin(t * 5) : 1); r.visible = r.material.opacity > .01; });
+  if (SKY) SKY.update(t);
+  if (CHASE) { const o = CHASE.orb.position, d = CHASE.dir; const want = new THREE.Vector3(o.x - d.x * 9 + d.z * 3, o.y + 5.5, o.z - d.z * 9 - d.x * 3); const f = 1 - Math.exp(-dt * 3.2); camera.position.lerp(want, f); controls.target.lerp(new THREE.Vector3(o.x + d.x * 3, o.y - 1, o.z + d.z * 3), f); camera.lookAt(controls.target); }
   if (controls.enabled) controls.update();
-  composer.render(dt); updateLabels();
+  let sh = null; if (SHAKE > .002) { sh = camera.position.clone(); camera.position.add(new THREE.Vector3((Math.random() - .5) * SHAKE, (Math.random() - .5) * SHAKE, (Math.random() - .5) * SHAKE)); SHAKE *= Math.exp(-dt * 7); }
+  composer.render(dt); if (sh) camera.position.copy(sh); updateLabels();
   fpsN++; fpsT += dt; if (fpsT > 1) { const fps = fpsN / fpsT, f = $('#fps'); if (f) f.textContent = fps.toFixed(0) + ' fps'; let stored = null; try { stored = localStorage.getItem('gm2-3d-q'); } catch (e) { } if (!introRunning && !autoChecked && QUAL === 'hi' && !stored && !TESTMODE && fps < 36) { autoChecked = true; QUAL = 'lo'; setupComposer(); } fpsN = 0; fpsT = 0; }
   requestAnimationFrame(loop);
 }
 
 // ---------- boot ----------
-$('#bPower').textContent = T.power; $('#bView').textContent = T.view;
+$('#bPower').textContent = T.power; $('#bView').textContent = T.view; $('#bMkt').textContent = DE ? 'Rohstoffe' : 'Resources'; $('#bMkt').onclick = openMarket;
 if (QS.has('debug')) $('#fps').hidden = false;
-buildTerrain(); buildCities(); buildGround(); initLabels();
+buildTerrain(); buildCities(); SKY = createSkylines(Object.values(CITY), ADJ); scene.add(SKY.group); buildMarket(); buildGround(); initLabels();
 document.fonts && document.fonts.ready.then(() => LBL.forEach(l => { l.w = l.h = 0; }));
 resize(); intro(); loop();
-window.__gm3d = { select, CITY, quote, build: () => $('#cBuild').onclick(), power: () => $('#bPower').onclick(), state: () => ({ introRunning, BUSY, money: PLAYERS[ME].money }), skip: skipIntro };
+window.__gm3d = { look: (cid, d = 9, pol = .95, az = .4) => { const c = CITY[cid], tg = new THREE.Vector3(c.x, c.y + .8, c.z); controls.target.copy(tg); camera.position.set(tg.x + Math.sin(az) * Math.sin(pol) * d, tg.y + Math.cos(pol) * d, tg.z + Math.cos(az) * Math.sin(pol) * d); camera.lookAt(tg); controls.update(); }, market: openMarket, cart: (k, n) => { CART[k] = n; renderMarketCard(); previewCart(); }, select, CITY, quote, build: () => $('#cBuild').onclick(), power: () => $('#bPower').onclick(), state: () => ({ introRunning, BUSY, money: PLAYERS[ME].money, t: SIMT }), skip: skipIntro };
