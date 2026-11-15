@@ -15,9 +15,10 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:500 15p
 #app,#app canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
 #labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
 .lb{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform}
-.lb.city{font:600 10.5px/1 Barlow,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#cdd7dd;padding:3px 5px;border-radius:4px;background:rgba(5,8,11,.62);text-shadow:0 1px 2px #000}
-.lb.city.hl{color:var(--ink);background:var(--accent)}
-.lb.cost{font:800 9px/1 Orbitron,sans-serif;color:#9fb0bb;padding:3px 4px;border-radius:9px;background:rgba(10,16,20,.85);border:1px solid #2c3a44}
+.lb.city{font:600 10px/1 Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(226,234,240,.86);padding:2px 3px;text-shadow:0 0 4px #000,0 0 10px rgba(0,0,0,.9),0 1px 1px #000}
+.lb.city.own{color:#ffd88a}
+.lb.city.hl{color:var(--ink);background:var(--accent);border-radius:4px;text-shadow:none;padding:3px 5px}
+.lb.cost{font:800 8.5px/1 Orbitron,sans-serif;color:#b5c3cc;padding:3px 5px;border-radius:9px;background:rgba(6,10,13,.7);border:1px solid rgba(160,185,200,.22);backdrop-filter:blur(2px)}
 .lb.cost.hl{color:var(--ink);background:var(--accent);border-color:var(--accent)}
 .float{position:absolute;left:0;top:0;font:800 18px/1 Orbitron,sans-serif;text-shadow:0 2px 6px #000;pointer-events:none}
 .float.neg{color:#ff8a7a}.float.pos{color:var(--accent)}
