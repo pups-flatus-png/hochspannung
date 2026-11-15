@@ -3438,7 +3438,7 @@ html .pc2-c .st .mini{width:28px;height:30px;flex:none}
   html #app.pl2[data-ph=resources]{--bh:30%}
   html #app.pl2[data-ph=build]{--bh:56%}
   html #app.pl2[data-ph=bureau]{--bh:42%}
-  html #app.pl2[data-ph=gate]{--bh:34%}
+  html #app.pl2[data-ph=gate]{--bh:28%}
   html #app.pl2 #panel{position:relative;z-index:5;margin-top:-16px;border-radius:22px 22px 0 0;border-top:1px solid rgba(255,255,255,.08);box-shadow:0 -14px 30px rgba(0,0,0,.5);background:#10171d}
   html #app.pl2 #panel::before{content:"";display:block;width:38px;height:4px;border-radius:2px;background:#34495a;margin:8px auto 4px}
   html #app.pl2 .pl2-rm{display:none!important}
@@ -7139,7 +7139,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v221';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v222';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -7163,7 +7163,7 @@ let MAPMODE=(()=>{try{return localStorage.getItem('hochspannung-map')||'always'}
 function layoutMap(){
   const k=S.round+S.phase;if(UI.peekKey!==k){UI.peek=false;UI.peekKey=k}
   const quiet=S.phase==='auction'||S.phase==='resources';
-  const min=(quiet&&MAPMODE==='auto'&&!pl2()&&!UI.peek)||(MAPCOL&&mapColOk()&&S.phase!=='build'&&!S.gate);
+  const min=(quiet&&MAPMODE==='auto'&&!pl2()&&!UI.peek)||(MAPCOL&&mapColOk()&&(S.phase!=='build'||!!S.gate));
   $('#app').dataset.ph=S.gate?'gate':S.phase;
   const app=$('#app'),was=app.classList.contains('mapmin');
   app.classList.toggle('mapmin',min);
