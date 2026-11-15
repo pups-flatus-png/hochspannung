@@ -3741,6 +3741,10 @@ html .rm2-c .g small{font-size:8px!important}
 @media (min-width:1000px){html .rm2-c{grid-template-columns:18px minmax(0,96px) minmax(0,1fr) 56px!important}html .rm2-c .g i{height:8px!important}html .rm2-c .tr{min-height:46px}}
 /* v236: iPhone quer – Seitenleiste ohne Kamera-Abstand links (sie liegt nicht am Rand), etwas schmaler */
 @media (orientation:landscape) and (max-height:520px){html #app #panel{padding-left:14px!important}}
+/* v237: frisch gekaufte Einheiten blitzen golden auf und werden dann grau */
+html .rm2-c .g i.ob{animation:obFlash 1.8s ease-out both}
+@keyframes obFlash{0%,55%{opacity:1;background:#fff3c4;border-color:#f2b33d;box-shadow:0 0 8px rgba(255,211,110,.95)}100%{opacity:.18}}
+@media (prefers-reduced-motion:reduce){html .rm2-c .g i.ob{animation:none}}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -5589,10 +5593,13 @@ function panelResources0(a){/* v191: Markt oben (2×2), eigene Kraftwerke als Ei
   const side=S.resNorth?((UI.kside||'south')==='north'?L(' · Nord',' · North'):L(' · Süd',' · South')):'';
   let h=`<section class="sec rm2"><div class="rm2-h"><b>${L('Rohstoffmarkt','Resource market')}${side}</b><span>${mine?L('Hell = im Korb','Bright = in your cart'):''}</span></div>${kSideSeg()}${MR().india?`<p class="hint brule">${L(`Reihum je eine Einheit. In dieser Stufe sind nur Felder bis ${priceCap()} € offen.`,`One unit per turn, in turn. Only spaces up to ${priceCap()} € are open in this step.`)}</p>`:''}<div class="rm2-g">`;
   const pcap=priceCap();
+  /* v237: gerade gekaufte Einheiten (auch von Gegnern) leuchten kurz golden auf, bevor sie als verkauft ausgegraut werden */
+  {const key=S.round+'|'+(S.resNorth?(UI.kside||'south'):'')+'|'+S.map,now=Date.now();UI.obuy=UI.obuy||{};if(UI.rmPrev&&UI.rmPrev.key===key)for(const r of RES){const was=UI.rmPrev.m[r],is=S.resMarket[r];if(is<was)UI.obuy[r]={a:CAP[r]-was,b:CAP[r]-is,t:now}}else UI.obuy={};UI.rmPrev={key,m:{...S.resMarket}};
+    if(Object.values(UI.obuy).some(o=>now-o.t<1800)){clearTimeout(UI._obT);UI._obT=setTimeout(()=>{if(S&&S.phase==='resources')render()},1900)}}
   for(const r of RES){if(!CAP[r])continue;
     const k=mine?cartTot(r):0,first=CAP[r]-S.resMarket[r],dsc=resDisc(p,r),dp=v=>v==null?null:(dsc?Math.max(1,v-dsc):v);
     const np=dp(nextPrice(r,0)),na=dp(nextPrice(r,k)),cost=k?buyCost(r,k,S.resMarket,p):0,fn=k?0:oppNeedBefore(r);
-    let gr='';for(let i=0;i<CAP[r];){let j=i;while(j<CAP[r]&&PRICES[r][j]===PRICES[r][i])j++;let d='';for(let x=i;x<j;x++)d+=`<i class="${x<first?'so':x<first+k?'ct':'av'}"></i>`;
+    let gr='';for(let i=0;i<CAP[r];){let j=i;while(j<CAP[r]&&PRICES[r][j]===PRICES[r][i])j++;let d='';const ob=UI.obuy&&UI.obuy[r]&&Date.now()-UI.obuy[r].t<1800?UI.obuy[r]:null;for(let x=i;x<j;x++)d+=`<i class="${x<first?(ob&&x>=ob.a&&x<ob.b?'so ob':'so'):x<first+k?'ct':'av'}"></i>`;
       const nxt=first+k>=i&&first+k<j;gr+=`<span class="g${j<=first?' sold':''}${nxt?' nx':''}${PRICES[r][i]>pcap?' cap':''}"><span class="d">${d}</span><small>${PRICES[r][i]}</small></span>`;i=j}
     const foot=k?`<span class="cart">${L('Korb','Cart')} ${k} · ${cost} €</span><span>${L('danach','then')} ${na==null?L('leer','empty'):na+' €'}</span>`
       :fn?`<span class="opp">${L(`Gegner vorher ~${fn}`,`Opponents first ~${fn}`)}</span><span>${L('dann','then')} ${nextPrice(r,fn)==null?L('leer','empty'):dp(nextPrice(r,fn))+' €'}</span>`
@@ -7413,7 +7420,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v236';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v237';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
