@@ -3239,6 +3239,19 @@ html:not([data-theme="light"]) #board:has(#map.atlas){background:radial-gradient
 .seg button.on[disabled]{opacity:1;cursor:default}
 #panel{overflow-x:hidden}
 @media (max-width:360px){.actbar .row{flex-wrap:wrap!important}.actbar .row>.btn{flex:1 1 auto;min-width:0;padding-left:12px;padding-right:12px}}
+
+/* ---- v211: Warnungen und automatisches Mitbieten ---- */
+.warnmsg{display:flex;gap:9px;align-items:flex-start;margin:0 0 8px;padding:9px 11px;border-radius:11px;background:rgba(255,140,80,.1);border:1px solid rgba(255,150,90,.45);font-size:12.5px;line-height:1.35;color:var(--fg);animation:wIn .25s ease-out}
+.warnmsg .wi{flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:#ff9a5a;color:#1a1206;font:800 11px/1 'Orbitron',var(--display)}
+.warnmsg b{color:#ffb38a;font-weight:600}
+@keyframes wIn{from{opacity:0;transform:translateY(4px)}}
+.proxyrow{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:8px}
+.proxyrow .chip,.proxyon .chip{all:unset;cursor:pointer;white-space:nowrap;font:600 11.5px/1 Barlow,system-ui;color:var(--accent);padding:7px 11px;border-radius:999px;border:1px solid rgba(242,179,61,.45);background:rgba(242,179,61,.06)}
+.proxyrow .chip[disabled]{opacity:.35;cursor:default}
+.proxyon{display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;border-radius:10px;background:rgba(242,179,61,.08);border:1px solid rgba(242,179,61,.35);font-size:12.5px}
+.proxyon>span:nth-child(2){flex:1;min-width:0}
+.proxyon .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:trPulse 1.2s ease-in-out infinite}
+[data-theme="light"] .warnmsg b{color:#b4561c}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -4889,7 +4902,16 @@ function marketHTML(mode){
   const spy=S.spy===H&&S.deck.length?`<div class="spy"><span>${LANG==='en'?'Industrial espionage · top card of the deck':'Industriespionage · oberste Karte im Stapel'}</span>${S.deck[0]===STEP3?plantCard(STEP3):S.deck[0]>=100?`<b class="spyev">${promoName(PROMO_BY_ID[S.deck[0]])}</b>`:plantCard(S.deck[0],{sm:true,act:'pinfo'})}</div>`:'';
   return `<div class="sec"><div class="mkt-label"><span>Aktueller Markt</span><span>kaufbar</span></div><div class="cards">${now.map(card).join('')}</div>${bn===5?`<p class="hint mk-x">${LX('Benelux: Das Öko-Kraftwerk vorne im zukünftigen Markt ist zusätzlich kaufbar.','Benelux: the eco plant at the front of the future market is also buyable.')}</p>`:''}<div class="mkt-label"><span>Zukünftiger Markt${fut.length===5?` <em class="mk9">${LX('5 statt 4','5 instead of 4')}</em>`:''}</span><span>${S.deck.length} im Stapel</span></div><div class="cards">${fut.map(n=>plantCard(n,{act:'pinfo'})).join('')}${S.step3Pending?plantCard(STEP3):''}</div>${spy}${promoDeckNote()}</div>`;
 }
-const aucAct=o=>`<div class="aucact">${o.h}</div>`;
+const aucAct=o=>`<div class="aucact">${warnHTML()}${o.h}</div>`;
+/* v211: Kluge Warnungen – erst warnen, beim zweiten Tippen ausführen */
+function warnKey(){return S?S.round+'|'+S.phase+'|'+(S.seqIdx||0):''}
+function warnHTML(){const w=UI.warn;if(!w||w.k!==warnKey())return'';return `<p class="warnmsg" role="alert"><span class="wi">!</span><span>${w.msg} <b>${LX('Zum Bestätigen nochmal tippen.','Tap again to confirm.')}</b></span></p>`}
+function warnGate(act,msg){if(!msg){UI.warn=null;return true}const k=warnKey();if(UI.warn&&UI.warn.k===k&&UI.warn.act===act&&UI.warn.msg===msg){UI.warn=null;return true}UI.warn={k,act,msg};buzz&&buzz();return false}
+function fuelWarn(cart){if(MR().india)return'';const p=me();const pool={...p.pool};RES.forEach(r=>pool[r]+=(cart[r]||0));const want=Math.min(capacity(p),cityCount(p));if(!want)return'';
+  const can=Math.min(fueledCap(p,pool),cityCount(p));if(can>=want)return'';
+  return LX(`Mit diesem Einkauf kannst du nur ${can} von ${want} Städten versorgen – das kostet dich ${PAY[Math.min(want,20)]-PAY[Math.min(can,20)]} € Einnahmen.`,`With this purchase you can only power ${can} of ${want} cities – that costs you ${PAY[Math.min(want,20)]-PAY[Math.min(can,20)]} € income.`)}
+function buildWarn(){const p=me();const can=fueledCap(p);const spare=can-cityCount(p);if(spare<=0)return'';const sim=simBuild(p,spare,p.money);if(!sim.n)return'';
+  return LX(`Du könntest noch ${sim.n} ${sim.n===1?'Stadt':'Städte'} für ${sim.cost} € bauen und mit deinem Brennstoff versorgen (+${PAY[Math.min(cityCount(p)+sim.n,20)]-PAY[Math.min(cityCount(p),20)]} € pro Runde).`,`You could still build ${sim.n} ${sim.n===1?'city':'cities'} for ${sim.cost} € and power ${sim.n===1?'it':'them'} with your fuel (+${PAY[Math.min(cityCount(p)+sim.n,20)]-PAY[Math.min(cityCount(p),20)]} € per round).`)}
 function panelAuction(a){
   let h='';
   if(a.kind==='discard'){
@@ -4905,9 +4927,10 @@ function panelAuction(a){
       const key=auc.plant+'-'+auc.bid;
       if(UI.bidKey!==key){UI.bidKey=key;UI.bid=auc.bid+1}
       const can=me().money>=auc.bid+1;
-      h+=aucAct({t:LX(`Höchstgebot ${auc.bid} € · erhöhen oder aussteigen`,`Highest bid ${auc.bid} € · raise or drop out`),h:(can?`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=auc.bid+1?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=me().money?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="raise">${LX('Bieten','Bid')} ${UI.bid} €</button><button type="button" class="btn bdrop" data-act="drop">Aussteigen</button></div>`:`<p class="hint">Du hast nicht genug Geld, um zu erhöhen.</p><button type="button" class="btn" data-act="drop">Aussteigen</button>`)});
+      h+=aucAct({t:LX(`Höchstgebot ${auc.bid} € · erhöhen oder aussteigen`,`Highest bid ${auc.bid} € · raise or drop out`),h:(can?`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=auc.bid+1?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=me().money?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="raise">${LX('Bieten','Bid')} ${UI.bid} €</button><button type="button" class="btn bdrop" data-act="drop">Aussteigen</button></div>`+`<div class="proxyrow">${UI.proxyHit&&UI.proxyHit.plant===auc.plant?`<p class="hint">${LX(`Dein Limit von ${UI.proxyHit.max} € ist erreicht. Weiter bieten oder aussteigen?`,`Your limit of ${UI.proxyHit.max} € has been reached. Keep bidding or drop out?`)}</p>`:''}<button type="button" class="chip" data-act="proxy" ${UI.bid<=auc.bid+1?'disabled':''}>⟳ ${LX(`Automatisch bis ${UI.bid} € mitbieten`,`Auto-bid up to ${UI.bid} €`)}</button></div>`:`<p class="hint">Du hast nicht genug Geld, um zu erhöhen.</p><button type="button" class="btn" data-act="drop">Aussteigen</button>`)});
       /* v116: Erklärtext unter den Gebotsknöpfen entfernt */
     }
+    else if(UI.proxy&&UI.proxy.plant===auc.plant)h+=`<div class="proxyon"><span class="dot"></span><span>${LX(`Du bietest automatisch mit – bis ${UI.proxy.max} €`,`Auto-bidding for you – up to ${UI.proxy.max} €`)}</span><button type="button" class="chip" data-act="proxyStop">${LX('Stopp','Stop')}</button></div>`;
     h+=`</section>`;
     return h+marketHTML(null);
   }
@@ -5229,7 +5252,7 @@ function renderPanel(){
   if(P2)h+=`</div>`;
   /* v186: in der Auktion steht „Dein Betrieb“ direkt unter dem Kraftwerksmarkt, vor den letzten Zügen */
   h+=S.gate?after+(S.gate==='resources'?'':panelMine()):S.phase==='auction'?panelMine()+after+feedHTML()+phaseRulesHTML():feedHTML()+phaseRulesHTML()+after+panelMine();
-  if(UI._ab&&(isMine(a)||S.gate))h+=`<div class="actbar" role="region" aria-label="${LX('Dein Zug','Your move')}"><div class="ab-t"><span class="dot"></span>${UI._ab.t}</div>${UI._ab.h}</div>`;
+  if(UI._ab&&(isMine(a)||S.gate))h+=`<div class="actbar" role="region" aria-label="${LX('Dein Zug','Your move')}"><div class="ab-t"><span class="dot"></span>${UI._ab.t}</div>${warnHTML()}${UI._ab.h}</div>`;
   if(h!==panel._h){/* perf: unveränderten Inhalt nicht neu aufbauen (spart ~30 ms je Aktualisierung, gedrosselt) */const st=panel.scrollTop,anc=panelAnchor();panel.innerHTML=h;panel._h=h;panel.scrollTop=st;panelRestore(anc)}aucScroll(a);orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
 }
 
@@ -6741,7 +6764,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v210';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v211';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -7082,7 +7105,9 @@ function schedule(){
   clearTimeout(timer);timer=null;UI.stepWait=null;
   const a=actor();if(!a||S.phase==='bureau')return;
   if(UI.intro||UI.sheet==='quit')return;
-  if(P(a.pid).human)return;
+  if(P(a.pid).human){/* v211: automatisch mitbieten bis zum Limit */
+    const px=UI.proxy;if(a.kind==='bid'&&px&&S.auc&&S.auc.plant===px.plant){if(S.auc.bid+1<=px.max&&me().money>=S.auc.bid+1){timer=setTimeout(()=>{timer=null;if(!myTurn('bid'))return;bidRaise(H,S.auc.bid+1);after()},window.__fast?20:650)}else{UI.proxyHit={max:px.max,plant:px.plant};UI.proxy=null;buzz&&buzz();setTimeout(()=>{try{render()}catch(_){}},0)}}
+    return}
   const run=()=>{timer=null;UI.stepWait=null;S.aiN=(S.aiN||0)+1;UI.undo=[];const au=S.phase==='auction'&&S.auc&&S.auc.mode==='bid'?{h:S.auc.high,pl:S.auc.plant}:null;
     const ap=P(a.pid),c0=ap.cities.length,lg=S.log.length&&S.log[0];aiAct(a);
     if(ap.cities.length>c0)UI.flash={ids:ap.cities.slice(c0),t:Date.now()};
@@ -7091,7 +7116,8 @@ function schedule(){
   _aiRun=run;
   if(SPEED==='step'&&!window.__fast){UI.stepWait=a.pid;stepUI();return}
   const f=window.__fast?0:SPEEDF[SPEED]||1;
-  timer=setTimeout(run,window.__fast?20:S.phase==='resources'?Math.max(1400,Math.round(1500*f)):Math.round((a.kind==="bid"?650:950)*f));
+  /* v211: nach deinem eigenen Zug bleibt Zeit zum Rückgängigmachen, bevor der nächste Gegner zieht */const undoWin=(UI.undo&&UI.undo.length&&(S.phase==='resources'||S.phase==='build'))?2600:0;
+  timer=setTimeout(run,window.__fast?20:Math.max(undoWin,S.phase==='resources'?Math.max(1400,Math.round(1500*f)):Math.round((a.kind==="bid"?650:950)*f)));
 }
 /* v125: Tempo der Gegnerzüge (Menü) und Einzelschritt */
 let _aiRun=null;try{UI.tkCol=!!localStorage.getItem('hochspannung-tkcol')}catch(_){}
@@ -7241,6 +7267,8 @@ const A={
   open:()=>{if(!myTurn('choose'))return;doOpen(H,UI.sel,UI.bid);UI.sel=null},
   pass:()=>{if(!myTurn('choose'))return;doPass(H);UI.sel=null},
   raise:()=>{if(!myTurn('bid'))return;bidRaise(H,UI.bid)},
+  proxy:()=>{if(!myTurn('bid'))return;UI.proxy={plant:S.auc.plant,max:UI.bid};bidRaise(H,S.auc.bid+1)},
+  proxyStop:()=>{UI.proxy=null},
   drop:()=>{if(!myTurn('bid'))return;bidDrop(H)},
   dsel:b=>{const n=+b.dataset.num;if(n!==S.newPlant)UI.discSel=n},
   dopen:()=>{UI.sheet=null},
@@ -7261,12 +7289,12 @@ const A={
   suggest:()=>withSide(UI.kside||'south',()=>suggestCart()),
   realloc:()=>{const p=me();p.alloc=storageView(p);normAlloc(p);UI.powerKey='';UI.pcart={}},
   hyb:b=>{UI.hyb[+b.dataset.n]=b.dataset.r},
-  buy:()=>{if(!myTurn('buy'))return;const tot=Z();RES.forEach(r=>tot[r]=cartTot(r));const p=me();normAlloc(p);withSide(UI.kside||'south',()=>buyResources(H,tot));if(S.resNorth&&RES.some(r=>tot[r]>0))p.lastSide={r:S.round,s:UI.kside||'south'};if(S.resNorth&&(UI.kside||'south')==='north')S.log[0].t+=' (Nordmarkt)';for(const[n,c]of Object.entries(UI.pcart))RES.forEach(r=>{for(let i=0;i<(c[r]||0);i++)p.alloc[n].push(r)});UI.pcart={};nextSeq()},
-  skipbuy:()=>{if(!myTurn('buy'))return;buyResources(H,{coal:0,oil:0,garbage:0,uranium:0});nextSeq()},
+  buy:()=>{if(!myTurn('buy'))return;const tot=Z();RES.forEach(r=>tot[r]=cartTot(r));if(!warnGate('buy',fuelWarn(tot)))return;const p=me();normAlloc(p);withSide(UI.kside||'south',()=>buyResources(H,tot));if(S.resNorth&&RES.some(r=>tot[r]>0))p.lastSide={r:S.round,s:UI.kside||'south'};if(S.resNorth&&(UI.kside||'south')==='north')S.log[0].t+=' (Nordmarkt)';for(const[n,c]of Object.entries(UI.pcart))RES.forEach(r=>{for(let i=0;i<(c[r]||0);i++)p.alloc[n].push(r)});UI.pcart={};nextSeq()},
+  skipbuy:()=>{if(!myTurn('buy'))return;if(!warnGate('skipbuy',fuelWarn({})))return;buyResources(H,{coal:0,oil:0,garbage:0,uranium:0});nextSeq()},
   bsel:b=>{UI.buildSel=b.dataset.city},
   build:()=>{if(!myTurn('build'))return;if(doBuild(H,UI.buildSel))UI.buildSel=null},
   breset:()=>{if(!myTurn('build'))return;undoBuilds(H)},
-  bdone:()=>{if(!myTurn('build'))return;if(!S.turnBuilt.length)log(me().name+' baut nicht aus.',H);UI.buildSel=null;nextSeq()},
+  bdone:()=>{if(!myTurn('build'))return;if(!warnGate('bdone',buildWarn()))return;if(!S.turnBuilt.length)log(me().name+' baut nicht aus.',H);UI.buildSel=null;nextSeq()},
   ptoggle:b=>{const n=+b.dataset.num;UI.power=UI.power.includes(n)?UI.power.filter(x=>x!==n):[...UI.power,n]},
   sellToggle:()=>{UI.sell=!UI.sell},
   jumpTog:()=>{const p=me();p.useJump=!p.useJump;UI.buildSel=null},
