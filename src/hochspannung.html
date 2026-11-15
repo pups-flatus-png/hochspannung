@@ -3560,6 +3560,39 @@ html .plant.lg.st .pa.pa2{height:calc(100% - 48px)!important}
   html #app.pl2 #oppchips::-webkit-scrollbar{display:none}
   html #app.pl2 #oppchips .oc{flex:1 0 auto!important;min-width:132px;max-width:200px!important}
 }
+
+/* ---- v228: Sonderregel-/Zweitmarkt-Kachel, Häkchen mittig, Kopfzeile gleich hoch ---- */
+.pl2-x{display:none}
+.pl2-tabs .done i::after{width:11px;height:11px;margin:0;border:0;transform:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 5.7l2.4 2.3 4.6-4.9' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 5.7l2.4 2.3 4.6-4.9' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+@media (min-width:1000px) and (max-width:1420px){
+  html #app.pl2 .pl2-lt{display:none!important}
+  html #app.pl2 .pl2-trk>.pl2-x{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:6px;flex:1 1 0;min-width:0;padding:7px 14px 8px;border-radius:12px;background:var(--panel);border:1px solid var(--line)}
+  html #app.pl2 .pl2-x .m3hd{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  html #app.pl2 .pl2-x .m3hd small{font:600 10px/1 Barlow,system-ui;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  html #app.pl2 .pl2-x .mo{flex:none;font:700 10px/1 Barlow,system-ui;color:#f2b33d;padding:2px 6px;border-radius:99px;border:1px solid rgba(242,179,61,.45)}
+  html #app.pl2 .pl2-x.pl2-rm .row{margin:auto 0}
+  html #app.pl2 .pl2-x .xr{display:flex;align-items:center;gap:10px;min-width:0;margin:auto 0}
+  html #app.pl2 .pl2-x .xr .ic{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#f2b33d;background:rgba(242,179,61,.1);border:1px solid rgba(242,179,61,.4)}
+  html #app.pl2 .pl2-x .xr .tx{display:flex;flex-direction:column;gap:3px;min-width:0}
+  html #app.pl2 .pl2-x .xr b{font:600 13px/1.15 Barlow,system-ui;color:#e3eaee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  html #app.pl2 .pl2-x .xr em{font:400 11.5px/1.2 Barlow,system-ui;font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  html #app.pl2 .pl2-x .xu{display:flex;align-items:center;gap:8px;min-width:0;margin:auto 0}
+  html #app.pl2 .pl2-x .xu .ri{width:15px;height:15px;flex:none}
+  html #app.pl2 .pl2-x .xu b{font:800 14px/1 'Orbitron',var(--display);color:var(--fg);flex:none}
+  html #app.pl2 .pl2-x .xu .tr{display:flex;gap:2px;flex:none}
+  html #app.pl2 .pl2-x .xu .tr i{font:700 9px/1 'Orbitron',var(--display);font-style:normal;width:17px;height:17px;display:grid;place-items:center;border-radius:4px;border:1px solid var(--line);color:var(--muted)}
+  html #app.pl2 .pl2-x .xu .tr i.full{background:rgba(120,200,120,.14);color:#9fd3a5}
+  html #app.pl2 .pl2-x .xu .tr i.on{border-color:#f2b33d;color:#f2b33d}
+  html #app.pl2 .pl2-x .xu em{font:400 11.5px/1.2 Barlow,system-ui;font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+}
+@media (min-width:1000px){
+  html #app.pl2 #top .wallet{height:47px;box-sizing:border-box;padding-top:0!important;padding-bottom:0!important;align-self:center}
+  html #app.pl2 #top button[data-act=menu]{height:47px;width:47px;box-sizing:border-box;border-radius:12px;align-self:center}
+}
+@media (min-width:1000px) and (max-width:1420px){
+  html #app.pl2 .pl2-trk:has(.pl2-x.pl2-rm)>.pl2-rm{flex:1 1 0!important}
+  html #app.pl2 .pl2-trk>.pl2-rm .row{max-width:300px}
+}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -3855,6 +3888,14 @@ function loadMap(id){
   M.cities.forEach(c=>{CITIES.push(c);const[id_,name,reg,lat,lon]=c;const[x,y]=proj(lon,lat);CITY[id_]={id:id_,name,reg,lat,lon,x,y};ADJ[id_]=[]});
   M.edges.forEach(([a,b,x])=>{const base=Math.max(2,Math.round(km(CITY[a],CITY[b])/12));EDGE_LIST.push({a,b,cost:M.fixed?x:(x===0?0:base+(x||0))})});
   GHOST.length=0;(M.ghost||[]).forEach(([a,b])=>{if(CITY[a]&&CITY[b])GHOST.push({a,b})});
+  /* v228: Küstenstädte, die wegen der vereinfachten Küstenlinie im Meer lägen, aufs Land rücken */
+  try{const LP=[...(M.land||[]),...(M.landOut||[])].filter(pl=>pl.length>2).map(pl=>pl.map(q=>proj(q[0],q[1])));
+    if(LP.length&&MAPID!=='bw'){const inL=(x,y)=>LP.some(P=>inPolyF(x,y,P)),mg=7,ok=(x,y)=>inL(x,y)&&[0,1,2,3,4,5,6,7].every(k=>inL(x+mg*Math.cos(k*Math.PI/4),y+mg*Math.sin(k*Math.PI/4)));
+      const all=Object.values(CITY);
+      for(const c of all){if(inL(c.x,c.y))continue;let best=null;
+        for(let r=3;r<=90&&!best;r+=3)for(let k=0;k<Math.max(8,Math.round(r*1.2));k++){const t=k/Math.max(8,Math.round(r*1.2))*2*Math.PI,x=c.x+r*Math.cos(t),y=c.y+r*Math.sin(t);
+          if(!ok(x,y))continue;const near=all.some(o=>o!==c&&Math.hypot(o.x-x,o.y-y)<34);if(near)continue;const v=r;if(!best||v<best.v)best={v,x,y}}
+        if(best){c.x=best.x;c.y=best.y}}}}catch(_){}
   EDGE_LIST.forEach(e=>{ADJ[e.a].push({to:e.b,cost:e.cost});ADJ[e.b].push({to:e.a,cost:e.cost});const ra=CITY[e.a].reg,rb=CITY[e.b].reg;if(ra!==rb){(RADJ[ra]??=new Set()).add(rb);(RADJ[rb]??=new Set()).add(ra)}});
   for(const rk of Object.keys(REGIONS)){const h=hull(CITIES.filter(c=>c[2]===rk).map(c=>[CITY[c[0]].x,CITY[c[0]].y]));TERR[rk]=h.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join('')+'Z'}
   GEO_LAND=M.land.map(pl=>ptsPath(pl,true)).join('');GEO_OUT=(M.landOut||[]).map(pl=>ptsPath(pl,true)).join('');GEO_RIV=M.rivers.map(r=>ptsPath(r,false));GEO_LAK=(M.lakes||[]).map(pl=>ptsPath(pl,true)).join('');GEO_LO=M.landLo?M.landLo.map(pl=>ptsPath(pl,true)).join(''):GEO_LAND;GEO_REL=M.relief||null;
@@ -4913,7 +4954,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)flowStart(
   if(document.body)go();else addEventListener('DOMContentLoaded',go)})();
 function endAuto(){if(S&&S.phase==='end'&&!S.endShown&&start.hidden){S.endShown=true;try{save()}catch(_){}
   /* v176: direkt in den Siegesflug – kein kurzes Aufblitzen von „Ergebnis ansehen“ im Seitenpanel */
-  document.documentElement.classList.add('gm-ending');setTimeout(()=>{if(S&&S.phase==='end')endReveal(()=>endVictory());else document.documentElement.classList.remove('gm-ending')},60);setTimeout(()=>document.documentElement.classList.remove('gm-ending'),15000)}}
+  document.documentElement.classList.add('gm-ending');setTimeout(()=>{/* v228: erst Zahltag zu Ende laufen lassen, dann Siegesflug, dann Ergebnis – nur noch einmal zählen (Balken im Ergebnis) */const t0=Date.now(),wait=()=>{if(!S||S.phase!=='end'){document.documentElement.classList.remove('gm-ending');return}if(document.querySelector('.fxcard,.fxinc,.fxpay,.fxban')&&Date.now()-t0<6500)return setTimeout(wait,150);setTimeout(()=>endVictory(),350)};wait()},60);setTimeout(()=>document.documentElement.classList.remove('gm-ending'),15000)}}
 function renderTop(){endAuto();flowStart();
   const phases=S.phase==='end'?'<span class="ph cur"><i>✓</i><em>Spielende</em></span>':PH.map((ph,i)=>`<span class="ph${S.phase===ph?' cur':''}${PH.indexOf(S.phase)>i?' past':''}"><i>${i+1}</i><em>${PS[ph]}</em></span>`).join('');
   const m=me();const rank=S.order.indexOf(H)+1;const fin=S.phase==='end'&&S.ranking?S.ranking.indexOf(H)+1:0;
@@ -7196,7 +7237,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v227';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v228';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -7549,7 +7590,20 @@ function pl2Bar(){const p=pl2Phase(),N=PL2_NAME(),m=me();
   const goal=END_AT,max=Math.max(goal+4,...S.players.map(cityCount)),pos=v=>Math.min(100,v/max*100),mc=cityCount(m);
   const dots=S.players.map(q=>`<i class="pd${q.human?' me':''}" style="left:${pos(cityCount(q))}%;background:${q.color};color:${q.color}"></i>`).join('');
   const rm=RES.filter(r=>CAP[r]).map(r=>{const np=nextPrice(r);return `<span class="${np==null?'out':''}">${resIcon(r)}${np==null?'–':np}</span>`}).join('');
-  return `<div class="pl2-tabs" role="list" aria-label="${LX('Phasen','Phases')}">${tabs}</div><div class="pl2-trk"><button type="button" class="pl2-ct" data-act="opp" aria-label="${LX('Städte und Gegner','Cities and opponents')}"><span class="m3hd"><small>${LX('Städte','Cities')}</small><b>${mc} / ${goal}</b><span class="m3stp">${[1,2,3].map(k=>`<i class="${S.step===k?'on':''}">${'I'.repeat(k)}</i>`).join('')}</span></span><span class="ln" style="--tk:${(100/max).toFixed(4)}%"><span class="ticks"></span><span class="fill" style="width:${pos(mc)}%"></span><span class="mk" style="left:${pos(STEP2_AT)}%"><span>${LX('STUFE 2','STEP 2')}</span></span><span class="mk" style="left:${pos(goal)}%"><span>${LX('ENDE','END')}</span></span>${dots}</span></button><button type="button" class="pl2-rm" data-act="markets" aria-label="${LX('Rohstoffmarkt','Resource market')}"><span class="m3hd"><small><span class="lg">${LX('Rohstoffe · nächster Preis','Resources · next price')}</span><span class="sh">${LX('Nächster Preis','Next price')}</span></small></span><span class="row">${rm}</span></button>${pl2Latest()}</div>`}
+  return `<div class="pl2-tabs" role="list" aria-label="${LX('Phasen','Phases')}">${tabs}</div><div class="pl2-trk"><button type="button" class="pl2-ct" data-act="opp" aria-label="${LX('Städte und Gegner','Cities and opponents')}"><span class="m3hd"><small>${LX('Städte','Cities')}</small><b>${mc} / ${goal}</b><span class="m3stp">${[1,2,3].map(k=>`<i class="${S.step===k?'on':''}">${'I'.repeat(k)}</i>`).join('')}</span></span><span class="ln" style="--tk:${(100/max).toFixed(4)}%"><span class="ticks"></span><span class="fill" style="width:${pos(mc)}%"></span><span class="mk" style="left:${pos(STEP2_AT)}%"><span>${LX('STUFE 2','STEP 2')}</span></span><span class="mk" style="left:${pos(goal)}%"><span>${LX('ENDE','END')}</span></span>${dots}</span></button><button type="button" class="pl2-rm" data-act="markets" aria-label="${LX('Rohstoffmarkt','Resource market')}"><span class="m3hd"><small><span class="lg">${S.resNorth?LX('Markt Süd · nächster Preis','South market · next price'):LX('Rohstoffe · nächster Preis','Resources · next price')}</span><span class="sh">${S.resNorth?LX('Süd · Preis','South · price'):LX('Nächster Preis','Next price')}</span></small></span><span class="row">${rm}</span></button>${pl2Rule()}</div>`}
+/* v228: statt „Zuletzt passiert" – zweiter Markt (Korea) bzw. Sonderregel der Karte */
+function pl2Rule(){if(!S)return'';const M=MAPS[S.map],R=MR(),en=LANG==='en';
+  if(S.resNorth){const rm=['coal','oil','garbage'].map(r=>{let np=null;try{np=withSide('north',()=>nextPrice(r))}catch(_){}return `<span class="${np==null?'out':''}">${resIcon(r)}${np==null?'–':np}</span>`}).join('')+`<span class="out nu" title="${LX('Kein Uran im Norden','No uranium in the North')}">${resIcon('uranium')}–</span>`;
+    return `<button type="button" class="pl2-rm pl2-x" data-act="markets" aria-label="${LX('Nordmarkt','North market')}"><span class="m3hd"><small>${LX('Markt Nord · nächster Preis','North market · next price')}</small></span><span class="row">${rm}</span></button>`}
+  if(S.umk){let i=S.umk.length-1;while(i>=0&&S.umk[i]>=2)i--;const pr=i<0?0:UMK_P[i];const ms=mineSale(me(),true);
+    const tr=UMK_P.map((v,k)=>`<i class="${k===i?'on':''}${S.umk[k]>=2?' full':''}">${v}</i>`).join('');
+    return `<button type="button" class="pl2-x pl2-xu" data-act="markets" aria-label="${LX('Uranmarkt','Uranium market')}"><span class="m3hd"><small>${LX('Uranverkauf (Minen)','Uranium sale (mines)')}</small></span><span class="xu">${resIcon('uranium')}<b>${i<0?'–':pr+' €'}</b><span class="tr">${tr}</span><em>${i<0?(en?'Market full, no sale right now':'Markt voll, gerade kein Verkauf'):ms?(en?`You: ${ms.c} × ${ms.price} €`:`Du: ${ms.c} × ${ms.price} €`):(en?'per city, if you own a mine':'pro Stadt, wenn du eine Mine hast')}</em></span></button>`}
+  let it=[];try{it=phaseRuleItems()}catch(_){}
+  if(!it.length&&M.rtxt)it=M.rtxt.map(([ic,dt,dd,et,ed])=>({ic,t:en?et:dt,d:en?ed:dd}));
+  const nm=en&&M.en?M.en:M.name;
+  if(!it.length)return `<button type="button" class="pl2-x pl2-xr" data-act="rules" aria-label="${LX('Regeln','Rules')}"><span class="m3hd"><small>${esc(nm)} · ${LX('Regeln','Rules')}</small></span><span class="xr"><span class="ic"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">${RICON.plant}</svg></span><span class="tx"><b>${LX('Standardregeln','Standard rules')}</b><em>${LX('Keine Sonderregeln auf dieser Karte','No special rules on this map')}</em></span></span></button>`;
+  const x=it[0],more=it.length-1;
+  return `<button type="button" class="pl2-x pl2-xr" data-act="rules" aria-label="${LX('Sonderregeln','Special rules')}"><span class="m3hd"><small>${esc(nm)} · ${LX('Sonderregel','Special rule')}</small>${more?`<span class="mo">+${more}</span>`:''}</span><span class="xr"><span class="ic"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">${RICON[x.ic]||RICON.plant}</svg></span><span class="tx"><b>${esc(x.t)}</b><em>${esc(x.st||x.d||'')}</em></span></span></button>`}
 function pl2Latest(){if(!S||!S.log||!S.log.length)return'';const noise=/ (bietet|erhöht auf|steigt aus)/;const l=S.log.find((x,i)=>i===0||!noise.test(x.t))||S.log[0];
   return `<button type="button" class="pl2-lt" data-act="log" aria-label="${LX('Protokoll öffnen','Open log')}"><span class="m3hd"><small>${LX('Zuletzt passiert','Latest move')}</small></span><span class="lt-t"${l.pid!=null?` style="--pc:${P(l.pid).color}"`:''}><i></i><span>${esc(l.t)}</span></span></button>`}
 function pl2Order(){const seq=seqForPhase(),a=actor(),cur=a&&S.phase!=='bureau'?a.pid:null,rev=S.phase==='resources'||S.phase==='build';
