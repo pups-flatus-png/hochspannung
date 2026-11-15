@@ -62,22 +62,29 @@ async()=>{
 
  // ---- Campaign: star evaluation, unlock chain, logo rewards, season points
  {try{localStorage.removeItem('hochspannung-camp')}catch(_){}
-  const mk=(o,pl)=>({rounds:o.rounds||14,players:[Object.assign({human:true,place:1,powered:14,cities:14,money:60,plants:[],auc:[]},pl||{}),{human:false,place:2,powered:12,cities:12,money:40,plants:[]}]});
-  ok('campaign has 9 scenarios on existing maps',CAMP.length===9&&CAMP.every(c=>MAPS[c.map]),CAMP.map(c=>c.map).join());
+  const mk=(o,pl)=>({rounds:o.rounds||14,players:[Object.assign({human:true,place:1,powered:15,cities:15,money:60,plants:[],auc:[]},pl||{}),{human:false,place:2,powered:12,cities:12,money:40,plants:[]}]});
+  ok('campaign covers every map once',CAMP.length===Object.keys(MAPS).length&&new Set(CAMP.map(c=>c.map)).size===CAMP.length,CAMP.map(c=>c.map).join());
+  ok('campaign gets harder',CAMP.slice(-3).every(c=>c.diff==='expert'&&c.n>=4)&&CAMP[0].diff!=='expert');
   ok('only first scenario open at start',campOpen(0)&&!campOpen(1));
   const c1=CAMP[0];ok('loss gives no win star',!campEval(mk({},{place:2}),c1)[0]);
-  ok('win in 12 rounds with 14 powered = 3 stars',campEval(mk({rounds:12}),c1).every(Boolean));
-  S.camp='c1';let r=campRecord(mk({rounds:16}));ok('win in 16 rounds = 2 stars',r.stars===2,JSON.stringify(r));
+  ok('win in 12 rounds with 15 powered = 3 stars',campEval(mk({rounds:12}),c1).every(Boolean));
+  S.camp=CAMP[0].id;let r=campRecord(mk({rounds:16}));ok('win in 16 rounds = 2 stars',r.stars===2,JSON.stringify(r));
   ok('second scenario unlocked after a star',campOpen(1));
-  r=campRecord(mk({rounds:16},{place:3}));ok('worse result keeps best stars',campStars().c1===2&&r.stars===0);
+  r=campRecord(mk({rounds:16},{place:3}));ok('worse result keeps best stars',campStars()[CAMP[0].id]===2&&r.stars===0);
   const hk=localStorage.getItem(STATS_KEY);localStorage.setItem(STATS_KEY,'[]');localStorage.removeItem('hochspannung-camp');
-  ok('10 logos, 3 free at start',LOGO_KEYS.length===10&&LOGO_KEYS.filter(k=>!logoLocked(k)).length===3,[...logoUnlockedSet(true)].join());
-  localStorage.setItem('hochspannung-camp',JSON.stringify({c1:3}));logoUnlockedSet(true);ok('3 stars unlock Aurora only',!logoLocked('star')&&logoLocked('wind')&&logoLocked('crown'));
+  ok('10 logos, only 1 free at start',LOGO_KEYS.length===10&&LOGO_KEYS.filter(k=>!logoLocked(k)).length===1,[...logoUnlockedSet(true)].join());
+  localStorage.setItem('hochspannung-camp',JSON.stringify({[CAMP[0].id]:3}));logoUnlockedSet(true);ok('3 stars unlock Aurora only',!logoLocked('star')&&logoLocked('wind')&&logoLocked('crown'));
   localStorage.setItem(STATS_KEY,JSON.stringify([Object.assign(mk({}),{diff:'expert'})]));logoUnlockedSet(true);ok('expert win unlocks Dawn and Atomic',!logoLocked('sun')&&!logoLocked('atom')&&logoLocked('leaf'));
-  localStorage.setItem('hochspannung-camp',JSON.stringify(Object.fromEntries(CAMP.map(c=>[c.id,3]))));logoUnlockedSet(true);ok('all 27 stars unlock Crown',!logoLocked('crown'));
+  localStorage.setItem('hochspannung-camp',JSON.stringify(Object.fromEntries(CAMP.map(c=>[c.id,3]))));logoUnlockedSet(true);ok('all campaign stars unlock Crown',!logoLocked('crown'));
   if(hk!=null)localStorage.setItem(STATS_KEY,hk);else localStorage.removeItem(STATS_KEY);logoUnlockedSet(true);
   localStorage.removeItem('hochspannung-camp');delete S.camp;
   ok('season key is calendar month',seasonKey(new Date(2026,10,15))==='2026-11'&&seasonDaysLeft()>=1)}
+
+ // ---- every campaign scenario starts and an AI-only game on it ends cleanly
+ {const bad=[];for(const c of CAMP){try{newGame('T',c.n,c.diff,null,c.map,{deck:'std',styles:false});quiet();S.players.forEach(p=>p.human=false);let st=0;
+   while(S.phase!=='end'&&st++<30000){if(S.gate){gateGo();continue}const a=actor();if(!a){if(S.phase==='bureau'){finishBureau();continue}break}aiAct(a)}
+   if(S.phase!=='end')bad.push(c.map+':'+S.phase+S.round)}catch(e){bad.push(c.map+':'+String(e).slice(0,60))}}
+  ok('all '+CAMP.length+' campaign maps play to the end',!bad.length,bad.join(' '))}
  return {R,games};
 }
 """
