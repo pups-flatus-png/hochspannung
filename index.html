@@ -3454,6 +3454,44 @@ html .pc2-c .st .mini{width:28px;height:30px;flex:none}
   html #app.pl2 #oppchips .oc{flex:1 1 0;min-width:0;max-width:none}
   html #app.pl2 .pl2-trk{grid-template-columns:minmax(0,1fr)!important}
 }
+
+/* ---- v218: Rohstoffmarkt als Preisleiste wie auf dem Brett ---- */
+html .rm2-g{grid-template-columns:minmax(0,1fr)!important;gap:6px!important}
+html .rm2-c{display:grid!important;grid-template-columns:16px 62px minmax(0,1fr) 42px;grid-template-areas:"ic nm tr pr" ". ft ft ft";align-items:center;column-gap:6px;row-gap:2px;padding:7px 10px!important}
+html .rm2-c .t{display:contents!important}
+html .rm2-c .t>.ri{grid-area:ic;width:14px!important;height:14px!important}
+html .rm2-c .t>b{grid-area:nm;font-size:12.5px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html .rm2-c .t>.rdisc{grid-area:nm;justify-self:end;align-self:start;font-size:9px!important;padding:1px 4px!important;margin-top:-6px}
+html .rm2-c .t>em{grid-area:pr;justify-self:end;font-size:15px!important}
+html .rm2-c .tr{grid-area:tr;margin:0!important;gap:2px!important;min-width:0}
+html .rm2-c .f{grid-area:ft;font-size:10.5px!important;min-width:0}
+html .rm2-c .f>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html .rm2-c .g{flex-direction:column!important;justify-content:center!important;gap:2px!important;padding:3px 0 2px!important;border-radius:5px!important;background:rgba(255,255,255,.035);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+html .rm2-c .g.nx{background:rgba(242,179,61,.13);box-shadow:inset 0 0 0 1px rgba(242,179,61,.6)}
+html .rm2-c .g .d{flex-direction:row!important;flex-wrap:wrap;max-width:100%;gap:1px!important;justify-content:center;min-height:5px}
+html .rm2-c .g i{width:5px!important;height:5px!important;border-radius:1.2px!important;flex:none}
+html .rm2-c .g i.so{opacity:.18}
+html .rm2-c .g i.ct{border-width:1.5px!important;box-shadow:0 0 6px rgba(255,211,110,.9)!important}
+html .rm2-c .g small{font-size:7.5px!important;line-height:1!important}
+@media (min-width:1000px){html .rm2-c{grid-template-columns:18px 70px minmax(0,1fr) 46px;padding:9px 12px!important}html .rm2-c .t>b{font-size:13.5px!important}html .rm2-c .t>em{font-size:17px!important}}
+
+/* ---- v218: Hand am Kartenrand ---- */
+#handdock{position:absolute;left:max(20px,env(safe-area-inset-left,0px));bottom:20px;z-index:4;display:flex;flex-direction:column;gap:8px;padding:12px 14px 14px;border-radius:18px;background:rgba(10,15,20,.86);border:1px solid rgba(255,255,255,.08);box-shadow:0 14px 34px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#handdock .hd-h{display:flex;align-items:center;gap:8px;min-width:0}
+#handdock .hd-lg{--ls:22px;flex:none}
+#handdock .hd-h b{font:800 12px/1 'Orbitron',var(--display);letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px}
+#handdock .hd-h span{margin-left:auto;font-size:11.5px;color:#8fa0ad;white-space:nowrap;padding-left:10px}
+#handdock .hd-c{display:flex;gap:10px}
+#app.hdock #panel .sec.mine{display:none}
+#app.hdock .mapctl{left:auto;right:calc(10px + env(safe-area-inset-right,0px));bottom:64px}
+
+/* ---- v218: versorgte Städte leuchten in der Lieferphase ---- */
+#map.powering .city.lit .mine{stroke:#ffd36e!important;stroke-width:2.6px;filter:drop-shadow(0 0 4px #ffd36e) drop-shadow(0 0 10px rgba(242,179,61,.75))}
+#map.powering .city.lit .inner{fill:#fff1c2!important;transition:fill .3s}
+#map.powering .city.lit .halo{fill:rgba(242,179,61,.28)!important;opacity:1!important;animation:litPulse 2.4s ease-in-out infinite}
+#map.powering .city:not(.lit) .mine{opacity:.55}
+@keyframes litPulse{0%,100%{opacity:.55}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){#map.powering .city.lit .halo{animation:none}}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -4854,7 +4892,8 @@ function atlasLayout(act,opts){
     reg[rk]=best||{x:mx,y:my+10};boxes.push([reg[rk].x-w/2,reg[rk].y-rf*.8,reg[rk].x+w/2,reg[rk].y+rf*.25])}
   return UI._lay={key,city,reg};
 }
-function renderMap(){
+function litCities(){if(!S||S.phase!=='bureau'||S.gate)return new Set();const p=me();if(!p)return new Set();let o=null;try{const nums=UI.powerKey===S.round+'b'&&UI.power?UI.power:bestAllocPower(p);o=allocPower(p,nums)}catch(_){}return new Set(p.cities.slice(0,o?o.powered:0))}
+function renderMap(){const LIT=litCities();
   const act=new Set(activeIds());
   const a=actor();
   const building=S.phase==='build'&&isMine(a);
@@ -4914,11 +4953,11 @@ function renderMap(){
       else sl+=`<circle class="sl ${i<cr.max?'open':'lock'}" cx="${sx}" cy="${sy}" r="${NIGHT()?3.1:MAPSTYLE==='atlas'?3.7:4.5}"/>`;
     });
     const o=opts[id],sel=building&&UI.buildSel===id;
-    g+=`<g class="city${o?' can':''}${sel?' sel':''}" data-city="${id}" transform="translate(${c.x.toFixed(1)},${c.y.toFixed(1)})"><circle class="halo" r="24"/><circle class="cshadow" r="20"/><circle class="body" r="${NIGHT()?13.5:17}" style="stroke:${REGIONS[c.reg].col}"/><circle class="rtick" r="17" transform="rotate(-130)" style="stroke:${REGIONS[c.reg].col}"/>${occ.includes(H)?'<circle class="mine" r="'+(NIGHT()?16.5:20.5)+'" style="stroke:'+me().color+'"/>':''}<circle class="inner" r="13.5"/>${sl}${(()=>{const q=LY&&LY.city[id];if(q){clab+=`<text class="cname" data-c="${id}" x="${(c.x+q.x).toFixed(1)}" y="${(c.y+q.y).toFixed(1)}" style="text-anchor:${q.an}">${c.name}</text>`;return ''}return `<text class="cname" y="32">${c.name}</text>`})()}${o?`<g class="cost${o.jump?' jump':''}" transform="translate(0,-25)"><rect x="${o.jump?-21:-15}" y="-8" width="${o.jump?42:30}" height="15" rx="7.5"/><text y="3.5">${o.jump?'↷ ':''}${o.cost}</text></g>`:''}${MAPS[S.map].startCities&&MAPS[S.map].startCities.includes(id)?'<text class="cstar" x="15" y="-12">★</text>':''}${cr.trans?`<g class="ctrans${S.step<2?' lk':''}" transform="translate(-27,-21)"><title>${LX('Jenseits der Grenze: erst ab Stufe 2 bebaubar','Across the border: buildable from step 2')}</title><rect width="${S.step<2?30:22}" height="13" rx="6.5"/><text x="${S.step<2?15:11}" y="9.5">${S.step<2?LX('ab II','from II'):'II'}</text></g>`:''}${MR().wien===id?`<g class="cwien" transform="translate(12,-23)"><title>${LX('Wien: Müll 1 € billiger für Spieler mit Stadt hier','Vienna: garbage 1 € cheaper for players with a city here')}</title><rect width="34" height="13" rx="6.5"/><text x="17" y="9.5">${LX('Müll −1','Garb. −1')}</text></g>`:''}</g>`;
+    g+=`<g class="city${o?' can':''}${sel?' sel':''}${LIT.has(id)?' lit':''}" data-city="${id}" transform="translate(${c.x.toFixed(1)},${c.y.toFixed(1)})"><circle class="halo" r="24"/><circle class="cshadow" r="20"/><circle class="body" r="${NIGHT()?13.5:17}" style="stroke:${REGIONS[c.reg].col}"/><circle class="rtick" r="17" transform="rotate(-130)" style="stroke:${REGIONS[c.reg].col}"/>${occ.includes(H)?'<circle class="mine" r="'+(NIGHT()?16.5:20.5)+'" style="stroke:'+me().color+'"/>':''}<circle class="inner" r="13.5"/>${sl}${(()=>{const q=LY&&LY.city[id];if(q){clab+=`<text class="cname" data-c="${id}" x="${(c.x+q.x).toFixed(1)}" y="${(c.y+q.y).toFixed(1)}" style="text-anchor:${q.an}">${c.name}</text>`;return ''}return `<text class="cname" y="32">${c.name}</text>`})()}${o?`<g class="cost${o.jump?' jump':''}" transform="translate(0,-25)"><rect x="${o.jump?-21:-15}" y="-8" width="${o.jump?42:30}" height="15" rx="7.5"/><text y="3.5">${o.jump?'↷ ':''}${o.cost}</text></g>`:''}${MAPS[S.map].startCities&&MAPS[S.map].startCities.includes(id)?'<text class="cstar" x="15" y="-12">★</text>':''}${cr.trans?`<g class="ctrans${S.step<2?' lk':''}" transform="translate(-27,-21)"><title>${LX('Jenseits der Grenze: erst ab Stufe 2 bebaubar','Across the border: buildable from step 2')}</title><rect width="${S.step<2?30:22}" height="13" rx="6.5"/><text x="${S.step<2?15:11}" y="9.5">${S.step<2?LX('ab II','from II'):'II'}</text></g>`:''}${MR().wien===id?`<g class="cwien" transform="translate(12,-23)"><title>${LX('Wien: Müll 1 € billiger für Spieler mit Stadt hier','Vienna: garbage 1 € cheaper for players with a city here')}</title><rect width="34" height="13" rx="6.5"/><text x="17" y="9.5">${LX('Müll −1','Garb. −1')}</text></g>`:''}</g>`;
   }
   if(clab)g+=`<g class="city clab" pointer-events="none">${clab}</g>`;
   /* v180: immer komplett neu aufbauen – Safari verliert sonst die Maske der Küstenlinien und die Karte wird blau überzogen */
-  svg.innerHTML=`<g id="mapbg">${BG}</g><g id="mapfg">${g}</g>`;if(bursts.length)requestAnimationFrame(()=>cityBursts(bursts));svg.classList.toggle('atlas',MAPSTYLE==='atlas');svg.classList.toggle('building',!!building||S.phase==='build');svg.classList.toggle('dense',CITIES.filter(c=>act.has(c[0])).length>=24);
+  svg.innerHTML=`<g id="mapbg">${BG}</g><g id="mapfg">${g}</g>`;if(bursts.length)requestAnimationFrame(()=>cityBursts(bursts));svg.classList.toggle('atlas',MAPSTYLE==='atlas');svg.classList.toggle('building',!!building||S.phase==='build');svg.classList.toggle('powering',S.phase==='bureau'&&!S.gate);svg.classList.toggle('dense',CITIES.filter(c=>act.has(c[0])).length>=24);
   if(!UI.vb)fitMap();
   applyVB();
 }
@@ -4933,6 +4972,7 @@ function fitMap(){
     let B=rt&&rt.offsetParent&&rt.textContent?Math.max(0,r.bottom-rt.getBoundingClientRect().top):0;
     /* v217: Platz für die Gegner-Chips frei halten – oben (Reihe) oder links (Spalte) */
     let L=0;const oc=document.getElementById('oppchips');if(oc&&oc.offsetParent&&oc.children.length){const q=oc.getBoundingClientRect();if(getComputedStyle(oc).flexDirection==='row')T=Math.max(T,q.bottom-r.top+2);else L=Math.max(0,q.right-r.left+6)}
+    {const hd=document.getElementById('handdock');if(hd&&hd.offsetParent){const q=hd.getBoundingClientRect();L=Math.max(L,q.right-r.left+10)}}
     if(pl2Narrow())B=Math.max(B,18);
     const RW=Math.max(r.width*.5,r.width-L);
     const avail=Math.max(r.height*0.5,r.height-T-B-6);
@@ -7039,7 +7079,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v217';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v218';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -7111,7 +7151,7 @@ function coachTick(){const old=document.getElementById('coach');document.querySe
   requestAnimationFrame(()=>{const r=tg.getBoundingClientRect(),vh=innerHeight,vw=innerWidth,m=12;
     if(r.height>vh*.45&&vw>vh){/* großes Ziel im Querformat (Karte): Karte oben rechts, damit die Mitte frei bleibt */c.classList.add('side');const w=Math.min(300,r.width*.55);c.style.width=w+'px';c.style.left=Math.round(Math.min(vw-w/2-m,r.right-w/2-m))+'px';c.style.top=Math.round(Math.max(m,Math.min(vh-c.offsetHeight-m,r.top+m)))+'px';return}
     c.classList.remove('side');c.style.width='';c.style.left='';const h=c.offsetHeight;let top=r.bottom+m;if(r.height>vh*.45)top=r.bottom-h-m;else if(top+h>vh-m)top=r.top-h-m;if(top<m)top=Math.max(m,vh-h-m-90);top=Math.max(m,Math.min(vh-h-m,top));c.style.top=Math.round(top)+'px'})}
-function render(){if(!S)return;document.getElementById('app').classList.toggle('pl2',pl2());mkFloor();const flip0=fxMkSnap(),res0=fxResSnap();normAlloc(me());layoutMap();renderTop();oppChips();renderMap();renderPanel();renderSheet();renderTicker();fxMkFlip(flip0);fxResFlip(res0);pl2Top();fitChips();declutterSoon();try{coachTick()}catch(_){}
+function render(){if(!S)return;document.getElementById('app').classList.toggle('pl2',pl2());mkFloor();const flip0=fxMkSnap(),res0=fxResSnap();normAlloc(me());layoutMap();renderTop();oppChips();handDock();renderMap();renderPanel();renderSheet();renderTicker();fxMkFlip(flip0);fxResFlip(res0);pl2Top();fitChips();declutterSoon();try{coachTick()}catch(_){}
   if(UI.fx&&UI.fx.length){const q=UI.fx;UI.fx=[];if(!fxOff())requestAnimationFrame(()=>fxRun(q))}
   const pm=UI.prevMoney||{};
   S.players.forEach(p=>{if(pm[p.id]!=null&&pm[p.id]!==p.money){const d=p.money-pm[p.id];if(d>0&&S.phase==='bureau'&&typeof PAYV!=='undefined'&&PAYV!=='coins')return;floatText(document.querySelector(`[data-pid="${p.id}"]`),(d>0?'+':'−')+Math.abs(d)+' €',d>0?'#8fe39c':'#ff8a80')}});
@@ -7396,6 +7436,16 @@ function pl2Order(){const seq=seqForPhase(),a=actor(),cur=a&&S.phase!=='bureau'?
   const done=id=>S.phase==='auction'?!!P(id).done:(S.phase==='resources'||S.phase==='build')?(S.seq||[]).indexOf(id)<(S.seqIdx||0):false;
   return `<div class="pl2-ord" aria-label="${LX('Spielerreihenfolge','Turn order')}"><span class="po-k">${LX('Reihenfolge','Order')}${rev?' ←':' →'}</span>${seq.map((id,i)=>{const q=P(id);return `<span class="po${id===cur?' cur':''}${done(id)?' dn':''}${au2&&au2.all.includes(id)&&!au2.bidders.includes(id)?' out':''}${q.human?' me':''}" style="--pc:${q.color}"><i>${S.order.indexOf(id)+1}</i>${coLogo(logoOf(q),q.color,'po-lg')}<b>${q.human?LX('Du','You'):esc(shortName(q.name))}</b>${au2&&au2.all.includes(id)?(au2.high===id?`<em class="po-hi" title="${LX('Höchstgebot','Highest bid')}"><span class="tri">▲</span>${au2.bid}</em>`:au2.bidders.includes(id)?`<em class="po-in" title="${LX('bietet mit','still bidding')}"><i></i></em>`:''):bought(id)?`<em class="po-bt" title="${LX('Hat diese Runde gekauft – bietet nicht mehr','Bought this round – no more bids')}">✓${PN(boughtN(id))}</em>`:S.phase==='auction'&&done(id)?'':`<em>${q.money}€</em>`}</span>`}).join('')}</div>`}
 
+
+/* v218: Deine Kraftwerke als Hand am unteren Kartenrand (Mac, iPad quer) */
+function handDockOn(){if(!pl2()||pl2Narrow()||!S||S.gate||!['auction','build'].includes(S.phase))return false;const b=document.getElementById('board');if(!b)return false;const r=b.getBoundingClientRect();return r.width>=880&&r.height>=560}
+function handDock(){const b=document.getElementById('board');if(!b)return;let el=document.getElementById('handdock');const on=handDockOn(),ap=document.getElementById('app');if(ap.classList.contains('hdock')!==on)UI.vb=null;ap.classList.toggle('hdock',on);
+  if(!on){if(el)el.remove();return}
+  if(!el){el=document.createElement('div');el.id='handdock';b.appendChild(el)}
+  const p=me(),sv=storeOf(p),hp=heldPlants(p),fuel=Math.min(capacity(p),cityCount(p));
+  const cards=[0,1,2].map(i=>hp[i]!=null?plantCard(hp[i],{lg:true,store:sv[hp[i]]||[],act:'pinfo',sub:p.sub===hp[i]}):'<div class="plant empty lg"></div>').join('');
+  const h=`<div class="hd-h">${coLogo(logoOf(p),p.color,'hd-lg')}<b>${esc(p.name)}</b><span>${LX(`${cityCount(p)} Städte · Kapazität ${capacity(p)}`,`${cityCount(p)} cities · capacity ${capacity(p)}`)}</span></div><div class="hd-c">${cards}</div>`;
+  if(el._h!==h){el._h=h;el.innerHTML=h}}
 /* v217: Gegner sitzen als Chips auf dem Spielbrett – mit Logo, Name und ihrem letzten Zug */
 function oppStatus(q){const id=q.id,a=actor(),cur=a&&a.pid===id;
   if(S.phase==='auction'){const au=!S.xauc&&S.auc&&S.auc.mode==='bid'?S.auc:null;
