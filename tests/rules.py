@@ -70,8 +70,12 @@ async()=>{
   S.camp='c1';let r=campRecord(mk({rounds:16}));ok('win in 16 rounds = 2 stars',r.stars===2,JSON.stringify(r));
   ok('second scenario unlocked after a star',campOpen(1));
   r=campRecord(mk({rounds:16},{place:3}));ok('worse result keeps best stars',campStars().c1===2&&r.stars===0);
-  ok('crown locked below 6 stars',logoLocked('crown')&&!logoLocked('bolt'));
-  localStorage.setItem('hochspannung-camp',JSON.stringify({c1:3,c2:3}));ok('crown unlocks at 6 stars',!logoLocked('crown')&&logoLocked('laurel'));
+  const hk=localStorage.getItem(STATS_KEY);localStorage.setItem(STATS_KEY,'[]');localStorage.removeItem('hochspannung-camp');
+  ok('10 logos, 3 free at start',LOGO_KEYS.length===10&&LOGO_KEYS.filter(k=>!logoLocked(k)).length===3,[...logoUnlockedSet(true)].join());
+  localStorage.setItem('hochspannung-camp',JSON.stringify({c1:3}));logoUnlockedSet(true);ok('3 stars unlock Aurora only',!logoLocked('star')&&logoLocked('wind')&&logoLocked('crown'));
+  localStorage.setItem(STATS_KEY,JSON.stringify([Object.assign(mk({}),{diff:'expert'})]));logoUnlockedSet(true);ok('expert win unlocks Dawn and Atomic',!logoLocked('sun')&&!logoLocked('atom')&&logoLocked('leaf'));
+  localStorage.setItem('hochspannung-camp',JSON.stringify(Object.fromEntries(CAMP.map(c=>[c.id,3]))));logoUnlockedSet(true);ok('all 27 stars unlock Crown',!logoLocked('crown'));
+  if(hk!=null)localStorage.setItem(STATS_KEY,hk);else localStorage.removeItem(STATS_KEY);logoUnlockedSet(true);
   localStorage.removeItem('hochspannung-camp');delete S.camp;
   ok('season key is calendar month',seasonKey(new Date(2026,10,15))==='2026-11'&&seasonDaysLeft()>=1)}
  return {R,games};

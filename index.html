@@ -3353,6 +3353,31 @@ html:not([data-theme="light"]) #board:has(#map.atlas){background:radial-gradient
 .ge-camp .gc-new{margin:8px 0 0;font-size:12.5px;color:#ffd36e;font-weight:600}
 .lbseas{margin:0 0 10px}
 @media (max-height:500px) and (orientation:landscape){.ge-camp{max-width:640px;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2px 14px;text-align:left;padding:8px 12px;margin:4px auto 8px}.ge-camp .gc-k{grid-column:1/-1}.ge-camp .gc-st{margin:2px 0;font-size:24px;letter-spacing:3px}.ge-camp ul{font-size:12px}.ge-camp .gc-new{grid-column:1/-1;margin:2px 0 0;font-size:12px}}
+
+/* ---- v216: 10 Firmenlogos, 3 frei, 7 freischaltbar ---- */
+.logo .lg-t{stroke-width:1.5}
+.logo svg{width:62%;height:62%}
+.logo[data-f=diamond] svg{width:60%;height:60%}
+.logo[data-f=shield] svg{width:58%;height:58%}
+.co-logos{grid-template-columns:repeat(5,1fr)!important}
+.co-lg{position:relative;padding:8px 2px 6px;gap:5px}
+.co-lg .co-ln{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px!important;letter-spacing:.06em!important}
+.co-lg.locked{opacity:1;filter:none;cursor:pointer}
+.co-lg.locked .logo{filter:grayscale(1) brightness(.55)!important;opacity:.7}
+.co-lg.locked .co-ln{color:#d9b267;text-transform:none;letter-spacing:.02em!important}
+.co-lg.locked .co-lock{position:absolute;top:5px;right:5px;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;background:#0f151b;border:1px solid rgba(242,179,61,.45)}
+.co-lg.locked .co-lock svg{width:9px;height:9px;fill:none;stroke:#ffd36e;stroke-width:2.6;stroke-linejoin:round}
+.co-lg.locked.hint{border-color:rgba(242,179,61,.6)}
+.co-hint{margin:10px 2px 0;font-size:12.5px;line-height:1.4;color:var(--muted);min-height:1.4em}
+.co-hint b{color:#ffd36e;font-weight:600}
+@media (max-width:420px){.co-logos{gap:6px!important}.co-lg .logo{--ls:32px!important}}
+@media (max-height:500px) and (orientation:landscape){.co-logos{grid-template-columns:repeat(10,1fr)!important}.co-lg .logo{--ls:30px!important}}
+.ge-logo{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 auto 12px;max-width:520px}
+.ge-logo .gl-it{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;border-radius:14px;border:1px solid rgba(242,179,61,.45);background:rgba(242,179,61,.07);animation:gcPop .5s cubic-bezier(.2,1.6,.4,1) 1.6s both}
+.ge-logo .gl-lg{--ls:40px}
+.ge-logo span{display:flex;flex-direction:column;text-align:left}
+.ge-logo small{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#d9b267}
+.ge-logo b{font:800 14px/1.2 'Orbitron',var(--display);color:#ffd36e}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -4536,7 +4561,7 @@ function endShow(){document.documentElement.classList.remove('gm-ending');if(!S|
     chart=`<div class="ec"><div class="ec-h">${LX('Städte pro Runde','Cities per round')}</div><svg viewBox="0 0 ${cw} ${chH}" preserveAspectRatio="none">${[.25,.5,.75].map(f=>`<line x1="0" x2="${cw}" y1="${(chH*f).toFixed(0)}" y2="${(chH*f).toFixed(0)}"/>`).join('')}${seat.map(i=>`<polyline class="${i===W?'w':''}" pathLength="1" style="--pc:${P(i).color}" points="${se.map((r,k)=>X(k)+','+Y(r.c[i])).join(' ')}"/>`).join('')}</svg><div class="ec-x"><span>${LX('Runde','Round')} 1</span><span>${se.length}</span></div></div>`}
   const cards=aw.map((a,k)=>`<div class="ea" style="--pc:${P(a.i).color};--d:${(2.1+k*.2).toFixed(2)}s"><span class="ea-ic"><svg viewBox="0 0 24 24">${EIC[a.ic]}</svg></span><span class="ea-t">${a.t}</span><b class="ea-v">${a.val}</b><span class="ea-s">${a.sub}</span><span class="ea-p"><i></i>${esc(P(a.i).name)}</span></div>`).join('');
   o=document.createElement('div');o.id='gmEnd';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label',LX('Spielende','Game over'));
-  o.innerHTML=`<div class="ge-in"><div class="ge-k">${LX('Spielende','Game over')} · ${LX('Runde','Round')} ${S.round}</div>${campEndHTML()}
+  o.innerHTML=`<div class="ge-in"><div class="ge-k">${LX('Spielende','Game over')} · ${LX('Runde','Round')} ${S.round}</div>${campEndHTML()}${logoNewHTML()}
    <div class="ge-bars n${n}">${bars}</div>
    <div class="ge-win" ${pc(W)}><span class="ge-gm">GRID MASTER</span><span class="ge-wn">${esc(wp.name)}</span><span class="ge-ws">${pow[W]} ${LX('Städte versorgt','cities powered')}${W===H?' · '+LX('Glückwunsch!','Congratulations!'):''}</span></div>
    ${cards?`<div class="ge-aw">${cards}</div>`:''}
@@ -6354,16 +6379,22 @@ const CAMP=[
 function campStars(){try{return JSON.parse(localStorage.getItem('hochspannung-camp')||'{}')}catch(_){return{}}}
 function campTotal(){const s=campStars();return Object.values(s).reduce((a,b)=>a+b,0)}
 function campOpen(i){if(i===0)return true;const s=campStars();return (s[CAMP[i-1].id]||0)>=1}
-function logoLocked(k){const c=LOGOS[k]&&LOGOS[k].camp;return !!c&&campTotal()<c}
+function logoReqMet(u,h,st){if(!u)return true;const W=h.filter(g=>g&&g.players&&!g.partial&&gWin(g));
+  if(u.t==='camp')return st>=u.n;if(u.t==='win')return W.length>0;if(u.t==='green')return W.some(g=>gGreen(g)>=40);if(u.t==='expert')return W.some(g=>g.diff==='expert');return false}
+function logoReqText(k,short){const u=LOGOS[k]&&LOGOS[k].un;if(!u)return'';if(u.t==='camp')return short?u.n+'★':LX(`${u.n} Kampagnen-Sterne sammeln`,`Collect ${u.n} campaign stars`);
+  return {win:short?LX('1. Sieg','1st win'):LX('Gewinne deine erste Partie','Win your first game'),green:short?LX('40 % grün','40 % green'):LX('Gewinne mit mindestens 40 % erneuerbarem Strom','Win with at least 40 % renewable power'),expert:short?LX('Experte','Expert'):LX('Gewinne gegen Experten-KI','Win against Expert AI')}[u.t]}
+let LOGO_CACHE=null;
+function logoUnlockedSet(fresh){if(LOGO_CACHE&&!fresh)return LOGO_CACHE;let h=[];try{h=loadHist()}catch(_){}const st=campTotal();LOGO_CACHE=new Set(Object.keys(LOGOS).filter(k=>logoReqMet(LOGOS[k].un,h,st)));return LOGO_CACHE}
+function logoLocked(k){return !!(LOGOS[k]&&LOGOS[k].un)&&!logoUnlockedSet().has(k)}
 function campEval(rec,c){return c.g.map(x=>{try{return !!x[2](rec)}catch(_){return false}})}
 function campRecord(rec){if(!S||!S.camp)return null;const c=CAMP.find(x=>x.id===S.camp);if(!c)return null;const ok=campEval(rec,c);let st=0;if(ok[0])st=1+(ok[1]?1:0)+(ok[2]?1:0);else st=0;
   const all=campStars(),old=all[c.id]||0,before=campTotal();if(st>old){all[c.id]=st;try{localStorage.setItem('hochspannung-camp',JSON.stringify(all))}catch(_){}}
-  const after=campTotal(),unl=Object.keys(LOGOS).filter(k=>LOGOS[k].camp&&before<LOGOS[k].camp&&after>=LOGOS[k].camp);
-  return UI.campRes={id:c.id,stars:st,old,ok,unl}}
+  return UI.campRes={id:c.id,stars:st,old,ok,unl:[]}}
 function campEndHTML(){const r=UI.campRes;if(!r||!S||S.camp!==r.id)return'';const c=CAMP.find(x=>x.id===r.id),i=CAMP.indexOf(c),T=LANG==='en'?c.en:c.de;
-  return `<div class="ge-camp"><span class="gc-k">${LX('Kampagne','Campaign')} ${i+1} · ${esc(T[0])}</span><div class="gc-st">${[0,1,2].map(k=>`<i class="${k<r.stars?'on':''}" style="--d:${(1+k*.25).toFixed(2)}s">★</i>`).join('')}</div><ul>${c.g.map((x,k)=>`<li class="${r.ok[k]&&(k===0||r.ok[0])?'ok':''}">${LANG==='en'?x[1]:x[0]}</li>`).join('')}</ul>${r.stars>r.old?`<p class="gc-new">${LX('Neuer Bestwert!','New best!')}${i+1<CAMP.length&&r.old===0&&r.stars>0?' '+LX('Nächstes Szenario freigeschaltet.','Next scenario unlocked.'):''}</p>`:''}${r.unl.length?`<p class="gc-new">${LX('Neues Logo freigeschaltet','New logo unlocked')}: ${r.unl.map(k=>logoName(k)).join(', ')}</p>`:''}</div>`}
+  return `<div class="ge-camp"><span class="gc-k">${LX('Kampagne','Campaign')} ${i+1} · ${esc(T[0])}</span><div class="gc-st">${[0,1,2].map(k=>`<i class="${k<r.stars?'on':''}" style="--d:${(1+k*.25).toFixed(2)}s">★</i>`).join('')}</div><ul>${c.g.map((x,k)=>`<li class="${r.ok[k]&&(k===0||r.ok[0])?'ok':''}">${LANG==='en'?x[1]:x[0]}</li>`).join('')}</ul>${r.stars>r.old?`<p class="gc-new">${LX('Neuer Bestwert!','New best!')}${i+1<CAMP.length&&r.old===0&&r.stars>0?' '+LX('Nächstes Szenario freigeschaltet.','Next scenario unlocked.'):''}</p>`:''}</div>`}
+function logoNewHTML(){const n=UI.logoNew;if(!n||n.s!==S||!n.keys.length)return'';return `<div class="ge-logo">${n.keys.map(k=>`<div class="gl-it">${coLogo(k,'#4f9dff','gl-lg')}<span><small>${LX('Neues Firmenlogo','New company logo')}</small><b>${logoName(k)}</b></span></div>`).join('')}</div>`}
 function campSheet(){const s=campStars(),tot=campTotal();
-  let h=`<div class="camp"><div class="cp-sum"><b>${tot}</b><span>/ ${CAMP.length*3} ★</span><small>${LX('Sterne schalten neue Firmenlogos frei','Stars unlock new company logos')}: ${Object.keys(LOGOS).filter(k=>LOGOS[k].camp).map(k=>`<em class="${tot>=LOGOS[k].camp?'on':''}">${LOGOS[k].camp}★ ${logoName(k)}</em>`).join(' ')}</small></div><ol class="cp-list">`;
+  let h=`<div class="camp"><div class="cp-sum"><b>${tot}</b><span>/ ${CAMP.length*3} ★</span><small>${LX('Sterne schalten neue Firmenlogos frei','Stars unlock new company logos')}: ${Object.keys(LOGOS).filter(k=>LOGOS[k].un&&LOGOS[k].un.t==='camp').map(k=>`<em class="${tot>=LOGOS[k].un.n?'on':''}">${LOGOS[k].un.n}★ ${logoName(k)}</em>`).join(' ')}</small></div><ol class="cp-list">`;
   CAMP.forEach((c,i)=>{const T=LANG==='en'?c.en:c.de,st=s[c.id]||0,open=campOpen(i),M=MAPS[c.map];
     h+=`<li class="cp-it${open?'':' locked'}${st===3?' full':''}"><span class="cp-n">${i+1}</span><div class="cp-tx"><b>${esc(T[0])}</b><small>${esc(T[1])}</small><span class="cp-meta">${esc(tr(M.name))} · ${c.n+1} ${LX('Spieler','players')} · ${tr(AI_NAME[c.diff])}</span><span class="cp-g">${c.g.map((x,k)=>`<i class="${k<st?'on':''}">★</i><span>${LANG==='en'?x[1]:x[0]}</span>`).join('')}</span></div>${open?`<button type="button" class="btn pri cp-go" data-act="campGo" data-i="${i}">${st?LX('Nochmal','Replay'):LX('Spielen','Play')}</button>`:`<span class="cp-lock">🔒</span>`}</li>`});
   return h+`</ol></div>`}
@@ -6377,8 +6408,10 @@ function onGameEnd(){
   const rec={v:1,id:Date.now()+'-'+Math.floor(Math.random()*1e4),date:t.start,end:t.end||Date.now(),rounds:S.round,diff:S.ai||'normal',map:S.map||'de',deck:S.deckId||'std',n:S.n,regions:S.regions.slice(),step2:t.step2,step3:t.step3,partial:!!t.partial,
     players:S.players.map(p=>({name:p.name,color:p.color,human:!!p.human,powered:p.lastPowered,cities:p.cities.length,money:p.money,plants:p.plants.slice(),place:S.ranking.indexOf(p.id)+1,...t.pl[p.id]})),
     series:t.series};
+  const unlB=new Set(logoUnlockedSet(true));
   if(S.camp)rec.camp=S.camp;try{campRecord(rec)}catch(_){}
-  const h=loadHist();h.push(rec);saveHist(h);UI.statSel=rec.id;UI.statView='total';UI.lbMsg='';UI.lbLink='';
+  const h=loadHist();h.push(rec);saveHist(h);
+  try{const unlA=logoUnlockedSet(true);UI.logoNew={s:S,keys:[...unlA].filter(k=>!unlB.has(k))}}catch(_){}UI.statSel=rec.id;UI.statView='total';UI.lbMsg='';UI.lbLink='';
   if(LB.db&&LB.canWrite!==false&&!isDefaultName(lbName())){const r=recToResult(rec,lbName());lbSubmit(r,'app').then(st=>{UI.lbMsg=LB_MSG[st]||'';if(st==='ok')UI.lbDone=rec.id;refreshLB()})}
 }
 const LOC=()=>LANG==='en'?'en-GB':'de-DE';
@@ -6926,7 +6959,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v215';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v216';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -7239,32 +7272,26 @@ function plantArt(n){if(n==null||!PLANTS[n])return'';const gas=!!(S&&MAPS[S.map]
 
 /* ==== v176: Firmenidentitäten – jede Firma hat ein eigenes Logo in ihrer Farbe ==== */
 const LOGOS={
-  crown:{fr:'shield',nm:['Krone','Crown'],f:1,d:'M4.5 17.5h15l1.2-9.5-5.2 4.2L12 5l-3.5 7.2-5.2-4.2z',camp:6},
-  laurel:{fr:'circle',nm:['Lorbeer','Laurel'],d:'M12 20c-5-2-7.2-6.2-7-11.5M12 20c5-2 7.2-6.2 7-11.5M6.8 9.6c1.2.8 2.4.7 3.2-.3M6.4 13.6c1.3.7 3 .5 3.8-.6M17.2 9.6c-1.2.8-2.4.7-3.2-.3M17.6 13.6c-1.3.7-3 .5-3.8-.6',camp:12},
-  trophy:{fr:'hex',nm:['Pokal','Trophy'],d:'M8 4h8v5a4 4 0 0 1-8 0zM8 6H5.5a3 3 0 0 0 2.8 4M16 6h2.5a3 3 0 0 1-2.8 4M12 13v4M9 20h6M10 17h4',camp:20},
-  bolt:{fr:'hex',nm:['Voltaic','Voltaic'],f:1,d:'M13.5 2 5 13.2h5.6L9.4 22 19 9.8h-5.7z'},
-  wave:{fr:'circle',nm:['Gezeiten','Tidal'],d:'M3 8.5c3-3 6 3 9 0s6 3 9 0M3 15.5c3-3 6 3 9 0s6 3 9 0'},
-  sun:{fr:'arch',nm:['Morgenrot','Dawn'],d:'M3.5 17.5h17M7 17.5a5 5 0 0 1 10 0M12 5v3M5.4 8.6l2 2M18.6 8.6l-2 2'},
-  pylon:{fr:'shield',nm:['Trasse','Pylon'],d:'M12 3 7.5 21M12 3l4.5 18M8.8 9h6.4M6.6 14.5h10.8M9.4 9l5.6 5.5M14.6 9 9 14.5'},
-  star:{fr:'diamond',nm:['Aurora','Aurora'],f:1,d:'M12 2.8l2 6 6.2.2-5 3.8 1.8 6L12 15.3 7 18.8l1.8-6-5-3.8 6.2-.2z'},
-  hex:{fr:'octa',nm:['Hexvolt','Hexvolt'],d:'M12 2.8l8 4.6v9.2L12 21.2l-8-4.6V7.4zM12.9 7.2 9.4 12.6h3.1l-.9 4.2 3.5-5.4H12z'},
-  leaf:{fr:'squircle',nm:['Verdant','Verdant'],d:'M5 19c0-8.5 5.5-14 14-14 0 9-5.5 14-14 14zM5 19l8.5-8.5'},
-  atom:{fr:'circle',nm:['Atomar','Atomic'],d:'M12 4c3.2 0 3.2 16 0 16S8.8 4 12 4zM5 8c1.6-2.8 15.6 5.2 14 8s-15.6-5.2-14-8zM5 16c-1.6-2.8 12.4-10.8 14-8s-12.4 10.8-14 8zM12 11v2'},
-  flame:{fr:'shield',nm:['Glut','Ember'],f:1,d:'M12 21.5c3.9 0 6.3-2.6 6.3-6.2 0-3.6-2.6-5.4-3.7-8.8-1.6 1.6-2 3.4-2 4.6-1.2-1-2.3-3.4-1.8-6.6C7.6 6.3 5.7 10.3 5.7 15.3c0 3.6 2.4 6.2 6.3 6.2z'},
-  drop:{fr:'arch',nm:['Quelle','Source'],f:1,d:'M12 2.5s6.5 7.4 6.5 11.8a6.5 6.5 0 0 1-13 0C5.5 9.9 12 2.5 12 2.5z'},
-  wind:{fr:'hex',nm:['Böe','Gale'],d:'M12 21v-9M12 12 8.5 3.8M12 12l8.4 2.6M12 12l-7.3 5.3'},
-  globe:{fr:'circle',nm:['Global','Global'],d:'M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18'},
-  plug:{fr:'squircle',nm:['Anschluss','Socket'],d:'M9 3v5M15 3v5M6.5 8h11v3a5.5 5.5 0 0 1-11 0zM12 16.5V21'},
-  peak:{fr:'diamond',nm:['Gipfel','Summit'],f:1,d:'M2.5 19.5 9.5 7.5l3.6 6.1 2.6-4.1 5.8 10z'}
+  bolt:{fr:'hex',nm:['Voltaic','Voltaic'],L:[['f','M13.4 3.6 6.4 13h4.8l-1.2 7.4 7.8-10.2h-4.9z'],['t','M4 12.6a8 8 0 0 1 3.6-6.9M20 11.4a8 8 0 0 1-3.6 6.9',.6],['f','M18.4 4.25a1.15 1.15 0 1 0 0 2.3 1.15 1.15 0 1 0 0-2.3zM5.6 17.450000000000003a1.15 1.15 0 1 0 0 2.3 1.15 1.15 0 1 0 0-2.3z',.85]]},
+  wave:{fr:'circle',nm:['Gezeiten','Tidal'],L:[['f','M7.6 11.2a4.4 4.4 0 0 1 8.8 0z',.5],['t','M12 3.6v2.1M6.9 5.6l1.1 1.5M17.1 5.6 16 7.1',.7],['s','M3 14.2c2-1.8 4 1.8 6 0s4 1.8 6 0 4 1.8 6 0'],['t','M5.2 18.3c1.7-1.4 3.4 1.4 5.1 0s3.4 1.4 5.1 0 3 1.2 3.6.6',.6]]},
+  pylon:{fr:'shield',nm:['Trasse','Pylon'],L:[['s','M12 3.6 7.8 20.4M12 3.6l4.2 16.8M7.8 20.4h8.4'],['s','M5.4 8h13.2M4.2 12.4h15.6'],['t','M5.4 8v2M18.6 8v2M4.2 12.4v2M19.8 12.4v2M9.8 12.4l4.9 4.4M14.2 12.4l-4.9 4.4',.85]]},
+  sun:{fr:'arch',nm:['Morgenrot','Dawn'],un:{t:'win'},L:[['f','M6.6 16.4a5.4 5.4 0 0 1 10.8 0z'],['s','M3 16.4h18'],['t','M6 19.6h12',.55],['t','M12 4.4v2.6M5.7 7.5l1.8 1.8M18.3 7.5l-1.8 1.8M3.4 12.4h2.2M18.4 12.4h2.2',.8]]},
+  star:{fr:'octa',nm:['Aurora','Aurora'],un:{t:'camp',n:3},L:[['f','M11.4 5.6l1.6 4.5 4.8.2-3.8 2.9 1.4 4.6-4-2.7-4 2.7 1.4-4.6-3.8-2.9 4.8-.2z'],['t','M3.4 14.6c2.6 5.4 13.6 6 17.4-4.4',.6],['f','M19 2.8l.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6z',.85]]},
+  leaf:{fr:'squircle',nm:['Verdant','Verdant'],un:{t:'green'},L:[['f','M5 19C5 10.5 10.5 5 19 5c0 8.5-5.5 14-14 14z',.38],['s','M5 19C5 10.5 10.5 5 19 5c0 8.5-5.5 14-14 14z'],['t','M5 19 15.4 8.6M9.4 14.6h4.2M12.4 11.6V7.6',.95]]},
+  wind:{fr:'hex',nm:['Turbine','Turbine'],un:{t:'camp',n:9},L:[['f','M11.1 11.4h1.8l.8 9h-3.4z'],['f','M12 10c-2.1-2-2.5-5.4-.7-7.7 1.9.8 2.9 4.5.7 7.7z'],['f','M12 10c-2.1-2-2.5-5.4-.7-7.7 1.9.8 2.9 4.5.7 7.7z',1,'rotate(120 12 10)'],['f','M12 10c-2.1-2-2.5-5.4-.7-7.7 1.9.8 2.9 4.5.7 7.7z',1,'rotate(240 12 10)'],['f','M12 8.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 1 0 0-3z']]},
+  atom:{fr:'circle',nm:['Atomar','Atomic'],un:{t:'expert'},L:[['t','M3.8 12a8.2 3.4 0 1 0 16.4 0 8.2 3.4 0 1 0-16.4 0z',.9],['t','M3.8 12a8.2 3.4 0 1 0 16.4 0 8.2 3.4 0 1 0-16.4 0z',.9,'rotate(60 12 12)'],['t','M3.8 12a8.2 3.4 0 1 0 16.4 0 8.2 3.4 0 1 0-16.4 0z',.9,'rotate(120 12 12)'],['f','M12 10a2 2 0 1 0 0 4 2 2 0 1 0 0-4z'],['f','M19.6 10.9a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 1 0 0-2.2z']]},
+  peak:{fr:'diamond',nm:['Gipfel','Summit'],un:{t:'camp',n:18},L:[['f','M2.6 19.4 9.4 8.2l3.4 5.5 2.4-3.6 6.2 9.3z'],['f','M17.6 2.5999999999999996a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 1 0 0-4.4z',.55],['t','M9.4 8.2V3.4l3.2 1.3-3.2 1.3',.95]]},
+  crown:{fr:'shield',nm:['Krone','Crown'],un:{t:'camp',n:27},L:[['f','M4.6 16.4h14.8l1.1-8.6-4.8 3.8L12 5.6l-3.7 6-4.8-3.8z'],['s','M5 19.4h14',.9],['f','M3.4 5.15a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 1 0 0-2.5zM12 1.9500000000000002a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 1 0 0-2.5zM20.6 5.15a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 1 0 0-2.5z',.9]]}
 };
 const LOGO_KEYS=Object.keys(LOGOS);
-const AI_LOGO={'Rheinstrom AG':'wave','Ostwatt':'sun','Südnetz':'pylon','Nordlicht Energie':'star','Westfalen Volt':'hex'};
+const AI_LOGO={'Rheinstrom AG':'wave','Ostwatt':'sun','Südnetz':'pylon','Nordlicht Energie':'star','Westfalen Volt':'wind'};
 let MY_LOGO='bolt';try{const v=localStorage.getItem('hochspannung-logo');if(v&&LOGOS[v])MY_LOGO=v}catch(_){}
+setTimeout(()=>{try{if(logoLocked(MY_LOGO))MY_LOGO='bolt'}catch(_){}},0);
 function logoOf(p){if(!p)return'bolt';if(p.logo&&LOGOS[p.logo])return p.logo;if(p.human)return MY_LOGO;return AI_LOGO[p.name]||LOGO_KEYS[(p.id||0)%LOGO_KEYS.length]}
-function logoGlyph(k){const L=LOGOS[k]||LOGOS.bolt;return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${L.d}" class="${L.f?'lg-f':'lg-s'}"/></svg>`}
+function logoGlyph(k){const L=LOGOS[k]||LOGOS.bolt;return `<svg viewBox="0 0 24 24" aria-hidden="true">${L.L.map(([t,d,o,tf])=>`<path d="${d}" class="${t==='f'?'lg-f':t==='t'?'lg-s lg-t':'lg-s'}"${o!=null&&o<1?` opacity="${o}"`:''}${tf?` transform="${tf}"`:''}/>`).join('')}</svg>`}
 function coLogo(k,color,cls=''){const L=LOGOS[k]||LOGOS.bolt;return `<span class="logo ${cls}" data-f="${L.fr||'squircle'}" style="--lc:${color}" aria-hidden="true"><span class="lo-in">${logoGlyph(k)}</span></span>`}
 function logoName(k){const L=LOGOS[k]||LOGOS.bolt;return (L.nm||[k,k])[LANG==='en'?1:0]}
-function logoPicker(){return `<div class="co-brand"><div class="cb-glow"></div>${coLogo(MY_LOGO,'#4f9dff','cb-logo')}<div class="cb-tx"><span class="cb-k">${LX('Marke','Marque')} · ${logoName(MY_LOGO)}</span><b class="cb-n" id="cbName">${esc(nmVal()||LX('Dein Betrieb','Your company'))}</b><span class="cb-s">${LX('Netzbetreiber seit Runde 1','Grid operator since round 1')}</span></div></div><div class="co-logos" role="radiogroup" aria-label="${LX('Logo','Logo')}">${LOGO_KEYS.map(k=>logoLocked(k)?`<span class="co-lg locked" title="${LX(`Kampagne: ${LOGOS[k].camp} Sterne`,`Campaign: ${LOGOS[k].camp} stars`)}">${coLogo(k,'#4f9dff','co-lgi')}<i>${LOGOS[k].camp}★</i></span>`:`<button type="button" class="co-lg${k===MY_LOGO?' on':''}" data-act="coLogo" data-l="${k}" role="radio" aria-checked="${k===MY_LOGO}" aria-label="${logoName(k)}">${coLogo(k,'#4f9dff')}<span class="co-ln">${logoName(k)}</span></button>`).join('')}</div>`}
+function logoPicker(){return `<div class="co-brand"><div class="cb-glow"></div>${coLogo(MY_LOGO,'#4f9dff','cb-logo')}<div class="cb-tx"><span class="cb-k">${LX('Marke','Marque')} · ${logoName(MY_LOGO)}</span><b class="cb-n" id="cbName">${esc(nmVal()||LX('Dein Betrieb','Your company'))}</b><span class="cb-s">${LX('Netzbetreiber seit Runde 1','Grid operator since round 1')}</span></div></div><div class="co-logos" role="radiogroup" aria-label="${LX('Logo','Logo')}">${LOGO_KEYS.map(k=>logoLocked(k)?`<button type="button" class="co-lg locked${UI.logoHint===k?' hint':''}" data-act="logoHint" data-l="${k}" aria-label="${logoName(k)} – ${logoReqText(k)}">${coLogo(k,'#4f9dff','co-lgi')}<span class="co-ln">${logoReqText(k,1)}</span><i class="co-lock" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 11V8a5 5 0 0 1 10 0v3M5.5 11h13v9.5h-13z"/></svg></i></button>`:`<button type="button" class="co-lg${k===MY_LOGO?' on':''}" data-act="coLogo" data-l="${k}" role="radio" aria-checked="${k===MY_LOGO}" aria-label="${logoName(k)}">${coLogo(k,'#4f9dff')}<span class="co-ln">${logoName(k)}</span></button>`).join('')}</div><p class="co-hint">${UI.logoHint&&logoLocked(UI.logoHint)?`<b>${logoName(UI.logoHint)}</b> · ${logoReqText(UI.logoHint)}`:LX(`${LOGO_KEYS.filter(k=>!logoLocked(k)).length} von ${LOGO_KEYS.length} Logos verfügbar · gesperrte antippen`,`${LOGO_KEYS.filter(k=>!logoLocked(k)).length} of ${LOGO_KEYS.length} logos available · tap a locked one`)}</p>`}
 
 /* ==== v184: iPhone-Layout mit Phasenleiste, Mini-Trackern, eingeklappter Karte und einem Abschnitt pro Phase ==== */
 const PL2_MQ0=0;const PL2_MQ=window.matchMedia?matchMedia('(max-width:600px) and (orientation:portrait)'):{matches:false,addEventListener(){}};
@@ -7430,6 +7457,7 @@ const A={
   mapPeek:()=>{UI.peek=!UI.peek;UI.peekKey=S.round+S.phase;UI.vb=null},
   theme:b=>{setTheme(b.dataset.t)},
   sv:b=>{if(UI.sv==='co')UI.name=nmVal(),saveName(UI.name);UI.sv=b.dataset.v||'';renderStart(true);start.scrollTop=0;const sd=start.querySelector('.s3-side');if(sd)sd.scrollTop=0;return'skip'},
+  logoHint:b=>{UI.logoHint=UI.logoHint===b.dataset.l?null:b.dataset.l;if(UI.sv==='co')UI.name=nmVal(),saveName(UI.name);renderStart(true);return'skip'},
   coLogo:b=>{const k=b.dataset.l;if(!LOGOS[k]||logoLocked(k))return'skip';if(UI.sv==='co')UI.name=nmVal(),saveName(UI.name);MY_LOGO=k;try{localStorage.setItem('hochspannung-logo',k)}catch(_){}if(S){const me_=S.players.find(q=>q.human);if(me_)me_.logo=k}renderStart(true);return'skip'},
   coRand:()=>{const cur=nmVal();const pool=CO_NAMES.filter(n=>n!==cur);UI.name=pool[Math.floor(Math.random()*pool.length)];saveName(UI.name);renderStart(true);const i=$('#nm');if(i){i.classList.add('co-flash');setTimeout(()=>i.classList.remove('co-flash'),500)}return'skip'},
   xToggle:()=>{if(MAPS[UI.map].exp)return'skip';UI.xopen=!UI.xopen;UI.name=nmVal();renderStart(true);return'skip'},
