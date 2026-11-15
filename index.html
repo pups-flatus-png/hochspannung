@@ -3284,6 +3284,15 @@ html:not([data-theme="light"]) #board:has(#map.atlas){background:radial-gradient
 .rv-tie{margin:14px 0 0;font-size:12.5px;color:#ffd77a}
 .rv-skip{margin:22px 0 0;font-size:11px;color:#5d6b77;letter-spacing:.08em}
 @media (orientation:landscape) and (max-height:520px){.rv-card h2{margin-bottom:10px}.rv-row{padding:7px 12px}.rv-list{gap:5px}.rv-skip{margin-top:10px}}
+
+/* ---- v213: KI-Erklärungen ---- */
+.why{margin:4px 0 10px;border-radius:12px;border:1px solid var(--line);background:var(--panel-2,rgba(255,255,255,.03))}
+.why summary{cursor:pointer;list-style:none;padding:10px 12px;font:600 12.5px/1.2 Barlow,system-ui;color:var(--accent);display:flex;align-items:center;gap:8px}
+.why summary::-webkit-details-marker{display:none}
+.why summary::before{content:"?";flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:rgba(242,179,61,.15);border:1px solid rgba(242,179,61,.5);font:800 10px/1 'Orbitron',var(--display)}
+.why ul{list-style:none;margin:0;padding:0 12px 10px;display:flex;flex-direction:column;gap:8px}
+.why li{font-size:12.5px;line-height:1.4;color:var(--fg);padding-left:10px;border-left:3px solid var(--pc)}
+.why li b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--pc);margin-bottom:2px}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -3849,7 +3858,9 @@ function roundGrid(){/* v192: Rundenübersicht als Raster */
       c(q.bn?'+'+q.bn:'–',q.bn?q.bc+' €':'')+
       c((q.pw??p.lastPowered??0)+'',q.inc!=null?'+'+q.inc+' €':'',' pw')+
       c(p.money+' €',cityCount(p)+' '+L('Städte','cities'),' cash')+`</div>`}).join('');
-  return `<div class="rgrid"><div class="rg-r rg-hd"><span></span>${hd.map(h=>`<span>${h}</span>`).join('')}</div>${rows}</div>`}
+  return `<div class="rgrid"><div class="rg-r rg-hd"><span></span>${hd.map(h=>`<span>${h}</span>`).join('')}</div>${rows}</div>${whyHTML(r)}`}
+function whyHTML(r){const W=(S.why||{})[r];if(!W)return'';const li=S.order.map(P).filter(p=>!p.human&&W[p.id]).map(p=>{const a=W[p.id];const ks=Object.keys(a);const auc=ks.filter(k=>k==='auc'||k.startsWith('bid')).map(k=>a[k]);const pick=[...auc.slice(-1),a.buy,a.build].filter(Boolean);return `<li ${pc(p.id)}><b>${esc(shortName(p.name))}</b><span>${pick.map(x=>{const t=LANG==='en'?x[1]:x[0];return esc(t.charAt(0).toUpperCase()+t.slice(1))}).join(' ')}</span></li>`}).join('');
+  return li?`<details class="why" ${UI.whyOpen?'open':''} ontoggle="UI.whyOpen=this.open"><summary>${LX('Warum haben die Gegner so gespielt?','Why did the opponents play like that?')}</summary><ul>${li}</ul></details>`:''}
 function gateHTML(){const k=S.gate,N={resources:[LX('Auktion abgeschlossen','Auction complete'),LX('Weiter zu Rohstoffe','Continue to resources')],build:[LX('Rohstoffe abgeschlossen','Resources complete'),LX('Weiter zum Bauen','Continue to build')],bureau:[LX('Bauen abgeschlossen','Building complete'),LX('Weiter zum Liefern','Continue to power')],round:[LX(`Runde ${S.round} abgeschlossen`,`Round ${S.round} complete`),LX(`Weiter zu Runde ${S.round+1}`,`Continue to round ${S.round+1}`)]}[k];
   const lines=S.log.filter(l=>l.r===S.round).slice(0,6).map(l=>`<p ${l.pid!=null?pc(l.pid):''}><span class="dot"></span>${esc(tr(l.t))}</p>`).join('');
   UI._ab={t:N[0],h:`<div class="row"><button type="button" class="btn pri grow" data-act="gateGo">${N[1]} →</button></div>`};
@@ -4049,6 +4060,8 @@ function smartCeiling(p,num){
   prem+=(aiNoise(p,'j'+S.round+'-'+num)-1)*2;
   return Math.max(minBid(num),Math.round(num+prem));
 }
+/* v213: KI erklärt ihre Züge – kurze Gründe pro Runde, im Rundenabschluss sichtbar */
+function why(p,k,de,en){if(!S||p.human)return;S.why=S.why||{};const r=S.why[S.round]=S.why[S.round]||{};const a=r[p.id]=r[p.id]||{};a[k]=[de,en];const ks=Object.keys(S.why);if(ks.length>3)delete S.why[ks[0]]}
 function aiChoose(p){
   let best=null,bs=-1e9;
   for(const num of buyable()){
@@ -4056,12 +4069,13 @@ function aiChoose(p){
     const maxb=Math.min(v,p.money-aiReserve(p));if(maxb<minBid(num))continue;
     const s=v-minBid(num)+PLANTS[num][2]*3;if(s>bs){bs=s;best=num}
   }
-  if(S.round>1&&Math.random()<L(p).pass)return doPass(p.id);
+  if(S.round>1&&Math.random()<L(p).pass){why(p,'auc','verzichtet diesmal auf ein Kraftwerk und schont ihr Geld.','skips the auction this time to save money.');return doPass(p.id)}
   if(S.round>1){
     const spare=capacity(p)-p.cities.length;
-    if(!best||(spare>=3&&heldPlants(p).length>=2&&bs<22)||(heldPlants(p).length===3&&bs<12))return doPass(p.id);
+    if(!best||(spare>=3&&heldPlants(p).length>=2&&bs<22)||(heldPlants(p).length===3&&bs<12)){if(spare>=3)why(p,'auc',`verzichtet: ihre Kraftwerke reichen schon für ${capacity(p)} Städte, sie hat erst ${p.cities.length}.`,`passes: her plants already cover ${capacity(p)} cities and she has only ${p.cities.length}.`);else why(p,'auc','verzichtet: kein Kraftwerk im Markt lohnt sich für ihr Budget.','passes: no plant on the market is worth it for her budget.');return doPass(p.id)}
   }
-  if(!best){const c=buyable().filter(n=>minBid(n)<=p.money);if(!c.length)return doPass(p.id);best=c[0]}
+  if(!best){const c=buyable().filter(n=>minBid(n)<=p.money);if(!c.length){why(p,'auc','kann sich kein Kraftwerk leisten.','cannot afford any plant.');return doPass(p.id)}best=c[0]}
+  {const g=capGain(p,best);why(p,'auc',`bietet auf Kraftwerk ${PN(best)}: +${g} Kapazität (${capacity(p)} → ${capacity(p)+g} Städte).`,`opens plant ${PN(best)}: +${g} capacity (${capacity(p)} → ${capacity(p)+g} cities).`)}
   let ob=minBid(best);const sm=L(p).smart;if(sm&&S.round>1){const v=aiPlantValue(p,best);const room=Math.min(v,p.money-aiReserve(p))-ob;if(room>=3&&Math.random()<sm.open)ob+=1+Math.floor(Math.random()*Math.min(room-1,4))}
   doOpen(p.id,best,ob);
 }
@@ -4076,6 +4090,7 @@ function aiBid(p){
     const hg=capGain(P(a.high),a.plant),og=capGain(p,a.plant);
     if(og>0){const n=aiNoise(p,'h'+S.round+'-'+a.plant);const den=Math.round((1.5+Math.min(hg,4)*1.1+Math.min(og,4)*0.8+(FREE(PLANTS[a.plant][0])?1.5:0))*n);
       if(n>0.45)maxb=Math.max(maxb,Math.min(Math.floor(a.plant)+den,p.money-aiReserve(p)))}}
+  if(a.bid+1>maxb&&p.id!==a.high){const lim=Math.max(maxb,minBid(a.plant));if(p.money<a.bid+1)why(p,'bid'+a.plant,`steigt bei Kraftwerk ${PN(a.plant)} aus: nicht genug Geld.`,`drops out of plant ${PN(a.plant)}: not enough money.`);else why(p,'bid'+a.plant,`steigt aus, als das Gebot bei ${a.bid} € steht: Kraftwerk ${PN(a.plant)} ist ihr höchstens ${lim} € wert.`,`drops out when the bid reaches ${a.bid} €: plant ${PN(a.plant)} is worth at most ${lim} € to her.`)}
   if(a.bid+1<=maxb){let inc=1;const sm=L(p).smart;if(sm&&maxb-a.bid>=4&&Math.random()<sm.jump)inc=Math.min(maxb-a.bid,2+Math.floor(Math.random()*3));bidRaise(p.id,a.bid+inc)}else bidDrop(p.id);
 }
 function aiDiscard(p){
@@ -4177,6 +4192,7 @@ function aiBuy(p){
   let buy=plan.buy;
   if(MR().india){const r=RES.slice().sort((a,b)=>buy[b]-buy[a])[0];buy={coal:0,oil:0,garbage:0,uranium:0};if(plan.buy[r]>0)buy[r]=1}
   withSide(side,()=>buyResources(p.id,buy));
+  {const n=RES.reduce((x,r)=>x+buy[r],0),can=Math.min(fueledCap(p),capacity(p)),cc=cityCount(p);if(!n)why(p,'buy',can>=cc?'kauft nichts: ihr Lager reicht schon für alle Städte.':'kauft nichts: Brennstoff ist ihr gerade zu teuer.',can>=cc?'buys nothing: her storage already covers all cities.':'buys nothing: fuel is too expensive for her right now.');else if(can>cc+1)why(p,'buy',`kauft ${n} Einheiten – mehr als nötig: sie legt Vorrat an oder nimmt anderen knappen Brennstoff weg.`,`buys ${n} units – more than needed: stockpiling or taking scarce fuel from others.`);else why(p,'buy',`kauft ${n} Einheiten für ${plan.spent} € – genug für ${can} Städte.`,`buys ${n} units for ${plan.spent} € – enough for ${can} cities.`)}
   if(side==='north'&&RES.some(r=>buy[r]))S.log[0].t+=' (Nordmarkt)';
 }
 function fueledCap(p,pool=p.pool){let best=0;const pl=p.plants;for(let m=1;m<(1<<pl.length);m++){const o=powerOptions(p,pl.filter((_,i)=>m&(1<<i)),pool);if(o&&o.cities>best)best=o.cities}return best}
@@ -4250,6 +4266,11 @@ function aiBuild(p){
     doBuild(p.id,o.city);
   }
   if(!S.turnBuilt.length)log(p.name+' baut nicht aus.',p.id);
+  {const nb=S.turnBuilt.length,cheap=(buildOptions(p)[0]||{}).cost,cap=Math.max(capacity(p),1);
+   if(!nb)why(p,'build',cheap>p.money?`baut nicht: zu wenig Geld (billigste Stadt ${cheap} €).`:p.cities.length>=cap?`baut nicht: ihre Kraftwerke versorgen nur ${cap} Städte.`:'baut nicht: sie wartet ab, um das Spielende nicht zu früh auszulösen.',cheap>p.money?`doesn’t build: not enough money (cheapest city ${cheap} €).`:p.cities.length>=cap?`doesn’t build: her plants only power ${cap} cities.`:'doesn’t build: waiting so as not to trigger the end too early.');
+   else if(p.cities.length>=END_AT)why(p,'build',`setzt zum Endspurt an: ${nb} neue Städte, jetzt ${p.cities.length}.`,`goes for the finish: ${nb} new cities, now ${p.cities.length}.`);
+   else if(p.cities.length<cap&&p.money>=(cheap||999))why(p,'build',`baut ${nb} ${nb===1?'Stadt':'Städte'} und hält sich dann zurück, um Geld oder das Spielende zu steuern.`,`builds ${nb} ${nb===1?'city':'cities'}, then holds back to manage money or the game end.`);
+   else why(p,'build',`baut ${nb} ${nb===1?'Stadt':'Städte'} bis an ihre Grenze (Kapazität ${cap}, Geld).`,`builds ${nb} ${nb===1?'city':'cities'} up to her limit (capacity ${cap}, money).`)}
 }
 function storageView(p){
   const pool={...p.pool},out={};const pl=[...p.plants].sort((a,b)=>PLANTS[b][2]-PLANTS[a][2]);
@@ -6807,7 +6828,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v212';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v213';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}

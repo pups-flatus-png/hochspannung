@@ -50,6 +50,15 @@ async()=>{
   ok('full game '+mp+' '+(nAI+1)+'p ends cleanly',S.phase==='end'&&!bad,bad||('stuck r'+S.round+' '+S.phase));
   ok('game '+mp+' '+(nAI+1)+'p sensible length',S.round>=5&&S.round<=25,S.round);
  }
+ // ---- AI levels are clearly different: expert should beat easy over many games
+ {const wins={easy:0,normal:0,expert:0};for(let g=0;g<18;g++){newGame('T',2,'normal',null,['de','fr','it','na','bx','uk'][g%6],{deck:'std',styles:false});quiet();
+   const lv=['easy','normal','expert'];const rot=g%3;S.players.forEach((p,i)=>{p.human=false;p.ai=lv[(i+rot)%3]});let st=0;
+   while(S.phase!=='end'&&st++<20000){if(S.gate){gateGo();continue}const a=actor();if(!a){if(S.phase==='bureau'){finishBureau();continue}break}aiAct(a)}
+   if(S.ranking)wins[P(S.ranking[0]).ai]++}
+  ok('AI levels distinct: expert beats easy ('+JSON.stringify(wins)+')',wins.expert>wins.easy+3&&wins.expert>=wins.normal,JSON.stringify(wins))}
+ // ---- AI explains its moves
+ {newGame('T',2,'normal',null,'de',{deck:'std'});quiet();S.players[0].human=false;let st=0;while(S.round<3&&st++<5000){if(S.gate){gateGo();continue}const a=actor();if(!a){if(S.phase==='bureau'){finishBureau();continue}break}aiAct(a)}
+  const w=(S.why||{})[2]||{};ok('AI records reasons for its moves',Object.keys(w).length>=2&&Object.values(w).every(x=>x.build&&x.buy),JSON.stringify(w).slice(0,200))}
  return {R,games};
 }
 """
