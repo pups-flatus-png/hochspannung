@@ -31,6 +31,7 @@ Lokaler Server: `python3 -c "import srvthread,time; srvthread.start('<repo>/gm2'
 - Bekannte Designsprache: dunkel, Gold als einziger Akzent, Orbitron für Zahlen/Titel, Barlow für Text; Karte „Night grid“ (Spielerfarben als Hauptfarben, Gold = handeln).
 - Layout-Disziplin: Text bleibt in seiner Box oder wird weggelassen; immer auch iPhone quer prüfen; Safari-Eigenheiten beachten (keine CSS-Transforms auf SVG-Kindern, keine Container-Queries für Chips).
 - KI-Persönlichkeiten im Spiel nicht anzeigen; Phasenwechsel nur per „Weiter“; kein Ton in der Startsequenz.
+- Design-Vorschläge im „Studio“-Format präsentieren (wie die Grid-Plan-Studie, claude.ai/artifact/HpXxEzDKDh7tkjU3yMzSmA): eine Seite mit Live-Brett aus echten Kartendaten, Tafeln für alle Zustände (Städte, Leitungen, …) und jede Animation mit „Replay“; Hell/Dunkel-Umschalter, Standard folgt dem Gerätemodus.
 
 ## Nächstes großes Ziel (Auftrag des Nutzers)
 Layout, Tiefe und Komplexität komplett neu denken: eine aufwendige 3D-Version auf dem Detail- und Animationsniveau von Terraforming Mars digital – ein Spiel, für das man 10–20 € zahlen würde. Ideen aus der Recherche (Scythe, Risk, TM): Proxy-Gebote, kluge Warnungen, Bau-Animation (Leitung zeichnet sich, Haus fällt ein), Endwertung als Enthüllung, Leistbarkeit in der Auktion zeigen, Farbenblind-Unterstützung (Logos in Slots), Undo auch beim Rohstoffkauf.
