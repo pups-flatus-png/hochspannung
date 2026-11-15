@@ -505,7 +505,7 @@ function fitCorners(corners, polar, insetR = 0) {
   for (let it = 0; it < 7; it++) { let lo = 8, hi = 600; for (let k = 0; k < 26; k++) { d = (lo + hi) / 2; place(d); const [a, b, l, r] = span(); if ((r - l) < (xr - xl) * .97 && (b - a) < (topF - botF) * .96) hi = d; else lo = d; } d = hi; place(d); const [a, b, l, r] = span(); const k2 = d * Math.tan(camera.fov * Math.PI / 360); tgt.z += (want - (a + b) / 2) * k2 * .7; tgt.x += (((l + r) / 2) - (xl + xr) / 2) * k2 * camera.aspect * .7; }
   place(d); return { tgt: tgt.clone(), pos: cam.position.clone() };
 }
-function marketPose() { const b = MKT.bounds; const land = VW > VH && matchMedia('(max-height: 500px)').matches; return fitCorners([[b.minX, b.minZ], [b.maxX, b.minZ], [b.minX, b.maxZ], [b.maxX, b.maxZ]].map(([x, z]) => new THREE.Vector3(x, 0, z)), VW > VH ? .88 : .7, card.classList.contains('on') || MODE === 'market' ? (land ? 300 : 0) : 0); }
+function marketPose() { const b = MKT.bounds; const land = !QS.has('clean') && VW > VH && matchMedia('(max-height: 500px)').matches; return fitCorners([[b.minX, b.minZ], [b.maxX, b.minZ], [b.minX, b.maxZ], [b.maxX, b.maxZ]].map(([x, z]) => new THREE.Vector3(x, 0, z)), VW > VH ? .88 : .7, card.classList.contains('on') || MODE === 'market' ? (land ? 300 : 0) : 0); }
 function marketPoseOld() { const b = MKT.bounds, cx = (b.minX + b.maxX) / 2, cz = (b.minZ + b.maxZ) / 2 + 2, pol = .78, d = VW > VH ? 50 : 62; const tgt = new THREE.Vector3(cx + (VW > VH ? 5 : 0), 0, cz); return { tgt, pos: new THREE.Vector3(tgt.x, Math.cos(pol) * d, tgt.z + Math.sin(pol) * d) }; }
 function openMarket() {
   if (BUSY) return; SEL = null; setHL(new Set()); MODE = 'market'; ORDER.forEach(k => CART[k] = 0);
@@ -849,6 +849,7 @@ function loop() {
 // ---------- boot ----------
 $('#bPower').textContent = T.power; $('#bView').textContent = T.view; $('#bMkt').textContent = DE ? 'Rohstoffe' : 'Resources'; $('#bMkt').onclick = openMarket;
 if (QS.has('debug')) $('#fps').hidden = false;
+if (QS.has('clean')) document.body.classList.add('clean');
 buildTerrain(); buildCities(); SKY = createSkylines(Object.values(CITY), ADJ); scene.add(SKY.group); buildMarket(); buildGround(); initLabels();
 document.fonts && document.fonts.ready.then(() => LBL.forEach(l => { l.w = l.h = 0; }));
 resize(); intro(); loop();
