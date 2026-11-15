@@ -3468,6 +3468,18 @@ html .rm2-c .g small{font-size:7.5px!important;line-height:1!important}
 #map.powering .city:not(.lit) .mine{opacity:.55}
 @keyframes litPulse{0%,100%{opacity:.55}50%{opacity:1}}
 @media (prefers-reduced-motion:reduce){#map.powering .city.lit .halo{animation:none}}
+
+/* ---- v219: Karte einklappbar (Hochformat) ---- */
+.mapctl .mcol{display:none!important}
+@media (orientation:portrait){
+  html #app.pl2 .mapctl .mcol{display:grid!important}
+  html #app.pl2[data-ph=build] .mapctl .mcol{display:none!important}
+  html #app.pl2.mapmin{grid-template-rows:auto auto minmax(0,1fr)!important}
+  html #app.pl2.mapmin #panel{margin-top:0}
+  html #app.pl2.mapmin #oppchips{position:static;order:-1;flex-direction:row;flex-wrap:wrap;max-width:none}
+  html #app.pl2.mapmin #oppchips .oc{flex:1 1 0;min-width:0;max-width:none}
+  html #app.pl2.mapmin #board>.mapbar{display:inline-flex}
+}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -3569,6 +3581,7 @@ html #app.pl2 #panel>.actbar .btn{min-height:40px;padding-top:8px;padding-bottom
     <div class="mapctl">
       <button type="button" data-act="zin" aria-label="Hineinzoomen">+</button>
       <button type="button" data-act="zout" aria-label="Herauszoomen">−</button>
+      <button type="button" class="mcol" data-act="mapCol" aria-label="Karte einklappen" title="Karte einklappen"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 10 8 5.5l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button type="button" data-act="fit" aria-label="Karte einpassen"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 5V1h4M11 1h4v4M15 11v4h-4M5 15H1v-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
     </div>
   </main>
@@ -6321,7 +6334,7 @@ const TS=Object.entries({'Umspannwerk':'Substation','Lagerhalle':'Warehouse','Fr
 'Atomausstieg: Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt kein Uran mehr nach.':'Nuclear phase-out: once plant 39 is bought, no more uranium is restocked.',
 'Das Basisspiel.':'The base game.','Atomausstieg (Recharged-Regel)':'Nuclear phase-out (Recharged rule)','Mit Atomausstieg':'With phase-out','Ohne':'Without',
 'Nach dem Kauf des großen Uran-Kraftwerks (Basis 39, Set 1 38, Set 2 37) kommt bis Spielende kein Uran mehr nach.':'Once plant 39 is bought, no more uranium is restocked for the rest of the game.','Uran wird wie im Basisspiel nachgefüllt.':'Uranium is restocked as in the base game.',
-'Alpen':'Alps','Punkte':'Points','Kraftwerksdeck':'Power plant deck','Du darfst nur drei Kraftwerke betreiben. Wähle eines deiner bisherigen Kraftwerke, das du für das neue abgibst. Es verlässt das Spiel endgültig.':'You may only run three plants. Choose one of your existing plants to give up for the new one. It leaves the game for good.','Neu gekauft':'Just bought',' Wer ein viertes kauft, legt eines seiner bisherigen still.':' Whoever buys a fourth retires one of their existing plants.','bleibt in deinem Betrieb':'stays in your company','Bisher in Betrieb':'Already running','eines davon abgeben':'give up one of these','Gemeinsame Rangliste ansehen':'View shared leaderboard','Gemeinsame Rangliste':'Shared leaderboard','Dein Name in der Rangliste':'Your name on the leaderboard','z. B. Vorname':'e.g. first name','In Rangliste eintragen':'Add to leaderboard','Erneut eintragen':'Add again','Ergebnis senden':'Send result',
+'Alpen':'Alps','Punkte':'Points','Karte einklappen':'Collapse map','Kraftwerksdeck':'Power plant deck','Du darfst nur drei Kraftwerke betreiben. Wähle eines deiner bisherigen Kraftwerke, das du für das neue abgibst. Es verlässt das Spiel endgültig.':'You may only run three plants. Choose one of your existing plants to give up for the new one. It leaves the game for good.','Neu gekauft':'Just bought',' Wer ein viertes kauft, legt eines seiner bisherigen still.':' Whoever buys a fourth retires one of their existing plants.','bleibt in deinem Betrieb':'stays in your company','Bisher in Betrieb':'Already running','eines davon abgeben':'give up one of these','Gemeinsame Rangliste ansehen':'View shared leaderboard','Gemeinsame Rangliste':'Shared leaderboard','Dein Name in der Rangliste':'Your name on the leaderboard','z. B. Vorname':'e.g. first name','In Rangliste eintragen':'Add to leaderboard','Erneut eintragen':'Add again','Ergebnis senden':'Send result',
 'Schick den Link an die Person, die die Rangliste führt. Sie trägt dein Ergebnis mit einem Tipp ein.':'Send the link to whoever runs the leaderboard. They add your result with one tap.',
 'In der Rangliste eingetragen.':'Added to the leaderboard.','Du kannst in dieser Rangliste nichts eintragen. Schick dein Ergebnis stattdessen per Link.':'You can’t add entries to this leaderboard. Send your result as a link instead.','Die Rangliste ist voll. Lösche alte Einträge.':'The leaderboard is full. Delete old entries.','Eintragen hat nicht geklappt. Versuch es gleich noch einmal.':'Adding didn’t work. Try again in a moment.','Dieser Code ist ungültig oder beschädigt.':'This code is invalid or damaged.','Gib zuerst einen Namen für die Rangliste ein.':'Enter a name for the leaderboard first.',
 'Link kopiert. Schick ihn an die Person, die die Rangliste führt.':'Link copied. Send it to whoever runs the leaderboard.','Geteilt.':'Shared.','Link zum Ergebnis':'Link to the result',
@@ -7055,7 +7068,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v218';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v219';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -7072,16 +7085,18 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdat
 applyTheme();if(_mqLight){try{_mqLight.addEventListener('change',()=>{if(THEME==='auto')applyTheme()})}catch(_){}}
 function setTheme(t){THEME=t;try{localStorage.setItem('hochspannung-theme',t)}catch(_){}applyTheme()}
 let MAPSTYLE=(()=>{try{return localStorage.getItem('hochspannung-mapstyle')||'atlas'}catch(_){return'atlas'}})();
+let MAPCOL=(()=>{try{return localStorage.getItem('hochspannung-mapcol')==='1'}catch(_){return false}})();
+function mapColOk(){return pl2()&&matchMedia('(orientation:portrait)').matches}
 let MAPMODE=(()=>{try{return localStorage.getItem('hochspannung-map')||'always'}catch(_){return'auto'}})();
 function layoutMap(){
   const k=S.round+S.phase;if(UI.peekKey!==k){UI.peek=false;UI.peekKey=k}
   const quiet=S.phase==='auction'||S.phase==='resources';
-  const min=quiet&&MAPMODE==='auto'&&!pl2()&&!UI.peek;
+  const min=(quiet&&MAPMODE==='auto'&&!pl2()&&!UI.peek)||(MAPCOL&&mapColOk()&&S.phase!=='build'&&!S.gate);
   $('#app').dataset.ph=S.gate?'gate':S.phase;
   const app=$('#app'),was=app.classList.contains('mapmin');
   app.classList.toggle('mapmin',min);
   {const pb=S.phase==='build',wasB=app.classList.contains('phbuild');app.classList.toggle('phbuild',pb);if(wasB!==pb&&matchMedia('(orientation:landscape) and (max-height:520px)').matches){UI.vb=null}}
-  const mb=$('#mapbar');mb.hidden=!(quiet&&MAPMODE==='auto'&&!pl2());
+  const mb=$('#mapbar');mb.hidden=pl2()?!min:!(quiet&&MAPMODE==='auto');
   $('#mapbarT').textContent=pl2()?(min?LX('Karte','Map')+' · '+cityCount(me())+' '+LX('Städte im Netz','cities in network'):LX('Karte einklappen','Collapse map')):(min?'Karte zeigen':'Karte verkleinern');
   mb.setAttribute('aria-expanded',String(!min));
   if(was!==min&&UI.vb)requestAnimationFrame(applyVB);
@@ -7585,7 +7600,8 @@ const A={
   discTog:()=>{UI.disc=UI.disc==='orig'?'rech':'orig';try{localStorage.setItem('hochspannung-disc',UI.disc)}catch(_){}UI.name=nmVal();renderStart(true);return'skip'},
   atom:b=>{UI.deAtom=b.dataset.v==='true';UI.name=nmVal();renderStart(true);return'skip'},
   mapSel:b=>{UI.map=b.dataset.m;if(MAPS[UI.map].paris&&(UI.deck==='mix'||UI.deck==='mix1'))UI.deck='std';UI.regions=[];UI.name=nmVal();const y0=b.getBoundingClientRect().top;renderStart(true);/* v119: gewählte Karte bleibt an ihrer Stelle, nichts springt */const nb=start.querySelector(`.mcard[data-m="${UI.map}"]`);if(nb){const dy=nb.getBoundingClientRect().top-y0;const sc=start.querySelector('.s3-side');const el=sc&&getComputedStyle(sc).overflowY==='auto'?sc:start.querySelector('.setup-body')&&getComputedStyle(start.querySelector('.setup-body')).overflowY!=='visible'?start.querySelector('.setup-body'):start;if(dy)el.scrollTop+=dy}return'skip'},
-  mapPeek:()=>{UI.peek=!UI.peek;UI.peekKey=S.round+S.phase;UI.vb=null},
+  mapPeek:()=>{if(pl2()){MAPCOL=false;try{localStorage.setItem('hochspannung-mapcol','0')}catch(_){}UI.vb=null;return}UI.peek=!UI.peek;UI.peekKey=S.round+S.phase;UI.vb=null},
+  mapCol:()=>{MAPCOL=!MAPCOL;try{localStorage.setItem('hochspannung-mapcol',MAPCOL?'1':'0')}catch(_){}UI.vb=null},
   theme:b=>{setTheme(b.dataset.t)},
   sv:b=>{if(UI.sv==='co')UI.name=nmVal(),saveName(UI.name);UI.sv=b.dataset.v||'';renderStart(true);start.scrollTop=0;const sd=start.querySelector('.s3-side');if(sd)sd.scrollTop=0;return'skip'},
   logoHint:b=>{UI.logoHint=UI.logoHint===b.dataset.l?null:b.dataset.l;if(UI.sv==='co')UI.name=nmVal(),saveName(UI.name);renderStart(true);return'skip'},
