@@ -14,11 +14,11 @@ function windowTextures() {
   const N = 256, cell = N / CELLS;
   const a = document.createElement('canvas'), e = document.createElement('canvas'); a.width = a.height = e.width = e.height = N;
   const ax = a.getContext('2d'), ex = e.getContext('2d');
-  ax.fillStyle = '#56636d'; ax.fillRect(0, 0, N, N); ex.fillStyle = '#000'; ex.fillRect(0, 0, N, N);
+  ax.fillStyle = '#56626c'; ax.fillRect(0, 0, N, N); ex.fillStyle = '#000'; ex.fillRect(0, 0, N, N);
   const r = rng('windows');
   for (let j = 0; j < CELLS; j++) for (let i = 0; i < CELLS; i++) {
     const x = i * cell + cell * .22, y = j * cell + cell * .2, w = cell * .56, h = cell * .52;
-    ax.fillStyle = '#1b252d'; ax.fillRect(x, y, w, h);
+    ax.fillStyle = '#323c45'; ax.fillRect(x, y, w, h);
     const v = r(); if (v < .58) { const warm = r() < .82; ex.fillStyle = warm ? `rgba(255,${190 + r() * 40 | 0},${110 + r() * 50 | 0},${.55 + r() * .45})` : `rgba(200,225,255,${.5 + r() * .4})`; ex.fillRect(x, y, w, h); }
   }
   const t1 = new THREE.CanvasTexture(a), t2 = new THREE.CanvasTexture(e);
@@ -185,12 +185,12 @@ vec4 em=texture2D(emissiveMap, vWinUv);
 vec2 cell=floor(vWinUv*${CELLS}.0);
 float flick=step(.985, hh(cell+floor(uT*.6+hh(cell)*7.)));  // occasional window switching
 float base=.22*uNight;
-totalEmissiveRadiance += em.rgb*(base + lit*(1.15+cp.a*1.6))*(1.-flick*.8);
-totalEmissiveRadiance += own.rgb*own.a*.18*(1.-vH*.5);` : kind === 'stone' ? `
-totalEmissiveRadiance += diffuseColor.rgb*vec3(1.,.82,.6)*(1.-vH)*(.05+lit*(.22+cp.a*.7))*uNight;
-totalEmissiveRadiance += own.rgb*own.a*.12;` : kind === 'glass' ? `
-totalEmissiveRadiance += diffuseColor.rgb*(.04+lit*(.22+cp.a*.9))*uNight;` : kind === 'accent' ? `
-totalEmissiveRadiance += diffuseColor.rgb*(.05+lit*.25)*uNight;` : `
+totalEmissiveRadiance += em.rgb*(base + lit*(.75+cp.a*1.4))*(1.-flick*.8);
+totalEmissiveRadiance += own.rgb*own.a*.08*(1.-vH*.5);` : kind === 'stone' ? `
+totalEmissiveRadiance += vec3(1.,.8,.55)*(1.-vH)*(.01+lit*(.05+cp.a*.25))*uNight;
+totalEmissiveRadiance += own.rgb*own.a*.06;` : kind === 'glass' ? `
+totalEmissiveRadiance += vec3(1.,.85,.6)*lit*cp.a*.15*uNight;` : kind === 'accent' ? `
+totalEmissiveRadiance += diffuseColor.rgb*lit*.12*uNight;` : `
 totalEmissiveRadiance += diffuseColor.rgb*lit*.08*uNight;`}
 `);
   };
@@ -202,13 +202,14 @@ export function createSkylines(cityList, ADJ, renderer) {
   const tex = new THREE.DataTexture(data, 64, 2, THREE.RGBAFormat, THREE.FloatType); tex.minFilter = tex.magFilter = THREE.NearestFilter; tex.needsUpdate = true;
   const U = { uCity: { value: tex }, uT: { value: 0 }, uNight: { value: 1 } };
   const W = windowTextures();
+  // einheitlicher Zinn-Look: dunkles Schiefergrau, Gold nur für Kuppeln und Spitzen
   const MATS = {
-    bld: new THREE.MeshStandardMaterial({ map: W.map, emissiveMap: W.em, emissive: 0xffffff, vertexColors: true, roughness: .55, metalness: .35 }),
-    stone: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .8, metalness: 0, color: 0xb0aaa0 }),
-    glass: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .12, metalness: .9, envMapIntensity: 1.6 }),
-    accent: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .35, metalness: .6 }),
-    metal: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .35, metalness: .85 }),
-    roof: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .7, metalness: .1 }),
+    bld: new THREE.MeshStandardMaterial({ map: W.map, emissiveMap: W.em, emissive: 0xffffff, color: 0xffffff, roughness: .62, metalness: .45 }),
+    stone: new THREE.MeshStandardMaterial({ color: 0x55616b, roughness: .58, metalness: .5 }),
+    glass: new THREE.MeshStandardMaterial({ color: 0x5d6b77, roughness: .3, metalness: .7 }),
+    accent: new THREE.MeshStandardMaterial({ color: 0xc9a24a, roughness: .32, metalness: .9 }),
+    metal: new THREE.MeshStandardMaterial({ color: 0x66727c, roughness: .45, metalness: .75 }),
+    roof: new THREE.MeshStandardMaterial({ color: 0x48535c, roughness: .6, metalness: .45 }),
   };
   for (const k in MATS) patch(MATS[k], k, U);
   const buckets = {}; for (const k in MATS) buckets[k] = [];
@@ -242,7 +243,7 @@ export function createSkylines(cityList, ADJ, renderer) {
   const bm = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: U,
     vertexShader: `attribute float aCity; attribute float aPh; uniform sampler2D uCity; uniform float uT; varying float vA;
       void main(){ vec4 cp=texelFetch(uCity, ivec2(int(aCity),0),0); vA=step(.97,cp.r)*pow(max(0.,sin(uT*2.2+aPh)),12.);
-      vec4 mv=modelViewMatrix*vec4(position,1.); gl_Position=projectionMatrix*mv; gl_PointSize=(260./-mv.z)*(.6+vA); }`,
+      vec4 mv=modelViewMatrix*vec4(position,1.); gl_Position=projectionMatrix*mv; gl_PointSize=(170./-mv.z)*(.5+vA); }`,
     fragmentShader: `varying float vA; void main(){ float d=length(gl_PointCoord-.5); float a=smoothstep(.5,0.,d)*vA; gl_FragColor=vec4(vec3(2.6,.25,.15)*a,a); }` });
   const bpts = new THREE.Points(bg, bm); bpts.frustumCulled = false; group.add(bpts);
   // lighthouse beams (rotating)

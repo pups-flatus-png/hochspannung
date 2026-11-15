@@ -49,69 +49,89 @@ const pieceMat = {
 
 function roundRect(x, X, Y, w, h, r) { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); }
 
-export const MARKET_W = 2.7 * 4 + 1.6;
-export function createMarket({ x0, z0, de = true }) {
+export const MARKET_W = 2.6 * 4 + 1.6;
+export function createMarket({ x0, z0, de = true, wide = false, occ = null, myPlants = null }) {
   const group = new THREE.Group(); group.position.set(x0, 0, z0);
-  // ---- layout (local): lanes along +z (cheap at the far/north end → expensive near the viewer) ----
-  const LANE = 2.7, W = LANE * 4 + 1.6, TRACK = 22, HEAD = 3.0, PAD = 7.4, L = HEAD + TRACK + 1.2 + PAD + 1.0;
-  const zTrack0 = -L / 2 + HEAD, laneX = i => -W / 2 + .8 + LANE * (i + .5);
-  // slots: per resource array of local positions, index 0 = cheapest
+  // ---- layout ----
+  // tall: Spuren entlang z (Hochformat).  wide: Spuren entlang x, Preise steigen nach rechts (Querformat, wie im Brettspiel).
+  const LANE = 2.6, TRACK = wide ? 24 : 22, HEAD = 3.0;
+  let W, L, laneC, cellC, padPos, storeOff, titleAt, padTitleAt;
+  if (!wide) {
+    const PAD = 7.4; W = LANE * 4 + 1.6; L = HEAD + TRACK + 1.2 + PAD + 1.0;
+    const z0t = -L / 2 + HEAD; laneC = li => -W / 2 + .8 + LANE * (li + .5);
+    cellC = (li, t) => new THREE.Vector3(laneC(li), 0, z0t + t * TRACK); // t: 0..1 along the track
+    padPos = i => new THREE.Vector3([-4.1, 0, 4.1][i], .04, z0t + TRACK + 3.5);
+    storeOff = (i, cap) => new THREE.Vector3(-(cap - 1) * .33 + i * .66, -.02, CARD_D * .45 + .55);
+    titleAt = [0, -L / 2 + 1.1]; padTitleAt = [0, z0t + TRACK + 1.0];
+  } else {
+    const LABEL = 3.2, PADW = 7.0; L = 2.4 + LANE * 4 + .8; W = LABEL + TRACK + 1.0 + PADW + .6;
+    const x0t = -W / 2 + LABEL; laneC = li => -L / 2 + 2.4 + LANE * (li + .5);
+    cellC = (li, t) => new THREE.Vector3(x0t + t * TRACK, 0, laneC(li));
+    padPos = i => new THREE.Vector3(W / 2 - .6 - PADW + 2.1, .04, -L / 2 + 2.4 + 1.6 + i * 3.3);
+    storeOff = (i, cap) => new THREE.Vector3(2.55 + (i % 2) * .66, -.02, -.9 + Math.floor(i / 2) * .62);
+    titleAt = [(-W / 2 + LABEL + TRACK / 2), -L / 2 + 1.2]; padTitleAt = [W / 2 - .6 - PADW / 2, -L / 2 + 1.2];
+  }
+  // slots: index 0 = cheapest
   const SLOTS = {};
   ORDER.forEach((k, li) => {
     const n = RES[k].prices.length; SLOTS[k] = [];
-    if (k === 'uranium') for (let i = 0; i < n; i++) SLOTS[k].push(new THREE.Vector3(laneX(li), 0, zTrack0 + (i + .5) * TRACK / n));
-    else for (let i = 0; i < n; i++) { const cell = Math.floor(i / 3), j = i % 3; SLOTS[k].push(new THREE.Vector3(laneX(li) - .25 + (j - 1) * .74, 0, zTrack0 + (cell + .5) * TRACK / 8)); }
+    if (k === 'uranium') for (let i = 0; i < n; i++) SLOTS[k].push(cellC(li, (i + .5) / n));
+    else for (let i = 0; i < n; i++) { const cell = Math.floor(i / 3), j = i % 3, c = cellC(li, (cell + .5) / 8); if (wide) { c.x += (j - 1) * .78 - .2; } else { c.x += -.25 + (j - 1) * .74; } SLOTS[k].push(c); }
   });
   // ---- slab ----
   const shape = new THREE.Shape(); const r = 1.2, hw = W / 2, hl = L / 2;
   shape.moveTo(-hw + r, -hl); shape.lineTo(hw - r, -hl); shape.quadraticCurveTo(hw, -hl, hw, -hl + r); shape.lineTo(hw, hl - r); shape.quadraticCurveTo(hw, hl, hw - r, hl); shape.lineTo(-hw + r, hl); shape.quadraticCurveTo(-hw, hl, -hw, hl - r); shape.lineTo(-hw, -hl + r); shape.quadraticCurveTo(-hw, -hl, -hw + r, -hl);
   const D = .45; const sg = new THREE.ExtrudeGeometry(shape, { depth: D, bevelEnabled: true, bevelThickness: .04, bevelSize: .04, bevelSegments: 2 });
   sg.rotateX(-Math.PI / 2); sg.translate(0, -D, 0);
-  // top texture: engraved lanes + prices
   const TS = 40, cw = Math.round(W * TS), ch = Math.round(L * TS); const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch; const x = cv.getContext('2d');
   const tx = v => (v + W / 2) * TS, tz = v => (v + L / 2) * TS;
   const grd = x.createLinearGradient(0, 0, 0, ch); grd.addColorStop(0, '#1e2a33'); grd.addColorStop(1, '#18222a'); x.fillStyle = grd; x.fillRect(0, 0, cw, ch);
-  for (let i = 0; i < 4000; i++) { x.fillStyle = `rgba(255,255,255,${Math.random() * .03})`; x.fillRect(Math.random() * cw, Math.random() * ch, 1.5, 1.5); }
+  for (let i = 0; i < cw * ch / 120; i++) { x.fillStyle = `rgba(255,255,255,${Math.random() * .03})`; x.fillRect(Math.random() * cw, Math.random() * ch, 1.5, 1.5); }
   x.strokeStyle = 'rgba(242,179,61,.5)'; x.lineWidth = 2; roundRect(x, 12, 12, cw - 24, ch - 24, 30); x.stroke(); x.strokeStyle = 'rgba(242,179,61,.18)'; x.lineWidth = 1; roundRect(x, 20, 20, cw - 40, ch - 40, 24); x.stroke();
   x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.fillStyle = '#f2b33d'; x.font = `800 ${TS * .62}px Orbitron, sans-serif`; x.fillText(de ? 'ROHSTOFFMARKT' : 'RESOURCE MARKET', cw / 2, tz(-L / 2 + 1.1));
+  x.fillStyle = '#f2b33d'; x.font = `800 ${TS * .62}px Orbitron, sans-serif`; x.fillText(de ? 'ROHSTOFFMARKT' : 'RESOURCE MARKET', tx(titleAt[0]), tz(titleAt[1]));
   ORDER.forEach((k, li) => {
-    const R = RES[k]; x.fillStyle = R.col === '#1c1d22' ? '#8d96a0' : R.col; x.font = `700 ${TS * .42}px Barlow, sans-serif`; x.fillText((de ? R.de : R.en).toUpperCase(), tx(laneX(li)), tz(zTrack0 - .9));
-    x.strokeStyle = 'rgba(242,179,61,.18)'; x.lineWidth = 2; roundRect(x, tx(laneX(li) - LANE / 2 + .12), tz(zTrack0 - .2), (LANE - .24) * TS, (TRACK + .4) * TS, 14); x.stroke();
-    const cells = k === 'uranium' ? R.prices.length : 8;
+    const R = RES[k], col = R.col === '#1c1d22' ? '#8d96a0' : R.col, cells = k === 'uranium' ? R.prices.length : 8, cellLen = TRACK / cells;
+    x.fillStyle = col; x.font = `700 ${TS * .42}px Barlow, sans-serif`;
+    const a = cellC(li, 0), b = cellC(li, 1);
+    if (!wide) x.fillText((de ? R.de : R.en).toUpperCase(), tx(a.x), tz(a.z - .9)); else { x.textAlign = 'right'; x.fillText((de ? R.de : R.en).toUpperCase(), tx(a.x - .35), tz(a.z)); x.textAlign = 'center'; }
+    x.strokeStyle = 'rgba(242,179,61,.18)'; x.lineWidth = 2;
+    if (!wide) roundRect(x, tx(a.x - LANE / 2 + .12), tz(a.z - .2), (LANE - .24) * TS, (TRACK + .4) * TS, 14); else roundRect(x, tx(a.x - .2), tz(a.z - LANE / 2 + .12), (TRACK + .4) * TS, (LANE - .24) * TS, 14);
+    x.stroke();
     for (let c = 0; c < cells; c++) {
-      const zc = zTrack0 + (c + .5) * TRACK / cells, price = k === 'uranium' ? R.prices[c] : c + 1;
-      x.fillStyle = 'rgba(0,0,0,.28)'; roundRect(x, tx(laneX(li) - LANE / 2 + .3), tz(zc - TRACK / cells / 2 + .12), (LANE - .6) * TS, (TRACK / cells - .24) * TS, 10); x.fill();
-      x.fillStyle = 'rgba(227,234,238,.62)'; x.font = `800 ${TS * (k === 'uranium' ? .44 : .56)}px Orbitron, sans-serif`; x.fillText(price, tx(laneX(li) + LANE / 2 - .32), tz(zc));
+      const m = cellC(li, (c + .5) / cells), price = k === 'uranium' ? R.prices[c] : c + 1;
+      x.fillStyle = 'rgba(0,0,0,.28)';
+      if (!wide) roundRect(x, tx(m.x - LANE / 2 + .3), tz(m.z - cellLen / 2 + .12), (LANE - .6) * TS, (cellLen - .24) * TS, 10); else roundRect(x, tx(m.x - cellLen / 2 + .12), tz(m.z - LANE / 2 + .3), (cellLen - .24) * TS, (LANE - .6) * TS, 10);
+      x.fill();
+      x.fillStyle = 'rgba(227,234,238,.62)'; x.font = `800 ${TS * (k === 'uranium' ? .44 : .56)}px Orbitron, sans-serif`;
+      if (!wide) x.fillText(price, tx(m.x + LANE / 2 - .32), tz(m.z)); else x.fillText(price, tx(m.x + (k === 'uranium' ? 0 : cellLen / 2 - .45)), tz(m.z + (k === 'uranium' ? LANE / 2 - .62 : LANE / 2 - .55)));
     }
   });
-  x.fillStyle = 'rgba(242,179,61,.75)'; x.font = `700 ${TS * .42}px Barlow, sans-serif`; x.fillText(de ? 'DEINE KRAFTWERKE' : 'YOUR POWER PLANTS', cw / 2, tz(zTrack0 + TRACK + 1.0));
+  x.fillStyle = 'rgba(242,179,61,.75)'; x.font = `700 ${TS * .42}px Barlow, sans-serif`; x.fillText(de ? 'DEINE KRAFTWERKE' : 'YOUR POWER PLANTS', tx(padTitleAt[0]), tz(padTitleAt[1]));
   const top = new THREE.CanvasTexture(cv); top.colorSpace = THREE.SRGBColorSpace; top.anisotropy = 8;
   const pos = sg.attributes.position, uv = sg.attributes.uv; for (let i = 0; i < pos.count; i++) uv.setXY(i, (pos.getX(i) + W / 2) / W, 1 - (pos.getZ(i) + L / 2) / L);
   const slab = new THREE.Mesh(sg, [new THREE.MeshStandardMaterial({ map: top, roughness: .75, metalness: .05 }), new THREE.MeshStandardMaterial({ color: 0x24303a, roughness: .55, metalness: .3 })]);
   slab.receiveShadow = true; slab.castShadow = true; group.add(slab);
-  // gold rim
-  
-
-  // ---- power plant tiles ----
-  const PLANTS = [];
-  function plantTile(num, px) {
-    const [res, need, pow] = PLANTDATA[num]; const m = makeCard(num, de); m.scale.setScalar(.9);
-    m.position.set(px, .04, zTrack0 + TRACK + 1.9 + 1.6); group.add(m);
-    const cap = need * 2, P = { num, res, cap, powers: pow, mesh: m, store: [], pieces: [] };
-    P.store = Array.from({ length: cap }, (_, i) => new THREE.Vector3(px - (cap - 1) * .33 + i * .66, .02, m.position.z + CARD_D * .45 + .55));
-    PLANTS.push(P); return P;
-  }
-  const PADX = [-4.1, 0, 4.1];
-  plantTile(10, PADX[0]); plantTile(16, PADX[1]);
-  const addPlant = num => plantTile(num, PADX[PLANTS.length]);
   // ---- pieces ----
   const pieces = {}; ORDER.forEach(k => pieces[k] = []);
-  const count = { coal: 24, oil: 18, garbage: 6, uranium: 2 };
   function makePiece(k) { const m = new THREE.Mesh(pieceGeo[k], pieceMat[k].clone()); m.castShadow = true; m.receiveShadow = true; group.add(m); return m; }
-  ORDER.forEach(k => { const S = SLOTS[k]; for (let i = S.length - count[k]; i < S.length; i++) { const m = makePiece(k); m.position.copy(S[i]); m.rotation.y = (Math.random() - .5) * .4; pieces[k].push({ m, slot: i }); } });
+  // ---- power plant cards with storage ----
+  const PLANTS = [];
+  function plantTile(num, stock = 0) {
+    const [res, need, pow] = PLANTDATA[num]; const m = makeCard(num, de); m.scale.setScalar(.9);
+    m.position.copy(padPos(PLANTS.length)); group.add(m);
+    const cap = need * 2, P = { num, res, cap, powers: pow, mesh: m, store: [], pieces: [] };
+    P.store = Array.from({ length: cap }, (_, i) => m.position.clone().add(storeOff(i, cap)));
+    for (let i = 0; i < stock; i++) { const pm = makePiece(res === 'hybrid' ? 'coal' : res); pm.position.copy(P.store[i]); pm.scale.setScalar(.9); P.pieces.push({ m: pm, slot: -1 }); }
+    PLANTS.push(P); return P;
+  }
+  (myPlants || [{ num: 10 }, { num: 16 }]).forEach(p => plantTile(p.num, p.stock || 0));
+  const addPlant = num => plantTile(num);
+  const start = occ || { coal: [...Array(24).keys()], oil: [...Array(18).keys()].map(i => i + 6), garbage: [18, 19, 20, 21, 22, 23], uranium: [10, 11] };
+  ORDER.forEach(k => start[k].forEach(i => { const m = makePiece(k); m.position.copy(SLOTS[k][i]); m.rotation.y = (Math.random() - .5) * .4; pieces[k].push({ m, slot: i }); }));
   const cheapest = (k, n) => pieces[k].slice().sort((a, b) => a.slot - b.slot).slice(0, n);
   const price = (k, n) => cheapest(k, n).reduce((s, p) => s + RES[k].prices[p.slot], 0);
   const world = v => v.clone().add(group.position);
-  return { group, SLOTS, PLANTS, addPlant, pieces, cheapest, price, count: k => pieces[k].length, makePiece, world, bounds: { minX: x0 - W / 2, maxX: x0 + W / 2, minZ: z0 - L / 2, maxZ: z0 + L / 2 }, W, L };
+  const snapshot = () => ({ occ: Object.fromEntries(ORDER.map(k => [k, pieces[k].map(p => p.slot)])), myPlants: PLANTS.map(P => ({ num: P.num, stock: P.pieces.length })) });
+  return { group, SLOTS, PLANTS, addPlant, padPos, pieces, cheapest, price, count: k => pieces[k].length, makePiece, world, snapshot, wide, bounds: { minX: x0 - W / 2, maxX: x0 + W / 2, minZ: z0 - L / 2, maxZ: z0 + L / 2 }, W, L };
 }

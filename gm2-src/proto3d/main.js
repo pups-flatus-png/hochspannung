@@ -497,7 +497,9 @@ function quote(cid) {
 let MKT = null; const CART = { coal: 0, oil: 0, garbage: 0, uranium: 0 }; let MODE = 'city';
 const RN = k => DE ? RES[k].de : RES[k].en;
 function buildMarket() {
-  MKT = createMarket({ x0: maxX + 5.5 + MARKET_W / 2, z0: CZ - 2, de: DE }); scene.add(MKT.group);
+  buildBoards();
+}
+function bindMarketUI() {
   $('#cRows').addEventListener('click', e => { const pr = e.target.closest('.prow'); if (pr && MODE === 'plants') { liftCard(PSEL, false); PSEL = +pr.dataset.n; liftCard(PSEL, true); renderPlantCard(); return; } const b = e.target.closest('.st'); if (!b || MODE !== 'market') return; CART[b.dataset.k] = Math.max(0, CART[b.dataset.k] + +b.dataset.d); renderMarketCard(); previewCart(); });
 }
 function plantFor(k) { return MKT.PLANTS.find(p => p.res === k); }
@@ -601,10 +603,21 @@ async function restock(amounts) {
 
 // ---------- power plant market (3D) ----------
 let PM = null, PSEL = null;
-function buildPlantMarket() {
-  PM = createPlantMarket({ x0: minX - 5.5 - 6.2, z0: CZ - 2, de: DE, market: [17, 19, 20, 21, 22, 23, 24, 25], deck: [31, 27, 34, 26, 29, 38] });
-  scene.add(PM.group);
+function buildPlantMarket() { }
+// Spielplan-Anordnung: Hochformat = Märkte als hohe Platten links/rechts; Querformat = breite Platten übereinander rechts neben der Karte
+function setBounds(o) { const p = o.group.position; o.bounds = { minX: p.x - o.W / 2, maxX: p.x + o.W / 2, minZ: p.z - o.L / 2, maxZ: p.z + o.L / 2 }; }
+function buildBoards() {
+  const wide = VW > VH;
+  const snapM = MKT ? MKT.snapshot() : {}, pmState = PM ? { market: sortedMarket(), deck: PM.pile.map(c => c.userData.num) } : { market: [17, 19, 20, 21, 22, 23, 24, 25], deck: [31, 27, 34, 26, 29, 38] };
+  if (MKT) { scene.remove(MKT.group); } if (PM) { scene.remove(PM.group); }
+  MKT = createMarket({ x0: 0, z0: 0, de: DE, wide, ...snapM });
+  PM = createPlantMarket({ x0: 0, z0: 0, de: DE, wide, ...pmState });
+  if (!wide) { MKT.group.position.set(maxX + 5.5 + MKT.W / 2, 0, CZ - 2); PM.group.position.set(minX - 5.5 - PM.W / 2, 0, CZ - 2); }
+  else { const cx = maxX + 6 + Math.max(MKT.W, PM.W) / 2, gap = 4, tot = PM.L + gap + MKT.L; PM.group.position.set(cx - (MKT.W - PM.W) / 2, 0, CZ - tot / 2 + PM.L / 2); MKT.group.position.set(cx, 0, CZ - tot / 2 + PM.L + gap + MKT.L / 2); }
+  setBounds(MKT); setBounds(PM); scene.add(MKT.group, PM.group);
 }
+let LAYOUT_PENDING = false;
+function maybeRelayout() { if (!MKT || MKT.wide === (VW > VH)) return false; if (BUSY || introRunning) { LAYOUT_PENDING = true; return false; } LAYOUT_PENDING = false; if (MODE !== 'city') closeCard(); buildBoards(); return true; }
 const sortedMarket = () => [...PM.cards.keys()].sort((a, b) => a - b);
 function plantPose() { const b = PM.bounds; const land = !QS.has('clean') && VW > VH && matchMedia('(max-height: 500px)').matches; return fitCorners([[b.minX, b.minZ], [b.maxX, b.minZ], [b.minX, b.maxZ], [b.maxX, b.maxZ]].map(([x, z]) => new THREE.Vector3(x, 0, z)), VW > VH ? .55 : .5); }
 function liftCard(n, on) { const c = PM.cards.get(n); if (!c) return; const y0 = c.position.y, y1 = on ? .9 : .04; tween(.3, q => { c.position.y = y0 + (y1 - y0) * ease.out(q); c.rotation.x = on ? -.12 * q : 0; }); }
@@ -637,8 +650,7 @@ async function auction() {
 }
 async function flyCardToPad(n) {
   const c = PM.cards.get(n); PM.cards.delete(n); scene.attach(c);
-  const slotX = [-4.1, 0, 4.1][MKT.PLANTS.length]; const z = MKT.PLANTS[0].mesh.position.z;
-  const dest = MKT.group.position.clone().add(new THREE.Vector3(slotX, .04, z)), a = c.position.clone(), r0 = c.rotation.clone();
+  const dest = MKT.group.position.clone().add(MKT.padPos(MKT.PLANTS.length)), a = c.position.clone(), r0 = c.rotation.clone();
   await tween(1.6, q => { const e = ease.inout(q); c.position.lerpVectors(a, dest, e); c.position.y += Math.sin(Math.PI * e) * 9; c.rotation.set(r0.x * (1 - e), Math.sin(Math.PI * e) * .6, Math.sin(Math.PI * e) * .25); c.scale.setScalar(1 - .1 * e); if (q > .1 && q < .9 && Math.random() < .5) trail(c.position, '#f2b33d'); });
   scene.remove(c); MKT.addPlant(n); sparkBurst(dest.clone().add(new THREE.Vector3(0, .3, 0)), '#f2b33d', 30, .6);
 }
@@ -767,11 +779,11 @@ function bloomBoost() { if (!bloomPass) return; tween(2.6, q => { bloomPass.stre
 // ---------- camera ----------
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = .08; controls.screenSpacePanning = false;
-controls.minPolarAngle = .25; controls.maxPolarAngle = .95; controls.minDistance = 12; controls.maxDistance = 220;
+controls.minPolarAngle = .25; controls.maxPolarAngle = .95; controls.minDistance = 12; controls.maxDistance = 420;
 controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
 controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
 controls.zoomToCursor = true;
-controls.addEventListener('change', () => { const t = controls.target; t.x = Math.max(PM ? PM.bounds.minX : minX, Math.min(MKT ? MKT.bounds.maxX : maxX, t.x)); t.z = Math.max(minZ, Math.min(maxZ, t.z)); t.y = 0; });
+controls.addEventListener('change', () => { const t = controls.target; const bs = [PM, MKT].filter(Boolean).map(o => o.bounds); const lx = Math.min(minX, ...bs.map(q => q.minX)), hx = Math.max(maxX, ...bs.map(q => q.maxX)), lz = Math.min(minZ, ...bs.map(q => q.minZ)), hz = Math.max(maxZ, ...bs.map(q => q.maxZ)); t.x = Math.max(lx, Math.min(hx, t.x)); t.z = Math.max(lz, Math.min(hz, t.z)); t.y = 0; });
 function fitPose(polar, all) {
   if (polar === undefined) polar = VW > VH ? .6 : .48;
   const corners = MAIN.filter((_, i) => i % 3 === 0).map(([x, z]) => new THREE.Vector3(x, 0, z));
@@ -845,7 +857,8 @@ function layoutHUD() {
   const f = 1 - ((SAFE.t + (VH - SAFE.b)) / 2) / VH; if (tsH) [tsH, tsV].forEach(p => p.uniforms.uFocus.value = f);
 }
 function resize() { VW = innerWidth; VH = innerHeight; camera.aspect = VW / VH; camera.updateProjectionMatrix(); setupComposer(); layoutHUD(); }
-addEventListener('resize', () => { resize(); if (!BUSY && !introRunning) { const p = fitPose(); camera.position.copy(p.pos); controls.target.copy(p.tgt); controls.update(); } });
+let RZ = 0; function refit() { if (!BUSY && !introRunning) { layoutHUD(); const p = fitPose(); camera.position.copy(p.pos); controls.target.copy(p.tgt); controls.update(); } }
+addEventListener('resize', () => { resize(); maybeRelayout(); refit(); clearTimeout(RZ); RZ = setTimeout(refit, 180); });
 
 // ---------- picking ----------
 let pd = null;
@@ -918,6 +931,7 @@ function loop() {
   LINES.forEach(l => l.wires.forEach(w => w.material.uniforms.uT.value = t));
   Object.values(CITY).forEach(c => { const r = c.ring, target = c.ringOn ? (c.id === SEL ? 1 : .3 + .14 * Math.sin(t * 2.6 + c.x)) : 0; r.material.opacity += (target - r.material.opacity) * Math.min(1, dt * 8); r.scale.setScalar(c.id === SEL ? 1.12 + .04 * Math.sin(t * 5) : 1); r.visible = r.material.opacity > .01; });
   if (SKY) SKY.update(t);
+  if (LAYOUT_PENDING && !BUSY && !introRunning && maybeRelayout()) { const p = fitPose(); flyTo(p, .8); }
   if (CHASE) { const o = CHASE.orb.position, d = CHASE.dir; const want = new THREE.Vector3(o.x - d.x * 9 + d.z * 3, o.y + 5.5, o.z - d.z * 9 - d.x * 3); const f = 1 - Math.exp(-dt * 3.2); camera.position.lerp(want, f); controls.target.lerp(new THREE.Vector3(o.x + d.x * 3, o.y - 1, o.z + d.z * 3), f); camera.lookAt(controls.target); }
   if (controls.enabled) controls.update();
   let sh = null; if (SHAKE > .002) { sh = camera.position.clone(); camera.position.add(new THREE.Vector3((Math.random() - .5) * SHAKE, (Math.random() - .5) * SHAKE, (Math.random() - .5) * SHAKE)); SHAKE *= Math.exp(-dt * 7); }
@@ -930,7 +944,8 @@ function loop() {
 $('#bPower').textContent = T.power; $('#bView').textContent = T.view; $('#bMkt').textContent = DE ? 'Rohstoffe' : 'Resources'; $('#bMkt').onclick = openMarket; $('#bPl').textContent = DE ? 'Kraftwerke' : 'Plants'; $('#bPl').onclick = openPlants; $('#bPower').textContent = DE ? 'Liefern' : 'Power';
 if (QS.has('debug')) $('#fps').hidden = false;
 if (QS.has('clean')) document.body.classList.add('clean');
-buildTerrain(); buildCities(); SKY = createSkylines(Object.values(CITY), ADJ); scene.add(SKY.group); buildMarket(); buildPlantMarket(); buildGround(); initLabels();
+VW = innerWidth; VH = innerHeight;
+buildTerrain(); buildCities(); bindMarketUI(); SKY = createSkylines(Object.values(CITY), ADJ); scene.add(SKY.group); buildMarket(); buildPlantMarket(); buildGround(); initLabels();
 document.fonts && document.fonts.ready.then(() => LBL.forEach(l => { l.w = l.h = 0; }));
 resize(); intro(); loop();
-window.__gm3d = { cam: (x, y, z, tx, ty, tz) => { controls.target.set(tx, ty, tz); camera.position.set(x, y, z); camera.lookAt(controls.target); controls.update(); }, mk: () => ({ m: MKT.group.position, p: PM.group.position }), plants: openPlants, pick: n => { liftCard(PSEL, false); PSEL = n; liftCard(n, true); renderPlantCard(); }, look: (cid, d = 9, pol = .95, az = .4) => { const c = CITY[cid], tg = new THREE.Vector3(c.x, c.y + .8, c.z); controls.target.copy(tg); camera.position.set(tg.x + Math.sin(az) * Math.sin(pol) * d, tg.y + Math.cos(pol) * d, tg.z + Math.cos(az) * Math.sin(pol) * d); camera.lookAt(tg); controls.update(); }, market: openMarket, cart: (k, n) => { CART[k] = n; renderMarketCard(); previewCart(); }, select, CITY, quote, build: () => $('#cBuild').onclick(), power: () => $('#bPower').onclick(), state: () => ({ introRunning, BUSY, money: PLAYERS[ME].money, t: SIMT }), skip: skipIntro };
+window.__gm3d = { dbg: () => ({ tgt: controls.target.clone(), cam: camera.position.clone(), pm: PM.bounds, mk: MKT.bounds, minX, maxX, fit: fitPose() }), cam: (x, y, z, tx, ty, tz) => { controls.target.set(tx, ty, tz); camera.position.set(x, y, z); camera.lookAt(controls.target); controls.update(); }, mk: () => ({ m: MKT.group.position, p: PM.group.position }), plants: openPlants, pick: n => { liftCard(PSEL, false); PSEL = n; liftCard(n, true); renderPlantCard(); }, look: (cid, d = 9, pol = .95, az = .4) => { const c = CITY[cid], tg = new THREE.Vector3(c.x, c.y + .8, c.z); controls.target.copy(tg); camera.position.set(tg.x + Math.sin(az) * Math.sin(pol) * d, tg.y + Math.cos(pol) * d, tg.z + Math.cos(az) * Math.sin(pol) * d); camera.lookAt(tg); controls.update(); }, market: openMarket, cart: (k, n) => { CART[k] = n; renderMarketCard(); previewCart(); }, select, CITY, quote, build: () => $('#cBuild').onclick(), power: () => $('#bPower').onclick(), state: () => ({ introRunning, BUSY, money: PLAYERS[ME].money, t: SIMT }), skip: skipIntro };

@@ -56,10 +56,20 @@ export function makeCard(num, de) {
 
 function roundRect(x, X, Y, w, h, r) { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); }
 
-export function createPlantMarket({ x0, z0, de = true, market, deck }) {
+export function createPlantMarket({ x0, z0, de = true, market, deck, wide = false }) {
   const group = new THREE.Group(); group.position.set(x0, 0, z0);
-  const W = 12.4, HEAD = 3.4, ROW = 3.75, DECKA = 5.2, L = HEAD + ROW * 4 + DECKA + .6;
-  const colX = [-3.05, 3.05], rowZ = r => -L / 2 + HEAD + ROW * (r + .5), deckPos = new THREE.Vector3(0, 0, -L / 2 + HEAD + ROW * 4 + DECKA / 2);
+  let W, L, slotXZ, deckPos, labels, titleAt;
+  if (!wide) {
+    const HEAD = 3.4, ROW = 3.75, DECKA = 5.2; W = 12.4; L = HEAD + ROW * 4 + DECKA + .6;
+    const colX = [-3.05, 3.05], rowZ = r => -L / 2 + HEAD + ROW * (r + .5);
+    slotXZ = i => [colX[i < 4 ? 0 : 1], rowZ(i % 4)]; deckPos = new THREE.Vector3(0, 0, -L / 2 + HEAD + ROW * 4 + DECKA / 2);
+    labels = [[colX[0], -L / 2 + 2.6], [colX[1], -L / 2 + 2.6]]; titleAt = [0, -L / 2 + 1.2];
+  } else {
+    const LABEL = 3.0, COL = 4.75, DECKW = 5.6, ROW = 3.7; W = LABEL + COL * 4 + DECKW + .4; L = 2.4 + ROW * 2 + .8;
+    const colX = c => -W / 2 + LABEL + COL * (c + .5), rowZ = r => -L / 2 + 2.4 + ROW * (r + .5);
+    slotXZ = i => [colX(i % 4), rowZ(i < 4 ? 0 : 1)]; deckPos = new THREE.Vector3(W / 2 - .4 - DECKW / 2, 0, rowZ(.5));
+    labels = [[-W / 2 + 1.6, rowZ(0)], [-W / 2 + 1.6, rowZ(1)]]; titleAt = [-W / 2 + LABEL + COL * 2, -L / 2 + 1.2];
+  }
   // slab + print
   const shape = new THREE.Shape(); const r = 1.2, hw = W / 2, hl = L / 2;
   shape.moveTo(-hw + r, -hl); shape.lineTo(hw - r, -hl); shape.quadraticCurveTo(hw, -hl, hw, -hl + r); shape.lineTo(hw, hl - r); shape.quadraticCurveTo(hw, hl, hw - r, hl); shape.lineTo(-hw + r, hl); shape.quadraticCurveTo(-hw, hl, -hw, hl - r); shape.lineTo(-hw, -hl + r); shape.quadraticCurveTo(-hw, -hl, -hw + r, -hl);
@@ -69,19 +79,19 @@ export function createPlantMarket({ x0, z0, de = true, market, deck }) {
   const grd = x.createLinearGradient(0, 0, 0, ch); grd.addColorStop(0, '#1e2a33'); grd.addColorStop(1, '#18222a'); x.fillStyle = grd; x.fillRect(0, 0, cw, ch);
   for (let i = 0; i < 3000; i++) { x.fillStyle = `rgba(255,255,255,${Math.random() * .03})`; x.fillRect(Math.random() * cw, Math.random() * ch, 1.5, 1.5); }
   x.strokeStyle = 'rgba(242,179,61,.5)'; x.lineWidth = 2; roundRect(x, 12, 12, cw - 24, ch - 24, 30); x.stroke(); x.strokeStyle = 'rgba(242,179,61,.18)'; x.lineWidth = 1; roundRect(x, 20, 20, cw - 40, ch - 40, 24); x.stroke();
-  x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#f2b33d'; x.font = `800 ${TS * .62}px Orbitron, sans-serif`; x.fillText(de ? 'KRAFTWERKSMARKT' : 'POWER PLANT MARKET', cw / 2, tz(-L / 2 + 1.2));
-  x.font = `700 ${TS * .42}px Barlow, sans-serif`; x.fillStyle = 'rgba(227,234,238,.75)'; x.fillText(de ? 'AKTUELL' : 'CURRENT', tx(colX[0]), tz(-L / 2 + 2.6)); x.fillStyle = 'rgba(227,234,238,.45)'; x.fillText(de ? 'ZUKUNFT' : 'FUTURE', tx(colX[1]), tz(-L / 2 + 2.6));
-  for (let c = 0; c < 2; c++) for (let rr = 0; rr < 4; rr++) { x.strokeStyle = c ? 'rgba(227,234,238,.12)' : 'rgba(242,179,61,.28)'; x.lineWidth = 2; x.setLineDash(c ? [8, 6] : []); roundRect(x, tx(colX[c] - CARD_W / 2 - .12), tz(rowZ(rr) - CARD_D / 2 - .12), (CARD_W + .24) * TS, (CARD_D + .24) * TS, 10); x.stroke(); }
-  x.setLineDash([]); x.strokeStyle = 'rgba(227,234,238,.14)'; roundRect(x, tx(-CARD_W / 2 - .12), tz(deckPos.z - CARD_D / 2 - .12), (CARD_W + .24) * TS, (CARD_D + .24) * TS, 10); x.stroke();
-  x.fillStyle = 'rgba(227,234,238,.4)'; x.font = `600 ${TS * .34}px Barlow, sans-serif`; x.fillText(de ? 'STAPEL' : 'DECK', tx(0), tz(deckPos.z + CARD_D / 2 + .5));
+  x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#f2b33d'; x.font = `800 ${TS * .62}px Orbitron, sans-serif`; x.fillText(de ? 'KRAFTWERKSMARKT' : 'POWER PLANT MARKET', tx(titleAt[0]), tz(titleAt[1]));
+  x.font = `700 ${TS * .42}px Barlow, sans-serif`; x.fillStyle = 'rgba(227,234,238,.75)'; x.fillText(de ? 'AKTUELL' : 'CURRENT', tx(labels[0][0]), tz(labels[0][1])); x.fillStyle = 'rgba(227,234,238,.45)'; x.fillText(de ? 'ZUKUNFT' : 'FUTURE', tx(labels[1][0]), tz(labels[1][1]));
+  for (let i = 0; i < 8; i++) { const [sx, sz] = slotXZ(i), c = i >= 4; x.strokeStyle = c ? 'rgba(227,234,238,.12)' : 'rgba(242,179,61,.28)'; x.lineWidth = 2; x.setLineDash(c ? [8, 6] : []); roundRect(x, tx(sx - CARD_W / 2 - .12), tz(sz - CARD_D / 2 - .12), (CARD_W + .24) * TS, (CARD_D + .24) * TS, 10); x.stroke(); }
+  x.setLineDash([]); x.strokeStyle = 'rgba(227,234,238,.14)'; roundRect(x, tx(deckPos.x - CARD_W / 2 - .12), tz(deckPos.z - CARD_D / 2 - .12), (CARD_W + .24) * TS, (CARD_D + .24) * TS, 10); x.stroke();
+  x.fillStyle = 'rgba(227,234,238,.4)'; x.font = `600 ${TS * .34}px Barlow, sans-serif`; x.fillText(de ? 'STAPEL' : 'DECK', tx(deckPos.x), tz(deckPos.z + CARD_D / 2 + .5));
   const top = new THREE.CanvasTexture(cv); top.colorSpace = THREE.SRGBColorSpace; top.anisotropy = 8;
   const pos = sg.attributes.position, uv = sg.attributes.uv; for (let i = 0; i < pos.count; i++) uv.setXY(i, (pos.getX(i) + W / 2) / W, 1 - (pos.getZ(i) + L / 2) / L);
   const slab = new THREE.Mesh(sg, [new THREE.MeshStandardMaterial({ map: top, roughness: .75, metalness: .05 }), new THREE.MeshStandardMaterial({ color: 0x24303a, roughness: .55, metalness: .3 })]);
   slab.receiveShadow = true; group.add(slab);
   // cards
   const cards = new Map();
-  const slot = i => new THREE.Vector3(colX[i < 4 ? 0 : 1], .04, rowZ(i % 4));
+  const slot = i => { const [sx, sz] = slotXZ(i); return new THREE.Vector3(sx, .04, sz); };
   market.slice().sort((a, b) => a - b).forEach((n, i) => { const c = makeCard(n, de); c.position.copy(slot(i)); group.add(c); cards.set(n, c); });
   const pile = []; deck.forEach((n, i) => { const c = makeCard(n, de); c.position.set(deckPos.x, .04 + i * .075, deckPos.z); c.rotation.z = Math.PI; group.add(c); pile.push(c); });
-  return { group, cards, pile, slot, deckPos, market, deck, bounds: { minX: x0 - W / 2, maxX: x0 + W / 2, minZ: z0 - L / 2, maxZ: z0 + L / 2 }, W, L };
+  return { group, cards, pile, slot, deckPos, wide, market, deck, bounds: { minX: x0 - W / 2, maxX: x0 + W / 2, minZ: z0 - L / 2, maxZ: z0 + L / 2 }, W, L };
 }
