@@ -6087,11 +6087,13 @@ function rulesBlock(){
   }
   {const nd=M.noDiscount,on=!nd&&UI.disc!=='orig';
     h+=`<div class="toggle disc${on?' on':''}${nd?' fixed':''}">${nd?'':`<button type="button" class="swt" role="switch" aria-checked="${on}" data-act="discTog" aria-label="Rabatt-Regel"><span></span></button>`}<div class="tgt"><b>${on?'Rabatt (Recharged)':'Originalregel: ohne Rabatt'}</b><span>${nd?'Dieser Plan spielt ohne Rabatt: Kauft niemand ein Kraftwerk, fällt das kleinste weg.':on?'Das kleinste Kraftwerk im Markt ist jede Runde ab 1 € zu haben. Kauft es niemand, fällt es am Ende der Versteigerung weg.':'Kein Rabatt. Kauft in einer Runde niemand ein Kraftwerk, fällt das kleinste aus dem Spiel und wird ersetzt.'}</span><small>${on?'Regel aus Funkenschlag Recharged':'Regel aus dem Original-Funkenschlag'}</small></div></div>`}
+  return h;
+}
+function facSetupHTML(){let h='';
   {const on=!!UI.facOn,en=LANG==='en';
     h+=`<div class="toggle fac${on?' on':''}"><button type="button" class="swt" role="switch" aria-checked="${on}" data-act="facTog" aria-label="${LX('Firmen mit Fähigkeiten','Companies with abilities')}"><span></span></button><div class="tgt"><b>${LX('Firmen mit Fähigkeiten','Companies with abilities')}</b><span>${on?LX('Jede Firma hat einen Vorteil und einen Nachteil. Die Gegner bekommen zufällig je eine andere.','Each company has one advantage and one drawback. Opponents get a different one each, at random.'):LX('Optional: jede Firma bekommt einen Vorteil und einen Nachteil.','Optional: every company gets one advantage and one drawback.')}</span></div></div>`;
     if(on)h+=`<div class="facg" role="radiogroup" aria-label="${LX('Deine Fähigkeit','Your ability')}">${['rand',...FAC_KEYS].map(k=>{const sel=(UI.myFac||'rand')===k;const t=k==='rand'?[LX('Zufällig','Random'),'']:facTxt(k);return `<button type="button" class="facc${sel?' on':''}" role="radio" aria-checked="${sel}" data-act="facSel" data-f="${k}"><b>${k==='rand'?LX('Zufall','Random'):esc(FACTIONS[k].nm)}</b>${k==='rand'?`<span>${LX('Lass dich überraschen','Surprise me')}</span>`:`<span class="up">${t[0]}</span><span class="${FACTIONS[k].neg===0?'up':'dn'}">${t[1]}</span>`}</button>`}).join('')}</div>`}
-  return h;
-}
+  return h}
 function uraniumTrapWarn(){
   const d=UI.deck||'std',po=MAPS[UI.map].phaseOut39||(MAPS[UI.map].phaseOutOpt&&UI.deAtom!==false);
   if(po&&(d==='d1'||d==='d2'||d==='mix1'))return '<div class="callout"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1.5 17 16H1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 7v4M9 13.2v.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><p>In diesem Deck ist das größte Kraftwerk (50) ein Uran-Kraftwerk. Mit Atomausstieg geht das Uran oft aus, dann steht es still. Für ein ausgewogenes Spiel das Basisdeck wählen oder ohne Atomausstieg spielen.</p></div>';
@@ -6220,9 +6222,9 @@ function s3Summary(){
   const M=MAPS[UI.map],n=regionCount(UI.nAI+1),en=LANG==='en';
   const nm=UI.name||LX('Dein Betrieb','Your company');
   const regs=UI.regions.length?UI.regions.map(r=>rName(r)).join(', '):LX(`${n} Regionen, zufällig`,`${n} regions, random`);
-  const opp=`${UI.nAI+1} ${LX('Spieler','players')} · ${UI.nAI} ${LX('KI-Gegner','AI opponents')} · ${tr(AI_NAME[UI.diff])}`;
+  const opp=`${UI.nAI+1} ${LX('Spieler','players')} · ${UI.nAI} ${LX('KI-Gegner','AI opponents')} · ${tr(AI_NAME[UI.diff])}${UI.facOn?' · '+LX('mit Fähigkeiten','with abilities'):''}`;
   const deck=M.exp?LX('Basis-Kraftwerke','Base plants'):M.deluxe?LX('Deluxe-Kraftwerke','Deluxe plants'):tr(DECKS[UI.deck||'std'].name);
-  const disc=(M.noDiscount?LX('ohne Rabatt','no discount'):UI.disc==='orig'?LX('Rabatt aus','discount off'):LX('Rabatt an','discount on'))+(UI.facOn?' · '+LX('Fähigkeiten','abilities'):'');
+  const disc=(M.noDiscount?LX('ohne Rabatt','no discount'):UI.disc==='orig'?LX('Rabatt aus','discount off'):LX('Rabatt an','discount on'));
   const pr=(UI.promos||[]).length;const promo=pr?(en?`${pr} promo${pr>1?'s':''}`:`${pr} Promo${pr>1?'s':''}`):LX('keine Promos','no promos');
   return {nm,map:tr(en&&M.en?M.en:M.name),regs,opp,rules:`${deck} · ${disc} · ${promo}`,bad:!regionsOk()};
 }
@@ -6281,7 +6283,7 @@ function renderStart3(){
   if(sv==='co')b=`<div class="cocard"><div class="co-emb" aria-hidden="true">${coLogo(MY_LOGO,'#4f9dff','co-big')}</div><div class="co-main"><label class="co-lbl" for="nm">Firmenname</label><div class="co-in"><input id="nm" maxlength="18" autocomplete="off" spellcheck="false" value="${esc(x.nm)}"><button type="button" class="co-dice" data-act="coRand" aria-label="Zufälliger Firmenname" title="Zufälliger Firmenname"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></button></div></div></div><span class="s3-k co-lk">${LX('Logo','Logo')}</span>${logoPicker()}<p class="s3-note">${LX('Name und Logo erscheinen im Spiel, im Verlauf und in der Rangliste.','Name and logo appear in the game, the log and the leaderboard.')}</p>`;
   else if(sv==='board')b=`<div class="sgroup"><span class="s3-k">${LX('Spielplan','Board')}</span><div class="mcards">${Object.entries(MAPS).filter(([,m])=>!m.deluxe&&!m.exp).map(mapCard).join('')}</div><div class="mcards two">${Object.entries(MAPS).filter(([,m])=>m.deluxe).map(mapCard).join('')}</div>${xpickHTML(mapCard)}${M.exp?'':`<div class="nhint">${MAP_NOTE[UI.map]||''}</div>`}</div>
    <div class="sgroup"><span class="s3-k">${LX('Netzgebiet','Play area')}</span>${wide?'':`<div class="s3-bmap"><div class="hero-map">${heroMap()}<canvas class="hm-fx" aria-hidden="true"></canvas></div><span class="s3-tap">${LX('Regionen auf der Karte antippen','Tap regions on the map')}</span></div>`}${regionPicker()}</div>`;
-  else if(sv==='opp')b=`<div class="sgroup">${oppBlock()}</div>`;
+  else if(sv==='opp')b=`<div class="sgroup">${oppBlock()}</div><div class="sgroup">${facSetupHTML()}</div>`;
   else b=`<div class="sgroup">${rulesBlock()}${promoBlock()}</div>`;
   const done=sv==='board'?(x.bad?LX('Netzgebiet unvollständig','Play area incomplete'):LX(`${x.map} übernehmen`,`Use ${x.map}`)):LX('Fertig','Done');
   const sh=`<header class="s3-sh"><button type="button" class="s3-ib s3-bk" data-act="sv" data-v="" aria-label="${LX('Zurück','Back')}">${S3I.back}</button><h1>${T[sv]}</h1><button type="button" class="s3-done" data-act="sv" data-v="">${LX('Fertig','Done')}</button></header>`,bar=`<div class="startbar s3-bar"><button type="button" class="btn pri s3-wide" data-act="sv" data-v="" ${sv==='board'&&x.bad?'disabled':''}>${esc(done)}</button></div>`;
@@ -7508,7 +7510,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v247';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v248';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
