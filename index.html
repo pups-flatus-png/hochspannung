@@ -5775,6 +5775,17 @@ function vicCity(x,cx,cy,u,sc,r,lw,col,c,k){if(!PLAN()){x.fillStyle='#fff';x.str
   x.strokeStyle=col;x.lineWidth=lw*.7*u;x.beginPath();x.arc(cx,cy,R,0,6.2832);x.stroke();
   const g=x.createRadialGradient(cx,cy,0,cx,cy,R*.75);g.addColorStop(0,'#fff8e4');g.addColorStop(1,'#ffd27a');x.fillStyle=g;x.beginPath();x.arc(cx,cy,R*.5,0,6.2832);x.fill();
   if(k>=1&&c&&c.name){const fs=Math.max(10*(u/Math.max(.001,u)),10*u*.95);x.font=`600 ${Math.round(fs)}px 'IBM Plex Mono',ui-monospace,monospace`;x.textAlign='left';x.textBaseline='middle';x.lineJoin='round';x.lineWidth=4*u;x.strokeStyle=pp;const t=c.name.toUpperCase();x.strokeText(t,cx+R+6*u,cy);x.fillStyle='#ffffff';x.fillText(t,cx+R+6*u,cy)}}
+/* v270: lebendigeres Siegesnetz – pulsierendes Leuchten, Lichtfunken auf jeder Leitung, glühende Städte, goldenes Finale */
+function vicGlow(x,P1,E,C,X,Y,u,col,t,tF){x.save();x.globalCompositeOperation='lighter';x.lineCap='round';x.lineJoin='round';
+  const pul=.6+.4*Math.sin(t*4.2);x.strokeStyle=col;x.globalAlpha=.16*pul;x.lineWidth=34*u;x.stroke(P1);x.globalAlpha=.3;x.lineWidth=13*u;x.stroke(P1);
+  const spark=(px,py,r,a)=>{const g=x.createRadialGradient(px,py,0,px,py,r);g.addColorStop(0,'#ffffff');g.addColorStop(.3,col);g.addColorStop(1,'rgba(0,0,0,0)');x.globalAlpha=a;x.fillStyle=g;x.beginPath();x.arc(px,py,r,0,6.2832);x.fill()};
+  for(let i=0;i<E.length;i++){const[A,B,d,du]=E[i];const k=Math.min(1,(t-d)/du);if(k<=0)continue;
+    if(k<1)spark(X(A)+(X(B)-X(A))*k,Y(A)+(Y(B)-Y(A))*k,16*u,1);
+    else for(let j=0;j<2;j++){const f=(t*.75+i*.37+j*.5)%1;spark(X(A)+(X(B)-X(A))*f,Y(A)+(Y(B)-Y(A))*f,9*u,.85)}}
+  for(const[c,d]of C){const q=t-d;if(q<0)continue;const R=(26+7*Math.sin(t*3.6+c.x*.05))*u*Math.min(1,q*2);if(R<=0)continue;const g=x.createRadialGradient(X(c),Y(c),0,X(c),Y(c),R);g.addColorStop(0,'rgba(255,244,214,.95)');g.addColorStop(.35,col);g.addColorStop(1,'rgba(0,0,0,0)');x.globalAlpha=.5;x.fillStyle=g;x.beginPath();x.arc(X(c),Y(c),R,0,6.2832);x.fill()}
+  const f=t-tF;if(f>0&&f<2){for(const[c]of C){x.globalAlpha=Math.max(0,1-f/2)*.85;x.strokeStyle='#ffd36e';x.lineWidth=3*u;x.beginPath();x.arc(X(c),Y(c),(12+90*f)*u,0,6.2832);x.stroke()}
+    x.globalAlpha=Math.max(0,.32-f*.2);x.fillStyle=col;x.fillRect(0,0,x.canvas.width,x.canvas.height)}
+  x.restore()}
 function endVictoryStage(){/* v196: scharf – Kamerafahrt über den Bildausschnitt statt CSS-Skalierung; Kopie trägt die Kartenstile */
   if(!S||!S.ranking)return endShow();const W=S.ranking[0],wp=P(W),own=wp.cities||[];const src=document.getElementById('map');
   if(hmReduced()||!own.length||!src){endShow();return}
@@ -5785,7 +5796,7 @@ function endVictoryStage(){/* v196: scharf – Kamerafahrt über den Bildausschn
   const first=own[0],F=CITY[first],[vx,vy,vw,vh]=MAPVB.split(' ').map(Number);
   const D={[first]:0},Q=[first],done={},adj={};EDGE_LIST.forEach(e=>{(adj[e.a]??=[]).push(e.b);(adj[e.b]??=[]).push(e.a)});
   while(Q.length){Q.sort((a,b)=>D[a]-D[b]);const u=Q.shift();if(done[u])continue;done[u]=1;for(const v of adj[u]||[]){const w=Math.hypot(CITY[u].x-CITY[v].x,CITY[u].y-CITY[v].y)*(own.includes(v)?1:1.6);if(D[v]==null||D[u]+w<D[v]){D[v]=D[u]+w;Q.push(v)}}}
-  const mx=Math.max(1,...own.map(c=>D[c]??0)),DL=.35,DUR=3,T0=.45,TS=2.3,dl=c=>DL+T0+(D[c]??mx)/mx*TS;
+  const mx=Math.max(1,...own.map(c=>D[c]??0)),DL=.35,DUR=5.2,T0=.6,TS=4.3,dl=c=>DL+T0+(D[c]??mx)/mx*TS;
   const E=[];EDGE_LIST.forEach(e=>{if(!own.includes(e.a)||!own.includes(e.b))return;const[a,b]=(D[e.a]??0)<=(D[e.b]??0)?[e.a,e.b]:[e.b,e.a];E.push([CITY[a],CITY[b],dl(a),Math.max(.25,((D[b]??0)-(D[a]??0))/mx*TS)])});
   const C=own.map(c=>[CITY[c],dl(c)]);
   ov.insertAdjacentHTML('beforeend',`<div class="gv-cap" style="--pc:${wp.color}"><span>${LX('Das Netz des Siegers','The winning grid')}</span><b>${esc(wp.name)}</b><em>${cityCount(wp)} ${LX('Städte','cities')} · ${LX('erste Stadt','first city')}: ${esc(CITY[first].name||first)}</em></div>`);
@@ -5802,15 +5813,15 @@ function endVictoryStage(){/* v196: scharf – Kamerafahrt über den Bildausschn
     const X=p=>((p.x-vb[0])*s+sox)*dpr,Y=p=>((p.y-vb[1])*s+soy)*dpr,u=s*dpr;
     x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,cv.width,cv.height);x.lineCap='round';x.lineJoin='round';
     const P1=new Path2D();for(const[A,B,d,du]of E){const k=Math.min(1,Math.max(0,(t-d)/du));if(k<=0)continue;P1.moveTo(X(A),Y(A));P1.lineTo(X(A)+(X(B)-X(A))*k,Y(A)+(Y(B)-Y(A))*k)}
-    if(PLAN()){vicLines(x,P1,u,col)}else{x.strokeStyle=col;x.globalAlpha=.22;x.lineWidth=22*u;x.stroke(P1);x.globalAlpha=.45;x.lineWidth=11*u;x.stroke(P1);x.globalAlpha=1;x.lineWidth=4.5*u;x.strokeStyle=hot;x.stroke(P1);}
+    if(PLAN()){vicLines(x,P1,u,col)}else{x.strokeStyle=col;x.globalAlpha=.22;x.lineWidth=22*u;x.stroke(P1);x.globalAlpha=.45;x.lineWidth=11*u;x.stroke(P1);x.globalAlpha=1;x.lineWidth=4.5*u;x.strokeStyle=hot;x.stroke(P1);}vicGlow(x,P1,E,C,X,Y,u,col,t,DL+T0+TS);
     for(const[c,d]of C){const q=t-d;if(q<0)continue;
       if(q<.9){const k=q/.9;x.globalAlpha=(1-k)*.9;x.strokeStyle=col;x.lineWidth=2.5*u;x.beginPath();x.arc(X(c),Y(c),16*u*(.4+2.6*k),0,6.2832);x.stroke()}
       const k=Math.min(1,q/.45),sc=k<.6?.3+k/.6*1.05:1.35-(k-.6)/.4*.35;x.globalAlpha=Math.min(1,k*1.7);vicCity(x,X(c),Y(c),u,sc,9,4,col,c,k)}
     const fe=t-DL-.3;if(fe>0&&fe<1){const k=fe,sc=k<.25?.2+k/.25*1.4:1.6-(k-.25)/.75*.6;x.globalAlpha=k<.25?k/.25:1-(k-.25)/.75;x.fillStyle='#fff';x.strokeStyle=col;x.lineWidth=8*u;x.beginPath();x.arc(X(F),Y(F),14*u*sc,0,6.2832);x.fill();x.stroke()}
-    x.globalAlpha=1;if(t<DL+T0+TS+1.4&&!fin)requestAnimationFrame(draw)};
+    x.globalAlpha=1;if(t<DL+T0+TS+3.2&&!fin)requestAnimationFrame(draw)};
   requestAnimationFrame(draw);
   const go=()=>{if(fin)return;fin=true;requestAnimationFrame(draw);ov.classList.add('done');endShow()};
-  const tm=window._vicTm=setTimeout(go,(DL+DUR+.6)*1000);ov.addEventListener('click',()=>{clearTimeout(tm);ov.classList.add('skip');go()})}
+  const tm=window._vicTm=setTimeout(go,(DL+T0+TS+2.8)*1000);ov.addEventListener('click',()=>{clearTimeout(tm);ov.classList.add('skip');go()})}
 /* v212: Endwertung als Enthüllung – vom letzten Platz zum Sieger, Zähler laufen hoch, dann der Siegesflug */
 function endReveal(done){if(!S||!S.ranking||hmReduced()||window.__fast)return done();document.getElementById('gmRev')?.remove();
   const L=LX,rk=S.ranking.map(P),n=rk.length,ov=document.createElement('div');ov.id='gmRev';
@@ -5829,7 +5840,7 @@ function endVictory(){if(innerWidth<900)return endVictoryStage();if(!S||!S.ranki
   const first=own[0],F=CITY[first],[vx,vy,vw,vh]=MAPVB.split(' ').map(Number);
   const D={[first]:0},Q=[first],done={},adj={};EDGE_LIST.forEach(e=>{(adj[e.a]??=[]).push(e.b);(adj[e.b]??=[]).push(e.a)});
   while(Q.length){Q.sort((a,b)=>D[a]-D[b]);const u=Q.shift();if(done[u])continue;done[u]=1;for(const v of adj[u]||[]){const w=Math.hypot(CITY[u].x-CITY[v].x,CITY[u].y-CITY[v].y)*(own.includes(v)?1:1.6);if(D[v]==null||D[u]+w<D[v]){D[v]=D[u]+w;Q.push(v)}}}
-  const mx=Math.max(1,...own.map(c=>D[c]??0)),DL=.35,DUR=3,T0=.45,TS=2.3,dl=c=>DL+T0+(D[c]??mx)/mx*TS;
+  const mx=Math.max(1,...own.map(c=>D[c]??0)),DL=.35,DUR=5.2,T0=.6,TS=4.3,dl=c=>DL+T0+(D[c]??mx)/mx*TS;
   const E=[];EDGE_LIST.forEach(e=>{if(!own.includes(e.a)||!own.includes(e.b))return;const[a,b]=(D[e.a]??0)<=(D[e.b]??0)?[e.a,e.b]:[e.b,e.a];E.push([CITY[a],CITY[b],dl(a),Math.max(.25,((D[b]??0)-(D[a]??0))/mx*TS)])});
   const C=own.map(c=>[CITY[c],dl(c)]);
   ov.insertAdjacentHTML('beforeend',`<div class="gv-cap" style="--pc:${wp.color}"><span>${LX('Das Netz des Siegers','The winning grid')}</span><b>${esc(wp.name)}</b><em>${cityCount(wp)} ${LX('Städte','cities')} · ${LX('erste Stadt','first city')}: ${esc(CITY[first].name||first)}</em></div>`);
@@ -5848,15 +5859,15 @@ function endVictory(){if(innerWidth<900)return endVictoryStage();if(!S||!S.ranki
     if(img){const a=s/si*dpr;x.globalAlpha=1;x.imageSmoothingQuality='low';x.setTransform(a,0,0,a,((-iox/si+vx-vb[0])*s+sox)*dpr,((-ioy/si+vy-vb[1])*s+soy)*dpr);x.drawImage(img,0,0);x.setTransform(1,0,0,1,0,0);
       x.fillStyle='rgba(6,10,14,.45)';x.fillRect(0,0,cv.width,cv.height)}
     x.lineCap='round';const P1=new Path2D();for(const[A,B,d,du]of E){const k=Math.min(1,Math.max(0,(t-d)/du));if(k<=0)continue;P1.moveTo(X(A),Y(A));P1.lineTo(X(A)+(X(B)-X(A))*k,Y(A)+(Y(B)-Y(A))*k)}
-    if(PLAN()){vicLines(x,P1,u,col)}else{x.strokeStyle=col;x.globalAlpha=.28;x.lineWidth=20*u;x.stroke(P1);x.globalAlpha=1;x.lineWidth=6*u;x.strokeStyle=hot;x.stroke(P1);}
+    if(PLAN()){vicLines(x,P1,u,col)}else{x.strokeStyle=col;x.globalAlpha=.28;x.lineWidth=20*u;x.stroke(P1);x.globalAlpha=1;x.lineWidth=6*u;x.strokeStyle=hot;x.stroke(P1);}vicGlow(x,P1,E,C,X,Y,u,col,t,DL+T0+TS);
     for(const[c,d]of C){const q=t-d;if(q<0)continue;
       if(q<.9){const k=q/.9;x.globalAlpha=(1-k)*.9;x.strokeStyle=col;x.lineWidth=3*u;x.beginPath();x.arc(X(c),Y(c),18*u*(.4+2.8*k),0,6.2832);x.stroke()}
       const k=Math.min(1,q/.45),sc=k<.6?.3+k/.6*1.05:1.35-(k-.6)/.4*.35;x.globalAlpha=Math.min(1,k*1.7);vicCity(x,X(c),Y(c),u,sc,11,5,col,c,k)}
     const fe=t-DL-.3;if(fe>0&&fe<1){const k=fe,sc=k<.25?.2+k/.25*1.4:1.6-(k-.25)/.75*.6;x.globalAlpha=k<.25?k/.25:1-(k-.25)/.75;x.fillStyle='#fff';x.strokeStyle=col;x.lineWidth=10*u;x.beginPath();x.arc(X(F),Y(F),16*u*sc,0,6.2832);x.fill();x.stroke()}
-    x.globalAlpha=1;if((t<DL+DUR+.3||!img)&&!fin)requestAnimationFrame(draw)};
+    x.globalAlpha=1;if((t<DL+T0+TS+3.2||!img)&&!fin)requestAnimationFrame(draw)};
   requestAnimationFrame(draw);
   const go=()=>{if(fin)return;fin=true;requestAnimationFrame(draw);ov.classList.add('done');endShow();setTimeout(()=>{cv.remove()},700)};
-  const tm=window._vicTm=setTimeout(go,(DL+DUR)*1000+600);ov.addEventListener('click',()=>{clearTimeout(tm);ov.classList.add('skip');go()})}
+  const tm=window._vicTm=setTimeout(go,(DL+T0+TS+2.8)*1000);ov.addEventListener('click',()=>{clearTimeout(tm);ov.classList.add('skip');go()})}
 /* v163: Elektronenfluss auf eigenem Canvas (statt SVG-Animation, die die ganze Karte neu zeichnen ließ) */
 const FLOW={cv:null,edges:[],t:0,raf:0,spr:{},last:0};
 function flowSprite(c){if(FLOW.spr[c])return FLOW.spr[c];const k=document.createElement('canvas');k.width=k.height=32;const x=k.getContext('2d'),g=x.createRadialGradient(16,16,0,16,16,16);g.addColorStop(0,'#fff');g.addColorStop(.25,c);g.addColorStop(.6,c+'55');g.addColorStop(1,c+'00');x.fillStyle=g;x.fillRect(0,0,32,32);return FLOW.spr[c]=k}
@@ -8249,7 +8260,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v269';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v270';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
