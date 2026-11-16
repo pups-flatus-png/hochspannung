@@ -3995,7 +3995,7 @@ html[data-theme="light"] .hero-map .hm-out{fill:rgba(120,95,50,.035)!important}
 @media (orientation:landscape) and (max-height:520px){.mov-c.dc{padding:10px 14px;gap:7px;width:min(780px,100%)}.dc-k{display:none}.dc-h{min-height:52px;padding:6px 10px}.mov .logo.dc-em{--ls:30px}.dc-ph{padding:4px 4px 4px 0}.dc-c{padding:4px 6px;flex-direction:row;flex-wrap:wrap}.dc-t{font-size:12px;padding:3px 7px}.dc-g{row-gap:4px}.dc-f{flex-direction:row;align-items:stretch}.dc-rv{flex:1;padding:6px 10px;font-size:12.5px}.mov-c.dc .btn.pri{width:200px;min-height:40px}}
 
 .mov:has(.rx){padding:0;background:#020405}
-.rx{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);grid-template-rows:minmax(0,1fr);align-items:stretch!important;justify-items:stretch!important;background:#030507;color:#e8eef2;font-family:Barlow,system-ui,sans-serif;--E:clamp(78px,19vmin,150px)}
+#matov .rx{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);grid-template-rows:minmax(0,1fr);align-items:stretch!important;justify-items:stretch!important;background:#030507;color:#e8eef2;font-family:Barlow,system-ui,sans-serif;--E:clamp(78px,19vmin,150px)}
 .rx-stage{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;isolation:isolate;border-right:1px solid rgba(255,255,255,.06)}
 .rx-img{position:absolute;inset:-3%;z-index:-3;background-size:cover;background-position:center;filter:saturate(.12) contrast(1.1);opacity:0;animation:rximg 2.4s 2.5s ease-out forwards,cnkb 14s 2.5s linear both}
 .rx-img.none{filter:none;background:radial-gradient(70% 55% at 50% 60%,color-mix(in srgb,var(--pc) 45%,transparent),transparent 70%)}
@@ -4027,13 +4027,13 @@ html[data-theme="light"] .hero-map .hm-out{fill:rgba(120,95,50,.035)!important}
 .rx-skip{all:unset;position:absolute;z-index:5;top:max(12px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));cursor:pointer;font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;padding:9px 12px;border-radius:999px;background:rgba(5,8,10,.6);border:1px solid rgba(255,255,255,.18);color:#cfd8de;animation:cnfade .5s .8s both}
 .rx-skip:focus-visible{outline:2px solid #f2b33d;outline-offset:2px}
 .rx.settled .rx-skip,.rx.done .rx-skip{display:none}
-.rx.done *,.rx.done *::before,.rx.done *::after{animation-delay:0s!important;animation-duration:.01s!important}
+#matov .rx.done *,#matov .rx.done *::before,#matov .rx.done *::after{animation-delay:0s!important;animation-duration:.01s!important}
 .rx.done .rx-seal{animation:rxrot 80s linear infinite!important;opacity:1}
 .rx.done .rx-img{opacity:.85}
-@media (orientation:portrait){.rx{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(250px,38vh) minmax(0,1fr)}.rx-stage{border-right:0;border-bottom:1px solid rgba(255,255,255,.06)}.rx-core{margin-top:-10%}.rx-info{align-items:flex-start}}
-@media (orientation:portrait) and (max-width:480px){.rx{--E:clamp(64px,17vmin,96px)}.rx-g,.rx-hd{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:6px}.rx-g .dc-ph{grid-column:1 / -1;padding:6px 2px 0}.rx-g .dc-none{grid-column:1 / -1;padding:0 2px 4px}.rx-hd>span:first-child{display:none}.rx .dc-t{font-size:12.5px}}
-@media (orientation:landscape) and (max-height:520px){.rx{--E:clamp(56px,17vmin,80px)}.rx-core{margin-top:-14%;gap:4px}.rx-band{padding:7px 12px max(8px,env(safe-area-inset-bottom,0px))}.rx-info{padding-top:10px;padding-bottom:10px}.rx-in{gap:6px}.rx .dc-c{padding:4px 6px;flex-direction:row;flex-wrap:wrap}.rx .dc-t{font-size:12px;padding:3px 7px}.rx .dc-ph{padding:4px 4px 4px 0}.rx-g{row-gap:4px}.rx .dc-rv{padding:6px 10px;font-size:12.5px}.rx .rx-go{min-height:40px}}
-@media (prefers-reduced-motion:reduce){.rx *{animation:none!important}.rx-img{opacity:.85}.rx-seal{opacity:1}}
+@media (orientation:portrait){#matov .rx{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(250px,38vh) minmax(0,1fr)}.rx-stage{border-right:0;border-bottom:1px solid rgba(255,255,255,.06)}.rx-core{margin-top:-10%}.rx-info{align-items:flex-start}}
+@media (orientation:portrait) and (max-width:480px){#matov .rx{--E:clamp(64px,17vmin,96px)}.rx-g,.rx-hd{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:6px}.rx-g .dc-ph{grid-column:1 / -1;padding:6px 2px 0}.rx-g .dc-none{grid-column:1 / -1;padding:0 2px 4px}.rx-hd>span:first-child{display:none}.rx .dc-t{font-size:12.5px}}
+@media (orientation:landscape) and (max-height:520px){#matov .rx{--E:clamp(56px,17vmin,80px)}.rx-core{margin-top:-14%;gap:4px}.rx-band{padding:7px 12px max(8px,env(safe-area-inset-bottom,0px))}.rx-info{padding-top:10px;padding-bottom:10px}.rx-in{gap:6px}.rx .dc-c{padding:4px 6px;flex-direction:row;flex-wrap:wrap}.rx .dc-t{font-size:12px;padding:3px 7px}.rx .dc-ph{padding:4px 4px 4px 0}.rx-g{row-gap:4px}.rx .dc-rv{padding:6px 10px;font-size:12.5px}.rx .rx-go{min-height:40px}}
+@media (prefers-reduced-motion:reduce){#matov .rx *{animation:none!important}.rx-img{opacity:.85}.rx-seal{opacity:1}}
 
 .rx-pair{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.4vmin,22px);padding:0 14px;width:100%;box-sizing:border-box}
 .rx-blk{display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1vmin,8px);text-align:center;min-width:0}
@@ -8116,7 +8116,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v259';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v260';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
