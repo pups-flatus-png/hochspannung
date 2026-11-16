@@ -8,9 +8,12 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { GTAOPass } from 'three/examples/jsm/postprocessing/GTAOPass.js';
+import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import MAP from './map.json';
-import { plantModel, truck, paddle, ladder, stampMesh } from './models.js';
+import { plantModel, truck, paddle, ladder, stampMesh, assemble } from './models.js';
 
 export { THREE, RoundedBoxGeometry };
 // ---------- data ----------
@@ -47,7 +50,7 @@ export function slab(w, l, depth, r, topMat, sideMat) { // rounded slab, top at 
 }
 
 // ================= TABLE =================
-export function createTable(theme, mode = 'dark', opt = {}) {
+export function createTable(theme, mode = 'dark', opt = {}) { let ctx_ov = null;
   const T = theme, P = T.palette(mode);
   const renderer = opt.renderer || new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = P.exposure || 1;
@@ -65,8 +68,8 @@ export function createTable(theme, mode = 'dark', opt = {}) {
   const tableTex = T.tableTex ? T.tableTex(P) : null;
   const table = new THREE.Mesh(new THREE.PlaneGeometry(420, 420), new THREE.MeshStandardMaterial({ color: P.table, map: tableTex, roughness: .9, metalness: 0 })); table.rotation.x = -Math.PI / 2; table.position.y = -.62; table.receiveShadow = true; scene.add(table);
   if (P.fog) scene.fog = new THREE.Fog(P.bg, 180, 420);
-  const fx = new THREE.Group(); scene.add(fx);
-  const ctx = { THREE, T, P, scene, camera, controls, renderer, fx, mode, E, tween, wait, lerp, rng, canvasTex, rr };
+  const fx = new THREE.Group(); scene.add(fx); const ov = new THREE.Scene(); ctx_ov = ov; // Overlay: Sprites ohne GTAO/Tiefenschärfe-Artefakte
+  const ctx = { THREE, T, P, scene, camera, controls, renderer, fx, get ov() { return ctx_ov; }, mode, E, tween, wait, lerp, rng, canvasTex, rr };
 
   // ---------- state ----------
   const ME = 0; const ST = opt.state || {
@@ -170,6 +173,18 @@ export function createTable(theme, mode = 'dark', opt = {}) {
   function markerTarget(k) { const occ = pieces[k].map(p => p.i); const empty = !occ.length; const i = empty ? (k === 'uranium' ? 11 : 23) : Math.min(...occ); return { pos: new THREE.Vector3(laneX(k) - 1.95, .06, ctx.mslot(k, i).z), v: empty ? '–' : PRICE(k, i) }; }
   ctx.updateMarkers = (instant = false) => { RES.forEach(k => { const M = markers[k], t = markerTarget(k); if (M.v === t.v && !instant) return; const old = M.v; M.v = t.v; M.top.material.map.dispose(); M.top.material.map = markerTex(t.v); if (instant || old === null) { M.g.position.copy(t.pos); return; } const a = M.g.position.clone(); tween(.55, e => { M.g.position.lerpVectors(a, t.pos, e); M.g.position.y = .06 + Math.sin(e * Math.PI) * .9; }, 'back'); if (typeof old === 'number' && typeof t.v === 'number') FX.label((t.v > old ? '+' : '−') + Math.abs(t.v - old) + ' €', t.pos.clone().add(new THREE.Vector3(0, 1.6, 0)), t.v > old ? (P.neg || '#ff8a7a') : (P.pos || '#4caf50'), 1.2, .7); }); };
 
+  // ---------- Lesbarkeit aus der Distanz: Plaketten mit fester Bildschirmgröße ----------
+  const badges = []; let bFrame = 0, bAlpha = 0; const bInk = P.dark ? '#e8f1fb' : '#17283a', bBg = P.dark ? 'rgba(12,32,52,.92)' : 'rgba(255,255,255,.94)', bLine = P.dark ? 'rgba(232,241,251,.35)' : 'rgba(23,40,58,.25)';
+  function addBadge(pos, sig, draw, w = .085, h = .032) { const c = document.createElement('canvas'); c.width = 320; c.height = 120; const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false, sizeAttenuation: false, opacity: 0 })); s.scale.set(w, h, 1); s.renderOrder = 30; s.visible = false; ov.add(s); badges.push({ s, pos, sig, draw, c, tex, last: null }); }
+  function pill(x, w, h) { x.clearRect(0, 0, w, h); x.fillStyle = bBg; rr(x, 4, 4, w - 8, h - 8, (h - 8) / 2); x.fill(); x.strokeStyle = bLine; x.lineWidth = 3; x.stroke(); }
+  const ICON = { coal: '#3b3631', oil: '#24303f', garbage: '#d9a62e', uranium: '#c8342b' };
+  RES.forEach(k => addBadge(() => new THREE.Vector3(laneX(k), 1.2, MK.z - MK.L / 2 - 1.6), () => k + pieces[k].length + markers[k].v, (x, w, h) => { pill(x, w, h); x.fillStyle = ICON[k]; x.beginPath(); x.arc(52, 60, 26, 0, 7); x.fill(); x.fillStyle = bInk; x.font = '700 46px ' + (T.font || 'sans-serif'); x.textBaseline = 'middle'; x.textAlign = 'left'; x.fillText((markers[k].v ?? '–') + '€', 92, 62); x.font = '600 32px ' + (T.font || 'sans-serif'); x.textAlign = 'right'; x.fillText('×' + pieces[k].length, w - 26, 64); }));
+  [0, 1, 2].forEach(pl => addBadge(() => { const B = BOARDS[pl]; return new THREE.Vector3(B.x, 1.4, B.z - B.L / 2 - 1.6); }, () => ST.players[pl].money + ':' + ST.players[pl].plants.join(','), (x, w, h) => { pill(x, w, h); x.fillStyle = P.players[pl]; x.beginPath(); x.arc(46, 60, 20, 0, 7); x.fill(); x.fillStyle = bInk; x.textBaseline = 'middle'; x.font = '700 44px ' + (T.font || 'sans-serif'); x.textAlign = 'left'; x.fillText(ST.players[pl].money + '€', 80, 62); x.font = '600 30px ' + (T.font || 'sans-serif'); x.textAlign = 'right'; x.fillText(ST.players[pl].plants.length + ' KW', w - 24, 64); }, .09, .034));
+  for (let i = 0; i < 8; i++) addBadge(() => ctx.cslot(i).setY(1.2), () => sortedMarket()[i], (x, w, h) => { const n = sortedMarket()[i]; x.clearRect(0, 0, w, h); if (n == null) return; const [f, need, pw] = PLANTDATA[n]; pill(x, w, h); x.fillStyle = ICON[f] || (f === 'eco' ? '#3f9b57' : '#6e5a45'); x.beginPath(); x.arc(50, 60, 24, 0, 7); x.fill(); x.fillStyle = bInk; x.textBaseline = 'middle'; x.font = '700 50px ' + (T.font || 'sans-serif'); x.textAlign = 'left'; x.fillText(String(n), 86, 62); x.font = '600 32px ' + (T.font || 'sans-serif'); x.textAlign = 'right'; x.fillText("→" + pw, w - 24, 64); }, .056, .022);
+  MAP.cities.forEach(c => addBadge(() => new THREE.Vector3(CITY[c.id].X, 2.6, CITY[c.id].Z), () => (ST.owners[c.id] || []).join(','), (x, w, h) => { x.clearRect(0, 0, w, h); const o = ST.owners[c.id] || []; if (!o.length) return; const bw = 40 + o.length * 56; x.fillStyle = bBg; rr(x, (w - bw) / 2, 22, bw, 76, 38); x.fill(); x.strokeStyle = bLine; x.lineWidth = 3; x.stroke(); o.forEach((pl, i) => { x.fillStyle = P.players[pl]; x.beginPath(); x.arc((w - bw) / 2 + 48 + i * 56, 60, 22, 0, 7); x.fill(); }); }, .05, .019));
+  ctx.badgesOn = true;
+  ctx.updateBadges = () => { const far = camera.position.distanceTo(controls.target); const want = ctx.badgesOn && far > (camera.aspect < 1 ? 120 : 80) ? 1 : 0; bAlpha += (want - bAlpha) * .12; const check = (bFrame++ % 15) === 0;
+    badges.forEach(b => { b.s.visible = bAlpha > .02; if (!b.s.visible) return; b.s.material.opacity = bAlpha; b.s.position.copy(b.pos()); if (check || b.last === null) { const sg = String(b.sig()); if (sg !== b.last) { b.last = sg; b.draw(b.c.getContext('2d'), b.c.width, b.c.height); b.tex.needsUpdate = true; } } }); };
   // ---------- Städteleiste + Reihenfolge ----------
   const TR = { x: 0, z: 52, W: 66, L: 6 };
   const trTop = canvasTex(66 * 32, 6 * 32, (x, w, h) => T.drawTrack(x, w, h, P));
@@ -196,20 +211,20 @@ export function createTable(theme, mode = 'dark', opt = {}) {
   const glowTex = canvasTex(64, 64, (x) => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.3, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
   const smokeTex = canvasTex(64, 64, (x) => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(.6, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
   const FX = ctx.FX = {
-    sprite(col, s = 1, add = true) { const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(col), transparent: true, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending })); m.scale.setScalar(s); fx.add(m); return m; },
-    kill(o) { fx.remove(o); o.material && o.material.dispose && o.material.dispose(); },
+    sprite(col, s = 1, add = true) { const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(col), transparent: true, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending })); m.scale.setScalar(s); ov.add(m); return m; },
+    kill(o) { o.parent && o.parent.remove(o); o.material && o.material.dispose && o.material.dispose(); },
     burst(pos, cols, n = 24, o = {}) { const g = new THREE.Group(); fx.add(g); const parts = []; for (let i = 0; i < n; i++) { const col = Array.isArray(cols) ? cols[i % cols.length] : cols; const m = o.mesh ? o.mesh(col) : new THREE.Mesh(new THREE.BoxGeometry(.12, .12, .12), new THREE.MeshBasicMaterial({ color: col })); m.position.copy(pos); g.add(m); const a = Math.random() * 6.283, s = (o.speed || 4) * (.4 + Math.random()); parts.push({ m, v: new THREE.Vector3(Math.cos(a) * s, (o.up || 4) * (.5 + Math.random()), Math.sin(a) * s), r: new THREE.Vector3(Math.random() * 8, Math.random() * 8, 0) }); }
       let last = 0; return tween(o.life || 1.1, (e, k) => { const dt = (k - last) * (o.life || 1.1); last = k; parts.forEach(p => { p.v.y -= (o.g ?? 9) * dt; p.m.position.addScaledVector(p.v, dt); if (p.m.position.y < .05) { p.m.position.y = .05; p.v.multiplyScalar(.5); } p.m.rotation.x += p.r.x * dt; p.m.rotation.y += p.r.y * dt; p.m.scale.setScalar(1 - k * .6); }); }, 'lin').then(() => { fx.remove(g); }); },
-    ripple(pos, col, r = 3, dur = 1) { const m = new THREE.Mesh(new THREE.RingGeometry(.8, 1, 48), new THREE.MeshBasicMaterial({ color: col, transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.copy(pos).setY(pos.y + .06); fx.add(m); return tween(dur, (e, k) => { m.scale.setScalar(.3 + r * e); m.material.opacity = 1 - k; }, 'out').then(() => FX.kill(m)); },
+    ripple(pos, col, r = 3, dur = 1) { const m = new THREE.Mesh(new THREE.RingGeometry(.8, 1, 48), new THREE.MeshBasicMaterial({ color: col, transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.copy(pos).setY(pos.y + .06); ov.add(m); return tween(dur, (e, k) => { m.scale.setScalar(.3 + r * e); m.material.opacity = 1 - k; }, 'out').then(() => FX.kill(m)); },
     arc(obj, to, dur = 1, h = 4, ease = 'inout', spin = 0) { const a = obj.position.clone(), r0 = obj.rotation.y; return tween(dur, e => { obj.position.lerpVectors(a, to, e); obj.position.y += Math.sin(e * Math.PI) * h; obj.rotation.y = r0 + spin * e; }, ease); },
-    label(text, pos, col = '#fff', dur = 1.4, size = 1) { const tex = canvasTex(320, 96, (x) => { x.font = '700 54px ' + (T.font || 'sans-serif'); x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineWidth = 10; x.strokeStyle = 'rgba(0,0,0,.65)'; x.strokeText(text, 160, 50); x.fillStyle = col; x.fillText(text, 160, 50); }); const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false })); s.scale.set(4 * size, 1.2 * size, 1); s.position.copy(pos); s.renderOrder = 10; fx.add(s); return tween(dur, (e, k) => { s.position.y = pos.y + e * 1.6; s.material.opacity = k < .75 ? 1 : (1 - k) / .25; }, 'out').then(() => FX.kill(s)); },
-    smoke(at, dur = 2, col = '#d9dde3', n = 18) { const jobs = []; for (let i = 0; i < n; i++) jobs.push(wait(i * dur / n).then(() => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, color: new THREE.Color(col), transparent: true, depthWrite: false, opacity: 0 })); s.position.copy(at); fx.add(s); const dx = (Math.random() - .3) * 1.4, dz = (Math.random() - .5) * .8; return tween(1.8, (e, k) => { s.position.set(at.x + dx * e, at.y + 2.6 * e, at.z + dz * e); s.scale.setScalar(.25 + 1.05 * e); s.material.opacity = .42 * Math.sin(k * Math.PI) ** .7; }, 'out').then(() => FX.kill(s)); })); return Promise.all(jobs); },
+    label(text, pos, col = '#fff', dur = 1.4, size = 1) { const tex = canvasTex(320, 96, (x) => { x.font = '700 54px ' + (T.font || 'sans-serif'); x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineWidth = 10; x.strokeStyle = 'rgba(0,0,0,.65)'; x.strokeText(text, 160, 50); x.fillStyle = col; x.fillText(text, 160, 50); }); const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false })); s.scale.set(4 * size, 1.2 * size, 1); s.position.copy(pos); s.renderOrder = 10; ov.add(s); return tween(dur, (e, k) => { s.position.y = pos.y + e * 1.6; s.material.opacity = k < .75 ? 1 : (1 - k) / .25; }, 'out').then(() => FX.kill(s)); },
+    smoke(at, dur = 2, col = '#d9dde3', n = 18) { const jobs = []; for (let i = 0; i < n; i++) jobs.push(wait(i * dur / n).then(() => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, color: new THREE.Color(col), transparent: true, depthWrite: false, opacity: 0 })); s.position.copy(at); ov.add(s); const dx = (Math.random() - .3) * 1.4, dz = (Math.random() - .5) * .8; return tween(1.8, (e, k) => { s.position.set(at.x + dx * e, at.y + 2.6 * e, at.z + dz * e); s.scale.setScalar(.25 + 1.05 * e); s.material.opacity = .42 * Math.sin(k * Math.PI) ** .7; }, 'out').then(() => FX.kill(s)); })); return Promise.all(jobs); },
   };
 
   // ---------- Kamera ----------
   const VIEWS = ctx.VIEWS = {
     overview: { t: [0, 0, 7], d: 158, pol: .78, az: 0 }, map: { t: [0, 0, 2], d: 118, pol: .62, az: 0 }, hero: { t: [-6, 0, 4], d: 96, pol: .95, az: .42 },
-    market: { t: [MK.x, 0, MK.z + 2], d: 54, pol: .72, az: -.14 }, plants: { t: [PM.x, 0, PM.z + 1], d: 48, pol: .7, az: .12 }, auction: { t: [PM.x - .6, 2.2, PM.z - 2.4], d: 30, pol: .88, az: .18 },
+    market: { t: [MK.x, 0, MK.z + 2], d: 54, pol: .72, az: -.14 }, plants: { t: [PM.x, 0, PM.z + 1], d: 48, pol: .7, az: .12 }, auction: { t: [PM.x - .9, 2.4, PM.z - 2.0], d: 25, pol: .9, az: .16 },
     player: { t: [-46, 0, 25], d: 32, pol: .82, az: .1 }, opp1: { t: [-46, 0, -36], d: 28, pol: .8, az: .1 }, opp2: { t: [46, 0, -35.5], d: 28, pol: .8, az: -.1 },
     track: { t: [0, 0, TR.z - 2], d: 58, pol: .9, az: 0 }, kit: { t: [0, 1.5, KIT.z - 1], d: 52, pol: 1.0, az: 0 },
     north: { t: [CITY.hamburg.X + 6, 0, CITY.hamburg.Z + 6], d: 40, pol: .78, az: .2 }, east: { t: [CITY.berlin.X - 4, 0, CITY.berlin.Z + 6], d: 44, pol: .8, az: -.15 },
@@ -218,10 +233,16 @@ export function createTable(theme, mode = 'dark', opt = {}) {
   const boardView = pl => ['player', 'opp1', 'opp2'][pl];
   function pose(v, aspect) { const V = typeof v === 'string' ? VIEWS[v] : v; const k = aspect < 1 ? Math.min(2.1, 1 / aspect * .95) : aspect < 1.4 ? 1.15 : 1; const d = V.d * k; const tg = new THREE.Vector3(...V.t); return { tgt: tg, pos: new THREE.Vector3(tg.x + Math.sin(V.az) * Math.sin(V.pol) * d, tg.y + Math.cos(V.pol) * d, tg.z + Math.cos(V.az) * Math.sin(V.pol) * d) }; }
   ctx.view = (v, dur = 1.1, ease = 'inout') => { const p = pose(v, camera.aspect); if (!dur) { camera.position.copy(p.pos); controls.target.copy(p.tgt); controls.update(); return Promise.resolve(); } const p0 = camera.position.clone(), t0 = controls.target.clone(); controls.enabled = false; return tween(dur, e => { camera.position.lerpVectors(p0, p.pos, e); camera.position.y += Math.sin(e * Math.PI) * p0.distanceTo(p.pos) * .08; controls.target.lerpVectors(t0, p.tgt, e); camera.lookAt(controls.target); }, ease).then(() => { controls.enabled = true; controls.update(); }); };
-  ctx.cityView = (id, d = 16) => ctx.view({ t: [CITY[id].X, 0, CITY[id].Z], d, pol: .9, az: .35 });
+  ctx.cityView = (id, d = 16) => { ctx.dof(new THREE.Vector3(CITY[id].X, .5, CITY[id].Z), .0005, .8); return ctx.view({ t: [CITY[id].X, 0, CITY[id].Z], d, pol: .9, az: .35 }); };
+  const _view = ctx.view; ctx.view = (v, dur, ease) => { if (typeof v === 'string' && dofT) ctx.dof(null, 0, .5); return _view(v, dur, ease); };
   // Kamera folgt einem Objekt (Karte im Flug, Lieferwagen)
   ctx.follow = (obj, dur, d = 40, pol = .75, az = .1) => { const off = pose({ t: [0, 0, 0], d, pol, az }, camera.aspect).pos; controls.enabled = false; const p0 = camera.position.clone(), t0 = controls.target.clone(); const tmp = new THREE.Vector3(); return tween(dur, (e, k) => { obj.getWorldPosition(tmp); tmp.y = 0; const b = Math.min(1, k * 3); controls.target.lerpVectors(t0, tmp, b); camera.position.lerpVectors(p0, tmp.clone().add(off), b); camera.lookAt(controls.target); }, 'lin').then(() => { controls.enabled = true; controls.update(); }); };
   ctx.orbit = (dur, amt = .5) => { const tg = controls.target.clone(), off = camera.position.clone().sub(tg); controls.enabled = false; return tween(dur, e => { const a = amt * e, c = Math.cos(a), s = Math.sin(a); camera.position.set(tg.x + off.x * c + off.z * s, tg.y + off.y, tg.z - off.x * s + off.z * c); camera.lookAt(tg); }, 'inout').then(() => { controls.enabled = true; controls.update(); }); };
+  // Bühnenlicht: Rest des Tisches abdunkeln, Spot auf das Geschehen
+  const spot = new THREE.SpotLight('#fff6e0', 0, 0, .36, .7, 0); spot.castShadow = false; scene.add(spot, spot.target); const base = { h: hemi.intensity, k: key.intensity };
+  ctx.stageLight = (pos, on) => { if (on) { spot.position.set(pos.x + 4, pos.y + 16, pos.z + 8); spot.target.position.copy(pos); } const a = { h: hemi.intensity, k: key.intensity, s: spot.intensity }; return tween(.6, e => { hemi.intensity = lerp(a.h, on ? base.h * .55 : base.h, e); key.intensity = lerp(a.k, on ? base.k * .6 : base.k, e); spot.intensity = lerp(a.s, on ? 2.2 : 0, e); }, 'inout'); };
+  // Denkpause eines Gegners: drei Punkte, die nacheinander pulsieren
+  ctx.think = (pos, col, dur) => { const dots = [0, 1, 2].map(i => { const d = new THREE.Mesh(new THREE.SphereGeometry(.16, 12, 8), new THREE.MeshBasicMaterial({ color: col })); d.position.copy(pos).add(new THREE.Vector3((i - 1) * .45, 0, 0)); fx.add(d); return d; }); return tween(dur, (e, k) => dots.forEach((d, i) => { const ph = Math.max(0, Math.sin(k * 14 - i * 1.2)); d.position.y = pos.y + ph * .25; d.scale.setScalar(.7 + ph * .5); }), 'lin').then(() => dots.forEach(d => fx.remove(d))); };
   ctx.phase = (n, t, s) => ctx.emit && ctx.emit('phase', { n, t, s });
 
   // ---------- Regeln ----------
@@ -240,7 +261,7 @@ export function createTable(theme, mode = 'dark', opt = {}) {
   // ---------- Geld ----------
   ctx.pay = async (pl, amount, to = ctx.bankPos()) => { if (amount <= 0) return; ST.players[pl].money -= amount; const L = coins[pl], n = Math.max(1, Math.min(L.length, Math.round(amount / 5))); const fly = L.splice(Math.max(0, L.length - n), n); FX.label(`−${amount} €`, ctx.coinPos(pl, L.length).add(new THREE.Vector3(0, 1.8, 0)), P.neg || '#ff8a7a'); ctx.emit && ctx.emit('money');
     await Promise.all(fly.map((c, i) => wait(i * .05).then(() => FX.arc(c, to.clone().add(new THREE.Vector3((Math.random() - .5) * 3, 0, (Math.random() - .5) * 2)), .9, 6, 'inout', 3)).then(() => coinGroup.remove(c)))); syncCoins(pl); };
-  ctx.earn = async (pl, amount) => { ST.players[pl].money += amount; const n = Math.max(1, Math.round(amount / 5)), L = coins[pl], jobs = []; for (let i = 0; i < n; i++) { const c = T.coin(ctx); c.position.copy(ctx.bankPos()); coinGroup.add(c); const to = ctx.coinPos(pl, L.length); L.push(c); jobs.push(wait(i * .05).then(() => FX.arc(c, to, 1.0, 7, 'inout', 4))); } FX.label(`+${amount} €`, ctx.coinPos(pl, 0).add(new THREE.Vector3(0, 2.4, 0)), P.players[pl], 1.6); ctx.emit && ctx.emit('money'); await Promise.all(jobs); syncCoins(pl); };
+  ctx.earn = async (pl, amount) => { ST.players[pl].money += amount; const n = Math.max(1, Math.round(amount / 5)), L = coins[pl], jobs = []; for (let i = 0; i < n; i++) { const c = T.coin(ctx); c.position.copy(ctx.bankPos()); coinGroup.add(c); const to = ctx.coinPos(pl, L.length); L.push(c); jobs.push(wait(i * .05).then(() => FX.arc(c, to, 1.0, 7, 'inout', 4)).then(() => tween(.14, k => c.scale.set(1 + .3 * Math.sin(k * Math.PI), 1 - .4 * Math.sin(k * Math.PI), 1 + .3 * Math.sin(k * Math.PI)), 'lin'))); } FX.label(`+${amount} €`, ctx.coinPos(pl, 0).add(new THREE.Vector3(0, 2.4, 0)), P.players[pl], 1.6); ctx.emit && ctx.emit('money'); await Promise.all(jobs); syncCoins(pl); };
 
   // ---------- PHASE 4: Bauen ----------
   ctx.build = async (id, pl = ME, o = {}) => {
@@ -278,14 +299,19 @@ export function createTable(theme, mode = 'dark', opt = {}) {
     const c = cards.get(n); if (!c) return; ctx.selected = null; const seat = [-2.9, 0, 2.9];
     await ctx.view('auction', 1.0);
     const pod = new THREE.Vector3(PM.x - .6, 3.4, PM.z - 4.2); const from = c.position.clone();
-    const m = attachModel(c, n, null, true); m.scale.setScalar(.001);
-    await tween(.9, e => { c.position.lerpVectors(from, pod, e); c.position.y += Math.sin(e * Math.PI) * 1.2; c.rotation.y = Math.sin(e * Math.PI) * .25; c.scale.setScalar(1 + .25 * e); }, 'inout');
-    await tween(.9, e => m.scale.set(MS, Math.max(.001, MS * e), MS), 'back'); FX.ripple(pod.clone().setY(pod.y + .05), P.accent, 4, .8);
+    ctx.stageLight(pod, true); ctx.dof(pod, .0005, .8);
+    const m = attachModel(c, n, null, true);
+    await tween(.22, k => { c.position.y = from.y - .12 * Math.sin(k * Math.PI / 2); c.scale.set(1.04, 1, 1.04); }, 'out'); // Antizipation
+    await tween(.85, e => { c.position.lerpVectors(from, pod, e); c.position.y += Math.sin(e * Math.PI) * 1.4; c.rotation.y = Math.sin(e * Math.PI) * .3; c.rotation.x = Math.sin(e * Math.PI) * -.15; c.scale.setScalar(1 + .25 * e); }, 'inout');
+    await tween(.3, k => c.position.y = pod.y + Math.sin(k * Math.PI) * .18 * (1 - k), 'out');
+    FX.ripple(pod.clone().setY(pod.y + .05), P.accent, 4, .8); await assemble(m, tween, 1.1);
     const lad = ladder(n); lad.position.set(pod.x - 5.4, 0, pod.z + .8); lad.scale.y = .001; scene.add(lad); const mk = new THREE.Mesh(new RoundedBoxGeometry(1.0, .22, .3, 2, .05), new THREE.MeshStandardMaterial({ color: P.accent })); mk.position.set(lad.position.x, lad.userData.y(n), lad.position.z + .12); lad.add(mk); mk.position.set(0, lad.userData.y(n), .12);
     await tween(.5, e => lad.scale.y = Math.max(.001, e), 'back');
     const pads = {}; let last = null;
     for (const [pl, v] of bids) {
       if (pads[pl]) { const old = pads[pl]; tween(.3, (e, k) => old.position.y = -2.6 * k, 'in').then(() => scene.remove(old)); }
+      if (pl !== ME) await ctx.think(new THREE.Vector3(pod.x + seat[pl] * 1.15, 2.6, pod.z + 3.8), P.players[pl], .6 + Math.random() * .4);
+      if (last && v !== null && pads[last[0]] && last[0] !== pl) { const op = pads[last[0]]; tween(.5, (e, k) => op.rotation.z = Math.sin(k * 26) * .12 * (1 - k), 'lin'); }
       const pd = paddle(P.players[pl], ST.players[pl].name, v); pd.position.set(pod.x + seat[pl] * 1.15, 0, pod.z + 3.8); pd.scale.set(1.25, .001, 1.25); scene.add(pd); pads[pl] = pd;
       ctx.view({ ...VIEWS.auction, az: VIEWS.auction.az + (pl - 1) * .12 }, .6);
       await tween(.45, e => pd.scale.y = Math.max(.001, 1.25 * e), 'back');
@@ -295,8 +321,8 @@ export function createTable(theme, mode = 'dark', opt = {}) {
     }
     const [winner, price] = last;
     // Zuschlag
-    const stp = stampMesh(); stp.position.set(pod.x, pod.y + 3, pod.z); stp.scale.setScalar(2.2); fx.add(stp); await tween(.32, e => { stp.position.y = lerp(pod.y + 3, pod.y + .12, e); stp.scale.setScalar(lerp(2.2, 1, e)); }, 'in');
-    FX.ripple(pod.clone(), '#c0392b', 4, .7); tween(.18, k => c.position.y = pod.y - Math.sin(k * Math.PI) * .25, 'lin'); await wait(.6); tween(.4, (e, k) => stp.material.opacity = 1 - k, 'lin').then(() => fx.remove(stp));
+    const stp = stampMesh(); stp.position.set(pod.x, pod.y + 3, pod.z); stp.scale.setScalar(2.2); ov.add(stp); await tween(.32, e => { stp.position.y = lerp(pod.y + 3, pod.y + .12, e); stp.scale.setScalar(lerp(2.2, 1, e)); }, 'in');
+    ctx.hitPause(.14); ctx.shake(.55); FX.ripple(pod.clone(), '#c0392b', 5, .8); FX.burst(pod.clone().setY(pod.y + .3), ['#c0392b', '#fffdf2', P.players[winner]], 30, { speed: 4, up: 4, life: 1 }); tween(.18, k => c.position.y = pod.y - Math.sin(k * Math.PI) * .25, 'lin'); await wait(.7); ctx.dof(null, 0, .4); ctx.stageLight(null, false); tween(.4, (e, k) => stp.material.opacity = 1 - k, 'lin').then(() => ov.remove(stp));
     Object.values(pads).forEach(pd => tween(.4, (e, k) => pd.position.y = -2.6 * k, 'in').then(() => scene.remove(pd))); tween(.4, (e, k) => lad.scale.y = Math.max(.001, 1 - k), 'in').then(() => scene.remove(lad));
     cards.delete(n); ST.market = ST.market.filter(x => x !== n); tintModel(c, winner);
     ctx.pay(winner, price);
@@ -315,7 +341,7 @@ export function createTable(theme, mode = 'dark', opt = {}) {
     const a = c.position.clone(), to = new THREE.Vector3(pl === 2 ? 70 : -72, -2, a.z); await tween(1.0, (e, k) => { c.position.lerpVectors(a, to, e); c.position.y = a.y + Math.sin(e * Math.PI) * 4 - 2 * e; c.rotation.z = e * 2; }, 'in'); cardGroup.remove(c); }
   ctx.refill = async (o = {}) => { const top = deckCards.pop(); if (!top) return; const n = ST.deck.pop(); ST.market.push(n); cards.set(n, top); top.userData.card = n; if (o.camera !== false) await ctx.view('plants', .7);
     const a = top.position.clone(); await tween(.8, e => { top.position.set(a.x + 3.5 * e, a.y + Math.sin(e * Math.PI) * 4 + .1, a.z - 2 * e); top.rotation.z = Math.PI * (1 - e); }, 'inout');
-    const m = attachModel(top, n, null, true); m.scale.setScalar(.001); await tween(.45, e => m.scale.set(MS, Math.max(.001, MS * e), MS), 'back'); await wait(.35); await tween(.3, (e, k) => m.scale.y = Math.max(.001, MS * (1 - k)), 'in'); m.visible = false;
+    const m = attachModel(top, n, null, true); await assemble(m, tween, .6); await wait(.4); await tween(.3, (e, k) => m.scale.y = Math.max(.001, MS * (1 - k)), 'in'); m.visible = false;
     const order = sortedMarket(); await Promise.all(order.map((mm, i) => { const c = cards.get(mm), from = c.position.clone(), to = ctx.cslot(i); if (from.distanceTo(to) < .01) return; return tween(.8, e => { c.position.lerpVectors(from, to, e); c.position.y += Math.sin(e * Math.PI) * .9; }, 'inout', i * .05); })); };
   ctx.cycleHighest = async () => { const hi = sortedMarket().pop(), c = cards.get(hi); cards.delete(hi); ST.market = ST.market.filter(x => x !== hi); ST.deck.unshift(hi); const d = ctx.deckPos(); FX.label('unter den Stapel', c.position.clone().setY(2.4), P.dark ? '#e8f1fb' : '#17283a', 1.2, .8); await tween(.5, e => { c.position.y = lerp(.06, 1.5, e); c.rotation.z = Math.PI * e; }); await FX.arc(c, new THREE.Vector3(d.x, -.02, d.z), .8, 1.5); deckCards.unshift(c); deckCards.forEach((dc, i) => { const y0 = dc.position.y; tween(.4, e => dc.position.y = lerp(y0, .06 + i * .1, e)); }); await ctx.refill({ camera: false }); };
   ctx.scrapLowestMarket = async () => { const lo = sortedMarket()[0], c = cards.get(lo); cards.delete(lo); ST.market = ST.market.filter(x => x !== lo); FX.label('aus dem Spiel', c.position.clone().setY(2.4), P.neg || '#ff8a7a', 1.2, .8); await tween(.6, (e, k) => { c.position.y = .06 + 2 * e; c.scale.setScalar(Math.max(.001, 1 - k)); c.rotation.y = 4 * e; }, 'in'); FX.burst(c.position.clone(), ['#fffdf2', '#cfcabe'], 30, { speed: 3, up: 2, life: 1, mesh: col => new THREE.Mesh(new THREE.PlaneGeometry(.3, .2), new THREE.MeshBasicMaterial({ color: col, side: THREE.DoubleSide })) }); cardGroup.remove(c); await ctx.refill({ camera: false }); };
@@ -324,7 +350,7 @@ export function createTable(theme, mode = 'dark', opt = {}) {
   ctx.burnFire = async (pl) => { let cap = 0; const jobs = []; let n = 0; hand[pl].forEach((c, i) => { const num = ST.players[pl].plants[i]; if (num == null || !c) return; const [f, need, pw] = PLANTDATA[num]; const st = stored[pl][num]; if (st.length < need) { const p = new THREE.Vector3(); c.getWorldPosition(p); FX.label('kein Brennstoff', p.setY(2), P.neg || '#ff8a7a', 1.3, .7); return; } cap += pw;
       const use = st.splice(0, need), model = c.userData.model, wp = new THREE.Vector3(); model.getWorldPosition(wp);
       jobs.push((async () => { await Promise.all(use.map((p, j) => wait((n + j) * .12).then(async () => { await FX.arc(p.m, wp.clone().setY(.4), .7, 2.2, 'in', 2); const fl = FX.sprite('#ff9a3c', .3); fl.position.copy(wp).setY(.9); tween(.5, (e, k) => fl.scale.setScalar(.3 + 2.2 * Math.sin(k * Math.PI)), 'out').then(() => FX.kill(fl)); pieceGroup.remove(p.m); }))); n += use.length;
-        const ch = model.userData.chimneys.map(v => model.localToWorld(v.clone())); spinBoost = 6; await Promise.all([...ch.map(at => FX.smoke(at, 2.2, P.smoke || '#dfe3ea')), wait(2.2)]); spinBoost = 0; })()); });
+        const p0 = model.position.clone(); await tween(.45, (e, k) => model.position.set(p0.x + (Math.random() - .5) * .06 * k, p0.y, p0.z + (Math.random() - .5) * .06 * k), 'lin'); model.position.copy(p0); const ch = model.userData.chimneys.map(v => model.localToWorld(v.clone())); spinBoost = 6; if (pl === ME) ctx.shake(.06); await Promise.all([...ch.map(at => FX.smoke(at, 2.2, P.smoke || '#dfe3ea')), wait(2.2)]); spinBoost = 0; })()); });
     await Promise.all(jobs); const B = BOARDS[pl]; FX.label(`${cap} Städte Kapazität`, new THREE.Vector3(B.x, 3.2, B.z - (B.big ? 6 : 3)), P.players[pl], 1.6, .9); return cap; };
   ctx.power = async () => {
     const seqs = []; ST.players.forEach((p, pl) => { const net = Object.keys(ST.owners).filter(k => ST.owners[k].includes(pl)); if (!net.length) return; const order = [[net[0], null, null]], seen = new Set([net[0]]); for (let i = 0; i < order.length; i++) for (const e of ADJ[order[i][0]]) { const lo = lineObjs.find(o => o.l.e === e.i && o.l.pl === pl); if (!lo) continue; const v = e.a === order[i][0] ? e.b : e.a; if (!seen.has(v)) { seen.add(v); order.push([v, order[i][0], lo]); } } net.forEach(id => { if (!seen.has(id)) { seen.add(id); order.push([id, null, null]); } }); seqs.push({ pl, order }); });
@@ -358,7 +384,7 @@ export function createTable(theme, mode = 'dark', opt = {}) {
   ctx.intro = async () => { const hs = []; Object.values(cityG).forEach(g => g.userData.houses.forEach(h => h && hs.push(h))); hs.forEach(h => h.scale.setScalar(.001)); lineObjs.forEach(l => l.set(0)); const models = hand.flat().map(c => c.userData.model).filter(Boolean); models.forEach(m => m.scale.set(MS, .001, MS));
     await ctx.view({ t: [0, 0, 0], d: 230, pol: .2, az: -.7 }, 0); ctx.phase(0, 'Grid Master 2', 'Grid Plan · ein Netzplanungsmodell'); const cam = ctx.view('hero', 3.6);
     await wait(1.0); await Promise.all(lineObjs.map((l, i) => wait(i * .1).then(() => tween(.9, e => { l.set(e); if (l.pylons) l.pylons.forEach(p => p.scale.y = Math.max(.001, Math.min(1, (e - p.userData.t) * 6 + 1))); }, 'inout'))));
-    await Promise.all([...hs.map((h, i) => wait(i * .06).then(() => tween(.55, e => h.scale.setScalar(Math.max(.001, e)), 'spring'))), ...models.map((m, i) => wait(.3 + i * .12).then(() => tween(.7, e => m.scale.set(MS, Math.max(.001, MS * e), MS), 'back')))]); await cam; ctx.updateMarkers(true); };
+    await Promise.all([...hs.map((h, i) => wait(i * .06).then(() => tween(.55, e => h.scale.setScalar(Math.max(.001, e)), 'spring'))), ...models.map((m, i) => wait(.3 + i * .15).then(() => { m.scale.setScalar(MS); return assemble(m, tween, .8); }))]); await cam; ctx.updateMarkers(true); };
   ctx.updateMarkers(true);
   Object.assign(ctx, { hand, stored, coins, spinners, kitSpin, markers, boardView, syncCoins, getSpin: () => spinBoost });
 
@@ -369,11 +395,31 @@ export function createTable(theme, mode = 'dark', opt = {}) {
     const hits = ray.intersectObjects([cities, cardGroup], true); for (const h of hits) { let o = h.object; while (o && !o.userData.city && !o.userData.card) o = o.parent; if (!o) continue; if (o.userData.city) { ctx.onCity && ctx.onCity(o.userData.city); return; } if (o.userData.card && cards.get(o.userData.card) === o) { ctx.onCard && ctx.onCard(o.userData.card); return; } } });
 
   // ---------- render ----------
-  let composer = null;
-  if (P.bloom) { const rt = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: 4 }); composer = new EffectComposer(renderer, rt); composer.addPass(new RenderPass(scene, camera)); composer.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), P.bloom, .5, .9); composer.addPass(composer.bloom); composer.addPass(new OutputPass()); }
-  ctx.resize = (w, h) => { renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h); } };
-  const clock = new THREE.Clock(); let t = 0;
-  ctx.frame = () => { const dt = Math.min(.05, clock.getDelta()); t += dt; stepTweens(dt); T.tick && T.tick(ctx, t, dt); spinners.forEach(s => s.rotation.z += dt * (1.4 + spinBoost)); kitSpin.forEach(g => g.rotation.y += dt * .3); cities.children.forEach(g => { const r = g.userData.ring; if (r && r.visible) { r.material.opacity = .3 + .2 * Math.sin(t * 3); r.scale.setScalar(1 + .04 * Math.sin(t * 3)); } }); if (controls.enabled) controls.update(); if (composer) composer.render(dt); else renderer.render(scene, camera); };
+  // ---------- Render-Pipeline: GTAO (Kontaktschatten), Tiefenschärfe für Nahaufnahmen, Vignette + Korn ----------
+  const Q = ctx.quality = opt.quality || (/[?&]q=low/.test(location.search) ? 'low' : /[?&]q=mid/.test(location.search) ? 'mid' : (Math.min(screen.width, screen.height) < 600 ? 'mid' : 'high'));
+  let composer = null, gtao = null, bokeh = null, finish = null; ctx.fxOn = Q !== 'low';
+  { const rt = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: Q === 'high' ? 4 : 2 }); composer = new EffectComposer(renderer, rt); composer.addPass(new RenderPass(scene, camera));
+    if (Q !== 'low') { gtao = new GTAOPass(scene, camera, 4, 4); gtao.updateGtaoMaterial({ radius: .9, distanceExponent: 1.4, thickness: 1.2, scale: 1.1, samples: Q === 'high' ? 16 : 8, distanceFallOff: 1, screenSpaceRadius: false }); gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: Q === 'high' ? 16 : 8 }); gtao.blendIntensity = P.ao ?? .95; composer.addPass(gtao); }
+    if (P.bloom) { composer.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), P.bloom, .5, .9); composer.addPass(composer.bloom); }
+    bokeh = new BokehPass(scene, camera, { focus: 40, aperture: 0, maxblur: .0045 }); bokeh.enabled = false; composer.addPass(bokeh); const ovPass = new RenderPass(ov, camera); ovPass.clear = false; ovPass.clearDepth = true; composer.addPass(ovPass);
+    composer.addPass(new OutputPass());
+    finish = new ShaderPass({ uniforms: { tDiffuse: { value: null }, uV: { value: P.vignette ?? .32 }, uG: { value: P.grain ?? .035 }, uT: { value: 0 } }, vertexShader: 'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+      fragmentShader: 'uniform sampler2D tDiffuse;uniform float uV,uG,uT;varying vec2 vUv;float h(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}void main(){vec4 c=texture2D(tDiffuse,vUv);vec2 d=vUv-.5;float v=1.-uV*smoothstep(.25,.9,length(d*vec2(1.15,1.)));c.rgb*=v;c.rgb+=(h(vUv*913.+uT)-.5)*uG;gl_FragColor=c;}' }); composer.addPass(finish); }
+  key.shadow.radius = Q === 'low' ? 1 : 3; key.shadow.blurSamples = 12;
+  ctx.setFx = on => { ctx.fxOn = on; if (gtao) gtao.enabled = on; finish.uniforms.uV.value = on ? (P.vignette ?? .32) : 0; finish.uniforms.uG.value = on ? (P.grain ?? .035) : 0; if (!on) { bokeh.enabled = false; dofT = null; } };
+  // Tiefenschärfe: Fokus auf einen Punkt, Blende weich ein- und ausblenden
+  let dofT = null, dofA = 0; ctx.dof = (target, aperture = .0016, dur = .6) => { if (!ctx.fxOn || Q === 'low' || (target && ctx.noDof)) return Promise.resolve(); const a0 = dofA, a1 = target ? aperture : 0; if (target) { dofT = target.clone ? target.clone() : new THREE.Vector3(...target); bokeh.enabled = true; } return tween(dur, e => { dofA = lerp(a0, a1, e); bokeh.uniforms.aperture.value = dofA * (camera.aspect < 1 ? .6 : 1); }, 'inout').then(() => { if (!target) { bokeh.enabled = false; dofT = null; } }); };
+  // Kamera-Rütteln und Treffer-Pause (kurzes Einfrieren der Zeit für Gewicht)
+  let shake = 0, timeScale = 1; ctx.shake = (amp = .35) => { shake = Math.max(shake, amp); }; ctx.hitPause = (s = .12) => { timeScale = .04; setTimeout(() => timeScale = 1, s * 1000); };
+  ctx.resize = (w, h) => { renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h); if (gtao) gtao.setSize(w * renderer.getPixelRatio(), h * renderer.getPixelRatio()); };
+  const clock = new THREE.Clock(); let t = 0; const shk = new THREE.Vector3(); const perf = [];
+  ctx.frame = () => { const rdt = Math.min(.05, clock.getDelta()), dt = rdt * timeScale; t += dt; stepTweens(dt); T.tick && T.tick(ctx, t, dt); spinners.forEach(s => s.rotation.z += dt * (1.4 + spinBoost)); kitSpin.forEach(g => g.rotation.y += dt * .3); cities.children.forEach(g => { const r = g.userData.ring; if (r && r.visible) { r.material.opacity = .2 + .14 * Math.sin(t * 3); r.scale.setScalar(1 + .04 * Math.sin(t * 3)); } });
+    if (controls.enabled) controls.update(); ctx.updateBadges && ctx.updateBadges();
+    if (dofT) bokeh.uniforms.focus.value = camera.position.distanceTo(dofT);
+    if (shake > .002) { shk.set((Math.random() - .5), (Math.random() - .5), (Math.random() - .5)).multiplyScalar(shake); camera.position.add(shk); shake *= Math.pow(.02, rdt); } else shk.set(0, 0, 0);
+    // Adaptive Qualität: bei dauerhaft langsamen Bildern zuerst Tiefenschärfe, dann GTAO abschalten
+    if (!/[?&]test/.test(location.search) && ctx.fxOn) { perf.push(rdt); if (perf.length > 120) { const avg = perf.reduce((a, b) => a + b, 0) / perf.length; perf.length = 0; if (avg > .042) { if (!ctx.noDof) ctx.noDof = true; else if (gtao && gtao.enabled) { gtao.enabled = false; ctx.emit && ctx.emit('quality', 'GTAO aus'); } } } }
+    finish.uniforms.uT.value = t % 10; composer.render(rdt); camera.position.sub(shk); };
   ctx.dispose = () => { scene.traverse(o => { o.geometry && o.geometry.dispose(); }); controls.dispose(); };
   Object.assign(ctx, { cityG, cards, pieces, discs, lineObjs, MK, PM, TR, placeHouse, addPiece, makeCard, route });
   ctx.view('overview', 0); ctx.markReach();

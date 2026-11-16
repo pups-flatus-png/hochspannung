@@ -141,3 +141,4 @@ td.b{color:var(--ink);font-weight:600;white-space:nowrap}
 @media (max-height:500px) and (orientation:landscape){.chap{padding-top:calc(60px + env(safe-area-inset-top))}.chap.cover{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}.duo{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}.duo .stage3d{position:sticky;top:58px;height:calc(100svh - 70px);min-height:0}.show .stage3d.big{height:calc(100svh - 120px);min-height:0}.hudgrid .devices{grid-template-columns:.45fr 1fr 1.2fr}.score{transform:scale(.85);transform-origin:top left}.buildcard{top:auto;bottom:10px}}
 .stack .duo{grid-template-columns:1fr}.stack .duo .stage3d{position:relative;top:0;height:min(70svh,760px)}.stack .side .acts{order:-1}
 @media (max-height:500px) and (orientation:landscape){.stack .duo .stage3d{height:calc(100svh - 70px)}}
+.small{font-size:12.5px;margin:0}
