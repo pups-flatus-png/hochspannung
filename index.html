@@ -4034,6 +4034,27 @@ html[data-theme="light"] .hero-map .hm-out{fill:rgba(120,95,50,.035)!important}
 @media (orientation:portrait) and (max-width:480px){.rx{--E:clamp(64px,17vmin,96px)}.rx-g,.rx-hd{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:6px}.rx-g .dc-ph{grid-column:1 / -1;padding:6px 2px 0}.rx-g .dc-none{grid-column:1 / -1;padding:0 2px 4px}.rx-hd>span:first-child{display:none}.rx .dc-t{font-size:12.5px}}
 @media (orientation:landscape) and (max-height:520px){.rx{--E:clamp(56px,17vmin,80px)}.rx-core{margin-top:-14%;gap:4px}.rx-band{padding:7px 12px max(8px,env(safe-area-inset-bottom,0px))}.rx-info{padding-top:10px;padding-bottom:10px}.rx-in{gap:6px}.rx .dc-c{padding:4px 6px;flex-direction:row;flex-wrap:wrap}.rx .dc-t{font-size:12px;padding:3px 7px}.rx .dc-ph{padding:4px 4px 4px 0}.rx-g{row-gap:4px}.rx .dc-rv{padding:6px 10px;font-size:12.5px}.rx .rx-go{min-height:40px}}
 @media (prefers-reduced-motion:reduce){.rx *{animation:none!important}.rx-img{opacity:.85}.rx-seal{opacity:1}}
+
+.rx-pair{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.4vmin,22px);padding:0 14px;width:100%;box-sizing:border-box}
+.rx-blk{display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1vmin,8px);text-align:center;min-width:0}
+.rx-blk.mo,.rx-plus{display:none}
+.rx-stage.two .rx-blk.mo{display:flex}
+.rx-stage.two .rx-plus{display:block}
+.rx .rx-emb{width:var(--E);height:var(--E);display:grid;place-items:center}
+.rx .logo.rx-logo2{--ls:var(--E);animation:rxlogo 1s 2.6s cubic-bezier(.2,1.5,.4,1) both}
+.rx .logo.rx-logo{animation-delay:2.7s}
+.logo.moemb svg{width:64%!important;height:64%!important;margin:0!important}
+.rx-nm2{color:var(--mc);text-shadow:0 0 26px color-mix(in srgb,var(--mc) 55%,transparent)}
+.rx-nm2 span{animation-delay:calc(2.9s + var(--i)*.06s)!important}
+.rx-blk.mo .rx-sub{animation-delay:3.4s;color:color-mix(in srgb,var(--mc) 70%,#fff)}
+.rx-plus{position:relative;width:2px;height:clamp(16px,3.6vmin,34px);background:linear-gradient(var(--pc),var(--mc));transform-origin:top;animation:rxplus .6s 2.55s cubic-bezier(.2,.8,.2,1) both}
+.rx-plus::after{content:"+";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#05080a;border:1px solid rgba(255,255,255,.25);font:800 13px/1 Orbitron,var(--display);color:#f2b33d}
+@keyframes rxplus{from{transform:scaleY(0);opacity:0}}
+.rx .dc-ph,.rx .dc-c,.rx .dc-none{animation-delay:calc(8s + var(--i)*.16s)}
+.rx-hd>span{animation-delay:7.9s}
+.rx .dc-rv{animation-delay:8.9s}.rx .rx-go{animation-delay:9.2s}
+@media (orientation:portrait){.rx-pair{flex-direction:row;align-items:flex-start;gap:clamp(8px,3vw,24px)}.rx-blk{flex:1 1 0}.rx-plus{width:clamp(18px,6vw,40px);height:2px;margin-top:calc(var(--E)/2);background:linear-gradient(90deg,var(--pc),var(--mc));transform-origin:left;animation-name:rxplusx}.rx-nm{font-size:clamp(15px,4.4vw,22px);white-space:normal}}
+@keyframes rxplusx{from{transform:scaleX(0);opacity:0}}
 .mov-c.quick{animation:movin .5s ease both}.mov-c.quick .mp-img,.mov-c.quick .mp-tint,.mov-c.quick .mp-ttl,.mov-c.quick .mp-band,.mov-c.quick .mov-new{animation:none!important}
 
 
@@ -4931,12 +4952,12 @@ function matOverlay(){let el=document.getElementById('matov');const p=S&&me();le
       const rows=PHS.map(([k,nm,d],i)=>{const ca=c1[k],cb=c2[k].filter(x=>!ca.some(y=>y[0]===x[0])),ma=mo[k];const any=ca.length||cb.length||ma.length;
         return `<div class="dc-r${any?'':' off'}" style="--i:${i+1}"><span class="dc-ph"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>${nm}</span>${any?`<span class="dc-c">${ca.map(x=>tag(x)).join('')}${cb.map(x=>tag(x,1)).join('')}</span><span class="dc-c">${ma.map(x=>tag(x)).join('')}</span>`:`<span class="dc-none">${LX('keine Änderung','no change')}</span>`}</div>`}).join('');
       const img=MPLATE[m.co],sn=(LX('Strategie','Strategy')+' · '+moNm(m.mo)+' · ').toUpperCase();
-      const nm=[...C.nm].map((ch,i)=>`<span style="--i:${i}">${ch===' '?'&nbsp;':esc(ch)}</span>`).join('');
+      const nm=[...C.nm].map((ch,i)=>`<span style="--i:${i}">${ch===' '?'&nbsp;':esc(ch)}</span>`).join(''),nm2=[...moNm(m.mo)].map((ch,i)=>`<span style="--i:${i}">${ch===' '?'&nbsp;':esc(ch)}</span>`).join('');
       html=`<div class="rx${fxOff()?' done':''}" style="--pc:${MCOL[m.co]};--mc:${M.c}" role="dialog" aria-modal="true" aria-labelledby="movh">
        <div class="rx-stage">${img?`<i class="rx-img" style="background-image:url(${img})"></i><i class="rx-tint"></i>`:'<i class="rx-img none"></i>'}<i class="rx-vig"></i><canvas class="rx-cv" aria-hidden="true"></canvas>
-        <div class="rx-core"><div class="rx-emb">${coEmb(m.co,'rx-logo')}<svg class="rx-seal" viewBox="0 0 200 200" aria-hidden="true"><defs><path id="rxsp" d="M100 100m-86 0a86 86 0 1 1 172 0a86 86 0 1 1-172 0"/></defs><circle cx="100" cy="100" r="96" fill="none" stroke="${M.c}" stroke-width="2" stroke-opacity=".9"/><circle cx="100" cy="100" r="77" fill="none" stroke="${M.c}" stroke-width="1" stroke-opacity=".5" stroke-dasharray="2 5"/><text font-family="IBM Plex Mono,monospace" font-size="10.5" font-weight="600" letter-spacing="2.6" fill="${M.c}"><textPath href="#rxsp">${esc(sn+sn)}</textPath></text></svg></div>
-         <h1 class="rx-nm" id="movh">${nm}</h1><div class="rx-sub">${LX('Firma','Company')} · HQ ${esc(C.hq)}${car.g?' · '+(starsH(car.w)||car.g+' '+LX('Partien','games')):` · <em>${LX('neu','new')}</em>`}</div></div>
-        <div class="rx-band"><span><small>${LX('Strategie','Strategy')}</small><b>${esc(moNm(m.mo))}</b></span><span class="rx-m"><b>${M.m} €</b><small>${LX('Start','start')}</small></span></div></div>
+        <div class="rx-pair"><div class="rx-blk co"><div class="rx-emb">${coEmb(m.co,'rx-logo')}</div><h1 class="rx-nm" id="movh">${nm}</h1><div class="rx-sub">${LX('Firma','Company')} · HQ ${esc(C.hq)}${car.g?' · '+(starsH(car.w)||car.g+' '+LX('Partien','games')):` · <em>${LX('neu','new')}</em>`}</div></div>
+         <i class="rx-plus" aria-hidden="true"></i>
+         <div class="rx-blk mo"><div class="rx-emb">${moEmb(m.mo,'rx-logo2')}</div><div class="rx-nm rx-nm2">${nm2}</div><div class="rx-sub">${LX('Strategie','Strategy')} · ${M.m} € ${LX('Start','start')}</div></div></div></div>
        <div class="rx-info"><div class="rx-in">
         <div class="dc-r rx-hd" style="--i:0"><span></span><span style="color:${MCOL[m.co]}">${esc(C.nm)}</span><span style="color:${M.c}">${esc(moNm(m.mo))}</span></div>
         <div class="rx-g">${rows}</div>
@@ -4951,33 +4972,37 @@ function matOverlay(){let el=document.getElementById('matov');const p=S&&me();le
   if(!el){el=document.createElement('div');el.id='matov';el.className='mov';document.body.appendChild(el)}
   if(el.dataset.k!==key){el.dataset.k=key;el.innerHTML=html;const x=el.querySelector('.rx');if(x)rxStart(x);else{const b=el.querySelector('.btn.pri');if(b)try{b.focus({preventScroll:true})}catch(_){}}}}
 /* v256: Gründung als Sequenz – ein Netz aus Teilchen fügt sich zur Firma, dann legt sich die Strategie als Siegel darüber; Endbild = Firmenkarte */
-function rxDone(x){if(x.classList.contains('done'))return;x.classList.add('done');if(x._rx)x._rx.t0=performance.now()-60000;const b=x.querySelector('.rx-go');if(b)try{b.focus({preventScroll:true})}catch(_){}}
-function rxStart(x){const cv=x.querySelector('.rx-cv'),st=x.querySelector('.rx-stage'),lg=x.querySelector('.rx-logo');if(!cv||!st||!lg)return;
-  const pc=getComputedStyle(x).getPropertyValue('--pc').trim(),mc=getComputedStyle(x).getPropertyValue('--mc').trim(),co=S.mat[H].co;
-  const ctx=cv.getContext('2d'),dpr=Math.min(2,devicePixelRatio||1);let W=0,Hh=0,cx=0,cy=0,R=40;
-  const size=()=>{const r=st.getBoundingClientRect(),l=lg.getBoundingClientRect();W=r.width;Hh=r.height;cv.width=W*dpr;cv.height=Hh*dpr;cv.style.width=W+'px';cv.style.height=Hh+'px';ctx.setTransform(dpr,0,0,dpr,0,0);cx=l.left-r.left+l.width/2;cy=l.top-r.top+l.height/2;R=l.width/2};size();
+function moEmb(mo,cls=''){return `<span class="logo moemb ${cls}" data-f="squircle" style="--lc:${MMOS[mo].c}" aria-hidden="true"><span class="lo-in"><svg viewBox="0 0 100 100">${mglyph(mo,50,50,2.1,'#fff')}</svg></span></span>`}
+function rxDone(x){if(x.classList.contains('done'))return;const st=x.querySelector('.rx-stage');if(st)st.classList.add('two');x.classList.add('done');if(x._rx)x._rx.t0=performance.now()-60000;const b=x.querySelector('.rx-go');if(b)try{b.focus({preventScroll:true})}catch(_){}}
+/* v257: zwei gleichwertige Schritte – (1) Teilchennetz fügt sich zum Firmenlogo, (2) zweites Netz in Strategiefarbe fügt sich zum gleich großen Strategie-Emblem; dann die Karte */
+function rxStart(x){const cv=x.querySelector('.rx-cv'),st=x.querySelector('.rx-stage'),lgA=x.querySelector('.rx-logo'),lgB=x.querySelector('.rx-logo2'),blA=x.querySelector('.rx-blk.co');if(!cv||!st||!lgA||!lgB)return;
+  const cs=getComputedStyle(x),pc=cs.getPropertyValue('--pc').trim(),mc=cs.getPropertyValue('--mc').trim(),co=S.mat[H].co;
+  const ctx=cv.getContext('2d'),dpr=Math.min(2,devicePixelRatio||1);let W=0,Hh=0;
+  const size=()=>{const r=st.getBoundingClientRect();W=r.width;Hh=r.height;cv.width=W*dpr;cv.height=Hh*dpr;cv.style.width=W+'px';cv.style.height=Hh+'px';ctx.setTransform(dpr,0,0,dpr,0,0)};size();
+  const ctr=el=>{const r=st.getBoundingClientRect(),l=el.getBoundingClientRect();return[l.left-r.left+l.width/2,l.top-r.top+l.height/2,l.width/2]};
   const NS='http://www.w3.org/2000/svg',sv=document.createElementNS(NS,'svg'),pa=document.createElementNS(NS,'path');pa.setAttribute('d',shapePath(MSHP[co],0,0,1));sv.appendChild(pa);sv.style.cssText='position:absolute;width:0;height:0;overflow:hidden';document.body.appendChild(sv);
-  const Lp=pa.getTotalLength(),N1=96,out=[];for(let i=0;i<N1;i++){const q=pa.getPointAtLength(Lp*i/N1);out.push([q.x,q.y])}sv.remove();
-  const rnd=(a,b)=>a+Math.random()*(b-a);const A=[];
-  for(let i=0;i<N1+36;i++){const edge=Math.random()<.5;A.push({x:rnd(0,1),y:rnd(0,1),vx:rnd(-.02,.02),vy:rnd(-.02,.02),tx:i<N1?out[i][0]:rnd(-.6,.6),ty:i<N1?out[i][1]:rnd(-.6,.6),gold:Math.random()<.18,s:rnd(.8,1.8)})}
-  const B=[];for(let i=0;i<64;i++){const a=rnd(0,Math.PI*2),d=rnd(.8,1.3);B.push({a0:a,d,ta:i/64*Math.PI*2,s:rnd(.8,1.6)})}
-  const ease=k=>k<0?0:k>1?1:k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
-  const o={t0:performance.now()};x._rx=o;let raf=0;addEventListener('resize',size,{passive:true});
+  const N=110,oA=[];const La=pa.getTotalLength();for(let i=0;i<N;i++){const q=pa.getPointAtLength(La*i/N);oA.push([q.x,q.y])}sv.remove();
+  /* abgerundetes Quadrat für das Strategie-Emblem */
+  const oB=[];{const a=.82,rr=.3;const pts=[];for(let k=0;k<4;k++){const cxx=[1,-1,-1,1][k]*(a-rr),cyy=[1,1,-1,-1][k]*(a-rr);for(let j=0;j<=8;j++){const an=k*Math.PI/2+j/8*Math.PI/2;pts.push([cxx+Math.cos(an)*rr,cyy+Math.sin(an)*rr])}}for(let i=0;i<N;i++)oB.push(pts[Math.floor(i/N*pts.length)])}
+  const rnd=(a,b)=>a+Math.random()*(b-a);const mk=(o,n)=>Array.from({length:n},(_,i)=>({x:rnd(.05,.95),y:rnd(.05,.95),vx:rnd(-.05,.05),vy:rnd(-.05,.05),tx:i<o.length?o[i][0]:rnd(-.55,.55),ty:i<o.length?o[i][1]:rnd(-.55,.55),gold:Math.random()<.16,s:rnd(.9,1.9),ph:rnd(0,6)}));
+  const A=mk(oA,N+40),B=mk(oB,N+40);
+  const ease=k=>k<=0?0:k>=1?1:k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+  const net=(P,col,a,t,lim)=>{ctx.lineWidth=1;ctx.strokeStyle=col;for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const dx=P[i][0]-P[j][0],dy=P[i][1]-P[j][1],d2=dx*dx+dy*dy;if(d2<lim){ctx.globalAlpha=a*(1-d2/lim)*.6;ctx.beginPath();ctx.moveTo(P[i][0],P[i][1]);ctx.lineTo(P[j][0],P[j][1]);ctx.stroke()}}
+    for(const[X,Y,p]of P){const fl=.65+.35*Math.sin(t*9+p.ph);ctx.globalAlpha=a*fl;ctx.fillStyle=p.gold?'#ffd36e':col;ctx.beginPath();ctx.arc(X,Y,p.s,0,7);ctx.fill();if(p.gold){ctx.globalAlpha=a*fl*.25;ctx.beginPath();ctx.arc(X,Y,p.s*4,0,7);ctx.fill()}}};
+  /* eine Phase: t0 Netz erscheint, t1 Konvergenz beginnt, t2 Form erreicht, t3 verglüht */
+  const phase=(Ps,el,col,t,t0,t1,t2,t3)=>{if(t<t0||t>t3+.05)return;const a=t<t0+.5?(t-t0)/.5:t<t2?1:Math.max(0,1-(t-t2)/(t3-t2));const k=ease((t-t1)/(t2-t1));const[cx,cy,R]=ctr(el);
+    const P=Ps.map(p=>{if(t<t1){p.x+=p.vx*.016;p.y+=p.vy*.016;if(p.x<.02||p.x>.98)p.vx*=-1;if(p.y<.02||p.y>.98)p.vy*=-1}const X=p.x*W,Y=p.y*Hh,TX=cx+p.tx*R,TY=cy+p.ty*R;return[X+(TX-X)*k,Y+(TY-Y)*k,p]});
+    net(P,col,a,t,t<t1?5200:1300);
+    if(t>t2-.12&&t<t2+.5){const g=1-Math.abs(t-t2-.1)/.45;ctx.globalAlpha=Math.max(0,g)*.55;const gr=ctx.createRadialGradient(cx,cy,0,cx,cy,R*2.6);gr.addColorStop(0,'#fff');gr.addColorStop(.3,col);gr.addColorStop(1,'transparent');ctx.fillStyle=gr;ctx.beginPath();ctx.arc(cx,cy,R*2.6,0,7);ctx.fill()}};
+  const o={t0:performance.now()};x._rx=o;let two=false;addEventListener('resize',size,{passive:true});
+  const goTwo=()=>{if(two)return;two=true;const b0=blA.getBoundingClientRect();st.classList.add('two');const b1=blA.getBoundingClientRect();if(!x.classList.contains('done'))blA.animate([{transform:`translate(${b0.left-b1.left}px,${b0.top-b1.top}px)`},{transform:'none'}],{duration:900,easing:'cubic-bezier(.65,0,.25,1)'})};
   const frame=now=>{if(!x.isConnected){removeEventListener('resize',size);return}const t=(now-o.t0)/1000;ctx.clearRect(0,0,W,Hh);
-    const P=[];/* Firma: Netz entsteht (0.2–1.8 s), fügt sich zum Emblem (1.8–2.6 s), verglüht (2.6–3.4 s) */
-    const ca=t<.2?t/.2:t<2.6?1:Math.max(0,1-(t-2.6)/.8);
-    if(ca>0){const k=ease((t-1.8)/.8);for(const p of A){if(t<1.8){p.x+=p.vx*.016*3;p.y+=p.vy*.016*3;if(p.x<0||p.x>1)p.vx*=-1;if(p.y<0||p.y>1)p.vy*=-1;p.sx=p.x;p.sy=p.y}
-      const X=(p.sx??p.x)*W,Y=(p.sy??p.y)*Hh,TX=cx+p.tx*R*1.02,TY=cy+p.ty*R*1.02;P.push([X+(TX-X)*k,Y+(TY-Y)*k,p])}
-      ctx.lineWidth=1;for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j+=2){const dx=P[i][0]-P[j][0],dy=P[i][1]-P[j][1],d2=dx*dx+dy*dy,lim=t<1.8?4200:900;if(d2<lim){ctx.strokeStyle=pc;ctx.globalAlpha=ca*(1-d2/lim)*.55;ctx.beginPath();ctx.moveTo(P[i][0],P[i][1]);ctx.lineTo(P[j][0],P[j][1]);ctx.stroke()}}
-      for(const[X,Y,p]of P){ctx.globalAlpha=ca;ctx.fillStyle=p.gold?'#ffd36e':pc;ctx.beginPath();ctx.arc(X,Y,p.s*(1+(t>2.3&&t<2.8?1.2:0)),0,7);ctx.fill()}}
-    /* Strategie: Teilchen kommen von außen und legen sich als Ring um die Firma (4.0–5.2 s), danach kreisen sie */
-    if(t>3.9){const k=ease((t-3.9)/1.2),rr=R*1.62,al=t<4.2?(t-3.9)/.3:t<6?1:Math.max(.35,1-(t-6)/2);
-      const Q=B.map(b=>{const ang=b.ta+(t>5.1?(t-5.1)*.18:0),fx=cx+Math.cos(b.a0)*Math.max(W,Hh)*b.d,fy=cy+Math.sin(b.a0)*Math.max(W,Hh)*b.d,TX=cx+Math.cos(ang)*rr,TY=cy+Math.sin(ang)*rr;return[fx+(TX-fx)*k,fy+(TY-fy)*k,b]});
-      if(k<1){ctx.lineWidth=1;for(let i=0;i<Q.length;i++){const j=(i+1)%Q.length,dx=Q[i][0]-Q[j][0],dy=Q[i][1]-Q[j][1];if(dx*dx+dy*dy<9000){ctx.strokeStyle=mc;ctx.globalAlpha=al*.5;ctx.beginPath();ctx.moveTo(Q[i][0],Q[i][1]);ctx.lineTo(Q[j][0],Q[j][1]);ctx.stroke()}}}
-      for(const[X,Y,b]of Q){ctx.globalAlpha=al;ctx.fillStyle=mc;ctx.beginPath();ctx.arc(X,Y,b.s,0,7);ctx.fill()}}
-    ctx.globalAlpha=1;if(t<20)raf=requestAnimationFrame(frame)};
-  if(x.classList.contains('done')){o.t0=performance.now()-60000;frame(performance.now());const b=x.querySelector('.rx-go');if(b)try{b.focus({preventScroll:true})}catch(_){}return}
-  raf=requestAnimationFrame(frame);setTimeout(()=>{if(x.isConnected&&!x.classList.contains('done')){x.classList.add('settled');const b=x.querySelector('.rx-go');if(b)try{b.focus({preventScroll:true})}catch(_){}}},8200);
+    if(t>=4.2)goTwo();
+    phase(A,lgA,pc,t,.15,1.9,2.75,3.5);
+    if(two)phase(B,lgB,mc,t,4.6,6.0,6.85,7.6);
+    ctx.globalAlpha=1;if(t<9)requestAnimationFrame(frame)};
+  if(x.classList.contains('done')){st.classList.add('two');const b=x.querySelector('.rx-go');if(b)try{b.focus({preventScroll:true})}catch(_){}return}
+  requestAnimationFrame(frame);setTimeout(()=>{if(x.isConnected&&!x.classList.contains('done')){x.classList.add('settled');const b=x.querySelector('.rx-go');if(b)try{b.focus({preventScroll:true})}catch(_){}}},9700);
   x.addEventListener('pointerdown',e=>{if(e.target.closest('.rx-go,.rx-skip'))return;if(!x.classList.contains('settled'))rxDone(x)},{once:true})}
 /* Gründung als Film (Stimmung setzen): Nacht-Platte leuchtet auf, Emblem, Name, Motto, Strategie als Fundament, Fähigkeiten, Gegner und Rivale – ca. 10 s, überspringbar */
 function cineHTML(){const m=S.mat[H],C=MCOS[m.co],M=MMOS[m.mo],en=LANG==='en'?1:0,img=MPLATE[m.co],car=careerOf()[m.co],r=rivalOf(H);
@@ -7969,7 +7994,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v256';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v257';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
