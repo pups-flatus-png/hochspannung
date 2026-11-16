@@ -3802,6 +3802,32 @@ html[data-theme="light"] .hero-map .hm-out{fill:rgba(120,95,50,.035)!important}
 .facc.on{border-color:#f2b33d;box-shadow:inset 0 0 0 1px #f2b33d;background:rgba(242,179,61,.07)}
 .facc:focus-visible{outline:2px solid #f2b33d;outline-offset:2px}
 .facn{margin:4px 0 6px!important;color:#ffd36e!important}.facn b{font-weight:700}
+/* v250: Firmenmatte im Spiel */
+.matp{padding:0!important;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel-2,rgba(255,255,255,.03))}
+.matp.pend{border-color:#f2b33d;box-shadow:0 0 0 3px rgba(242,179,61,.12)}
+.mp-h{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;color:var(--muted)}
+.mp-h:focus-visible{outline:2px solid #f2b33d;outline-offset:-2px}
+.mp-sg{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(160deg,#ffd36e,#b9770e);color:#1a1206;font:800 11px/1 'Orbitron',var(--display)}
+.mp-t{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.mp-t b{font-size:13.5px;font-weight:700;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-t small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.matp.pend .mp-t small{color:#ffd36e}
+.mp-up{display:flex;gap:8px;flex-wrap:wrap;padding:0 12px 10px}
+.mp-up .btn{flex:1 1 130px}
+.mp-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:0 12px 10px}
+.mp-c{border:1px solid var(--line);border-radius:10px;padding:7px 9px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.mp-c h4{margin:0;font:600 9.5px/1.2 Barlow,system-ui;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mp-c i{font-style:normal;font-size:12px;line-height:1.3}
+.mp-c .u{color:#6fd59a}.mp-c .d{color:#ff9a8a}.mp-c .n{color:var(--muted)}
+.mp-ab{display:flex;flex-direction:column;gap:5px;padding:8px 12px;border-top:1px solid var(--line);font-size:12.5px}
+.mp-ab div{display:flex;gap:8px;align-items:baseline}
+.mp-ab em{flex:none;width:62px;font:600 9.5px/1 Barlow,system-ui;letter-spacing:.1em;text-transform:uppercase;font-style:normal;color:#f2b33d}
+.mp-ab .off{opacity:.5}
+.mp-op{display:flex;flex-direction:column;gap:4px;padding:8px 12px 10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.mp-op span{padding-left:8px;box-shadow:inset 3px 0 0 var(--pc)}
+.mp-op b{color:var(--fg);font-weight:600}
+.facc .n{color:var(--muted)}
+.facg+.s3-k{display:block;margin-top:12px}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -4135,7 +4161,7 @@ function plantBlocked(p,num){return !!(PLANTS[num]&&PLANTS[num][0]==='uranium'&&
 function cityRule(c){const x=(MAPS[S.map].cityx||{})[c]||{};return{costs:x.slots||SLOT_COST,max:x.steps?x.steps[S.step-1]:S.step,trans:!!x.trans,isl:x.isl}}
 function resDisc(p,r){const w=MR().wien;return r==='garbage'&&w&&p&&p.cities.includes(w)?1:0}
 function unitPrice(r,idx,p){const v=slotPrice(r,idx);if(!p)return v;const f=facOf(p),m=f&&f.fuel&&f.fuel[r]||1;return Math.max(1,Math.round((v-resDisc(p,r))*m))}
-function STO(n){const d=PLANTS[n];return d?(d[3]??2*d[1]):0}
+function STO(n){const d=PLANTS[n];if(!d)return 0;let v=d[3]??2*d[1];if(S&&S.mat&&S.players){const o=S.players.find(q=>q.plants.includes(+n)||q.plants.includes(n));const fs=o&&(facOf(o)||{}).store;if(fs&&fs[d[0]])v+=d[1]*(fs[d[0]]-2)}return v}
 function applyPlantOv(){if(S&&S.plantOv)for(const[k,v]of Object.entries(S.plantOv))PLANTS[k]=v}
 function applyMapN(n){const r=applyRulesN(n);const s2=MR().s2;if(s2&&s2[n])STEP2_AT=s2[n];return r}
 function islandOf(c){const x=(MAPS[S.map].cityx||{})[c];return x&&x.isl}
@@ -4177,7 +4203,7 @@ function RSUP(r){const t=(MAPS[S.map]&&MAPS[S.map].market&&MAPS[S.map].market.re
 function nextPrice(r,skip=0){const n=S.resMarket[r]-skip;return n>0?slotPrice(r,CAP[r]-n):null}
 function buyCost(r,k,mk=S.resMarket,p=null){let n=mk[r],c=0;const cap=priceCap();for(let i=0;i<k;i++){if(n<=0)return Infinity;const v=unitPrice(r,CAP[r]-n,p);if(slotPrice(r,CAP[r]-n)>cap)return Infinity;c+=v;n--}return c}
 function supply(r){return TOT[r]-S.resMarket[r]-(S.resNorth?S.resNorth[r]||0:0)-S.players.reduce((s,p)=>s+p.pool[r],0)}
-function caps(p){const c={coal:0,oil:0,garbage:0,uranium:0,hybrid:0,gohybrid:0,any:p.store||0};const fs=(facOf(p)||{}).store;p.plants.forEach(n=>{const[t]=PLANTS[n];if(FREE(t))return;if(t==='flux')c.any+=STO(n);else c[t]+=STO(n)+(fs&&fs[t]?PLANTS[n][1]*(fs[t]-2):0)});return c}
+function caps(p){const c={coal:0,oil:0,garbage:0,uranium:0,hybrid:0,gohybrid:0,any:p.store||0};p.plants.forEach(n=>{const[t]=PLANTS[n];if(FREE(t))return;if(t==='flux')c.any+=STO(n);else c[t]+=STO(n)});return c}
 function canHold(p,pool){const c=caps(p);let ec=Math.max(0,pool.coal-c.coal),eg=Math.max(0,pool.garbage-c.garbage),eo=Math.max(0,pool.oil-c.oil),eu=Math.max(0,pool.uranium-c.uranium);let hy=c.hybrid,gh=c.gohybrid;let x=Math.min(ec,hy);ec-=x;hy-=x;x=Math.min(eg,gh);eg-=x;gh-=x;x=Math.min(eo,hy+gh);eo-=x;return ec+eg+eo+eu<=c.any}
 function clampPool(p){let g=0;while(!canHold(p,p.pool)&&g++<300){const c=caps(p),q=p.pool;const ov=r=>q[r]-c[r];const r=RES.filter(r=>q[r]>0).sort((a,b)=>ov(b)-ov(a))[0];if(!r)break;q[r]--}}
 function regIsland(r){const cx=MAPS[MAPID].cityx||{};const c=CITIES.find(c=>c[2]===r&&cx[c[0]]&&cx[c[0]].isl);return c?cx[c[0]].isl:'_'}
@@ -4421,7 +4447,7 @@ function buildOptions(p){
   for(const c of activeIds()){
     const occ=S.owners[c]||[];
     if(occ.includes(p.id))continue;
-    const cr=cityRule(c),ff=facOf(p);if(occ.length>=cr.max+(ff&&ff.early2&&S.step===1?1:0)||occ.length>=cr.costs.length)continue;
+    const cr=cityRule(c),ff=facOf(p);if(occ.length>=cr.max+(ff&&ff.early2&&S.step<=ff.early2&&S.step<3?1:0)||occ.length>=cr.costs.length)continue;
     let slot=cr.costs[occ.length];if(ff){if(ff.slotFirst&&!occ.length)slot=Math.min(slot,ff.slotFirst);if(ff.slot)slot=Math.max(0,slot+ff.slot)}
     let conn=d?d[c]:0,jump=false;
     if(R.japan){
@@ -4550,7 +4576,7 @@ const FACTIONS={
   grid:{nm:'Netzbau',conn:.85,plant:{'*':1.1},d:['Leitungen −15 %','Alle Kraftwerke +10 %'],e:['Connections −15%','All plants +10%']},
   waste:{nm:'Recycla',plant:{garbage:.8},fuel:{garbage:.85},conn:1.05,d:['Müll-Kraftwerke −20 %, Müll −15 %','Leitungen +5 %'],e:['Garbage plants −20%, garbage −15%','Connections +5%']}};
 const FAC_KEYS=Object.keys(FACTIONS);
-function facNote(num,bid){const p=me();if(!p||num==null)return'';const m=facPlant(p,num);if(m===1)return'';const k=S.fac[p.id];return `<p class="hint facn">${esc(FACTIONS[k].nm)}: ${m<1?'−':'+'}${Math.round(Math.abs(1-m)*100)} % · ${LX('du zahlst','you pay')} <b>${Math.round(bid*m)} €</b></p>`}
+function facNote(num,bid){const p=me();if(!p||num==null)return'';const m=facPlant(p,num);if(m===1)return'';const nm_=S.mat?matName(p):FACTIONS[S.fac[p.id]].nm;return `<p class="hint facn">${esc(nm_)}: ${m<1?'−':'+'}${Math.round(Math.abs(1-m)*100)} % · ${LX('du zahlst','you pay')} <b>${Math.round(bid*m)} €</b></p>`}
 function facMax(p,num){return Math.floor(p.money/facPlant(p,num))}
 function facTxt(k){const f=FACTIONS[k];if(!f)return['',''];return LANG==='en'?f.e:f.d}
 function facAssign(me_){const pool=FAC_KEYS.slice().sort(()=>Math.random()-.5);S.fac={};const hk=me_&&FACTIONS[me_]?me_:pool[0];S.fac[H]=hk;const rest=pool.filter(k=>k!==hk);S.players.forEach(p=>{if(p.id!==H)S.fac[p.id]=rest.shift()||FAC_KEYS[p.id%FAC_KEYS.length]});log('Firmen mit Fähigkeiten: '+S.players.map(p=>p.name+' = '+FACTIONS[S.fac[p.id]].nm).join(', ')+'.')}
@@ -4570,15 +4596,50 @@ const MMOS={
   kon:{"nm": "Konzern", "m": 52, "t": ["52 € Startgeld", "keine Hebel", "52 € starting money", "no levers"]},
   pio:{"nm": "Pionier", "m": 50, "early2": 1, "t": ["zweites Feld schon in Stufe 1", "kein Nachteil", "Second slot in step 1", "no drawback"]}};
 const MTP=['coal','oil','garbage','uranium','eco','fusion','hybrid','gohybrid','mine','flux'],MRS=['coal','oil','garbage','uranium'];
-function matMerge(co,mo,step){const up=Math.max(0,step-1),C=MCOS[co],M=MMOS[mo],L=C?(step>=2?C.b:C.a):{};
-  const soft=v=>v>1?Math.max(1,v-.05*up):v;/* Aufwertung: je Stufe schrumpft der Nachteil des Modells um 5 Punkte */
+function matMerge(co,mo,step,ups){const U=ups||[],nm=U.filter(x=>x==='m').length,nb=U.filter(x=>x==='b').length,C=MCOS[co],M=MMOS[mo],L=C?(step>=2?C.b:C.a):{};
+  /* Aufwertungen: 'm' = Nachteil des Modells −5 Punkte, 'b' = Vorteil des Modells +3 Punkte */
+  const soft=v=>v>1?Math.max(1,v-.05*nm):v<1?v-.03*nb:v;
   const g=(o,t)=>o?(o[t]??o['*']??1):1;const f={plant:{},fuel:{},conn:1,slot:0};
   MTP.forEach(t=>{f.plant[t]=g(L.plant,t)*soft(g(M&&M.plant,t))});f.plant['*']=soft(g(M&&M.plant,'*'));
   MRS.forEach(r=>{f.fuel[r]=g(L.fuel,r)*soft(g(M&&M.fuel,r))});
-  f.conn=(M&&M.conn?soft(M.conn):1)*(L.conn||1);if(M&&M.slot)f.slot=Math.max(0,M.slot-up);if(L.slot)f.slot+=L.slot;
-  if(M&&M.slotFirst)f.slotFirst=M.slotFirst;if(M&&M.early2)f.early2=1;if(L.freeConn)f.freeConn=L.freeConn;if(L.store)f.store=L.store;if(L.refill)f.refill=L.refill;return f}
-function facOf(p){if(!S||!p)return null;if(S.mat){const m=S.mat[p.id];if(!m)return null;const k=m.co+'|'+m.mo+'|'+S.step;UI._mc=UI._mc||{};return UI._mc[k]||(UI._mc[k]=matMerge(m.co,m.mo,S.step))}return S.fac?FACTIONS[S.fac[p.id]]||null:null}
-function matAssign(map){S.mat={};S.fac=null;Object.entries(map).forEach(([pid,v])=>{if(!v)return;S.mat[pid]=v;const q=P(+pid);if(q&&MMOS[v.mo])q.money=MMOS[v.mo].m})}
+  f.conn=(M&&M.conn?soft(M.conn):1)*(L.conn||1);if(M&&M.slot)f.slot=Math.max(0,M.slot-nm);if(L.slot)f.slot+=L.slot;
+  if(M&&M.slotFirst)f.slotFirst=M.slotFirst-nb;if(M&&M.early2)f.early2=1+nb;if(L.freeConn)f.freeConn=L.freeConn;if(L.store)f.store=L.store;if(L.refill)f.refill=L.refill;return f}
+function matHasMalus(mo,ups){const M=MMOS[mo]||{},nm=(ups||[]).filter(x=>x==='m').length;const mx=o=>o?Math.max(...Object.values(o)):1;return Math.max(mx(M.plant),mx(M.fuel),M.conn||1)-.05*nm>1.001||(M.slot||0)-nm>0}
+function matPending(p){const m=S&&S.mat&&p&&S.mat[p.id];return m?Math.max(0,(S.step-1)-(m.up||[]).length):0}
+function matUpgrade(p,k){const m=S.mat[p.id];if(!m||!matPending(p))return;if(k==='m'&&!matHasMalus(m.mo,m.up))k='b';m.up=[...(m.up||[]),k];if(k==='b'&&m.mo==='kon')p.money+=6;UI._mc={};
+  log(p.name+' wertet auf: '+(k==='m'?'Nachteil −5 Punkte':m.mo==='kon'?'+6 €':'Vorteil gestärkt')+'.',p.id)}
+function facOf(p){if(!S||!p)return null;if(S.mat){const m=S.mat[p.id];if(!m)return null;if(!p.human)while(matPending(p))matUpgrade(p,'m');const k=m.co+'|'+m.mo+'|'+S.step+'|'+(m.up||[]).join('');UI._mc=UI._mc||{};return UI._mc[k]||(UI._mc[k]=matMerge(m.co,m.mo,S.step,m.up))}return S.fac?FACTIONS[S.fac[p.id]]||null:null}
+function matAssign(map){S.mat={};S.fac=null;UI._mc={};Object.entries(map).forEach(([pid,v])=>{if(!v)return;S.mat[pid]={co:v.co,mo:v.mo,up:[]};const q=P(+pid);if(q&&MMOS[v.mo])q.money=MMOS[v.mo].m})}
+const MAT_BAN=new Set(['oil|log','coal|inv','waste|inv','waste|kon']);
+function matDeal(myCo,myMo){const sh=a=>a.slice().sort(()=>Math.random()-.5);const CO=Object.keys(MCOS),MO=Object.keys(MMOS);let best=null;
+  for(let t=0;t<60;t++){const c=sh(CO),m=sh(MO),map={};let bad=0;const hc=myCo&&MCOS[myCo]?myCo:null,hm=myMo&&MMOS[myMo]?myMo:null;const cs=c.filter(x=>x!==hc),ms=m.filter(x=>x!==hm);
+    S.players.forEach(p=>{const v=p.id===H?{co:hc||cs.shift(),mo:hm||ms.shift()}:{co:cs.shift()||c[p.id%6],mo:ms.shift()||m[p.id%6]};if(MAT_BAN.has(v.co+'|'+v.mo)&&!(p.id===H&&hc&&hm))bad++;map[p.id]=v});
+    if(!best||bad<best.bad)best={bad,map};if(!bad)break}
+  matAssign(best.map);log('Firmen und Betriebsmodelle: '+S.players.map(p=>p.name+' = '+matName(p)).join(', ')+'.')}
+function matName(p){const m=S&&S.mat&&S.mat[p.id];return m?MCOS[m.co].nm+' · '+MMOS[m.mo].nm:''}
+function matLines(f){const en=LANG==='en',o={a:[],r:[],b:[],p:[]},pc=v=>(v<1?'−':'+')+Math.round(Math.abs(1-v)*100)+' %';
+  const TN=en?{coal:'Coal',oil:'Oil',garbage:'Garbage',uranium:'Uranium',eco:'Eco',fusion:'Fusion',hybrid:'Hybrid',mine:'Mines'}:{coal:'Kohle',oil:'Öl',garbage:'Müll',uranium:'Uran',eco:'Öko',fusion:'Fusion',hybrid:'Hybrid',mine:'Minen'};
+  const all=f.plant['*']??1;if(Math.abs(all-1)>.001)o.a.push([(en?'All plants ':'Alle Kraftwerke ')+pc(all),all<1]);
+  Object.entries(f.plant).forEach(([t,v])=>{if(TN[t]&&Math.abs(v-all)>.001)o.a.push([TN[t]+(en?' plants ':'-Kraftwerke ')+pc(v),v<1])});
+  const fu=MRS.map(r=>[r,f.fuel[r]]).filter(([,v])=>Math.abs(v-1)>.001);if(fu.length===4&&fu.every(([,v])=>Math.abs(v-fu[0][1])<.001))o.r.push([(en?'All fuel ':'Alle Rohstoffe ')+pc(fu[0][1]),fu[0][1]<1]);else fu.forEach(([r,v])=>o.r.push([TN[r]+' '+pc(v),v<1]));
+  if(f.store)o.r.push([en?'Coal plants store 3×':'Kohle-Kraftwerke speichern 3-fach',true]);
+  if(Math.abs(f.conn-1)>.001)o.b.push([(en?'Connections ':'Leitungen ')+pc(f.conn),f.conn<1]);
+  if(f.freeConn)o.b.push([en?`1 connection up to ${f.freeConn} € free per round`:`1 Leitung bis ${f.freeConn} € pro Runde gratis`,true]);
+  if(f.slot)o.b.push([(en?'City slots ':'Stadtfelder ')+(f.slot>0?'+':'−')+Math.abs(f.slot)+' €',f.slot<0]);
+  if(f.slotFirst)o.b.push([en?`First slot ${f.slotFirst} €`:`Erstes Feld ${f.slotFirst} €`,true]);
+  if(f.early2&&S.step<=f.early2&&S.step<3)o.b.push([en?'Next slot one step early':'Nächstes Feld eine Stufe früher',true]);
+  if(f.refill)o.p.push([en?'+1 garbage per round':'+1 Müll pro Runde',true]);return o}
+/* v250: Firmenmatte im Spiel – eine Zeile, aufklappbar; bei neuer Stufe wählt man hier seine Aufwertung */
+function matPanelHTML(){if(!S||!S.mat||!S.mat[H]||S.phase==='end')return'';const p=me(),m=S.mat[H],f=facOf(p),L=matLines(f),en=LANG==='en',pend=matPending(p),open=pend||UI.matOpen;
+  const ph={auction:'a',resources:'r',build:'b',bureau:'p'}[S.phase]||'a',cur=L[ph];
+  const cell=(t,arr)=>`<div class="mp-c"><h4>${t}</h4>${arr.length?arr.map(([x,u])=>`<i class="${u?'u':'d'}">${esc(x)}</i>`).join(''):`<i class="n">${LX('unverändert','no change')}</i>`}</div>`;
+  const C=MCOS[m.co],ups=m.up||[];
+  let h=`<section class="sec matp${pend?' pend':''}"><button type="button" class="mp-h" data-act="matTog" aria-expanded="${!!open}"><span class="mp-sg">${esc(C.nm.slice(0,2).toUpperCase())}</span><span class="mp-t"><b>${esc(matName(p))}</b><small>${pend?LX('Neue Stufe: wähle eine Aufwertung','New step: choose an upgrade'):cur.length?cur.map(x=>esc(x[0])).join(' · '):LX('In dieser Phase unverändert','No change in this phase')}</small></span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="transform:rotate(${open?180:0}deg)"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>`;
+  if(pend){const hm=matHasMalus(m.mo,ups),kon=m.mo==='kon';h+=`<div class="mp-up"><button type="button" class="btn sm${hm?' pri':''}" data-act="matUp" data-k="m" ${hm?'':'disabled'}>${LX('Nachteil −5 Punkte','Drawback −5 points')}</button><button type="button" class="btn sm${hm?'':' pri'}" data-act="matUp" data-k="b">${kon?'+6 €':m.mo==='pio'?LX('Frühes Feld auch in Stufe 2','Early slot in step 2 too'):m.mo==='sw'?LX('Erstes Feld −1 €','First slot −1 €'):LX('Vorteil +3 Punkte','Bonus +3 points')}</button></div>`}
+  if(open){h+=`<div class="mp-g">${cell(LX('Auktion','Auction'),L.a)}${cell(LX('Rohstoffe','Resources'),L.r)}${cell(LX('Bauen','Build'),L.b)}${cell(LX('Liefern','Power'),L.p)}</div>
+   <div class="mp-ab"><div><em>${LX('Firma','Company')}</em><span>${esc(C.t[0][en?1:0])}</span></div><div class="${S.step>=2?'':'off'}"><em>${LX('Stufe 2','Step 2')}</em><span>${esc(C.t[1][en?1:0])}${S.step<2?LX(' (gesperrt)',' (locked)'):''}</span></div><div><em>${LX('Aufwert.','Upgrades')}</em><span>${ups.length?ups.map(k=>k==='m'?LX('Nachteil −5','Drawback −5'):LX('Vorteil +','Bonus +')).join(' · '):LX('je eine bei Stufe 2 und 3','one each at step 2 and 3')}</span></div></div>
+   <div class="mp-op">${S.players.filter(q=>q.id!==H).map(q=>`<span style="--pc:${q.color}"><b>${esc(shortName(q.name))}</b> ${esc(matName(q))}</span>`).join('')}</div>`}
+  return h+'</section>'}
 function facPlant(p,num){const f=facOf(p);if(!f||!f.plant)return 1;const t=PLANTS[num]?PLANTS[num][0]:'';const g=k=>f.plant[k]??f.plant['*']??1;return t==='hybrid'||t==='gohybrid'?(g('coal')+g(t==='gohybrid'?'garbage':'oil'))/2:g(t)}
 function facCash(p,num){return Math.floor((p.money-aiReserve(p))/facPlant(p,num))}
 /* KI: Kraftwerk ist so viel wert wie vorher; nur relative Vor-/Nachteile gegenüber dem eigenen Durchschnitt verschieben die Wahl. Das Geldlimit rechnet den Aufschlag ein (facCash) */
@@ -5551,7 +5612,7 @@ function phaseRuleItems(){
   const M=MAPS[S.map],en=LANG==='en',ph={auction:'a',resources:'r',build:'b',bureau:'p'}[S.phase],out=[];if(!ph)return out;const p=me(),R=MR();
   if(M.exp&&M.rtxt){const sp=(MR_PH[S.map]||'').split('|');M.rtxt.forEach((x,i)=>{if((sp[i]||'').includes(ph))out.push({ic:x[0],t:en?x[3]:x[1],d:en?x[4]:x[2]})})}
   const add=(ic,t,d,st)=>out.push({ic,t,d,st});
-  if(S.fac&&S.fac[H]){const k=S.fac[H],t=facTxt(k);add('plant',(en?'Your company: ':'Deine Firma: ')+FACTIONS[k].nm,t[0]+' · '+t[1]+'. '+(en?'Opponents: ':'Gegner: ')+S.players.filter(q=>q.id!==H).map(q=>shortName(q.name)+' '+FACTIONS[S.fac[q.id]].nm).join(', '))}
+  if(!S.mat&&S.fac&&S.fac[H]){const k=S.fac[H],t=facTxt(k);add('plant',(en?'Your company: ':'Deine Firma: ')+FACTIONS[k].nm,t[0]+' · '+t[1]+'. '+(en?'Opponents: ':'Gegner: ')+S.players.filter(q=>q.id!==H).map(q=>shortName(q.name)+' '+FACTIONS[S.fac[q.id]].nm).join(', '))}
   if(ph==='a'&&M.mktSize===9&&S.step<3)add('plant',en?'Market with 9 plants':'Markt mit 9 Kraftwerken',en?'4 current plants you can buy, plus 5 in the future market – one more than on other boards.':'4 kaufbare im aktuellen Markt, dazu 5 im zukünftigen – eines mehr als auf anderen Spielplänen.');
   if(ph==='a'&&S.origDisc&&!M.noDiscount)add('nodisc',en?'Original rule: no discount':'Originalregel: kein Rabatt',en?'If nobody buys a plant this round, the smallest leaves the game and is replaced.':'Kauft in dieser Runde niemand ein Kraftwerk, fällt das kleinste aus dem Spiel und wird ersetzt.');
   if(ph==='r'&&M.noNuke&&p.plants.includes(FLUX))add('nuke',en?'Flux generator and nuclear ban':'Flux-Generator und Atomverbot',en?'No uranium for the flux generator while your network lies only in banned regions.':'Kein Uran für den Flux-Generator, solange dein Netz nur in Verbotsregionen liegt.',fluxU(p)?(en?'Uranium allowed for you':'Uran für dich erlaubt'):(en?'No uranium for you':'Kein Uran für dich'));
@@ -5959,6 +6020,7 @@ function renderPanel(){
   if(P2)h+=`</div>`;
   /* v186: in der Auktion steht „Dein Betrieb“ direkt unter dem Kraftwerksmarkt, vor den letzten Zügen */
   if(S.gate==='build'&&S.phase==='resources'&&UI.gateMk&&Date.now()<UI.gateMk){try{h+=withSide(S.resNorth?(UI.kside||'south'):'south',()=>{const m=panelResources0(null);const k=m.indexOf('<section class="sec rm2"');if(k<0)return'';const e=m.indexOf('</section>',k);return e>0?m.slice(k,e+10):''})}catch(_){}}
+  if(!S.gate||matPending(me()))h+=matPanelHTML();
   h+=S.gate?after+(S.gate==='resources'?'':panelMine()):S.phase==='auction'?panelMine()+after+feedHTML()+phaseRulesHTML():feedHTML()+phaseRulesHTML()+after+panelMine();
   if(UI._ab&&(isMine(a)||S.gate))h+=`<div class="actbar" role="region" aria-label="${LX('Dein Zug','Your move')}"><div class="ab-t"><span class="dot"></span>${UI._ab.t}</div>${warnHTML()}${UI._ab.h}</div>`;
   if(h!==panel._h){/* perf: unveränderten Inhalt nicht neu aufbauen (spart ~30 ms je Aktualisierung, gedrosselt) */const st=panel.scrollTop,anc=panelAnchor();panel.innerHTML=h;panel._h=h;const pk=S.round+'|'+S.phase+'|'+(S.gate||'');if(UI.panPh!==pk){/* v223: neue Phase beginnt oben beim Titel */UI.panPh=pk;panel.scrollTop=0}else{panel.scrollTop=st;panelRestore(anc)}}aucScroll(a);orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
@@ -6115,10 +6177,13 @@ function rulesBlock(){
     h+=`<div class="toggle disc${on?' on':''}${nd?' fixed':''}">${nd?'':`<button type="button" class="swt" role="switch" aria-checked="${on}" data-act="discTog" aria-label="Rabatt-Regel"><span></span></button>`}<div class="tgt"><b>${on?'Rabatt (Recharged)':'Originalregel: ohne Rabatt'}</b><span>${nd?'Dieser Plan spielt ohne Rabatt: Kauft niemand ein Kraftwerk, fällt das kleinste weg.':on?'Das kleinste Kraftwerk im Markt ist jede Runde ab 1 € zu haben. Kauft es niemand, fällt es am Ende der Versteigerung weg.':'Kein Rabatt. Kauft in einer Runde niemand ein Kraftwerk, fällt das kleinste aus dem Spiel und wird ersetzt.'}</span><small>${on?'Regel aus Funkenschlag Recharged':'Regel aus dem Original-Funkenschlag'}</small></div></div>`}
   return h;
 }
-function facSetupHTML(){let h='';
-  {const on=!!UI.facOn,en=LANG==='en';
-    h+=`<div class="toggle fac${on?' on':''}"><button type="button" class="swt" role="switch" aria-checked="${on}" data-act="facTog" aria-label="${LX('Firmen mit Fähigkeiten','Companies with abilities')}"><span></span></button><div class="tgt"><b>${LX('Firmen mit Fähigkeiten','Companies with abilities')}</b><span>${on?LX('Jede Firma hat einen Vorteil und einen Nachteil. Die Gegner bekommen zufällig je eine andere.','Each company has one advantage and one drawback. Opponents get a different one each, at random.'):LX('Optional: jede Firma bekommt einen Vorteil und einen Nachteil.','Optional: every company gets one advantage and one drawback.')}</span></div></div>`;
-    if(on)h+=`<div class="facg" role="radiogroup" aria-label="${LX('Deine Fähigkeit','Your ability')}">${['rand',...FAC_KEYS].map(k=>{const sel=(UI.myFac||'rand')===k;const t=k==='rand'?[LX('Zufällig','Random'),'']:facTxt(k);return `<button type="button" class="facc${sel?' on':''}" role="radio" aria-checked="${sel}" data-act="facSel" data-f="${k}"><b>${k==='rand'?LX('Zufall','Random'):esc(FACTIONS[k].nm)}</b>${k==='rand'?`<span>${LX('Lass dich überraschen','Surprise me')}</span>`:`<span class="up">${t[0]}</span><span class="${FACTIONS[k].neg===0?'up':'dn'}">${t[1]}</span>`}</button>`}).join('')}</div>`}
+function facSetupHTML(){let h='';const on=!!UI.facOn,en=LANG==='en';
+  h+=`<div class="toggle fac${on?' on':''}"><button type="button" class="swt" role="switch" aria-checked="${on}" data-act="facTog" aria-label="${LX('Firmen mit Fähigkeiten','Companies with abilities')}"><span></span></button><div class="tgt"><b>${LX('Firmen mit Fähigkeiten','Companies with abilities')}</b><span>${on?LX('Jeder Spieler bekommt eine Firma (was sie kann) und ein Betriebsmodell (wie ihr Geld fließt). Gegner bekommen zufällig andere.','Every player gets a company (what it is good at) and an operating model (how its money flows). Opponents get different ones at random.'):LX('Optional: Firma und Betriebsmodell mit Vor- und Nachteilen, wie die Spielertableaus in Scythe.','Optional: company and operating model with advantages and drawbacks, like the player mats in Scythe.')}</span></div></div>`;
+  if(!on)return h;const co=UI.myCo||'rand',mo=UI.myMo||'rand';
+  const card=(act,k,sel,b,l1,l2,l3)=>`<button type="button" class="facc${sel?' on':''}" role="radio" aria-checked="${sel}" data-act="${act}" data-f="${k}"><b>${b}</b>${l1?`<span class="up">${l1}</span>`:''}${l2?`<span class="${l3||'dn'}">${l2}</span>`:''}</button>`;
+  h+=`<span class="s3-k">${LX('Firma · was du kannst','Company · what you are good at')}</span><div class="facg" role="radiogroup">${card('coSel','rand',co==='rand',LX('Zufall','Random'),'',LX('Lass dich überraschen','Surprise me'),'n')}${Object.entries(MCOS).map(([k,c])=>card('coSel',k,co===k,esc(c.nm),c.t[0][en?1:0],LX('Stufe 2: ','Step 2: ')+c.t[1][en?1:0],'n')).join('')}</div>`;
+  h+=`<span class="s3-k">${LX('Betriebsmodell · wie dein Geld fließt','Operating model · how your money flows')}</span><div class="facg" role="radiogroup">${card('moSel','rand',mo==='rand',LX('Zufall','Random'),'',LX('Lass dich überraschen','Surprise me'),'n')}${Object.entries(MMOS).map(([k,m])=>card('moSel',k,mo===k,esc(m.nm),m.t[en?2:0],m.t[en?3:1],(k==='kon'||k==='pio')?'n':'dn')).join('')}</div>`;
+  if(co!=='rand'&&mo!=='rand'&&MAT_BAN.has(co+'|'+mo))h+=`<p class="hint">${LX('Diese Kombination war in den Tests sehr stark. Gegnern wird sie nie zugelost.','This pairing was very strong in testing. Opponents are never dealt it.')}</p>`;
   return h}
 function uraniumTrapWarn(){
   const d=UI.deck||'std',po=MAPS[UI.map].phaseOut39||(MAPS[UI.map].phaseOutOpt&&UI.deAtom!==false);
@@ -7536,7 +7601,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v249';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v250';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -8064,7 +8129,7 @@ function renderTicker(){const el=document.getElementById('ticker');if(!el)return
 function after(){save();render();schedule();renderTicker();stepUI()}
 try{UI.promos=JSON.parse(localStorage.getItem('hochspannung-promos')||'[]').filter(k=>PROMOS[k])}catch(_){UI.promos=[]}
 try{UI.disc=localStorage.getItem('hochspannung-disc')||'rech'}catch(_){UI.disc='rech'}
-try{UI.facOn=localStorage.getItem('hochspannung-fac')==='1';UI.myFac=localStorage.getItem('hochspannung-facme')||'rand'}catch(_){UI.facOn=false;UI.myFac='rand'}
+try{UI.facOn=localStorage.getItem('hochspannung-fac')==='1';UI.myCo=localStorage.getItem('hochspannung-co')||'rand';UI.myMo=localStorage.getItem('hochspannung-mo')||'rand'}catch(_){UI.facOn=false;UI.myCo='rand';UI.myMo='rand'}
 try{UI.feedOpen=localStorage.getItem('hochspannung-feed')==='1'}catch(_){}
 try{const n=localStorage.getItem('hochspannung-name');if(n&&!UI.name)UI.name=n}catch(_){}
 try{UI.adv=localStorage.getItem('hochspannung-adv')==='1';UI.vib=localStorage.getItem('hochspannung-vib')!=='0'}catch(_){UI.vib=true}
@@ -8106,7 +8171,10 @@ const A={
   deckSel:b=>{UI.deck=b.dataset.d;UI.name=nmVal();renderStart(true);return'skip'},
   s3:b=>{UI.s3Early=b.dataset.v==='true';UI.name=nmVal();renderStart(true);return'skip'},
   facTog:()=>{UI.facOn=!UI.facOn;try{localStorage.setItem('hochspannung-fac',UI.facOn?'1':'0')}catch(_){}UI.name=nmVal();renderStart(true);return'skip'},
-  facSel:b=>{UI.myFac=b.dataset.f;try{localStorage.setItem('hochspannung-facme',UI.myFac)}catch(_){}UI.name=nmVal();renderStart(true);return'skip'},
+  coSel:b=>{UI.myCo=b.dataset.f;try{localStorage.setItem('hochspannung-co',UI.myCo)}catch(_){}UI.name=nmVal();renderStart(true);return'skip'},
+  moSel:b=>{UI.myMo=b.dataset.f;try{localStorage.setItem('hochspannung-mo',UI.myMo)}catch(_){}UI.name=nmVal();renderStart(true);return'skip'},
+  matTog:()=>{UI.matOpen=!UI.matOpen},
+  matUp:b=>{matUpgrade(me(),b.dataset.k);save()},
   discTog:()=>{UI.disc=UI.disc==='orig'?'rech':'orig';try{localStorage.setItem('hochspannung-disc',UI.disc)}catch(_){}UI.name=nmVal();renderStart(true);return'skip'},
   atom:b=>{UI.deAtom=b.dataset.v==='true';UI.name=nmVal();renderStart(true);return'skip'},
   mapSel:b=>{UI.map=b.dataset.m;if(MAPS[UI.map].paris&&(UI.deck==='mix'||UI.deck==='mix1'))UI.deck='std';UI.regions=[];UI.name=nmVal();const y0=b.getBoundingClientRect().top;renderStart(true);/* v119: gewählte Karte bleibt an ihrer Stelle, nichts springt */const nb=start.querySelector(`.mcard[data-m="${UI.map}"]`);if(nb){const dy=nb.getBoundingClientRect().top-y0;const sc=start.querySelector('.s3-side');const el=sc&&getComputedStyle(sc).overflowY==='auto'?sc:start.querySelector('.setup-body')&&getComputedStyle(start.querySelector('.setup-body')).overflowY!=='visible'?start.querySelector('.setup-body'):start;if(dy)el.scrollTop+=dy}return'skip'},
@@ -8166,7 +8234,7 @@ const A={
   tutorial:()=>{const keep={map:UI.map,nAI:UI.nAI,diff:UI.diff,regions:UI.regions,deck:UI.deck,promos:UI.promos};UI.map='de';UI.nAI=2;UI.diff='easy';UI.regions=[];UI.deck='std';UI.promos=[];loadMap('de');BOOT.zoom=false;
     A.start(null);Object.assign(UI,keep);if(S){S.tut={seen:[]};S.players.forEach(p=>{if(!p.human)p.style=null});save()}},
   start:b=>{if(!regionsOk())return'skip';if(BOOT.zoom&&!UI.zooming&&!start.hidden&&!hmReduced()){UI.zooming=1;hmZoomGo(()=>{b&&b.click?b.click():null;UI.zooming=0});return'skip'}UI.name=nmVal().trim();saveName(UI.name);const NM=UI.name||(LANG==='en'?'Your company':'Dein Betrieb');
-  newGame(NM,UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});if(UI.facOn)facAssign(UI.myFac==='rand'?null:UI.myFac);UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';openVeil();renderStart(false);UI.intro=true;showIntro()},
+  newGame(NM,UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});if(UI.facOn)matDeal(UI.myCo==='rand'?null:UI.myCo,UI.myMo==='rand'?null:UI.myMo);UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';openVeil();renderStart(false);UI.intro=true;showIntro()},
   cont:()=>{UI.rulesFromStart=false;loadMap(S.map||'de');loadDeck(S.deckKeys||deckKeys('std'));applyPlantOv();applyMapN(S.n);applyGameMods();UI.vb=null;renderStart(false)},
   zin:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.3);return'skip'},
   zout:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.3);return'skip'},
