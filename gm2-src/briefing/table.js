@@ -1,0 +1,381 @@
+// Grid Master 2 – 3D-Spieltisch: Karte, Rohstoffmarkt, Kraftwerksmarkt, Spielerbereich, Städteleiste, Münzen.
+// Spiellogik (vereinfachte Demo mit echten Regeln für Kosten, Stufen, Nachschub) + alle Phasen-Animationen.
+// Themes liefern Materialien, Figuren und Animations-Charakter.
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import MAP from './map.json';
+import { plantModel, truck, paddle, ladder, stampMesh } from './models.js';
+
+export { THREE, RoundedBoxGeometry };
+// ---------- data ----------
+export const S = 1 / 9, wx = px => (px - 290) * S, wz = py => (py - 386) * S;
+export const CITY = {}, ADJ = {};
+MAP.cities.forEach(c => { CITY[c.id] = { ...c, X: wx(c.x), Z: wz(c.y) }; ADJ[c.id] = []; });
+export const EDGES = MAP.edges.map(([a, b, cost], i) => { const e = { i, a, b, cost }; ADJ[a].push(e); ADJ[b].push(e); return e; });
+export const PLANTDATA = { 3: ['oil', 2, 1], 4: ['coal', 2, 1], 5: ['hybrid', 2, 1], 6: ['garbage', 1, 1], 7: ['oil', 3, 2], 8: ['coal', 3, 2], 9: ['oil', 1, 1], 10: ['coal', 2, 2], 11: ['uranium', 1, 2], 12: ['hybrid', 2, 2], 13: ['eco', 0, 1], 14: ['garbage', 2, 2], 15: ['coal', 2, 3], 16: ['oil', 2, 3], 17: ['uranium', 1, 2], 18: ['eco', 0, 2], 19: ['garbage', 2, 3], 20: ['coal', 3, 5], 21: ['hybrid', 2, 4], 22: ['eco', 0, 2], 23: ['uranium', 1, 3], 24: ['garbage', 2, 4], 25: ['coal', 2, 5], 26: ['oil', 2, 5], 27: ['eco', 0, 3], 28: ['uranium', 1, 4], 29: ['hybrid', 1, 4], 30: ['garbage', 3, 6], 31: ['coal', 3, 6], 34: ['uranium', 1, 5], 38: ['garbage', 3, 7] };
+export const RES = ['coal', 'oil', 'garbage', 'uranium'];
+export const RNAME = { coal: 'Kohle', oil: 'Öl', garbage: 'Müll', uranium: 'Uran', eco: 'Öko', hybrid: 'Kohle/Öl' };
+export const PRICE = (k, i) => k === 'uranium' ? [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16][i] : Math.floor(i / 3) + 1;
+export const INCOME = [10, 22, 33, 44, 54, 64, 73, 82, 90, 98, 105];
+export const REFILL = { 1: { coal: 4, oil: 2, garbage: 1, uranium: 1 }, 2: { coal: 5, oil: 3, garbage: 2, uranium: 1 }, 3: { coal: 3, oil: 4, garbage: 3, uranium: 1 } };
+
+// ---------- tweens ----------
+export const E = { lin: k => k, out: k => 1 - (1 - k) ** 3, in: k => k * k * k, inout: k => k < .5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2, back: k => { const c = 1.7; return 1 + (c + 1) * (k - 1) ** 3 + c * (k - 1) ** 2; }, spring: k => 1 - Math.cos(k * Math.PI * 4.5) * Math.exp(-k * 6), snap: k => k < .7 ? E.out(k / .7) * 1.06 : 1.06 - .06 * E.inout((k - .7) / .3), bounce: k => { const n = 7.5625, d = 2.75; if (k < 1 / d) return n * k * k; if (k < 2 / d) return n * (k -= 1.5 / d) * k + .75; if (k < 2.5 / d) return n * (k -= 2.25 / d) * k + .9375; return n * (k -= 2.625 / d) * k + .984375; } };
+const TW = []; let SPEED = 1; const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+export function setSpeed(s) { SPEED = s; }
+export function tween(dur, fn, ease = 'inout', delay = 0) { return new Promise(res => TW.push({ t: -delay * SPEED, d: reduced ? Math.min(dur, .1) : dur * SPEED, fn, e: typeof ease === 'function' ? ease : E[ease], res })); }
+export const wait = s => tween(s, () => { }, 'lin');
+function stepTweens(dt) { for (let i = TW.length - 1; i >= 0; i--) { const w = TW[i]; w.t += dt; if (w.t < 0) continue; const k = Math.min(1, w.t / w.d); w.fn(w.e(k), k); if (k >= 1) { TW.splice(i, 1); w.res(); } } }
+export const lerp = (a, b, k) => a + (b - a) * k;
+export function rng(seed) { let s = 0; for (const ch of String(seed)) s = (s * 31 + ch.charCodeAt(0)) >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+// ---------- canvas helpers ----------
+export function canvasTex(w, h, draw, srgb = true) { const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); draw(x, w, h); const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }
+export function rr(x, X, Y, w, h, r) { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); }
+function pathPolys(d) { return d.split('M').filter(Boolean).map(s => s.replace('Z', '').split('L').map(p => p.split(',').map(Number))); }
+export function slab(w, l, depth, r, topMat, sideMat) { // rounded slab, top at y=0, UVs 0..1 on top
+  const s = new THREE.Shape(), hw = w / 2, hl = l / 2; s.moveTo(-hw + r, -hl); s.lineTo(hw - r, -hl); s.quadraticCurveTo(hw, -hl, hw, -hl + r); s.lineTo(hw, hl - r); s.quadraticCurveTo(hw, hl, hw - r, hl); s.lineTo(-hw + r, hl); s.quadraticCurveTo(-hw, hl, -hw, hl - r); s.lineTo(-hw, -hl + r); s.quadraticCurveTo(-hw, -hl, -hw + r, -hl);
+  const g = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelThickness: .05, bevelSize: .05, bevelSegments: 2 }); g.rotateX(-Math.PI / 2); g.translate(0, -depth, 0);
+  const p = g.attributes.position, uv = g.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + hw) / w, 1 - (p.getZ(i) + hl) / l);
+  const m = new THREE.Mesh(g, [topMat, sideMat]); m.receiveShadow = true; m.castShadow = true; return m;
+}
+
+// ================= TABLE =================
+export function createTable(theme, mode = 'dark', opt = {}) {
+  const T = theme, P = T.palette(mode);
+  const renderer = opt.renderer || new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = P.exposure || 1;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(P.bg);
+  const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture; scene.environmentIntensity = P.env ?? .5;
+  const camera = new THREE.PerspectiveCamera(32, 1, .5, 800);
+  const controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.dampingFactor = .09; controls.screenSpacePanning = false; controls.maxPolarAngle = 1.2; controls.minDistance = 8; controls.maxDistance = 320;
+  controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE }; controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+  // lights
+  const hemi = new THREE.HemisphereLight(P.sky || 0xffffff, P.ground || 0x444444, P.hemi ?? 1); scene.add(hemi);
+  const key = new THREE.DirectionalLight(P.key || 0xffffff, P.keyI ?? 1.6); key.position.set(-40, 90, 50); key.castShadow = true; key.shadow.mapSize.set(2048, 2048); Object.assign(key.shadow.camera, { left: -75, right: 75, top: 75, bottom: -75, near: 10, far: 260 }); key.shadow.bias = -.0005; key.shadow.normalBias = .04; scene.add(key, key.target);
+  const fill = new THREE.DirectionalLight(P.fill || 0xffffff, P.fillI ?? .4); fill.position.set(60, 40, -30); scene.add(fill);
+  // table surface
+  const tableTex = T.tableTex ? T.tableTex(P) : null;
+  const table = new THREE.Mesh(new THREE.PlaneGeometry(420, 420), new THREE.MeshStandardMaterial({ color: P.table, map: tableTex, roughness: .9, metalness: 0 })); table.rotation.x = -Math.PI / 2; table.position.y = -.62; table.receiveShadow = true; scene.add(table);
+  if (P.fog) scene.fog = new THREE.Fog(P.bg, 180, 420);
+  const fx = new THREE.Group(); scene.add(fx);
+  const ctx = { THREE, T, P, scene, camera, controls, renderer, fx, mode, E, tween, wait, lerp, rng, canvasTex, rr };
+
+  // ---------- state ----------
+  const ME = 0; const ST = opt.state || {
+    step: 1, round: 4,
+    players: [{ name: 'Du', money: 60, plants: [10, 16], stock: { 10: 0, 16: 0 } }, { name: 'Rhein AG', money: 41, plants: [15, 18], stock: {} }, { name: 'Isar Energie', money: 55, plants: [12, 14], stock: {} }],
+    order: [1, 2, 0], owners: {}, lines: [],
+    occ: { coal: [...Array(24).keys()], oil: [...Array(18).keys()].map(i => i + 6), garbage: [18, 19, 20, 21, 22, 23], uranium: [10, 11] },
+    market: [17, 19, 20, 21, 22, 23, 24, 25], deck: [31, 27, 34, 26, 29, 38, 30, 28],
+  };
+  if (!opt.state) { [[0, ['berlin', 'potsdam', 'leipzig']], [1, ['koeln', 'duesseldorf', 'essen', 'dortmund']], [2, ['muenchen', 'augsburg', 'nuernberg']]].forEach(([pl, list]) => list.forEach((id, i) => { (ST.owners[id] ||= []).push(pl); if (i) { const e = EDGES.find(e => (e.a === id && e.b === list[i - 1]) || (e.b === id && e.a === list[i - 1])); if (e) ST.lines.push({ e: e.i, pl, from: list[i - 1] }); } })); }
+  ctx.ST = ST; ctx.ME = ME; ctx.pcol = i => P.players[i];
+
+  // ---------- map board ----------
+  const MAPW = MAP.w * S, MAPL = MAP.h * S;
+  const mapTop = canvasTex(2048, Math.round(2048 * MAP.h / MAP.w), (x, w, h) => { x.scale(w / MAP.w, h / MAP.h); T.drawMap(x, MAP, P, ST); });
+  const polys = pathPolys(MAP.land).filter(p => p.length > 8);
+  const mapGroup = new THREE.Group(); scene.add(mapGroup);
+  const topMat = new THREE.MeshStandardMaterial({ map: mapTop, roughness: P.mapRough ?? .85, metalness: 0 }), sideMat = new THREE.MeshStandardMaterial({ color: P.edge, roughness: .6, metalness: P.edgeMetal ?? .1 });
+  polys.forEach(poly => {
+    const s = new THREE.Shape(poly.map(([x, y]) => new THREE.Vector2(wx(x), -wz(y)))); const depth = P.mapDepth ?? .55;
+    const g = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: false }); g.rotateX(-Math.PI / 2); g.translate(0, -depth, 0);
+    const p = g.attributes.position, uv = g.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) / S + 290) / MAP.w, 1 - (p.getZ(i) / S + 386) / MAP.h);
+    const m = new THREE.Mesh(g, [topMat, sideMat]); m.receiveShadow = true; m.castShadow = true; mapGroup.add(m);
+  });
+  ctx.refreshMap = () => { const c = mapTop.image, x = c.getContext('2d'); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, c.width, c.height); x.scale(c.width / MAP.w, c.height / MAP.h); T.drawMap(x, MAP, P, ST); mapTop.needsUpdate = true; };
+
+  // ---------- cities ----------
+  const cityG = {}; const cities = new THREE.Group(); scene.add(cities);
+  MAP.cities.forEach(c0 => { const c = CITY[c0.id]; const g = new THREE.Group(); g.position.set(c.X, 0, c.Z); g.userData = { city: c.id, houses: [] }; const base = T.cityBase(ctx, c); g.add(base); cities.add(g); cityG[c.id] = g; });
+  const SLOT = [[-.62, .34], [.62, .34], [0, -.62]];
+  ctx.slotPos = (id, i) => new THREE.Vector3(CITY[id].X + SLOT[i][0], 0, CITY[id].Z + SLOT[i][1]);
+  function placeHouse(id, pl, i) { const h = T.house(ctx, pl, CITY[id], i); if (h.userData.centered) h.position.set(0, 0, 0); else h.position.set(SLOT[i][0], .1, SLOT[i][1]); cityG[id].add(h); cityG[id].userData.houses[i] = h; return h; }
+  Object.entries(ST.owners).forEach(([id, list]) => list.forEach((pl, i) => placeHouse(id, pl, i)));
+  // reach / select markers
+  const ringMat = new THREE.MeshBasicMaterial({ color: P.accent, transparent: true, opacity: .0, depthWrite: false });
+  const ringGeo = new THREE.RingGeometry(1.6, 1.72, 48); ringGeo.rotateX(-Math.PI / 2);
+  MAP.cities.forEach(c => { const r = new THREE.Mesh(ringGeo, ringMat.clone()); r.position.y = .03; r.visible = false; cityG[c.id].add(r); cityG[c.id].userData.ring = r; });
+
+  // ---------- lines ----------
+  const lineGroup = new THREE.Group(); scene.add(lineGroup);
+  ctx.lineEnds = (e, lane) => { const A = CITY[e.a], B = CITY[e.b], dx = B.X - A.X, dz = B.Z - A.Z, L = Math.hypot(dx, dz), ux = dx / L, uz = dz / L, nx = -uz, nz = ux, o = (lane - (lane ? .5 : 0)) * .55, t = 1.25; return { a: new THREE.Vector3(A.X + ux * t + nx * o, 0, A.Z + uz * t + nz * o), b: new THREE.Vector3(B.X - ux * t + nx * o, 0, B.Z - uz * t + nz * o), L: L - 2 * t, ux, uz, nx, nz }; };
+  const lineObjs = [];
+  function addLine(l, instant = true) { const e = EDGES[l.e]; const lane = ST.lines.filter(x => x.e === l.e).indexOf(l); const ends = ctx.lineEnds(e, Math.max(0, lane)); const o = T.line(ctx, ends, l.pl); o.obj.userData.l = l; lineGroup.add(o.obj); if (instant) o.set(1); lineObjs.push({ l, ...o, ends }); return lineObjs[lineObjs.length - 1]; }
+  ST.lines.forEach(l => addLine(l, true));
+
+  // ---------- resource market board ----------
+  const MK = { x: 46, z: -8, W: 15, L: 38 };
+  const mkTop = canvasTex(15 * 48, 38 * 48, (x, w, h) => T.drawMarket(x, w, h, P, MK));
+  const mk = slab(MK.W, MK.L, P.boardDepth ?? .45, .8, new THREE.MeshStandardMaterial({ map: mkTop, roughness: .8 }), sideMat); mk.position.set(MK.x, 0, MK.z); scene.add(mk);
+  ctx.mslot = (k, i) => { const li = RES.indexOf(k), lx = MK.x - MK.W / 2 + 1.2 + 3.2 * (li + .5), z0 = MK.z - MK.L / 2 + 3.4, TR = 30; if (k === 'uranium') return new THREE.Vector3(lx, 0, z0 + (i + .5) * TR / 12); const cell = Math.floor(i / 3), j = i % 3; return new THREE.Vector3(lx + (j - 1) * .82 - .25, 0, z0 + (cell + .5) * TR / 8); };
+  const pieces = { coal: [], oil: [], garbage: [], uranium: [] }; const pieceGroup = new THREE.Group(); scene.add(pieceGroup);
+  function addPiece(k, i, at) { const m = T.resource(ctx, k); m.position.copy(at || ctx.mslot(k, i)); m.rotation.y = (Math.random() - .5) * .5; pieceGroup.add(m); const p = { m, k, i }; return p; }
+  RES.forEach(k => ST.occ[k].forEach(i => pieces[k].push(addPiece(k, i))));
+
+  // ---------- plant market board ----------
+  const PM = { x: -46, z: -14, W: 15, L: 28 };
+  const pmTop = canvasTex(15 * 48, 28 * 48, (x, w, h) => T.drawPlantBoard(x, w, h, P, PM));
+  const pmb = slab(PM.W, PM.L, P.boardDepth ?? .45, .8, new THREE.MeshStandardMaterial({ map: pmTop, roughness: .8 }), sideMat); pmb.position.set(PM.x, 0, PM.z); scene.add(pmb);
+  const CW = 5.6, CD = 3.9;
+  ctx.cslot = i => new THREE.Vector3(PM.x + (i < 4 ? -3.2 : 3.2), .06, PM.z - PM.L / 2 + 4.2 + (i % 4) * 4.5);
+  ctx.deckPos = () => new THREE.Vector3(PM.x, .06, PM.z + PM.L / 2 - 3.6);
+  const cardGeo = new RoundedBoxGeometry(CW, .09, CD, 2, .04);
+  const backTex = canvasTex(400, 280, (x, w, h) => T.drawCardBack(x, w, h, P));
+  function makeCard(n) { const g = new THREE.Group(); const body = new THREE.Mesh(cardGeo, new THREE.MeshStandardMaterial({ color: P.cardEdge || 0xdddddd, roughness: .6 })); body.castShadow = true; body.receiveShadow = true; g.add(body);
+    const face = new THREE.Mesh(new THREE.PlaneGeometry(CW - .1, CD - .1), new THREE.MeshStandardMaterial({ map: canvasTex(400, 280, (x, w, h) => T.drawCard(x, w, h, n, PLANTDATA[n], P)), roughness: .55 })); face.rotation.x = -Math.PI / 2; face.position.y = .047; g.add(face);
+    const back = new THREE.Mesh(new THREE.PlaneGeometry(CW - .1, CD - .1), new THREE.MeshStandardMaterial({ map: backTex, roughness: .55 })); back.rotation.x = Math.PI / 2; back.rotation.z = Math.PI; back.position.y = -.047; g.add(back);
+    g.userData = { card: n }; return g; }
+  const cards = new Map(); const cardGroup = new THREE.Group(); scene.add(cardGroup);
+  const sortedMarket = () => [...ST.market].sort((a, b) => a - b);
+  sortedMarket().forEach((n, i) => { const c = makeCard(n); c.position.copy(ctx.cslot(i)); cardGroup.add(c); cards.set(n, c); });
+  const deckCards = ST.deck.map((n, i) => { const c = makeCard(n); c.position.copy(ctx.deckPos()); c.position.y += i * .1; c.rotation.z = Math.PI; cardGroup.add(c); return c; });
+
+  // ---------- Spielerbereiche: du (groß) + zwei Gegner (kompakt) ----------
+  const BOARDS = ctx.BOARDS = [{ x: -46, z: 24, W: 15, L: 17, cs: .78, big: true }, { x: -46, z: -37, W: 15, L: 9, cs: .6 }, { x: 46, z: -36.5, W: 15, L: 9, cs: .6 }];
+  BOARDS.forEach((B, pl) => { const tex = canvasTex(15 * 48, B.L * 48, (x, w, h) => B.big ? T.drawPlayerBoard(x, w, h, P, B) : T.drawOppBoard(x, w, h, P, pl, ST.players[pl].name)); const s = slab(B.W, B.L, P.boardDepth ?? .45, .8, new THREE.MeshStandardMaterial({ map: tex, roughness: .8 }), sideMat); s.position.set(B.x, 0, B.z); scene.add(s); });
+  ctx.plantSlot = (pl, i) => { const B = BOARDS[pl]; return new THREE.Vector3(B.x - 4.75 + i * 4.75, .06, B.big ? B.z - 3.4 : B.z - .9); };
+  ctx.storeSlot = (pl, pi, j) => { const B = BOARDS[pl], s = ctx.plantSlot(pl, pi); return B.big ? new THREE.Vector3(s.x - 1.05 + (j % 3) * 1.05, .06, B.z - .2 + Math.floor(j / 3) * .95) : new THREE.Vector3(s.x - 1.0 + (j % 3) * 1.0, .06, B.z + 2.05 + Math.floor(j / 3) * .85); };
+  const spinners = []; let spinBoost = 0; const MS = .75;
+  function attachModel(card, n, pl, vis) { if (card.userData.model) { card.remove(card.userData.model); } const m = plantModel(n, PLANTDATA[n][0], pl == null ? null : P.players[pl]); m.scale.setScalar(MS); m.position.set(1.0, .05, -.42); m.visible = vis; card.add(m); card.userData.model = m; m.userData.spinners.forEach(s => spinners.push(s)); return m; }
+  function tintModel(card, pl) { const a = card.userData.model && card.userData.model.userData.accent; if (a) a.material = new THREE.MeshStandardMaterial({ color: P.players[pl], roughness: .6 }); }
+  const hand = ST.players.map((p, pl) => p.plants.map((n, i) => { const c = makeCard(n); c.scale.setScalar(BOARDS[pl].cs); c.position.copy(ctx.plantSlot(pl, i)); cardGroup.add(c); attachModel(c, n, pl, true); return c; }));
+  const stored = ST.players.map(p => { const o = {}; p.plants.forEach(n => o[n] = []); return o; });
+  const pieceScale = pl => BOARDS[pl].big ? 1 : .8;
+  function storePiece(pl, num, k, instant = true) { const pi = ST.players[pl].plants.indexOf(num), j = stored[pl][num].length; const m = T.resource(ctx, k); m.scale.setScalar(pieceScale(pl)); m.position.copy(ctx.storeSlot(pl, pi, j)); pieceGroup.add(m); const p = { m, k, i: -1 }; stored[pl][num].push(p); return p; }
+  (opt.stock || [[0, 10, ['coal', 'coal']], [1, 15, ['coal', 'coal']], [2, 12, ['coal', 'oil']], [2, 14, ['garbage', 'garbage']]]).forEach(([pl, num, ks]) => ks.forEach(k => storePiece(pl, num, k)));
+  function fuelPlant(pl, k) { const pls = ST.players[pl].plants; for (let i = 0; i < pls.length; i++) { const [f, need] = PLANTDATA[pls[i]]; const ok = f === k || (f === 'hybrid' && (k === 'coal' || k === 'oil')); if (ok && stored[pl][pls[i]].length < need * 2) return i; } return -1; }
+  ctx.canStore = (pl, k) => fuelPlant(pl, k) >= 0;
+  // Münzen
+  const coinGroup = new THREE.Group(); scene.add(coinGroup); const coins = [[], [], []];
+  ctx.coinPos = (pl, i) => { const B = BOARDS[pl]; if (B.big) return new THREE.Vector3(B.x - 5.6 + (Math.floor(i / 10) % 6) * 1.5, .06 + (i % 10) * .19, B.z + 5.2); return new THREE.Vector3(B.x + (pl === 1 ? 9.2 : -9.2), .06 + (i % 10) * .19 - .62 + .62, B.z - 3.2 + Math.floor(i / 10) * 1.5); };
+  function syncCoins(pl) { const want = Math.max(0, Math.round(ST.players[pl].money / 5)), L = coins[pl]; while (L.length > want) coinGroup.remove(L.pop()); while (L.length < want) { const c = T.coin(ctx); c.position.copy(ctx.coinPos(pl, L.length)); coinGroup.add(c); L.push(c); } }
+  [0, 1, 2].forEach(syncCoins);
+  ctx.bankPos = () => new THREE.Vector3(MK.x, .2, MK.z + MK.L / 2 + 4);
+  const bank = new THREE.Group(); for (let i = 0; i < 24; i++) { const c = T.coin(ctx); c.position.set((i % 6 - 2.5) * 1.3, Math.floor(i / 6) * .19, 0); bank.add(c); } bank.position.copy(ctx.bankPos()); scene.add(bank);
+
+  // ---------- Preisreiter am Rohstoffmarkt ----------
+  const laneX = k => MK.x - MK.W / 2 + 1.2 + 3.2 * (RES.indexOf(k) + .5);
+  const markers = {};
+  function markerTex(v) { return canvasTex(128, 96, (x) => { x.fillStyle = P.accentCss || P.accent; rr(x, 4, 4, 120, 88, 14); x.fill(); x.fillStyle = '#fff'; x.font = '700 50px ' + (T.font || 'sans-serif'); x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(v + '€', 64, 52); }); }
+  RES.forEach(k => { const g = new THREE.Group(); const body = new THREE.Mesh(new RoundedBoxGeometry(1.15, .22, .86, 2, .06), new THREE.MeshStandardMaterial({ color: P.accent, roughness: .5 })); body.position.y = .11; body.castShadow = true; const top = new THREE.Mesh(new THREE.PlaneGeometry(1.1, .82), new THREE.MeshBasicMaterial({ map: markerTex(0), transparent: true })); top.rotation.x = -Math.PI / 2; top.position.y = .225; const tip = new THREE.Mesh(new THREE.ConeGeometry(.22, .4, 3), body.material); tip.rotation.z = -Math.PI / 2; tip.position.set(.72, .11, 0); g.add(body, top, tip); scene.add(g); markers[k] = { g, top, v: null }; });
+  function markerTarget(k) { const occ = pieces[k].map(p => p.i); const empty = !occ.length; const i = empty ? (k === 'uranium' ? 11 : 23) : Math.min(...occ); return { pos: new THREE.Vector3(laneX(k) - 1.95, .06, ctx.mslot(k, i).z), v: empty ? '–' : PRICE(k, i) }; }
+  ctx.updateMarkers = (instant = false) => { RES.forEach(k => { const M = markers[k], t = markerTarget(k); if (M.v === t.v && !instant) return; const old = M.v; M.v = t.v; M.top.material.map.dispose(); M.top.material.map = markerTex(t.v); if (instant || old === null) { M.g.position.copy(t.pos); return; } const a = M.g.position.clone(); tween(.55, e => { M.g.position.lerpVectors(a, t.pos, e); M.g.position.y = .06 + Math.sin(e * Math.PI) * .9; }, 'back'); if (typeof old === 'number' && typeof t.v === 'number') FX.label((t.v > old ? '+' : '−') + Math.abs(t.v - old) + ' €', t.pos.clone().add(new THREE.Vector3(0, 1.6, 0)), t.v > old ? (P.neg || '#ff8a7a') : (P.pos || '#4caf50'), 1.2, .7); }); };
+
+  // ---------- Städteleiste + Reihenfolge ----------
+  const TR = { x: 0, z: 52, W: 66, L: 6 };
+  const trTop = canvasTex(66 * 32, 6 * 32, (x, w, h) => T.drawTrack(x, w, h, P));
+  const trb = slab(TR.W, TR.L, P.boardDepth ?? .45, .8, new THREE.MeshStandardMaterial({ map: trTop, roughness: .8 }), sideMat); trb.position.set(TR.x, 0, TR.z); scene.add(trb);
+  ctx.trackPos = (n, pl) => new THREE.Vector3(TR.x - TR.W / 2 + 12 + n * 2.55, .1 + pl * .34, TR.z + .6);
+  ctx.orderPos = i => new THREE.Vector3(TR.x - TR.W / 2 + 2.6 + i * 2.7, .1, TR.z + .6);
+  function cityCount(pl) { return Object.values(ST.owners).filter(o => o.includes(pl)).length; }
+  const discs = ST.players.map((p, pl) => { const d = T.disc(ctx, pl); d.position.copy(ctx.trackPos(cityCount(pl), pl)); scene.add(d); return d; });
+  const orderDiscs = ST.order.map((pl, i) => { const d = T.disc(ctx, pl); d.position.copy(ctx.orderPos(i)); d.userData.pl = pl; scene.add(d); return d; });
+
+  // ---------- Modellkatalog (Regal vor dem Tisch) ----------
+  const KIT = { z: 68 }; const kit = new THREE.Group(); scene.add(kit); const kitSpin = [];
+  { const items = [['Kohle 4', 4], ['Öl 7', 7], ['Müll 6', 6], ['Uran 11', 11], ['Wind 13', 13], ['Solar 18', 18], ['Hybrid 5', 5]]; const N = items.length + 3, sp = 8.4, W0 = N * sp;
+    const tex = canvasTex(N * 160, 120, (x, w, h) => { x.fillStyle = P.dark ? '#10304f' : '#f8f7f2'; x.fillRect(0, 0, w, h); x.fillStyle = P.dark ? '#e8f1fb' : '#17283a'; x.font = '600 30px ' + (T.font || 'monospace'); x.textAlign = 'center'; [...items.map(i => i[0]), 'Rohstoffe', 'Lieferwagen', 'Mast + Pflock'].forEach((s, i) => x.fillText(s.toUpperCase(), (i + .5) * 160, 98)); });
+    const shelf = slab(W0, 6.5, .45, .8, new THREE.MeshStandardMaterial({ map: tex, roughness: .8 }), sideMat); shelf.position.set(0, 0, KIT.z); scene.add(shelf);
+    const X = i => -W0 / 2 + (i + .5) * sp;
+    items.forEach(([l, n], i) => { const m = plantModel(n, PLANTDATA[n][0], P.accent); m.scale.setScalar(1.25); const g = new THREE.Group(); g.position.set(X(i), 0, KIT.z - .8); g.add(m); kit.add(g); kitSpin.push(g); m.userData.spinners.forEach(s => spinners.push(s)); });
+    const rg = new THREE.Group(); rg.position.set(X(items.length), 0, KIT.z - .8); RES.forEach((k, i) => { const m = T.resource(ctx, k); m.scale.setScalar(2.4); m.position.set((i % 2 - .5) * 2.6, 0, (Math.floor(i / 2) - .5) * 2.2); rg.add(m); }); kit.add(rg); kitSpin.push(rg);
+    const tg = new THREE.Group(); tg.position.set(X(items.length + 1), 0, KIT.z - .8); const tk = truck(P.accent); tk.scale.setScalar(1.6); tg.add(tk); kit.add(tg); kitSpin.push(tg);
+    const sg = new THREE.Group(); sg.position.set(X(items.length + 2), 0, KIT.z - .8); const st = T.cityBase(ctx, CITY.berlin); st.scale.setScalar(1.6); sg.add(st); [0, 1, 2].forEach(i => { const h = T.house(ctx, i, CITY.berlin, i); h.scale.setScalar(1.6); sg.add(h); }); const pyl = ctx._pyl ? ctx._pyl.clone() : null; if (pyl) { pyl.scale.setScalar(2.2); pyl.position.x = 2.4; sg.add(pyl); } kit.add(sg); kitSpin.push(sg);
+    kit.traverse(o => { if (o.isMesh) o.castShadow = true; }); }
+
+  // ---------- Effekte ----------
+  const glowTex = canvasTex(64, 64, (x) => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.3, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
+  const smokeTex = canvasTex(64, 64, (x) => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(.6, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
+  const FX = ctx.FX = {
+    sprite(col, s = 1, add = true) { const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(col), transparent: true, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending })); m.scale.setScalar(s); fx.add(m); return m; },
+    kill(o) { fx.remove(o); o.material && o.material.dispose && o.material.dispose(); },
+    burst(pos, cols, n = 24, o = {}) { const g = new THREE.Group(); fx.add(g); const parts = []; for (let i = 0; i < n; i++) { const col = Array.isArray(cols) ? cols[i % cols.length] : cols; const m = o.mesh ? o.mesh(col) : new THREE.Mesh(new THREE.BoxGeometry(.12, .12, .12), new THREE.MeshBasicMaterial({ color: col })); m.position.copy(pos); g.add(m); const a = Math.random() * 6.283, s = (o.speed || 4) * (.4 + Math.random()); parts.push({ m, v: new THREE.Vector3(Math.cos(a) * s, (o.up || 4) * (.5 + Math.random()), Math.sin(a) * s), r: new THREE.Vector3(Math.random() * 8, Math.random() * 8, 0) }); }
+      let last = 0; return tween(o.life || 1.1, (e, k) => { const dt = (k - last) * (o.life || 1.1); last = k; parts.forEach(p => { p.v.y -= (o.g ?? 9) * dt; p.m.position.addScaledVector(p.v, dt); if (p.m.position.y < .05) { p.m.position.y = .05; p.v.multiplyScalar(.5); } p.m.rotation.x += p.r.x * dt; p.m.rotation.y += p.r.y * dt; p.m.scale.setScalar(1 - k * .6); }); }, 'lin').then(() => { fx.remove(g); }); },
+    ripple(pos, col, r = 3, dur = 1) { const m = new THREE.Mesh(new THREE.RingGeometry(.8, 1, 48), new THREE.MeshBasicMaterial({ color: col, transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.copy(pos).setY(pos.y + .06); fx.add(m); return tween(dur, (e, k) => { m.scale.setScalar(.3 + r * e); m.material.opacity = 1 - k; }, 'out').then(() => FX.kill(m)); },
+    arc(obj, to, dur = 1, h = 4, ease = 'inout', spin = 0) { const a = obj.position.clone(), r0 = obj.rotation.y; return tween(dur, e => { obj.position.lerpVectors(a, to, e); obj.position.y += Math.sin(e * Math.PI) * h; obj.rotation.y = r0 + spin * e; }, ease); },
+    label(text, pos, col = '#fff', dur = 1.4, size = 1) { const tex = canvasTex(320, 96, (x) => { x.font = '700 54px ' + (T.font || 'sans-serif'); x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineWidth = 10; x.strokeStyle = 'rgba(0,0,0,.65)'; x.strokeText(text, 160, 50); x.fillStyle = col; x.fillText(text, 160, 50); }); const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false })); s.scale.set(4 * size, 1.2 * size, 1); s.position.copy(pos); s.renderOrder = 10; fx.add(s); return tween(dur, (e, k) => { s.position.y = pos.y + e * 1.6; s.material.opacity = k < .75 ? 1 : (1 - k) / .25; }, 'out').then(() => FX.kill(s)); },
+    smoke(at, dur = 2, col = '#d9dde3', n = 18) { const jobs = []; for (let i = 0; i < n; i++) jobs.push(wait(i * dur / n).then(() => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, color: new THREE.Color(col), transparent: true, depthWrite: false, opacity: 0 })); s.position.copy(at); fx.add(s); const dx = (Math.random() - .3) * 1.4, dz = (Math.random() - .5) * .8; return tween(1.8, (e, k) => { s.position.set(at.x + dx * e, at.y + 2.6 * e, at.z + dz * e); s.scale.setScalar(.25 + 1.05 * e); s.material.opacity = .42 * Math.sin(k * Math.PI) ** .7; }, 'out').then(() => FX.kill(s)); })); return Promise.all(jobs); },
+  };
+
+  // ---------- Kamera ----------
+  const VIEWS = ctx.VIEWS = {
+    overview: { t: [0, 0, 7], d: 158, pol: .78, az: 0 }, map: { t: [0, 0, 2], d: 118, pol: .62, az: 0 }, hero: { t: [-6, 0, 4], d: 96, pol: .95, az: .42 },
+    market: { t: [MK.x, 0, MK.z + 2], d: 54, pol: .72, az: -.14 }, plants: { t: [PM.x, 0, PM.z + 1], d: 48, pol: .7, az: .12 }, auction: { t: [PM.x - .6, 2.2, PM.z - 2.4], d: 30, pol: .88, az: .18 },
+    player: { t: [-46, 0, 25], d: 32, pol: .82, az: .1 }, opp1: { t: [-46, 0, -36], d: 28, pol: .8, az: .1 }, opp2: { t: [46, 0, -35.5], d: 28, pol: .8, az: -.1 },
+    track: { t: [0, 0, TR.z - 2], d: 58, pol: .9, az: 0 }, kit: { t: [0, 1.5, KIT.z - 1], d: 52, pol: 1.0, az: 0 },
+    north: { t: [CITY.hamburg.X + 6, 0, CITY.hamburg.Z + 6], d: 40, pol: .78, az: .2 }, east: { t: [CITY.berlin.X - 4, 0, CITY.berlin.Z + 6], d: 44, pol: .8, az: -.15 },
+    west: { t: [CITY.koeln.X + 4, 0, CITY.koeln.Z], d: 46, pol: .8, az: .2 }, south: { t: [CITY.muenchen.X - 6, 0, CITY.muenchen.Z - 6], d: 46, pol: .8, az: -.1 },
+  };
+  const boardView = pl => ['player', 'opp1', 'opp2'][pl];
+  function pose(v, aspect) { const V = typeof v === 'string' ? VIEWS[v] : v; const k = aspect < 1 ? Math.min(2.1, 1 / aspect * .95) : aspect < 1.4 ? 1.15 : 1; const d = V.d * k; const tg = new THREE.Vector3(...V.t); return { tgt: tg, pos: new THREE.Vector3(tg.x + Math.sin(V.az) * Math.sin(V.pol) * d, tg.y + Math.cos(V.pol) * d, tg.z + Math.cos(V.az) * Math.sin(V.pol) * d) }; }
+  ctx.view = (v, dur = 1.1, ease = 'inout') => { const p = pose(v, camera.aspect); if (!dur) { camera.position.copy(p.pos); controls.target.copy(p.tgt); controls.update(); return Promise.resolve(); } const p0 = camera.position.clone(), t0 = controls.target.clone(); controls.enabled = false; return tween(dur, e => { camera.position.lerpVectors(p0, p.pos, e); camera.position.y += Math.sin(e * Math.PI) * p0.distanceTo(p.pos) * .08; controls.target.lerpVectors(t0, p.tgt, e); camera.lookAt(controls.target); }, ease).then(() => { controls.enabled = true; controls.update(); }); };
+  ctx.cityView = (id, d = 16) => ctx.view({ t: [CITY[id].X, 0, CITY[id].Z], d, pol: .9, az: .35 });
+  // Kamera folgt einem Objekt (Karte im Flug, Lieferwagen)
+  ctx.follow = (obj, dur, d = 40, pol = .75, az = .1) => { const off = pose({ t: [0, 0, 0], d, pol, az }, camera.aspect).pos; controls.enabled = false; const p0 = camera.position.clone(), t0 = controls.target.clone(); const tmp = new THREE.Vector3(); return tween(dur, (e, k) => { obj.getWorldPosition(tmp); tmp.y = 0; const b = Math.min(1, k * 3); controls.target.lerpVectors(t0, tmp, b); camera.position.lerpVectors(p0, tmp.clone().add(off), b); camera.lookAt(controls.target); }, 'lin').then(() => { controls.enabled = true; controls.update(); }); };
+  ctx.orbit = (dur, amt = .5) => { const tg = controls.target.clone(), off = camera.position.clone().sub(tg); controls.enabled = false; return tween(dur, e => { const a = amt * e, c = Math.cos(a), s = Math.sin(a); camera.position.set(tg.x + off.x * c + off.z * s, tg.y + off.y, tg.z - off.x * s + off.z * c); camera.lookAt(tg); }, 'inout').then(() => { controls.enabled = true; controls.update(); }); };
+  ctx.phase = (n, t, s) => ctx.emit && ctx.emit('phase', { n, t, s });
+
+  // ---------- Regeln ----------
+  function route(pl, target) {
+    const src = Object.keys(ST.owners).filter(k => ST.owners[k].includes(pl)), dist = {}, prev = {}; MAP.cities.forEach(c => dist[c.id] = Infinity); src.forEach(s => dist[s] = 0); const Q = new Set(Object.keys(dist));
+    while (Q.size) { let u = null, b = Infinity; for (const k of Q) if (dist[k] < b) { b = dist[k]; u = k; } if (u === null) break; Q.delete(u); for (const e of ADJ[u]) { const v = e.a === u ? e.b : e.a, w = ST.lines.some(l => l.e === e.i && l.pl === pl) ? 0 : e.cost; if (dist[u] + w < dist[v]) { dist[v] = dist[u] + w; prev[v] = [u, e]; } } }
+    if (!target) return dist; const path = []; let v = target; while (prev[v]) { const [u, e] = prev[v]; if (!ST.lines.some(l => l.e === e.i && l.pl === pl)) path.unshift({ e, from: u, to: v }); v = u; } return { cost: dist[target], path };
+  }
+  ctx.quote = (id, pl = ME) => { const own = ST.owners[id] || []; if (own.includes(pl)) return { why: 'Schon deine Stadt' }; if (own.length >= ST.step) return { why: `Stufe ${ST.step}: belegt` }; const r = route(pl, id); if (r.cost === Infinity) return { why: 'Keine Verbindung' }; const house = [10, 15, 20][own.length]; return { line: r.cost, house, total: r.cost + house, path: r.path, ok: r.cost + house <= ST.players[pl].money }; };
+  ctx.cheapestCity = pl => { let best = null; MAP.cities.forEach(c => { const q = ctx.quote(c.id, pl); if (q.path && q.path.length && q.ok && (!best || q.total < best.q.total)) best = { id: c.id, q }; }); return best && best.id; };
+  ctx.markReach = (on = true) => { const d = route(ME); MAP.cities.forEach(c => { const own = ST.owners[c.id] || []; const ok = on && !own.includes(ME) && own.length < ST.step && d[c.id] + [10, 15, 20][own.length] <= ST.players[ME].money; cityG[c.id].userData.ring.visible = ok; cityG[c.id].userData.reach = ok; }); };
+  ctx.cheapest = (k, n) => pieces[k].slice().sort((a, b) => a.i - b.i).slice(0, n);
+  ctx.cityCount = cityCount; ctx.cityName = id => CITY[id].name;
+  ctx.capacity = pl => ST.players[pl].plants.reduce((s, n) => s + PLANTDATA[n][2], 0);
+
+  // ---------- Geld ----------
+  ctx.pay = async (pl, amount, to = ctx.bankPos()) => { if (amount <= 0) return; ST.players[pl].money -= amount; const L = coins[pl], n = Math.max(1, Math.min(L.length, Math.round(amount / 5))); const fly = L.splice(Math.max(0, L.length - n), n); FX.label(`−${amount} €`, ctx.coinPos(pl, L.length).add(new THREE.Vector3(0, 1.8, 0)), P.neg || '#ff8a7a'); ctx.emit && ctx.emit('money');
+    await Promise.all(fly.map((c, i) => wait(i * .05).then(() => FX.arc(c, to.clone().add(new THREE.Vector3((Math.random() - .5) * 3, 0, (Math.random() - .5) * 2)), .9, 6, 'inout', 3)).then(() => coinGroup.remove(c)))); syncCoins(pl); };
+  ctx.earn = async (pl, amount) => { ST.players[pl].money += amount; const n = Math.max(1, Math.round(amount / 5)), L = coins[pl], jobs = []; for (let i = 0; i < n; i++) { const c = T.coin(ctx); c.position.copy(ctx.bankPos()); coinGroup.add(c); const to = ctx.coinPos(pl, L.length); L.push(c); jobs.push(wait(i * .05).then(() => FX.arc(c, to, 1.0, 7, 'inout', 4))); } FX.label(`+${amount} €`, ctx.coinPos(pl, 0).add(new THREE.Vector3(0, 2.4, 0)), P.players[pl], 1.6); ctx.emit && ctx.emit('money'); await Promise.all(jobs); syncCoins(pl); };
+
+  // ---------- PHASE 4: Bauen ----------
+  ctx.build = async (id, pl = ME, o = {}) => {
+    const q = ctx.quote(id, pl); if (!q.path) return false; ctx.markReach(false);
+    if (o.camera !== false) { const pts = [id, ...q.path.map(s => s.from)].map(k => CITY[k]); const cx = pts.reduce((s, c) => s + c.X, 0) / pts.length, cz = pts.reduce((s, c) => s + c.Z, 0) / pts.length, ext = Math.max(...pts.map(c => Math.hypot(c.X - cx, c.Z - cz))); await ctx.view({ t: [cx, 0, cz], d: Math.max(26, ext * 3.2), pol: .78, az: .15 }, .9); }
+    ctx.pay(pl, q.total);
+    for (const st of q.path) { const l = { e: st.e.i, pl, from: st.from }; ST.lines.push(l); const lo = addLine(l, false); await T.animLine(ctx, lo, CITY[st.from], CITY[st.to], pl); }
+    const slot = (ST.owners[id] ||= []).length; ST.owners[id].push(pl); const h = placeHouse(id, pl, slot);
+    if (o.camera !== false) await ctx.cityView(id, 15);
+    await T.animHouse(ctx, h, CITY[id], pl, slot);
+    await FX.arc(discs[pl], ctx.trackPos(cityCount(pl), pl), .6, 1.2); ctx.refreshMap(); ctx.emit && ctx.emit('state'); return true;
+  };
+
+  // ---------- PHASE 3: Rohstoffe ----------
+  ctx.buy = async (pl, cart) => {
+    const plan = []; for (const k in cart) { const take = ctx.cheapest(k, cart[k]); for (const p of take) { const pi = fuelPlant(pl, k); if (pi < 0) break; const num = ST.players[pl].plants[pi]; const j = stored[pl][num].length; stored[pl][num].push(p); plan.push({ p, pi, j }); pieces[k].splice(pieces[k].indexOf(p), 1); ST.occ[k] = ST.occ[k].filter(i => i !== p.i); } }
+    const cost = plan.reduce((s, x) => s + PRICE(x.p.k, x.p.i), 0); ctx.pay(pl, cost);
+    await Promise.all(plan.map((x, n) => wait(n * .16).then(async () => { const dest = ctx.storeSlot(pl, x.pi, x.j); const price = PRICE(x.p.k, x.p.i); x.p.i = -1; ctx.updateMarkers(); await T.animBuy(ctx, x.p, dest, price); x.p.m.scale.setScalar(pieceScale(pl)); })));
+    ctx.emit && ctx.emit('state'); return cost;
+  };
+  // Nachschub per Lieferwagen
+  ctx.restock = async (step = ST.step, o = {}) => { const add = REFILL[step], jobs = []; let n = 0; for (const k of RES) { let c = add[k]; const total = k === 'uranium' ? 12 : 24, targets = []; for (let i = total - 1; i >= 0 && c > 0; i--) { if (ST.occ[k].includes(i)) continue; c--; targets.push(i); } if (!targets.length) continue; targets.forEach(i => ST.occ[k].push(i)); const d = n++ * 1.0; jobs.push(wait(d).then(() => deliver(k, targets, o.follow && d === 0))); } await Promise.all(jobs); };
+  async function deliver(k, targets, follow) {
+    const tr = truck(P.accent, k === 'uranium'); tr.rotation.y = Math.PI / 2; const roadX = MK.x + MK.W / 2 + 2.4; const zs = targets.map(i => ctx.mslot(k, i).z), stopZ = zs.reduce((a, b) => a + b, 0) / zs.length, z0 = MK.z + MK.L / 2 + 18, z1 = MK.z - MK.L / 2 - 16;
+    tr.position.set(roadX, 0, z0); scene.add(tr); const cargo = targets.map((i, j) => { const m = T.resource(ctx, k); m.scale.setScalar(.85); m.position.set(-1.2 + (j % 3) * .55, .62, (Math.floor(j / 3) - .3) * .5); tr.add(m); return { m, k, i }; });
+    if (follow) ctx.follow(tr, 1.6, 34, .8, -.35);
+    await tween(1.6, e => { tr.position.z = lerp(z0, stopZ, e); tr.position.y = Math.abs(Math.sin(e * 30)) * .03; }, 'out');
+    await Promise.all(cargo.map((p, j) => wait(j * .13).then(async () => { pieceGroup.attach(p.m); const to = ctx.mslot(k, p.i); await FX.arc(p.m, to, .75, 3.2, 'inout', 3); await tween(.16, kk => p.m.scale.setScalar(.85 + .3 * Math.sin(kk * Math.PI)), 'lin'); p.m.scale.setScalar(1); pieces[k].push(p); ctx.updateMarkers(); })));
+    await wait(.2); await tween(1.4, (e, kk) => { tr.position.z = lerp(stopZ, z1, e); if (kk > .8) tr.scale.setScalar(Math.max(.001, (1 - kk) / .2)); }, 'in'); scene.remove(tr);
+  }
+
+  // ---------- PHASE 2: Kraftwerke ----------
+  ctx.selectCard = n => { cards.forEach((c, m) => { const on = m === n; const y0 = c.position.y, y1 = on ? .8 : .06; tween(.3, e => { c.position.y = lerp(y0, y1, e); }); }); ctx.selected = n; };
+  ctx.auction = async (n, bids, o = {}) => {
+    const c = cards.get(n); if (!c) return; ctx.selected = null; const seat = [-2.9, 0, 2.9];
+    await ctx.view('auction', 1.0);
+    const pod = new THREE.Vector3(PM.x - .6, 3.4, PM.z - 4.2); const from = c.position.clone();
+    const m = attachModel(c, n, null, true); m.scale.setScalar(.001);
+    await tween(.9, e => { c.position.lerpVectors(from, pod, e); c.position.y += Math.sin(e * Math.PI) * 1.2; c.rotation.y = Math.sin(e * Math.PI) * .25; c.scale.setScalar(1 + .25 * e); }, 'inout');
+    await tween(.9, e => m.scale.set(MS, Math.max(.001, MS * e), MS), 'back'); FX.ripple(pod.clone().setY(pod.y + .05), P.accent, 4, .8);
+    const lad = ladder(n); lad.position.set(pod.x - 5.4, 0, pod.z + .8); lad.scale.y = .001; scene.add(lad); const mk = new THREE.Mesh(new RoundedBoxGeometry(1.0, .22, .3, 2, .05), new THREE.MeshStandardMaterial({ color: P.accent })); mk.position.set(lad.position.x, lad.userData.y(n), lad.position.z + .12); lad.add(mk); mk.position.set(0, lad.userData.y(n), .12);
+    await tween(.5, e => lad.scale.y = Math.max(.001, e), 'back');
+    const pads = {}; let last = null;
+    for (const [pl, v] of bids) {
+      if (pads[pl]) { const old = pads[pl]; tween(.3, (e, k) => old.position.y = -2.6 * k, 'in').then(() => scene.remove(old)); }
+      const pd = paddle(P.players[pl], ST.players[pl].name, v); pd.position.set(pod.x + seat[pl] * 1.15, 0, pod.z + 3.8); pd.scale.set(1.25, .001, 1.25); scene.add(pd); pads[pl] = pd;
+      ctx.view({ ...VIEWS.auction, az: VIEWS.auction.az + (pl - 1) * .12 }, .6);
+      await tween(.45, e => pd.scale.y = Math.max(.001, 1.25 * e), 'back');
+      if (v !== null) { last = [pl, v]; const y0 = mk.position.y; await tween(.4, e => mk.position.y = lerp(y0, lad.userData.y(Math.min(v, n + 12)), e), 'out'); FX.label(v + ' €', new THREE.Vector3(lad.position.x, lad.userData.y(Math.min(v, n + 12)) + .8, lad.position.z + .3), P.players[pl], 1, .8); tween(.25, k => c.position.y = pod.y + Math.sin(k * Math.PI) * .35, 'lin'); }
+      else { await tween(.5, e => { pd.rotation.z = (pl === 2 ? -1 : 1) * 1.2 * e; pd.position.y = -.4 * e; }, 'in'); }
+      await wait(.4);
+    }
+    const [winner, price] = last;
+    // Zuschlag
+    const stp = stampMesh(); stp.position.set(pod.x, pod.y + 3, pod.z); stp.scale.setScalar(2.2); fx.add(stp); await tween(.32, e => { stp.position.y = lerp(pod.y + 3, pod.y + .12, e); stp.scale.setScalar(lerp(2.2, 1, e)); }, 'in');
+    FX.ripple(pod.clone(), '#c0392b', 4, .7); tween(.18, k => c.position.y = pod.y - Math.sin(k * Math.PI) * .25, 'lin'); await wait(.6); tween(.4, (e, k) => stp.material.opacity = 1 - k, 'lin').then(() => fx.remove(stp));
+    Object.values(pads).forEach(pd => tween(.4, (e, k) => pd.position.y = -2.6 * k, 'in').then(() => scene.remove(pd))); tween(.4, (e, k) => lad.scale.y = Math.max(.001, 1 - k), 'in').then(() => scene.remove(lad));
+    cards.delete(n); ST.market = ST.market.filter(x => x !== n); tintModel(c, winner);
+    ctx.pay(winner, price);
+    // Platz auf dem Zielbrett, ggf. kleinstes Kraftwerk abreißen
+    let slot = ST.players[winner].plants.length; if (slot >= 3) { const low = Math.min(...ST.players[winner].plants); slot = ST.players[winner].plants.indexOf(low); await ctx.view(boardView(winner), .9); await scrap(winner, low); }
+    ST.players[winner].plants[slot] = n; stored[winner][n] = []; hand[winner][slot] = c;
+    const to = ctx.plantSlot(winner, slot), a = c.position.clone(), s0 = c.scale.x, s1 = BOARDS[winner].cs;
+    ctx.follow(c, 1.7, winner === 0 ? 46 : 42, .72, winner === 2 ? -.2 : .15);
+    await tween(1.7, e => { c.position.lerpVectors(a, to, e); c.position.y += Math.sin(e * Math.PI) * 7; c.rotation.y = Math.sin(e * Math.PI) * -.5; c.scale.setScalar(lerp(s0, s1, e)); }, 'inout'); c.rotation.y = 0;
+    FX.ripple(to.clone(), P.players[winner], 3, .8); FX.burst(to.clone().setY(.5), [P.players[winner], '#ffffff'], 18, { speed: 3, up: 3, life: .8 }); await wait(.4);
+    if (o.refill !== false) await ctx.refill(); ctx.emit && ctx.emit('state'); return winner;
+  };
+  async function scrap(pl, num) { const i = ST.players[pl].plants.indexOf(num), c = hand[pl][i], m = c.userData.model; const pos = new THREE.Vector3(); c.getWorldPosition(pos);
+    FX.label('Abriss', pos.clone().setY(2.5), P.neg || '#ff8a7a', 1.2, .9); if (m) { await tween(.8, (e, k) => { m.scale.y = Math.max(.001, MS * (1 - e)); m.rotation.z = Math.sin(k * 30) * .03 * (1 - k); }, 'in'); FX.burst(pos.clone().setY(.4), ['#cfcabe', '#b9b4a6', '#e9e7df'], 30, { speed: 2.5, up: 2.5, life: 1.2 }); }
+    stored[pl][num].forEach(p => tween(.5, (e, k) => p.m.scale.setScalar(Math.max(.001, 1 - k)), 'in').then(() => pieceGroup.remove(p.m))); delete stored[pl][num];
+    const a = c.position.clone(), to = new THREE.Vector3(pl === 2 ? 70 : -72, -2, a.z); await tween(1.0, (e, k) => { c.position.lerpVectors(a, to, e); c.position.y = a.y + Math.sin(e * Math.PI) * 4 - 2 * e; c.rotation.z = e * 2; }, 'in'); cardGroup.remove(c); }
+  ctx.refill = async (o = {}) => { const top = deckCards.pop(); if (!top) return; const n = ST.deck.pop(); ST.market.push(n); cards.set(n, top); top.userData.card = n; if (o.camera !== false) await ctx.view('plants', .7);
+    const a = top.position.clone(); await tween(.8, e => { top.position.set(a.x + 3.5 * e, a.y + Math.sin(e * Math.PI) * 4 + .1, a.z - 2 * e); top.rotation.z = Math.PI * (1 - e); }, 'inout');
+    const m = attachModel(top, n, null, true); m.scale.setScalar(.001); await tween(.45, e => m.scale.set(MS, Math.max(.001, MS * e), MS), 'back'); await wait(.35); await tween(.3, (e, k) => m.scale.y = Math.max(.001, MS * (1 - k)), 'in'); m.visible = false;
+    const order = sortedMarket(); await Promise.all(order.map((mm, i) => { const c = cards.get(mm), from = c.position.clone(), to = ctx.cslot(i); if (from.distanceTo(to) < .01) return; return tween(.8, e => { c.position.lerpVectors(from, to, e); c.position.y += Math.sin(e * Math.PI) * .9; }, 'inout', i * .05); })); };
+  ctx.cycleHighest = async () => { const hi = sortedMarket().pop(), c = cards.get(hi); cards.delete(hi); ST.market = ST.market.filter(x => x !== hi); ST.deck.unshift(hi); const d = ctx.deckPos(); FX.label('unter den Stapel', c.position.clone().setY(2.4), P.dark ? '#e8f1fb' : '#17283a', 1.2, .8); await tween(.5, e => { c.position.y = lerp(.06, 1.5, e); c.rotation.z = Math.PI * e; }); await FX.arc(c, new THREE.Vector3(d.x, -.02, d.z), .8, 1.5); deckCards.unshift(c); deckCards.forEach((dc, i) => { const y0 = dc.position.y; tween(.4, e => dc.position.y = lerp(y0, .06 + i * .1, e)); }); await ctx.refill({ camera: false }); };
+  ctx.scrapLowestMarket = async () => { const lo = sortedMarket()[0], c = cards.get(lo); cards.delete(lo); ST.market = ST.market.filter(x => x !== lo); FX.label('aus dem Spiel', c.position.clone().setY(2.4), P.neg || '#ff8a7a', 1.2, .8); await tween(.6, (e, k) => { c.position.y = .06 + 2 * e; c.scale.setScalar(Math.max(.001, 1 - k)); c.rotation.y = 4 * e; }, 'in'); FX.burst(c.position.clone(), ['#fffdf2', '#cfcabe'], 30, { speed: 3, up: 2, life: 1, mesh: col => new THREE.Mesh(new THREE.PlaneGeometry(.3, .2), new THREE.MeshBasicMaterial({ color: col, side: THREE.DoubleSide })) }); cardGroup.remove(c); await ctx.refill({ camera: false }); };
+
+  // ---------- PHASE 5: Bürokratie ----------
+  ctx.burnFire = async (pl) => { let cap = 0; const jobs = []; let n = 0; hand[pl].forEach((c, i) => { const num = ST.players[pl].plants[i]; if (num == null || !c) return; const [f, need, pw] = PLANTDATA[num]; const st = stored[pl][num]; if (st.length < need) { const p = new THREE.Vector3(); c.getWorldPosition(p); FX.label('kein Brennstoff', p.setY(2), P.neg || '#ff8a7a', 1.3, .7); return; } cap += pw;
+      const use = st.splice(0, need), model = c.userData.model, wp = new THREE.Vector3(); model.getWorldPosition(wp);
+      jobs.push((async () => { await Promise.all(use.map((p, j) => wait((n + j) * .12).then(async () => { await FX.arc(p.m, wp.clone().setY(.4), .7, 2.2, 'in', 2); const fl = FX.sprite('#ff9a3c', .3); fl.position.copy(wp).setY(.9); tween(.5, (e, k) => fl.scale.setScalar(.3 + 2.2 * Math.sin(k * Math.PI)), 'out').then(() => FX.kill(fl)); pieceGroup.remove(p.m); }))); n += use.length;
+        const ch = model.userData.chimneys.map(v => model.localToWorld(v.clone())); spinBoost = 6; await Promise.all([...ch.map(at => FX.smoke(at, 2.2, P.smoke || '#dfe3ea')), wait(2.2)]); spinBoost = 0; })()); });
+    await Promise.all(jobs); const B = BOARDS[pl]; FX.label(`${cap} Städte Kapazität`, new THREE.Vector3(B.x, 3.2, B.z - (B.big ? 6 : 3)), P.players[pl], 1.6, .9); return cap; };
+  ctx.power = async () => {
+    const seqs = []; ST.players.forEach((p, pl) => { const net = Object.keys(ST.owners).filter(k => ST.owners[k].includes(pl)); if (!net.length) return; const order = [[net[0], null, null]], seen = new Set([net[0]]); for (let i = 0; i < order.length; i++) for (const e of ADJ[order[i][0]]) { const lo = lineObjs.find(o => o.l.e === e.i && o.l.pl === pl); if (!lo) continue; const v = e.a === order[i][0] ? e.b : e.a; if (!seen.has(v)) { seen.add(v); order.push([v, order[i][0], lo]); } } net.forEach(id => { if (!seen.has(id)) { seen.add(id); order.push([id, null, null]); } }); seqs.push({ pl, order }); });
+    await T.animPower(ctx, seqs);
+  };
+  ctx.bureaucracy = async (o = {}) => {
+    ctx.phase(5, 'Bürokratie', 'Verbrennen, Strom liefern, Einkommen, Nachschub');
+    const caps = []; for (const pl of [0, 1, 2]) { await ctx.view(boardView(pl), 1.0); caps[pl] = await ctx.burnFire(pl); }
+    await ctx.view('map', 1.2); await ctx.power();
+    await ctx.view('overview', 1.1); await Promise.all([0, 1, 2].map(pl => wait(pl * .3).then(() => ctx.earn(pl, INCOME[Math.min(cityCount(pl), caps[pl], 10)]))));
+    await ctx.view('market', 1.1); await ctx.restock(ST.step, { follow: false }); await ctx.view('plants', 1); await ctx.cycleHighest(); ctx.emit && ctx.emit('state');
+  };
+  // ---------- PHASE 1: Reihenfolge ----------
+  ctx.reorder = async () => { const ord = [0, 1, 2].sort((a, b) => cityCount(b) - cityCount(a) || Math.max(...ST.players[b].plants) - Math.max(...ST.players[a].plants)); ST.order = ord; await ctx.view('track', 1); await Promise.all(ord.map((pl, i) => { const d = orderDiscs.find(dd => dd.userData.pl === pl); return wait(i * .15).then(() => FX.arc(d, ctx.orderPos(i), .9, 3, 'inout', 3.14)); })); await wait(.3); };
+  ctx.setStep = async s => { ST.step = s; ctx.refreshMap(); ctx.markReach(); ctx.emit && ctx.emit('state'); };
+  // Stufenwechsel als Ereignis
+  ctx.stepEvent = async s => { ctx.phase(0, 'Stufe ' + s, s === 2 ? 'Jede Stadt öffnet einen zweiten Platz' : 'Alle drei Plätze offen, der Markt schrumpft auf sechs'); await ctx.view('map', 1.1); ST.step = s;
+    const ids = MAP.cities.map(c => c.id).sort((a, b) => CITY[a].X - CITY[b].X); await Promise.all(ids.map((id, i) => wait(i * .025).then(() => { const g = cityG[id]; FX.ripple(g.position.clone(), P.accent, 2.6, .8); return tween(.4, (e, k) => g.position.y = Math.sin(k * Math.PI) * .6, 'out'); })));
+    ctx.refreshMap(); await ctx.view('plants', 1); await ctx.scrapLowestMarket(); ctx.markReach(); ctx.emit && ctx.emit('state'); };
+
+  // ---------- Eine komplette Runde mit Regie ----------
+  ctx.round = async () => {
+    ctx.phase(1, 'Spielerreihenfolge', 'Wer die meisten Städte hat, zieht zuerst'); await ctx.view('hero', 1.6); await ctx.reorder();
+    ctx.phase(2, 'Kraftwerke ersteigern', 'Reihum: auswählen, bieten, Zuschlag'); const m1 = sortedMarket()[1]; await ctx.auction(m1, [[1, m1], [0, m1 + 1], [1, m1 + 3], [0, null]]);
+    const m2 = sortedMarket().slice(0, 4).find(x => PLANTDATA[x][0] !== 'eco' && x !== m1) || sortedMarket()[0]; await ctx.auction(m2, [[0, m2], [2, m2 + 1], [0, m2 + 4], [2, null]]);
+    ctx.phase(3, 'Rohstoffe kaufen', 'Umgekehrte Reihenfolge, die Preise steigen mit jedem Kauf'); await ctx.view('market', 1.2);
+    for (const [pl, cart] of [[2, { garbage: 2, coal: 1 }], [1, { coal: 3 }], [0, { coal: 2, oil: 2, garbage: 2, uranium: 1 }]]) { const fil = {}; for (const k in cart) if (ctx.canStore(pl, k)) fil[k] = cart[k]; await ctx.view({ ...VIEWS.market, az: VIEWS.market.az + (pl - 1) * .1 }, .6); await ctx.buy(pl, fil); await wait(.4); }
+    ctx.phase(4, 'Netz bauen', 'Umgekehrte Reihenfolge: Leitung plus Anschluss'); for (const pl of [2, 1, 0]) { const id = ctx.cheapestCity(pl); if (id) await ctx.build(id, pl); }
+    await ctx.bureaucracy(); await ctx.view('overview', 1.4); ctx.phase(-1, 'Runde beendet', 'Nächste Runde beginnt mit neuer Reihenfolge');
+  };
+  ctx.intro = async () => { const hs = []; Object.values(cityG).forEach(g => g.userData.houses.forEach(h => h && hs.push(h))); hs.forEach(h => h.scale.setScalar(.001)); lineObjs.forEach(l => l.set(0)); const models = hand.flat().map(c => c.userData.model).filter(Boolean); models.forEach(m => m.scale.set(MS, .001, MS));
+    await ctx.view({ t: [0, 0, 0], d: 230, pol: .2, az: -.7 }, 0); ctx.phase(0, 'Grid Master 2', 'Grid Plan · ein Netzplanungsmodell'); const cam = ctx.view('hero', 3.6);
+    await wait(1.0); await Promise.all(lineObjs.map((l, i) => wait(i * .1).then(() => tween(.9, e => { l.set(e); if (l.pylons) l.pylons.forEach(p => p.scale.y = Math.max(.001, Math.min(1, (e - p.userData.t) * 6 + 1))); }, 'inout'))));
+    await Promise.all([...hs.map((h, i) => wait(i * .06).then(() => tween(.55, e => h.scale.setScalar(Math.max(.001, e)), 'spring'))), ...models.map((m, i) => wait(.3 + i * .12).then(() => tween(.7, e => m.scale.set(MS, Math.max(.001, MS * e), MS), 'back')))]); await cam; ctx.updateMarkers(true); };
+  ctx.updateMarkers(true);
+  Object.assign(ctx, { hand, stored, coins, spinners, kitSpin, markers, boardView, syncCoins, getSpin: () => spinBoost });
+
+  // ---------- picking ----------
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(); let pd = null;
+  renderer.domElement.addEventListener('pointerdown', e => { pd = { x: e.clientX, y: e.clientY }; });
+  renderer.domElement.addEventListener('pointerup', e => { if (!pd || Math.hypot(e.clientX - pd.x, e.clientY - pd.y) > 8) return; const r = renderer.domElement.getBoundingClientRect(); ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1); ray.setFromCamera(ndc, camera);
+    const hits = ray.intersectObjects([cities, cardGroup], true); for (const h of hits) { let o = h.object; while (o && !o.userData.city && !o.userData.card) o = o.parent; if (!o) continue; if (o.userData.city) { ctx.onCity && ctx.onCity(o.userData.city); return; } if (o.userData.card && cards.get(o.userData.card) === o) { ctx.onCard && ctx.onCard(o.userData.card); return; } } });
+
+  // ---------- render ----------
+  let composer = null;
+  if (P.bloom) { const rt = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: 4 }); composer = new EffectComposer(renderer, rt); composer.addPass(new RenderPass(scene, camera)); composer.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), P.bloom, .5, .9); composer.addPass(composer.bloom); composer.addPass(new OutputPass()); }
+  ctx.resize = (w, h) => { renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h); } };
+  const clock = new THREE.Clock(); let t = 0;
+  ctx.frame = () => { const dt = Math.min(.05, clock.getDelta()); t += dt; stepTweens(dt); T.tick && T.tick(ctx, t, dt); spinners.forEach(s => s.rotation.z += dt * (1.4 + spinBoost)); kitSpin.forEach(g => g.rotation.y += dt * .3); cities.children.forEach(g => { const r = g.userData.ring; if (r && r.visible) { r.material.opacity = .3 + .2 * Math.sin(t * 3); r.scale.setScalar(1 + .04 * Math.sin(t * 3)); } }); if (controls.enabled) controls.update(); if (composer) composer.render(dt); else renderer.render(scene, camera); };
+  ctx.dispose = () => { scene.traverse(o => { o.geometry && o.geometry.dispose(); }); controls.dispose(); };
+  Object.assign(ctx, { cityG, cards, pieces, discs, lineObjs, MK, PM, TR, placeHouse, addPiece, makeCard, route });
+  ctx.view('overview', 0); ctx.markReach();
+  return ctx;
+}
