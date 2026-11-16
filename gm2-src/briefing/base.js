@@ -62,10 +62,10 @@ export function drawPlayerBoard(x, w, h, P, PA, B) {
 export function drawTrack(x, w, h, P, B) {
   const u = 32; x.fillStyle = B.bg; x.fillRect(0, 0, w, h); B.decor && B.decor(x, w, h, 'track');
   txt(x, B.upper ? 'REIHENFOLGE' : 'Reihenfolge', 1.2 * u, 1.3 * u, B.small, B.muted);
-  for (let i = 0; i < 3; i++) { x.fillStyle = B.cell; x.beginPath(); x.arc((2.6 + i * 2.7) * u, 3.6 * u, 1.05 * u, 0, 7); x.fill(); txt(x, String(i + 1), (2.6 + i * 2.7) * u, 5.5 * u, B.small, B.muted, 'center'); }
-  txt(x, B.upper ? 'STÄDTE · EINKOMMEN' : 'Städte · Einkommen', 12 * u - 1.2 * u, 1.3 * u, B.small, B.muted);
-  for (let n = 0; n <= 20; n++) { const cx = (12 + n * 2.55) * u; const hot = n === 7 || n === 17; x.fillStyle = hot ? B.hot || P.accent : B.cell; rr(x, cx - 1.15 * u, 2.4 * u, 2.3 * u, 2.4 * u, 8); x.fill(); txt(x, String(n), cx, 3.95 * u, B.num, hot ? B.hotInk || '#fff' : B.ink, 'center'); txt(x, (INCOME[Math.min(n, 10)] + (n > 10 ? (n - 10) * 5 : 0)) + '', cx, 5.6 * u, B.tiny || B.small, B.muted, 'center'); }
-  txt(x, B.upper ? 'STUFE 2' : 'Stufe 2', (12 + 7 * 2.55) * u, 1.6 * u, B.tiny || B.small, B.hot || P.accent, 'center'); txt(x, B.upper ? 'ENDE' : 'Spielende', (12 + 17 * 2.55) * u, 1.6 * u, B.tiny || B.small, B.hot || P.accent, 'center');
+  for (let i = 0; i < 4; i++) { x.fillStyle = B.cell; x.beginPath(); x.arc((2.6 + i * 2.7) * u, 3.6 * u, 1.05 * u, 0, 7); x.fill(); txt(x, String(i + 1), (2.6 + i * 2.7) * u, 5.5 * u, B.small, B.muted, 'center'); }
+  txt(x, B.upper ? 'STÄDTE · EINKOMMEN' : 'Städte · Einkommen', 12.3 * u, 1.3 * u, B.small, B.muted);
+  for (let n = 0; n <= 20; n++) { const cx = (13.4 + n * 2.45) * u; const hot = n === 7 || n === 17; x.fillStyle = hot ? B.hot || P.accent : B.cell; rr(x, cx - 1.1 * u, 2.4 * u, 2.2 * u, 2.4 * u, 8); x.fill(); txt(x, String(n), cx, 3.95 * u, B.num, hot ? B.hotInk || '#fff' : B.ink, 'center'); txt(x, (INCOME[Math.min(n, 10)] + (n > 10 ? (n - 10) * 5 : 0)) + '', cx, 5.6 * u, B.tiny || B.small, B.muted, 'center'); }
+  txt(x, B.upper ? 'STUFE 2' : 'Stufe 2', (13.4 + 7 * 2.45) * u, 1.6 * u, B.tiny || B.small, B.hot || P.accent, 'center'); txt(x, B.upper ? 'ENDE' : 'Spielende', (13.4 + 17 * 2.45) * u, 1.6 * u, B.tiny || B.small, B.hot || P.accent, 'center');
 }
 export function drawCardBack(x, w, h, P, B) { x.fillStyle = B.back || P.accent; rr(x, 0, 0, w, h, 26); x.fill(); x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 6; rr(x, 16, 16, w - 32, h - 32, 18); x.stroke(); txt(x, B.backText || 'GRID MASTER', w / 2, h / 2 + 12, B.cardTitle || B.title, '#fff', 'center'); }
 export function drawCard(x, w, h, n, [res, need, pow], P, B) {

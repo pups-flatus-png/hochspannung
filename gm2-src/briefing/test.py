@@ -5,7 +5,7 @@ from playwright.async_api import async_playwright
 D = os.path.dirname(os.path.abspath(__file__)); args = [a for a in sys.argv[1:] if not a.startswith('--')]
 ACTS = next((a.split('=')[1].split(',') for a in sys.argv if a.startswith('--acts=')), [])
 DEV = {'iphone-p': (390, 844, 3, True), 'iphone-l': (844, 390, 3, True), 'ipad-l': (1180, 820, 2, True), 'mac': (1440, 900, 1, False), 'small': (1100, 690, 1, False)}
-WHERE = {'bham': 'c9', 'fire': 'c10', 'round': 'c2', 'aucwin': 'c7', 'aucscrap': 'c7', 'auclose': 'c7', 'buyme': 'c8', 'buyopp': 'c8', 'refollow': 'c8', 'bham': 'c9', 'grow': 'c9', 'bureau': 'c10', 'fire': 'c10', 'st2': 'c11', 'intro': 'c0', 'kitorbit': 'c3'}
+WHERE = {'re2': 'c8', 'buyopp': 'c8', 'bham': 'c9', 'fire': 'c10', 'round': 'c2', 'aucwin': 'c7', 'aucscrap': 'c7', 'auclose': 'c7', 'buyme': 'c8', 'buyopp': 'c8', 'refollow': 'c8', 'bham': 'c9', 'grow': 'c9', 'bureau': 'c10', 'fire': 'c10', 'st2': 'c11', 'intro': 'c0', 'kitorbit': 'c3'}
 os.makedirs(os.path.join(D, 'shots'), exist_ok=True)
 CHECK = """() => { const out = []; const bar = document.querySelector('.bar').getBoundingClientRect();
   if (document.documentElement.scrollWidth > innerWidth + 1 || document.querySelector('.book').scrollWidth > innerWidth + 1) out.push('hscroll');
@@ -32,7 +32,7 @@ async def main():
                 await pg.evaluate(f"document.querySelector('#{cid} [data-act={act}]').click()")
                 for k in range(120 if '--long' in sys.argv else 40):
                     await pg.wait_for_timeout(4000 if act == 'round' else 1500)
-                    if (act in ('round', 'aucscrap', 'bureau') and k % 3 == 1) or (act in ('aucwin', 'bham', 'fire', 'refollow')):
+                    if (act in ('round', 'aucscrap', 'bureau') and k % 3 == 1) or (act in ('aucwin', 'bham', 'fire', 'refollow', 're2', 'buyopp')):
                         await pg.screenshot(path=os.path.join(D, 'shots', f'{dev}-act-{act}-{k:02d}.png'))
                         for x in await pg.evaluate(CHECK): lay.add(f'{act}:{x}')
                     if not await pg.evaluate('window.__deck.busy'): break

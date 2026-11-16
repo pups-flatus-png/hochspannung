@@ -142,3 +142,4 @@ td.b{color:var(--ink);font-weight:600;white-space:nowrap}
 .stack .duo{grid-template-columns:1fr}.stack .duo .stage3d{position:relative;top:0;height:min(70svh,760px)}.stack .side .acts{order:-1}
 @media (max-height:500px) and (orientation:landscape){.stack .duo .stage3d{height:calc(100svh - 70px)}}
 .small{font-size:12.5px;margin:0}
+.sr{border-radius:6px;padding:1px 4px;transition:background .3s}.sr.on{background:color-mix(in srgb,var(--pc) 30%,transparent);box-shadow:inset 3px 0 0 var(--pc)}
