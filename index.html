@@ -3835,6 +3835,19 @@ html[data-theme="light"] .hero-map .hm-out{fill:rgba(120,95,50,.035)!important}
 .mcr .logo.mcr-em{--ls:30px}
 .mcr-k{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.mcr-k div{display:flex;flex-direction:column;gap:2px}.mcr-k b{font:800 18px/1 Orbitron,var(--display)}.mcr-k small{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .mcr-n{font-size:12.5px;color:var(--muted)}
+.mcr-rv{font-size:12px;color:var(--fg);display:flex;align-items:center;gap:4px}.mcr-rv .rvm{margin-left:0}.mcr-rv.off{color:var(--muted)}
+.ge-rv{margin:14px auto 0;max-width:620px;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(90deg,color-mix(in srgb,var(--a) 14%,transparent),rgba(12,18,23,.6) 50%,color-mix(in srgb,var(--b) 14%,transparent));display:flex;flex-direction:column;gap:8px;text-align:left;animation:rvin .6s 1.6s both}
+.ge-rv.won{border-color:rgba(242,179,61,.5)}
+@keyframes rvin{from{opacity:0;transform:translateY(10px)}}
+.riv-k{font:700 10.5px/1.2 Barlow,system-ui;letter-spacing:.16em;text-transform:uppercase;color:#f2b33d;display:flex;align-items:center;gap:4px}.riv-k .rvm{margin-left:0}
+.riv-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center}
+.riv-s{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:8px;align-items:center;min-width:0}.riv-s .logo.riv-em{--ls:34px;grid-row:span 2}
+.riv-s b{font:800 14px/1.1 Orbitron,var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.riv-s:first-child b{color:var(--a)}.riv-s:last-child b{color:var(--b)}
+.riv-s small{font-size:11.5px;color:#9fb0bc}
+.riv-vs{font:700 11px/1 Barlow,system-ui;letter-spacing:.12em;text-transform:uppercase;color:#cfd8de;white-space:nowrap}
+.ge-rv q{font-style:italic;font-weight:600;font-size:14px;color:#fff}
+.riv-b{font-size:12.5px;color:#9fb0bc}.riv-b b{color:#ffd36e;font-family:Orbitron,var(--display)}
+@media (max-width:520px){.riv-row{grid-template-columns:minmax(0,1fr)}.riv-vs{justify-self:start}}
 .mcs{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.mcs span{font-size:12.5px;padding:5px 9px;border-radius:9px;border:1px solid var(--line);box-shadow:inset 3px 0 0 var(--mc);color:var(--muted)}.mcs b{color:var(--fg)}
 .vtoast{display:flex;align-items:center;gap:8px;text-align:left}.vtoast small{display:block;font:700 9.5px/1.2 Orbitron,var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--pc)}.vtoast q{font-style:italic;font-weight:600;color:var(--fg)}
 .toast:has(.vtoast){border-color:color-mix(in srgb,var(--pc,#f2b33d) 55%,transparent);animation:vtin .45s cubic-bezier(.3,1.3,.5,1)}
@@ -4717,7 +4730,7 @@ const MAT_BAN=new Set(['oil|log','waste|exp']);
 const MAT_BORDER=new Set(['grid|log','eco|kon','oil|kon','coal|inv']);
 function matDeal(myCo,myMo){const sh=a=>a.slice().sort(()=>Math.random()-.5);const CO=Object.keys(MCOS),MO=Object.keys(MMOS);let best=null;const bal=UI.matBal!==false;
   for(let t=0;t<80;t++){const c=sh(CO),m=sh(MO),map={};let bad=0;const hc=myCo&&MCOS[myCo]?myCo:null,hm=myMo&&MMOS[myMo]?myMo:null;const cs=c.filter(x=>x!==hc),ms=m.filter(x=>x!==hm);
-    S.players.forEach(p=>{const v=p.id===H?{co:hc||cs.shift(),mo:hm||ms.shift()}:{co:cs.shift()||c[p.id%6],mo:ms.shift()||m[p.id%6]};const k=v.co+'|'+v.mo;if(MAT_BAN.has(k))bad+=10;if(bal&&MAT_BORDER.has(k))bad++;map[p.id]=v});
+    S.players.forEach(p=>{const v=p.id===H?{co:hc||cs.shift(),mo:hm||ms.shift()}:{co:cs.shift()||c[p.id%6],mo:ms.shift()||m[p.id%6]};const k=v.co+'|'+v.mo;if(MAT_BAN.has(k))bad+=10;if(bal&&MAT_BORDER.has(k))bad++;map[p.id]=v});{const hv=map[H];if(hv&&!Object.values(map).some(v=>v!==hv&&v.co===MCOS[hv.co].rival))bad+=.5}
     if(!best||bad<best.bad)best={bad,map};if(!bad)break}
   matAssign(best.map);S.matDeal=bal?'balanced':'random';log('Firmen und Strategien: '+S.players.map(p=>p.name+' = '+matName(p)).join(', ')+'.')}
 function matName(p){const m=S&&S.mat&&S.mat[p.id];return m?MCOS[m.co].nm+' · '+moNm(m.mo):''}
@@ -4757,15 +4770,21 @@ function matCardHTML(p){if(!S||!S.mat||!S.mat[p.id])return'';const m=S.mat[p.id]
   const lines=[...Lx.a,...Lx.r,...Lx.b,...Lx.p].map(([t,u])=>`<i class="${u?'u':'d'}">${esc(t)}</i>`).join('');
   return `<div class="mcard" style="--pc:${MCOL[m.co]};--mc:${M.c}">${coEmb(m.co,'mc-em')}<div class="mc-t"><b>${esc(C.nm)}</b><small>${esc(moNm(m.mo))}${r?` · <span class="rvm">${RVSVG}</span> ${LX('Rivale','rival')} ${esc(MCOS[S.mat[r.id].co].nm)}`:''}</small><span class="mc-l">${lines}</span>${p.human?`<p class="mc-d"><em>${LX('Gegründet','Founded')} ${C.yr} · ${esc(C.hq)}</em> ${esc(C.story[en])} <q>${esc(C.motto[en])}</q></p>`:`<p class="mc-w">${esc(C.watch[en])}</p>`}</div></div>`}
 /* Karriere je Firma (Empfehlung 10) – aus den gespeicherten Partien */
+/* Rivalen (Empfehlung 9): Ergebnis am Spielende und Bilanz in der Karriere */
+function rivalEndHTML(rk){if(!S||!S.mat||!S.mat[H])return'';const r=rivalOf(H);if(!r)return'';const me_=P(H),mc=S.mat[H].co,rc=S.mat[r.id].co,en=LANG==='en'?1:0,won=rk.indexOf(H)<rk.indexOf(r.id),pw=x=>x.lastPowered||0;
+  const rec=rivalRecord(mc,rc),w=rec.w+(won?1:0),l=rec.l+(won?0:1);
+  return `<div class="ge-rv${won?' won':''}" style="--a:${MCOL[mc]};--b:${MCOL[rc]}"><span class="riv-k"><span class="rvm">${RVSVG}</span> ${LX('Rivalen','Rivals')}</span><div class="riv-row"><span class="riv-s">${coEmb(mc,'riv-em')}<b>${esc(MCOS[mc].nm)}</b><small>${LX('Du','You')} · ${pw(me_)} ${LX('versorgt','powered')} · ${LX('Platz','place')} ${rk.indexOf(H)+1}</small></span><span class="riv-vs">${won?LX('schlägt','beats'):LX('verliert gegen','loses to')}</span><span class="riv-s">${coEmb(rc,'riv-em')}<b>${esc(MCOS[rc].nm)}</b><small>${esc(shortName(r.name))} · ${pw(r)} ${LX('versorgt','powered')} · ${LX('Platz','place')} ${rk.indexOf(r.id)+1}</small></span></div><q>${esc((won?MCOS[mc]:MCOS[rc]).voice[en])}</q><span class="riv-b">${LX('Bilanz gegen','Record against')} ${esc(MCOS[rc].nm)}: <b>${w}–${l}</b></span></div>`}
+function rivalRecord(mc,rc){let w=0,l=0;loadHist().forEach(g=>{const m=g.mat&&g.mat.rival,me_=(g.players||[]).find(x=>x.human);if(!m||!me_||!me_.mat||me_.mat.co!==mc||m.co!==rc)return;if(m.beat)w++;else l++});return{w,l}}
 function careerOf(hist){const c={};Object.keys(MCOS).forEach(k=>c[k]={g:0,w:0,best:0});(hist||loadHist()).forEach(g=>{const me_=(g.players||[]).find(x=>x.human);if(!me_||!me_.mat||!c[me_.mat.co])return;const x=c[me_.mat.co];x.g++;if(me_.place===1)x.w++;x.best=Math.max(x.best,me_.cities||0)});return c}
 const starsH=n=>n?`<span class="mstars" aria-label="${n} ${LX('Siege','wins')}">${'★'.repeat(Math.min(n,5))}${n>5?`<em>+${n-5}</em>`:''}</span>`:'';
 function statsCareer(all){const c=careerOf(all),ms={};all.forEach(g=>{const me_=(g.players||[]).find(x=>x.human);if(me_&&me_.mat){const x=ms[me_.mat.mo]=ms[me_.mat.mo]||{g:0,w:0};x.g++;if(me_.place===1)x.w++}});const n=Object.values(c).reduce((a,x)=>a+x.g,0);
   let h=stHead('★','Firmen-Karriere','Company career',LX(`${n} Partien mit Firmen · jeder Sieg ist ein Stern`,`${n} games with companies · every win is a star`));
-  h+=`<div class="mcar">${Object.entries(MCOS).map(([k,C])=>{const x=c[k];return `<div class="mcr${x.g?'':' locked'}" style="--pc:${MCOL[k]}"><div class="mcr-h">${coEmb(k,'mcr-em')}<b>${esc(C.nm)}</b>${starsH(x.w)}</div>${x.g?`<div class="mcr-k"><div><b>${x.g}</b><small>${LX('Partien','games')}</small></div><div><b>${x.w}</b><small>${LX('Siege','wins')}</small></div><div><b>${x.best}</b><small>${LX('beste Städte','best cities')}</small></div></div>`:`<span class="mcr-n">${LX('Noch nicht zugeteilt','Not dealt yet')}</span>`}</div>`}).join('')}</div>`;
+  h+=`<div class="mcar">${Object.entries(MCOS).map(([k,C])=>{const x=c[k];return `<div class="mcr${x.g?'':' locked'}" style="--pc:${MCOL[k]}"><div class="mcr-h">${coEmb(k,'mcr-em')}<b>${esc(C.nm)}</b>${starsH(x.w)}</div>${x.g?`<div class="mcr-k"><div><b>${x.g}</b><small>${LX('Partien','games')}</small></div><div><b>${x.w}</b><small>${LX('Siege','wins')}</small></div><div><b>${x.best}</b><small>${LX('beste Städte','best cities')}</small></div></div>${(()=>{const rr=rivalRecord(k,C.rival);return rr.w+rr.l?`<span class="mcr-rv"><span class="rvm">${RVSVG}</span> ${LX('gegen','vs')} ${esc(MCOS[C.rival].nm)}: <b>${rr.w}–${rr.l}</b></span>`:`<span class="mcr-rv off"><span class="rvm">${RVSVG}</span> ${LX('Rivale','Rival')}: ${esc(MCOS[C.rival].nm)}</span>`})()}`:`<span class="mcr-n">${LX('Noch nicht zugeteilt','Not dealt yet')}</span>`}</div>`}).join('')}</div>`;
   h+=`<div class="mcs">${Object.keys(MMOS).map(k=>{const x=ms[k]||{g:0,w:0};return `<span style="--mc:${MMOS[k].c}"><b>${esc(moNm(k))}</b> ${x.g} · ${x.w} ${LX('Siege','wins')}</span>`}).join('')}</div>`;
   h+=`<p class="hint">${LX('Jede Partie mit Firmen speichert Firma, Strategie, Aufwertungen und Ergebnis. Damit lässt sich die Balance später an echten Partien prüfen.','Every game with companies records company, strategy, upgrades and result, so balance can later be checked against real games.')}</p><button type="button" class="btn" data-act="matExport">${LX('Firmen-Partien exportieren (JSON)','Export company games (JSON)')}</button>`;return h}
 function matExport(){const rows=loadHist().filter(g=>(g.players||[]).some(x=>x.mat)).map(g=>({v:APPV,date:g.date,map:g.map,n:g.n,diff:g.diff,rounds:g.rounds,deal:g.mat&&g.mat.deal,seats:g.players.map(x=>({co:x.mat&&x.mat.co,mo:x.mat&&x.mat.mo,up:x.mat&&x.mat.up,human:x.human,cities:x.cities,powered:x.powered,place:x.place}))}));
-  try{const b=new Blob([JSON.stringify(rows,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='gridmaster-companies.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}catch(_){}}
+  const txt=JSON.stringify(rows,null,1);if(window.claude&&claude.use){claude.use('downloads').then(d=>{if(d)return d.save({filename:'gridmaster-companies.json',data:txt});throw 0}).catch(()=>{});return}
+  try{const b=new Blob([txt],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='gridmaster-companies.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}catch(_){}}
 /* Übergänge: Gründung (Night plate, Empfehlung 8) und Aufwertung zu Stufe 2/3 (Empfehlung 5) */
 function matPlate(co,mo,big){const C=MCOS[co],M=MMOS[mo],en=LANG==='en'?1:0,img=MPLATE[co];
   return `<div class="mplate${big?' big':''}" style="--pc:${MCOL[co]};--mc:${M.c}"><div class="mp-img${img?'':' none'}" style="${img?`background-image:url(${img})`:''}"></div>${img?'<div class="mp-tint"></div>':''}<div class="mp-sky"></div><div class="mp-ttl">${coEmb(co,'mp-big')}<span><b>${esc(C.nm)}</b><small>HQ ${esc(C.hq)} · ${LX('seit','since')} ${C.yr}</small></span></div><div class="mp-band"><small>${LX('Strategie','Strategy')}</small><b>${esc(moNm(mo))}</b><span>${esc(M.t[en?2:0])} · ${esc(M.t[en?3:1])}</span></div></div>`}
@@ -5266,6 +5285,7 @@ function endShow(){document.documentElement.classList.remove('gm-ending');if(!S|
   o.innerHTML=`<div class="ge-in"><div class="ge-k">${LX('Spielende','Game over')} · ${LX('Runde','Round')} ${S.round}</div>${campEndHTML()}${logoNewHTML()}
    <div class="ge-bars n${n}">${bars}</div>
    <div class="ge-win" ${pc(W)}><span class="ge-gm">GRID MASTER</span><span class="ge-wn">${esc(wp.name)}</span><span class="ge-ws">${pow[W]} ${LX('Städte versorgt','cities powered')}${W===H?' · '+LX('Glückwunsch!','Congratulations!'):''}</span>${(()=>{const q=rk.map(P);if(q.length<2||q[0].lastPowered!==q[1].lastPowered)return'';const tied=q.filter(x=>x.lastPowered===q[0].lastPowered);const byMoney=q[0].money!==q[1].money;const rs=tied.map(x=>`<span style="white-space:nowrap">${x.human?LX("Du","You"):esc(shortName(x.name))} ${byMoney?x.money+' €':cityCount(x)+' '+LX('Städte','cities')}</span>`).join(' · ');return `<span class="ge-tie"><b>${LX(`Gleichstand bei ${q[0].lastPowered} versorgten Städten`,`Tie at ${q[0].lastPowered} powered cities`)}</b>${byMoney?LX('Dann entscheidet das meiste Geld','Then the most money wins'):LX('Geld auch gleich – dann entscheiden die meisten Städte','Money tied too – then the most cities win')}: ${rs}</span>`})()}</div>
+   ${rivalEndHTML(rk)}
    ${cards?`<div class="ge-aw">${cards}</div>`:''}
    ${endExtras()}
    <div class="ge-act"><button type="button" class="ge-b2" data-ge="stats">${LX('Statistik','Statistics')}</button><button type="button" class="ge-b1" data-ge="new"><span>${LX('Neues Spiel','New game')}</span><span class="ar">→</span></button></div>
@@ -7205,7 +7225,7 @@ function onGameEnd(){
   if(!S||S.recorded||!S.players.some(p=>p.human))return;
   S.recorded=true;const t=st();
   const rec={v:1,id:Date.now()+'-'+Math.floor(Math.random()*1e4),date:t.start,end:t.end||Date.now(),rounds:S.round,diff:S.ai||'normal',map:S.map||'de',deck:S.deckId||'std',n:S.n,regions:S.regions.slice(),step2:t.step2,step3:t.step3,partial:!!t.partial,
-    mat:S.mat?{deal:S.matDeal||'random',ups:S.matUps||[]}:undefined,players:S.players.map(p=>({mat:S.mat&&S.mat[p.id]?{co:S.mat[p.id].co,mo:S.mat[p.id].mo,up:(S.mat[p.id].up||[]).slice()}:undefined,name:p.name,color:p.color,human:!!p.human,powered:p.lastPowered,cities:p.cities.length,money:p.money,plants:p.plants.slice(),place:S.ranking.indexOf(p.id)+1,...t.pl[p.id]})),
+    mat:S.mat?{deal:S.matDeal||'random',ups:S.matUps||[],rival:(()=>{const r=rivalOf(H);return r?{co:S.mat[r.id].co,beat:S.ranking.indexOf(H)<S.ranking.indexOf(r.id)}:null})()}:undefined,players:S.players.map(p=>({mat:S.mat&&S.mat[p.id]?{co:S.mat[p.id].co,mo:S.mat[p.id].mo,up:(S.mat[p.id].up||[]).slice()}:undefined,name:p.name,color:p.color,human:!!p.human,powered:p.lastPowered,cities:p.cities.length,money:p.money,plants:p.plants.slice(),place:S.ranking.indexOf(p.id)+1,...t.pl[p.id]})),
     series:t.series};
   const unlB=new Set(logoUnlockedSet(true));
   if(S.camp)rec.camp=S.camp;try{campRecord(rec)}catch(_){}
@@ -7759,7 +7779,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v252';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v253';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
