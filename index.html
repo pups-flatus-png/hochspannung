@@ -6164,7 +6164,7 @@ function xpickHTML(mapCard){
 function nmVal(){const i=document.getElementById('nm');return i?i.value:(UI.name||'')}
 const SPHQ='(max-width:700px),(orientation:landscape) and (max-height:520px)';
 function sPhone(){return !!(window.matchMedia&&matchMedia(SPHQ).matches)}
-if(window.matchMedia){const mq=matchMedia(SPHQ);const f=()=>{if(!start.hidden)renderStart(true)};mq.addEventListener?mq.addEventListener('change',f):mq.addListener&&mq.addListener(f)}
+if(window.matchMedia){const f=()=>{if(!start.hidden)renderStart(true)};/* v242: auch beim Drehen des Handys (hoch ↔ quer) neu aufbauen – SPHQ trifft in beiden Lagen zu */[SPHQ,'(orientation:landscape) and (max-height:520px)'].forEach(q=>{const mq=matchMedia(q);mq.addEventListener?mq.addEventListener('change',f):mq.addListener&&mq.addListener(f)})}
 const S3I={
  chev:'<svg class="s3-chev" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5"/></svg>',
  back:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 3.5 5.5 9 11 14.5"/></svg>',
@@ -7465,7 +7465,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v241';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v242';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
