@@ -4177,7 +4177,7 @@ function RSUP(r){const t=(MAPS[S.map]&&MAPS[S.map].market&&MAPS[S.map].market.re
 function nextPrice(r,skip=0){const n=S.resMarket[r]-skip;return n>0?slotPrice(r,CAP[r]-n):null}
 function buyCost(r,k,mk=S.resMarket,p=null){let n=mk[r],c=0;const cap=priceCap();for(let i=0;i<k;i++){if(n<=0)return Infinity;const v=unitPrice(r,CAP[r]-n,p);if(slotPrice(r,CAP[r]-n)>cap)return Infinity;c+=v;n--}return c}
 function supply(r){return TOT[r]-S.resMarket[r]-(S.resNorth?S.resNorth[r]||0:0)-S.players.reduce((s,p)=>s+p.pool[r],0)}
-function caps(p){const c={coal:0,oil:0,garbage:0,uranium:0,hybrid:0,gohybrid:0,any:p.store||0};p.plants.forEach(n=>{const[t]=PLANTS[n];if(FREE(t))return;if(t==='flux')c.any+=STO(n);else c[t]+=STO(n)});return c}
+function caps(p){const c={coal:0,oil:0,garbage:0,uranium:0,hybrid:0,gohybrid:0,any:p.store||0};const fs=(facOf(p)||{}).store;p.plants.forEach(n=>{const[t]=PLANTS[n];if(FREE(t))return;if(t==='flux')c.any+=STO(n);else c[t]+=STO(n)+(fs&&fs[t]?PLANTS[n][1]*(fs[t]-2):0)});return c}
 function canHold(p,pool){const c=caps(p);let ec=Math.max(0,pool.coal-c.coal),eg=Math.max(0,pool.garbage-c.garbage),eo=Math.max(0,pool.oil-c.oil),eu=Math.max(0,pool.uranium-c.uranium);let hy=c.hybrid,gh=c.gohybrid;let x=Math.min(ec,hy);ec-=x;hy-=x;x=Math.min(eg,gh);eg-=x;gh-=x;x=Math.min(eo,hy+gh);eo-=x;return ec+eg+eo+eu<=c.any}
 function clampPool(p){let g=0;while(!canHold(p,p.pool)&&g++<300){const c=caps(p),q=p.pool;const ov=r=>q[r]-c[r];const r=RES.filter(r=>q[r]>0).sort((a,b)=>ov(b)-ov(a))[0];if(!r)break;q[r]--}}
 function regIsland(r){const cx=MAPS[MAPID].cityx||{};const c=CITIES.find(c=>c[2]===r&&cx[c[0]]&&cx[c[0]].isl);return c?cx[c[0]].isl:'_'}
@@ -4421,8 +4421,8 @@ function buildOptions(p){
   for(const c of activeIds()){
     const occ=S.owners[c]||[];
     if(occ.includes(p.id))continue;
-    const cr=cityRule(c);if(occ.length>=cr.max||occ.length>=cr.costs.length)continue;
-    const slot=cr.costs[occ.length];
+    const cr=cityRule(c),ff=facOf(p);if(occ.length>=cr.max+(ff&&ff.early2&&S.step===1?1:0)||occ.length>=cr.costs.length)continue;
+    let slot=cr.costs[occ.length];if(ff){if(ff.slotFirst&&!occ.length)slot=Math.min(slot,ff.slotFirst);if(ff.slot)slot=Math.max(0,slot+ff.slot)}
     let conn=d?d[c]:0,jump=false;
     if(R.japan){
       if(!p.cities.length){if(!starts.has(c))continue}
@@ -4431,15 +4431,16 @@ function buildOptions(p){
     }
     if(R.islands&&p.cities.length&&cr.isl&&!myIsl.has(cr.isl)){if(occ.length)continue;conn=MPx.islandFee||20}
     if(R.australia&&p.cities.length)conn=Math.min(conn,20);
-    {const f=facOf(p);if(f&&f.conn&&isFinite(conn))conn=Math.round(conn*f.conn)}
+    let fre=false;{const f=facOf(p);if(f&&f.conn&&isFinite(conn))conn=Math.round(conn*f.conn);if(f&&f.freeConn&&conn>0&&conn<=f.freeConn&&p.fcR!==S.round){conn=0;fre=true}}
     if(conn===Infinity)continue;
-    out.push({city:c,slot,conn,cost:slot+conn,...(jump?{jump:true}:{})});
+    out.push({city:c,slot,conn,cost:slot+conn,...(jump?{jump:true}:{}),...(fre?{free:true}:{})});
   }
   return out.sort((a,b)=>a.cost-b.cost||(a.jump?1:0)-(b.jump?1:0));
 }
 function doBuild(pid,city){
   const p=P(pid);const o=buildOptions(p).find(x=>x.city===city);
   if(!o||o.cost>p.money)return false;
+  if(o.free)p.fcR=S.round;
   let fxKeys=[];if(o.conn>0&&!o.jump){try{const ln=linkPath(p,city);fxKeys=ln;if(ln.length&&!(MR().islands&&o.conn===(MAPS[S.map].islandFee||20)&&!ln.length))p.links=[...new Set([...(p.links||[]),...ln])]}catch(_){}}
   p.money-=o.cost;p.cities.push(city);{const q=rsum(pid);q.bn=(q.bn||0)+1;q.bc=(q.bc||0)+o.cost}(S.owners[city]??=[]).push(pid);if(o.jump)p.jumpUsed=true;S.builtRound=(S.builtRound||0)+1;S.turnBuilt.push({city,cost:o.cost,slot:o.slot,conn:o.conn,jump:!!o.jump});(UI.fx=UI.fx||[]).push({t:'build',pid,city,keys:fxKeys});
   const sp=st().pl[pid];sp.slot+=o.slot;sp.conn+=o.conn;sp.built.push(city);
@@ -4503,6 +4504,7 @@ function startBureau(){
 function finishBureau(){
   st().series.push({r:S.round,m:S.players.map(p=>p.money),c:S.players.map(p=>p.cities.length),p:S.players.map(p=>p.lastPowered)});
   if(S.umk)[...S.order].reverse().forEach(id=>{const q=P(id);if(!q.human){const d=mineSale(q,true);q.noSell=!!(d&&d.price<=2&&!S.endTriggered)}mineSale(q)});
+  S.players.forEach(q=>{const f=facOf(q);if(!f||!f.refill)return;for(const[r,k]of Object.entries(f.refill)){const cp=caps(q);if((q.pool[r]||0)<cp[r]+cp.any&&supply(r)>=k)q.pool[r]=(q.pool[r]||0)+k}});
   if(S.endTriggered)return endGame();
   if(S.resNorth){const t=MAPS[S.map].north.resupply;['coal','oil','garbage'].forEach(r=>{const add=Math.min(((t[S.n]||t[4])[r]||[0,0,0])[S.step-1],supply(r),CAP_N[r]-S.resNorth[r]);if(add>0)S.resNorth[r]+=add})}
   {const fxa={};RES.forEach(r=>{const add=(r==='uranium'&&S.noUranium)?0:Math.min(RSUP(r),supply(r),CAP[r]-S.resMarket[r]);if(add>0){S.resMarket[r]+=add;fxa[r]=add}});if(Object.keys(fxa).length)(UI.fx=UI.fx||[]).push({t:'refill',add:fxa})}
@@ -4552,7 +4554,31 @@ function facNote(num,bid){const p=me();if(!p||num==null)return'';const m=facPlan
 function facMax(p,num){return Math.floor(p.money/facPlant(p,num))}
 function facTxt(k){const f=FACTIONS[k];if(!f)return['',''];return LANG==='en'?f.e:f.d}
 function facAssign(me_){const pool=FAC_KEYS.slice().sort(()=>Math.random()-.5);S.fac={};const hk=me_&&FACTIONS[me_]?me_:pool[0];S.fac[H]=hk;const rest=pool.filter(k=>k!==hk);S.players.forEach(p=>{if(p.id!==H)S.fac[p.id]=rest.shift()||FAC_KEYS[p.id%FAC_KEYS.length]});log('Firmen mit Fähigkeiten: '+S.players.map(p=>p.name+' = '+FACTIONS[S.fac[p.id]].nm).join(', ')+'.')}
-function facOf(p){return S&&S.fac&&p?FACTIONS[S.fac[p.id]]||null:null}
+/* v249: Firma × Betriebsmodell (Testmodus, Scythe-Prinzip) – S.mat={pid:{co,mo}}; Werte je Stufe zusammengeführt */
+const MCOS={
+  eco:{nm:"EcoStar",a:{"plant": {"eco": 0.94}},b:{"plant": {"eco": 0.92, "fusion": 0.88}},t:[["\u00d6ko-Kraftwerke \u22126 %", "Eco plants \u22126%"],["\u00d6ko \u22128 %, Fusion \u221212 %", "Eco \u22128%, fusion \u221212%"]]},
+  coal:{nm:"Kohle & Stahl",a:{"store": {"coal": 3, "hybrid": 3}},b:{"store": {"coal": 3, "hybrid": 3}, "fuel": {"coal": 0.9}},t:[["Kohle-Kraftwerke speichern das 3-Fache", "Coal plants store 3\u00d7 their need"],["zus\u00e4tzlich Kohle \u221210 %", "plus coal \u221210%"]]},
+  atom:{nm:"Atomix",a:{"plant": {"uranium": 0.88, "mine": 0.88}},b:{"plant": {"uranium": 0.88, "mine": 0.88}, "fuel": {"uranium": 0.9}},t:[["Uran-Kraftwerke \u221212 %", "Uranium plants \u221212%"],["zus\u00e4tzlich Uran \u221210 %", "plus uranium \u221210%"]]},
+  oil:{nm:"Petronord",a:{"fuel": {"oil": 0.92}},b:{"fuel": {"oil": 0.92}, "plant": {"oil": 0.95}},t:[["\u00d6l \u22128 %", "Oil \u22128%"],["zus\u00e4tzlich \u00d6l-Kraftwerke \u22125 %", "plus oil plants \u22125%"]]},
+  grid:{nm:"Netzbau",a:{"conn": 0.9},b:{"conn": 0.9, "freeConn": 3},t:[["Leitungen \u221210 %", "Connections \u221210%"],["zus\u00e4tzlich eine Leitung bis 3 \u20ac pro Runde gratis", "plus one connection up to 3 \u20ac free per round"]]},
+  waste:{nm:"Recycla",a:{"plant": {"garbage": 0.92}},b:{"plant": {"garbage": 0.92}, "refill": {"garbage": 1}},t:[["M\u00fcll-Kraftwerke \u22128 %", "Garbage plants \u22128%"],["zus\u00e4tzlich +1 M\u00fcll gratis pro Runde", "plus 1 free garbage per round"]]}};
+const MMOS={
+  inv:{"nm": "Investor", "m": 50, "plant": {"*": 0.95}, "fuel": {"*": 1.1}, "t": ["Kraftwerke −5 %", "Rohstoffe +10 %", "Plants −5%", "Fuel +10%"]},
+  log:{"nm": "Logistiker", "m": 50, "fuel": {"*": 0.9}, "conn": 1.1, "t": ["Rohstoffe −10 %", "Leitungen +10 %", "Fuel −10%", "Connections +10%"]},
+  exp:{"nm": "Expansion", "m": 50, "conn": 0.85, "slot": 1, "t": ["Leitungen −15 %", "Stadtfelder +1 €", "Connections −15%", "City slots +1 €"]},
+  sw:{"nm": "Stadtwerk", "m": 50, "slotFirst": 9, "plant": {"*": 1.1}, "t": ["erstes Feld 9 €", "Kraftwerke +10 %", "First slot 9 €", "Plants +10%"]},
+  kon:{"nm": "Konzern", "m": 52, "t": ["52 € Startgeld", "keine Hebel", "52 € starting money", "no levers"]},
+  pio:{"nm": "Pionier", "m": 50, "early2": 1, "t": ["zweites Feld schon in Stufe 1", "kein Nachteil", "Second slot in step 1", "no drawback"]}};
+const MTP=['coal','oil','garbage','uranium','eco','fusion','hybrid','gohybrid','mine','flux'],MRS=['coal','oil','garbage','uranium'];
+function matMerge(co,mo,step){const up=Math.max(0,step-1),C=MCOS[co],M=MMOS[mo],L=C?(step>=2?C.b:C.a):{};
+  const soft=v=>v>1?Math.max(1,v-.05*up):v;/* Aufwertung: je Stufe schrumpft der Nachteil des Modells um 5 Punkte */
+  const g=(o,t)=>o?(o[t]??o['*']??1):1;const f={plant:{},fuel:{},conn:1,slot:0};
+  MTP.forEach(t=>{f.plant[t]=g(L.plant,t)*soft(g(M&&M.plant,t))});f.plant['*']=soft(g(M&&M.plant,'*'));
+  MRS.forEach(r=>{f.fuel[r]=g(L.fuel,r)*soft(g(M&&M.fuel,r))});
+  f.conn=(M&&M.conn?soft(M.conn):1)*(L.conn||1);if(M&&M.slot)f.slot=Math.max(0,M.slot-up);if(L.slot)f.slot+=L.slot;
+  if(M&&M.slotFirst)f.slotFirst=M.slotFirst;if(M&&M.early2)f.early2=1;if(L.freeConn)f.freeConn=L.freeConn;if(L.store)f.store=L.store;if(L.refill)f.refill=L.refill;return f}
+function facOf(p){if(!S||!p)return null;if(S.mat){const m=S.mat[p.id];if(!m)return null;const k=m.co+'|'+m.mo+'|'+S.step;UI._mc=UI._mc||{};return UI._mc[k]||(UI._mc[k]=matMerge(m.co,m.mo,S.step))}return S.fac?FACTIONS[S.fac[p.id]]||null:null}
+function matAssign(map){S.mat={};S.fac=null;Object.entries(map).forEach(([pid,v])=>{if(!v)return;S.mat[pid]=v;const q=P(+pid);if(q&&MMOS[v.mo])q.money=MMOS[v.mo].m})}
 function facPlant(p,num){const f=facOf(p);if(!f||!f.plant)return 1;const t=PLANTS[num]?PLANTS[num][0]:'';const g=k=>f.plant[k]??f.plant['*']??1;return t==='hybrid'||t==='gohybrid'?(g('coal')+g(t==='gohybrid'?'garbage':'oil'))/2:g(t)}
 function facCash(p,num){return Math.floor((p.money-aiReserve(p))/facPlant(p,num))}
 /* KI: Kraftwerk ist so viel wert wie vorher; nur relative Vor-/Nachteile gegenüber dem eigenen Durchschnitt verschieben die Wahl. Das Geldlimit rechnet den Aufschlag ein (facCash) */
@@ -7510,7 +7536,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v248';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v249';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
