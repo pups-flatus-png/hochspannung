@@ -3967,6 +3967,47 @@ html[data-theme="light"] .hero-map .hm-out{fill:rgba(120,95,50,.035)!important}
 .mov-c.dc .btn.pri{animation:fin2 .5s 1.25s both}
 @media (max-width:480px){.dc-g{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:6px}.dc-ph0{display:none}.dc-ph{grid-column:1 / -1;padding:6px 2px 0}.dc-none{grid-column:1 / -1;padding:0 2px 4px}.dc-h{min-height:68px;padding:9px 10px}.mov .logo.dc-em{--ls:30px}.dc-h b{white-space:normal;font-size:14px;line-height:1.1}.dc-hi{gap:7px}.dc-t{font-size:12.5px}}
 @media (orientation:landscape) and (max-height:520px){.mov-c.dc{padding:10px 14px;gap:7px;width:min(780px,100%)}.dc-k{display:none}.dc-h{min-height:52px;padding:6px 10px}.mov .logo.dc-em{--ls:30px}.dc-ph{padding:4px 4px 4px 0}.dc-c{padding:4px 6px;flex-direction:row;flex-wrap:wrap}.dc-t{font-size:12px;padding:3px 7px}.dc-g{row-gap:4px}.dc-f{flex-direction:row;align-items:stretch}.dc-rv{flex:1;padding:6px 10px;font-size:12.5px}.mov-c.dc .btn.pri{width:200px;min-height:40px}}
+
+.mov:has(.rx){padding:0;background:#020405}
+.rx{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);grid-template-rows:minmax(0,1fr);align-items:stretch!important;justify-items:stretch!important;background:#030507;color:#e8eef2;font-family:Barlow,system-ui,sans-serif;--E:clamp(78px,19vmin,150px)}
+.rx-stage{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;isolation:isolate;border-right:1px solid rgba(255,255,255,.06)}
+.rx-img{position:absolute;inset:-3%;z-index:-3;background-size:cover;background-position:center;filter:saturate(.12) contrast(1.1);opacity:0;animation:rximg 2.4s 2.5s ease-out forwards,cnkb 14s 2.5s linear both}
+.rx-img.none{filter:none;background:radial-gradient(70% 55% at 50% 60%,color-mix(in srgb,var(--pc) 45%,transparent),transparent 70%)}
+@keyframes rximg{0%{opacity:0}30%{opacity:.5}40%{opacity:.25}100%{opacity:.85}}
+.rx-tint{position:absolute;inset:0;z-index:-2;background:var(--pc);mix-blend-mode:color;opacity:.75}
+.rx-vig{position:absolute;inset:0;z-index:-1;background:radial-gradient(75% 60% at 50% 42%,transparent 25%,rgba(3,5,7,.88) 100%),linear-gradient(180deg,rgba(3,5,7,.4),transparent 30%,transparent 62%,rgba(3,5,7,.95))}
+.rx-cv{position:absolute;inset:0;z-index:2;pointer-events:none}
+.rx-core{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;gap:clamp(6px,1.4vmin,12px);text-align:center;padding:0 12px;margin-top:-6%}
+.rx-emb{position:relative;width:calc(var(--E)*1.7);height:calc(var(--E)*1.7);display:grid;place-items:center}
+.rx .logo.rx-logo{--ls:var(--E);animation:rxlogo 1s 2.35s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes rxlogo{0%{opacity:0;transform:scale(.6);filter:brightness(3) blur(4px)}60%{opacity:1}100%{transform:none;filter:none}}
+.rx-seal{position:absolute;inset:0;width:100%;height:100%;opacity:0;animation:rxseal 1.2s 4.9s ease-out forwards,rxrot 80s 4.9s linear infinite}
+@keyframes rxseal{from{opacity:0;transform:scale(1.25)}to{opacity:1}}
+@keyframes rxrot{to{transform:rotate(360deg)}}
+.rx-nm{margin:0;font:800 clamp(22px,4.6vmin,40px)/1.05 Orbitron,var(--display);letter-spacing:.03em;color:var(--pc);text-shadow:0 0 26px color-mix(in srgb,var(--pc) 55%,transparent);white-space:nowrap}
+.rx-nm span{display:inline-block;animation:cnlet .7s calc(2.8s + var(--i)*.06s) cubic-bezier(.2,.9,.3,1.2) both}
+.rx-sub{font:600 clamp(9px,1.5vmin,11px)/1.4 'IBM Plex Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#c3ccd3;animation:cnfade .7s 3.5s both}
+.rx-sub em{font-style:normal;color:#ffd36e}.rx-sub .mstars{font-size:11px}
+.rx-band{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:12px 16px max(14px,env(safe-area-inset-bottom,0px));background:rgba(3,5,7,.88);border-top:3px solid var(--mc);box-shadow:0 -14px 36px -12px var(--mc);animation:cnband .9s 4.5s cubic-bezier(.2,.8,.2,1) both}
+.rx-band small{display:block;font:600 9px/1.2 'IBM Plex Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--mc)}
+.rx-band b{display:block;font:800 clamp(15px,2.6vmin,20px)/1.15 Orbitron,var(--display);margin-top:3px}
+.rx-m{text-align:right}.rx-m b{color:#ffd36e}
+.rx-info{position:relative;overflow:auto;display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) 20px}
+.rx-in{width:min(640px,100%);display:flex;flex-direction:column;gap:10px}
+.rx-g,.rx-hd{display:grid;grid-template-columns:auto minmax(0,1.15fr) minmax(0,1fr);column-gap:8px;row-gap:6px}
+.rx-hd>span{font:700 10px/1.2 Orbitron,var(--display);letter-spacing:.08em;text-transform:uppercase;padding:0 8px;animation:fin2 .5s 5.9s both}
+.rx .dc-ph,.rx .dc-c,.rx .dc-none{animation-delay:calc(6s + var(--i)*.16s)}
+.rx .dc-rv{animation-delay:6.9s}.rx .rx-go{min-height:48px;font-size:15px;animation:fin2 .5s 7.2s both}
+.rx-skip{all:unset;position:absolute;z-index:5;top:max(12px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));cursor:pointer;font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;padding:9px 12px;border-radius:999px;background:rgba(5,8,10,.6);border:1px solid rgba(255,255,255,.18);color:#cfd8de;animation:cnfade .5s .8s both}
+.rx-skip:focus-visible{outline:2px solid #f2b33d;outline-offset:2px}
+.rx.settled .rx-skip,.rx.done .rx-skip{display:none}
+.rx.done *,.rx.done *::before,.rx.done *::after{animation-delay:0s!important;animation-duration:.01s!important}
+.rx.done .rx-seal{animation:rxrot 80s linear infinite!important;opacity:1}
+.rx.done .rx-img{opacity:.85}
+@media (orientation:portrait){.rx{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(250px,38vh) minmax(0,1fr)}.rx-stage{border-right:0;border-bottom:1px solid rgba(255,255,255,.06)}.rx-core{margin-top:-10%}.rx-info{align-items:flex-start}}
+@media (orientation:portrait) and (max-width:480px){.rx{--E:clamp(64px,17vmin,96px)}.rx-g,.rx-hd{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:6px}.rx-g .dc-ph{grid-column:1 / -1;padding:6px 2px 0}.rx-g .dc-none{grid-column:1 / -1;padding:0 2px 4px}.rx-hd>span:first-child{display:none}.rx .dc-t{font-size:12.5px}}
+@media (orientation:landscape) and (max-height:520px){.rx{--E:clamp(56px,17vmin,80px)}.rx-core{margin-top:-14%;gap:4px}.rx-band{padding:7px 12px max(8px,env(safe-area-inset-bottom,0px))}.rx-info{padding-top:10px;padding-bottom:10px}.rx-in{gap:6px}.rx .dc-c{padding:4px 6px;flex-direction:row;flex-wrap:wrap}.rx .dc-t{font-size:12px;padding:3px 7px}.rx .dc-ph{padding:4px 4px 4px 0}.rx-g{row-gap:4px}.rx .dc-rv{padding:6px 10px;font-size:12.5px}.rx .rx-go{min-height:40px}}
+@media (prefers-reduced-motion:reduce){.rx *{animation:none!important}.rx-img{opacity:.85}.rx-seal{opacity:1}}
 .mov-c.quick{animation:movin .5s ease both}.mov-c.quick .mp-img,.mov-c.quick .mp-tint,.mov-c.quick .mp-ttl,.mov-c.quick .mp-band,.mov-c.quick .mov-new{animation:none!important}
 
 
@@ -4856,31 +4897,62 @@ function matPlate(co,mo,big){const C=MCOS[co],M=MMOS[mo],en=LANG==='en'?1:0,img=
 function matOverlay(){let el=document.getElementById('matov');const p=S&&me();let key='',html='';
   if(S&&S.mat&&S.mat[H]&&S.phase!=='end'&&document.getElementById('start').hidden){
     const m=S.mat[H],C=MCOS[m.co],en=LANG==='en'?1:0;
-    if(S.matReveal&&!UI.cineDone&&!fxOff()){key='cine|'+m.co+m.mo;html=cineHTML();if(!UI.cineT)UI.cineT=setTimeout(()=>{UI.cineT=null;UI.cineDone=true;matOverlay()},10400)}
-    else if(S.matReveal){key='dc|'+m.co+m.mo+LANG;const car=careerOf()[m.co],r=rivalOf(H),M=MMOS[m.mo];
+    if(false){key='cine|'+m.co+m.mo;html=cineHTML();if(!UI.cineT)UI.cineT=setTimeout(()=>{UI.cineT=null;UI.cineDone=true;matOverlay()},10400)}
+    else if(S.matReveal){key='rx|'+m.co+m.mo+LANG;const car=careerOf()[m.co],r=rivalOf(H),M=MMOS[m.mo],C=MCOS[m.co];
       const fl=f=>{const L=matLines(f);return {a:L.a,r:L.r,b:L.b,p:L.p}};const c1=fl(matMerge(m.co,null,1,[])),c2=fl(matMerge(m.co,null,2,[])),mo=fl(matMerge(null,m.mo,1,[]));
       const PHS=[['a',LX('Auktion','Auction'),'M3 13V7l3 2V7l3 2V4h3v9z'],['r',LX('Rohstoffe','Resources'),'M4 11c0-3 2-6 4-8 2 2 4 5 4 8a4 4 0 0 1-8 0z'],['b',LX('Bauen','Build'),'M3 13 8 3l5 10M5 9h6'],['p',LX('Liefern','Power'),'M9 2 4 9h4l-1 5 5-7H8z']];
       const tag=([t,u],st2)=>`<span class="dc-t ${u?'u':'d'}${st2?' s2':''}">${u?'+':'−'} ${esc(t)}${st2?`<small>${LX('ab Stufe 2','from step 2')}</small>`:''}</span>`;
       const rows=PHS.map(([k,nm,d],i)=>{const ca=c1[k],cb=c2[k].filter(x=>!ca.some(y=>y[0]===x[0])),ma=mo[k];const any=ca.length||cb.length||ma.length;
-        return `<div class="dc-r${any?'':' off'}" style="--i:${i}"><span class="dc-ph"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>${nm}</span>${any?`<span class="dc-c">${ca.map(x=>tag(x)).join('')}${cb.map(x=>tag(x,1)).join('')}</span><span class="dc-c">${ma.map(x=>tag(x)).join('')}</span>`:`<span class="dc-none">${LX('keine Änderung','no change')}</span>`}</div>`}).join('');
-      const img=MPLATE[m.co];
-      html=`<div class="mov-c dc" role="dialog" aria-modal="true" aria-labelledby="movh">
-       <span class="dc-k">${LX('Dir wurden zugeteilt','You were dealt')}</span>
-       <div class="dc-g">
-        <span class="dc-ph0"></span>
-        <div class="dc-h co" style="--pc:${MCOL[m.co]}">${img?`<i class="dc-img" style="background-image:url(${img})"></i><i class="dc-tint"></i>`:'<i class="dc-glow"></i>'}<span class="dc-hi">${coEmb(m.co,'dc-em')}<span><small>${LX('Firma','Company')}${car.g?' · '+(starsH(car.w)||car.g+' '+LX('Partien','games')):` · <em>${LX('neu','new')}</em>`}</small><b id="movh">${esc(MCOS[m.co].nm)}</b></span></span></div>
-        <div class="dc-h mo" style="--mc:${M.c}"><span><small>${LX('Strategie','Strategy')}</small><b>${esc(moNm(m.mo))}</b></span><span class="dc-m"><b>${M.m} €</b><small>${LX('Start','start')}</small></span></div>
-        ${rows}
-       </div>
-       <div class="dc-f">${r?`<div class="dc-rv" style="--rc:${MCOL[S.mat[r.id].co]}"><span class="rvm">${RVSVG}</span><span>${LX('Dein Rivale','Your rival')}: <b>${esc(MCOS[S.mat[r.id].co].nm)}</b> · ${esc(shortName(r.name))} · ${esc(moNm(S.mat[r.id].mo))}</span></div>`:`<div class="dc-rv off"><span class="rvm">${RVSVG}</span><span>${LX('Dein Rivale','Your rival')} ${esc(MCOS[MCOS[m.co].rival].nm)} ${LX('spielt nicht mit','is not at the table')}</span></div>`}
-       <button type="button" class="btn pri" data-act="matRevealGo">${LX('Los geht’s','Let’s go')}</button></div></div>`}
+        return `<div class="dc-r${any?'':' off'}" style="--i:${i+1}"><span class="dc-ph"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>${nm}</span>${any?`<span class="dc-c">${ca.map(x=>tag(x)).join('')}${cb.map(x=>tag(x,1)).join('')}</span><span class="dc-c">${ma.map(x=>tag(x)).join('')}</span>`:`<span class="dc-none">${LX('keine Änderung','no change')}</span>`}</div>`}).join('');
+      const img=MPLATE[m.co],sn=(LX('Strategie','Strategy')+' · '+moNm(m.mo)+' · ').toUpperCase();
+      const nm=[...C.nm].map((ch,i)=>`<span style="--i:${i}">${ch===' '?'&nbsp;':esc(ch)}</span>`).join('');
+      html=`<div class="rx${fxOff()?' done':''}" style="--pc:${MCOL[m.co]};--mc:${M.c}" role="dialog" aria-modal="true" aria-labelledby="movh">
+       <div class="rx-stage">${img?`<i class="rx-img" style="background-image:url(${img})"></i><i class="rx-tint"></i>`:'<i class="rx-img none"></i>'}<i class="rx-vig"></i><canvas class="rx-cv" aria-hidden="true"></canvas>
+        <div class="rx-core"><div class="rx-emb">${coEmb(m.co,'rx-logo')}<svg class="rx-seal" viewBox="0 0 200 200" aria-hidden="true"><defs><path id="rxsp" d="M100 100m-86 0a86 86 0 1 1 172 0a86 86 0 1 1-172 0"/></defs><circle cx="100" cy="100" r="96" fill="none" stroke="${M.c}" stroke-width="2" stroke-opacity=".9"/><circle cx="100" cy="100" r="77" fill="none" stroke="${M.c}" stroke-width="1" stroke-opacity=".5" stroke-dasharray="2 5"/><text font-family="IBM Plex Mono,monospace" font-size="10.5" font-weight="600" letter-spacing="2.6" fill="${M.c}"><textPath href="#rxsp">${esc(sn+sn)}</textPath></text></svg></div>
+         <h1 class="rx-nm" id="movh">${nm}</h1><div class="rx-sub">${LX('Firma','Company')} · HQ ${esc(C.hq)}${car.g?' · '+(starsH(car.w)||car.g+' '+LX('Partien','games')):` · <em>${LX('neu','new')}</em>`}</div></div>
+        <div class="rx-band"><span><small>${LX('Strategie','Strategy')}</small><b>${esc(moNm(m.mo))}</b></span><span class="rx-m"><b>${M.m} €</b><small>${LX('Start','start')}</small></span></div></div>
+       <div class="rx-info"><div class="rx-in">
+        <div class="dc-r rx-hd" style="--i:0"><span></span><span style="color:${MCOL[m.co]}">${esc(C.nm)}</span><span style="color:${M.c}">${esc(moNm(m.mo))}</span></div>
+        <div class="rx-g">${rows}</div>
+        ${r?`<div class="dc-rv" style="--rc:${MCOL[S.mat[r.id].co]}"><span class="rvm">${RVSVG}</span><span>${LX('Dein Rivale','Your rival')}: <b>${esc(MCOS[S.mat[r.id].co].nm)}</b> · ${esc(shortName(r.name))} · ${esc(moNm(S.mat[r.id].mo))}</span></div>`:`<div class="dc-rv off"><span class="rvm">${RVSVG}</span><span>${LX('Dein Rivale','Your rival')} ${esc(MCOS[C.rival].nm)} ${LX('spielt nicht mit','is not at the table')}</span></div>`}
+        <button type="button" class="btn pri rx-go" data-act="matRevealGo">${LX('Los geht’s','Let’s go')}</button></div></div>
+       <button type="button" class="rx-skip" data-act="rxSkip">${LX('Überspringen','Skip')}</button></div>`}
     else if(matPending(p)&&!UI.matUpHide&&!S.gate&&!UI.sheet){S.players.forEach(q=>{if(!q.human)facOf(q)});key='up|'+S.step+'|'+(m.up||[]).length;const hm=matHasMalus(m.mo,m.up);
       const opt=(k,t)=>{const[was,now]=matUpDiff(p,k);const dis=k==='m'&&!hm;return `<button type="button" class="mov-o" data-act="matUpPick" data-k="${k}" ${dis?'disabled':''}><small>${k==='m'?LX('Option 1','Option 1'):LX('Option 2','Option 2')}</small><b>${t}</b>${dis?`<span class="mov-l"><span>${LX('Deine Strategie hat keinen Nachteil.','Your strategy has no drawback.')}</span></span>`:`<span class="mov-l">${was.map(x=>`<s>${esc(x)}</s>`).join('')}${now.map(x=>`<span class="gold">→ ${esc(x)}</span>`).join('')}</span>`}</button>`};
       const ups=(S.matUps||[]).filter(u=>u.step===S.step&&u.pid!==H);
       html=`<div class="mov-c up" role="dialog" aria-modal="true" aria-labelledby="movh"><div class="mov-ring">${coEmb(m.co,'mp-ring')}<i></i></div><h2 id="movh">${LX('Stufe','Step')} ${S.step} · ${LX('neue Regeln','new rules')}</h2>${S.step===2?`<p class="mov-u"><b style="color:${MCOL[m.co]}">${esc(C.nm)}</b> ${LX('schaltet frei:','unlocks:')} ${esc(C.t[1][en])}</p>`:''}<p class="mov-u">${LX('Jetzt deine Strategie','Now strengthen your')} <b>${esc(moNm(m.mo))}</b>${LX(' stärken:',' strategy:')}</p><div class="mov-os">${opt('m',LX('Nachteil abschwächen','Ease the drawback'))}${opt('b',LX('Vorteil verstärken','Sharpen the advantage'))}</div>${ups.length?`<div class="mov-ai">${ups.map(u=>{const q=P(u.pid);return `<span style="--pc:${q.color}">${coLogo(logoOf(q),q.color,'mo-lg')}<b>${esc(shortName(q.name))}</b> ${u.k==='m'?LX('hat den Nachteil abgeschwächt','eased the drawback'):LX('hat den Vorteil verstärkt','sharpened the advantage')}</span>`}).join('')}</div>`:''}</div>`}}
   if(!html){if(el)el.remove();return}
   if(!el){el=document.createElement('div');el.id='matov';el.className='mov';document.body.appendChild(el)}
-  if(el.dataset.k!==key){el.dataset.k=key;el.innerHTML=html;const b=el.querySelector('.btn.pri');if(b)try{b.focus({preventScroll:true})}catch(_){}}}
+  if(el.dataset.k!==key){el.dataset.k=key;el.innerHTML=html;const x=el.querySelector('.rx');if(x)rxStart(x);else{const b=el.querySelector('.btn.pri');if(b)try{b.focus({preventScroll:true})}catch(_){}}}}
+/* v256: Gründung als Sequenz – ein Netz aus Teilchen fügt sich zur Firma, dann legt sich die Strategie als Siegel darüber; Endbild = Firmenkarte */
+function rxDone(x){if(x.classList.contains('done'))return;x.classList.add('done');if(x._rx)x._rx.t0=performance.now()-60000;const b=x.querySelector('.rx-go');if(b)try{b.focus({preventScroll:true})}catch(_){}}
+function rxStart(x){const cv=x.querySelector('.rx-cv'),st=x.querySelector('.rx-stage'),lg=x.querySelector('.rx-logo');if(!cv||!st||!lg)return;
+  const pc=getComputedStyle(x).getPropertyValue('--pc').trim(),mc=getComputedStyle(x).getPropertyValue('--mc').trim(),co=S.mat[H].co;
+  const ctx=cv.getContext('2d'),dpr=Math.min(2,devicePixelRatio||1);let W=0,Hh=0,cx=0,cy=0,R=40;
+  const size=()=>{const r=st.getBoundingClientRect(),l=lg.getBoundingClientRect();W=r.width;Hh=r.height;cv.width=W*dpr;cv.height=Hh*dpr;cv.style.width=W+'px';cv.style.height=Hh+'px';ctx.setTransform(dpr,0,0,dpr,0,0);cx=l.left-r.left+l.width/2;cy=l.top-r.top+l.height/2;R=l.width/2};size();
+  const NS='http://www.w3.org/2000/svg',sv=document.createElementNS(NS,'svg'),pa=document.createElementNS(NS,'path');pa.setAttribute('d',shapePath(MSHP[co],0,0,1));sv.appendChild(pa);sv.style.cssText='position:absolute;width:0;height:0;overflow:hidden';document.body.appendChild(sv);
+  const Lp=pa.getTotalLength(),N1=96,out=[];for(let i=0;i<N1;i++){const q=pa.getPointAtLength(Lp*i/N1);out.push([q.x,q.y])}sv.remove();
+  const rnd=(a,b)=>a+Math.random()*(b-a);const A=[];
+  for(let i=0;i<N1+36;i++){const edge=Math.random()<.5;A.push({x:rnd(0,1),y:rnd(0,1),vx:rnd(-.02,.02),vy:rnd(-.02,.02),tx:i<N1?out[i][0]:rnd(-.6,.6),ty:i<N1?out[i][1]:rnd(-.6,.6),gold:Math.random()<.18,s:rnd(.8,1.8)})}
+  const B=[];for(let i=0;i<64;i++){const a=rnd(0,Math.PI*2),d=rnd(.8,1.3);B.push({a0:a,d,ta:i/64*Math.PI*2,s:rnd(.8,1.6)})}
+  const ease=k=>k<0?0:k>1?1:k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+  const o={t0:performance.now()};x._rx=o;let raf=0;addEventListener('resize',size,{passive:true});
+  const frame=now=>{if(!x.isConnected){removeEventListener('resize',size);return}const t=(now-o.t0)/1000;ctx.clearRect(0,0,W,Hh);
+    const P=[];/* Firma: Netz entsteht (0.2–1.8 s), fügt sich zum Emblem (1.8–2.6 s), verglüht (2.6–3.4 s) */
+    const ca=t<.2?t/.2:t<2.6?1:Math.max(0,1-(t-2.6)/.8);
+    if(ca>0){const k=ease((t-1.8)/.8);for(const p of A){if(t<1.8){p.x+=p.vx*.016*3;p.y+=p.vy*.016*3;if(p.x<0||p.x>1)p.vx*=-1;if(p.y<0||p.y>1)p.vy*=-1;p.sx=p.x;p.sy=p.y}
+      const X=(p.sx??p.x)*W,Y=(p.sy??p.y)*Hh,TX=cx+p.tx*R*1.02,TY=cy+p.ty*R*1.02;P.push([X+(TX-X)*k,Y+(TY-Y)*k,p])}
+      ctx.lineWidth=1;for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j+=2){const dx=P[i][0]-P[j][0],dy=P[i][1]-P[j][1],d2=dx*dx+dy*dy,lim=t<1.8?4200:900;if(d2<lim){ctx.strokeStyle=pc;ctx.globalAlpha=ca*(1-d2/lim)*.55;ctx.beginPath();ctx.moveTo(P[i][0],P[i][1]);ctx.lineTo(P[j][0],P[j][1]);ctx.stroke()}}
+      for(const[X,Y,p]of P){ctx.globalAlpha=ca;ctx.fillStyle=p.gold?'#ffd36e':pc;ctx.beginPath();ctx.arc(X,Y,p.s*(1+(t>2.3&&t<2.8?1.2:0)),0,7);ctx.fill()}}
+    /* Strategie: Teilchen kommen von außen und legen sich als Ring um die Firma (4.0–5.2 s), danach kreisen sie */
+    if(t>3.9){const k=ease((t-3.9)/1.2),rr=R*1.62,al=t<4.2?(t-3.9)/.3:t<6?1:Math.max(.35,1-(t-6)/2);
+      const Q=B.map(b=>{const ang=b.ta+(t>5.1?(t-5.1)*.18:0),fx=cx+Math.cos(b.a0)*Math.max(W,Hh)*b.d,fy=cy+Math.sin(b.a0)*Math.max(W,Hh)*b.d,TX=cx+Math.cos(ang)*rr,TY=cy+Math.sin(ang)*rr;return[fx+(TX-fx)*k,fy+(TY-fy)*k,b]});
+      if(k<1){ctx.lineWidth=1;for(let i=0;i<Q.length;i++){const j=(i+1)%Q.length,dx=Q[i][0]-Q[j][0],dy=Q[i][1]-Q[j][1];if(dx*dx+dy*dy<9000){ctx.strokeStyle=mc;ctx.globalAlpha=al*.5;ctx.beginPath();ctx.moveTo(Q[i][0],Q[i][1]);ctx.lineTo(Q[j][0],Q[j][1]);ctx.stroke()}}}
+      for(const[X,Y,b]of Q){ctx.globalAlpha=al;ctx.fillStyle=mc;ctx.beginPath();ctx.arc(X,Y,b.s,0,7);ctx.fill()}}
+    ctx.globalAlpha=1;if(t<20)raf=requestAnimationFrame(frame)};
+  if(x.classList.contains('done')){o.t0=performance.now()-60000;frame(performance.now());const b=x.querySelector('.rx-go');if(b)try{b.focus({preventScroll:true})}catch(_){}return}
+  raf=requestAnimationFrame(frame);setTimeout(()=>{if(x.isConnected&&!x.classList.contains('done')){x.classList.add('settled');const b=x.querySelector('.rx-go');if(b)try{b.focus({preventScroll:true})}catch(_){}}},8200);
+  x.addEventListener('pointerdown',e=>{if(e.target.closest('.rx-go,.rx-skip'))return;if(!x.classList.contains('settled'))rxDone(x)},{once:true})}
 /* Gründung als Film (Stimmung setzen): Nacht-Platte leuchtet auf, Emblem, Name, Motto, Strategie als Fundament, Fähigkeiten, Gegner und Rivale – ca. 10 s, überspringbar */
 function cineHTML(){const m=S.mat[H],C=MCOS[m.co],M=MMOS[m.mo],en=LANG==='en'?1:0,img=MPLATE[m.co],car=careerOf()[m.co],r=rivalOf(H);
   const nm=[...C.nm].map((ch,i)=>`<span style="--i:${i}">${ch===' '?'&nbsp;':esc(ch)}</span>`).join('');
@@ -7871,7 +7943,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v255';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v256';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -8447,6 +8519,7 @@ const A={
   matBalTog:()=>{UI.matBal=UI.matBal===false;try{localStorage.setItem('hochspannung-matbal',UI.matBal?'1':'0')}catch(_){}UI.name=nmVal();renderStart(true);return'skip'},
   matUpOpen:()=>{UI.matUpHide=false},
   matUpPick:b=>{const p=me();matUpgrade(p,b.dataset.k);UI.matUpHide=false;save()},
+  rxSkip:()=>{const x=document.querySelector('.rx');if(x)rxDone(x);return'skip'},
   matCineSkip:()=>{clearTimeout(UI.cineT);UI.cineT=null;UI.cineDone=true},
   matRevealGo:()=>{if(S){S.matReveal=0;save()}},
   matExport:()=>{matExport();return'skip'},
