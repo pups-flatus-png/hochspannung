@@ -3802,6 +3802,10 @@ html[data-theme="light"] .hero-map .hm-out{fill:rgba(120,95,50,.035)!important}
 .mp-op b{color:var(--fg);font-weight:600}
 .facc .n{color:var(--muted)}
 .facg+.s3-k{display:block;margin-top:12px}
+.facl{margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.facl summary{cursor:pointer;font-size:13px;color:var(--muted)}
+.facl .facg{margin-top:10px}
+.facl .facc{cursor:default}
 /* ---- v173: Statistik – einheitliches Typo-System ----
    Werte: Orbitron 800 · Labels: Barlow 600, 10.5px, .14em, versal · Fließtext: Barlow 13px */
 #stats .lbs b,#stats .fuelk b,#stats .kv2 b,#stats .ins b,#stats .lbv b{font-family:'Orbitron',var(--display);font-weight:800;letter-spacing:.01em;font-variant-numeric:tabular-nums}
@@ -4587,7 +4591,7 @@ function matAssign(map){S.mat={};S.fac=null;UI._mc={};Object.entries(map).forEac
 const MAT_BAN=new Set(['oil|log','coal|inv','waste|inv','waste|kon']);
 function matDeal(myCo,myMo){const sh=a=>a.slice().sort(()=>Math.random()-.5);const CO=Object.keys(MCOS),MO=Object.keys(MMOS);let best=null;
   for(let t=0;t<60;t++){const c=sh(CO),m=sh(MO),map={};let bad=0;const hc=myCo&&MCOS[myCo]?myCo:null,hm=myMo&&MMOS[myMo]?myMo:null;const cs=c.filter(x=>x!==hc),ms=m.filter(x=>x!==hm);
-    S.players.forEach(p=>{const v=p.id===H?{co:hc||cs.shift(),mo:hm||ms.shift()}:{co:cs.shift()||c[p.id%6],mo:ms.shift()||m[p.id%6]};if(MAT_BAN.has(v.co+'|'+v.mo)&&!(p.id===H&&hc&&hm))bad++;map[p.id]=v});
+    S.players.forEach(p=>{const v=p.id===H?{co:hc||cs.shift(),mo:hm||ms.shift()}:{co:cs.shift()||c[p.id%6],mo:ms.shift()||m[p.id%6]};if(MAT_BAN.has(v.co+'|'+v.mo))bad++;map[p.id]=v});
     if(!best||bad<best.bad)best={bad,map};if(!bad)break}
   matAssign(best.map);log('Firmen und Betriebsmodelle: '+S.players.map(p=>p.name+' = '+matName(p)).join(', ')+'.')}
 function matName(p){const m=S&&S.mat&&S.mat[p.id];return m?MCOS[m.co].nm+' · '+MMOS[m.mo].nm:''}
@@ -6152,12 +6156,9 @@ function rulesBlock(){
   return h;
 }
 function facSetupHTML(){let h='';const on=!!UI.facOn,en=LANG==='en';
-  h+=`<div class="toggle fac${on?' on':''}"><button type="button" class="swt" role="switch" aria-checked="${on}" data-act="facTog" aria-label="${LX('Firmen mit Fähigkeiten','Companies with abilities')}"><span></span></button><div class="tgt"><b>${LX('Firmen mit Fähigkeiten','Companies with abilities')}</b><span>${on?LX('Jeder Spieler bekommt eine Firma (was sie kann) und ein Betriebsmodell (wie ihr Geld fließt). Gegner bekommen zufällig andere.','Every player gets a company (what it is good at) and an operating model (how its money flows). Opponents get different ones at random.'):LX('Optional: Firma und Betriebsmodell mit Vor- und Nachteilen, wie die Spielertableaus in Scythe.','Optional: company and operating model with advantages and drawbacks, like the player mats in Scythe.')}</span></div></div>`;
-  if(!on)return h;const co=UI.myCo||'rand',mo=UI.myMo||'rand';
-  const card=(act,k,sel,b,l1,l2,l3)=>`<button type="button" class="facc${sel?' on':''}" role="radio" aria-checked="${sel}" data-act="${act}" data-f="${k}"><b>${b}</b>${l1?`<span class="up">${l1}</span>`:''}${l2?`<span class="${l3||'dn'}">${l2}</span>`:''}</button>`;
-  h+=`<span class="s3-k">${LX('Firma · was du kannst','Company · what you are good at')}</span><div class="facg" role="radiogroup">${card('coSel','rand',co==='rand',LX('Zufall','Random'),'',LX('Lass dich überraschen','Surprise me'),'n')}${Object.entries(MCOS).map(([k,c])=>card('coSel',k,co===k,esc(c.nm),c.t[0][en?1:0],LX('Stufe 2: ','Step 2: ')+c.t[1][en?1:0],'n')).join('')}</div>`;
-  h+=`<span class="s3-k">${LX('Betriebsmodell · wie dein Geld fließt','Operating model · how your money flows')}</span><div class="facg" role="radiogroup">${card('moSel','rand',mo==='rand',LX('Zufall','Random'),'',LX('Lass dich überraschen','Surprise me'),'n')}${Object.entries(MMOS).map(([k,m])=>card('moSel',k,mo===k,esc(m.nm),m.t[en?2:0],m.t[en?3:1],(k==='kon'||k==='pio')?'n':'dn')).join('')}</div>`;
-  if(co!=='rand'&&mo!=='rand'&&MAT_BAN.has(co+'|'+mo))h+=`<p class="hint">${LX('Diese Kombination war in den Tests sehr stark. Gegnern wird sie nie zugelost.','This pairing was very strong in testing. Opponents are never dealt it.')}</p>`;
+  h+=`<div class="toggle fac${on?' on':''}"><button type="button" class="swt" role="switch" aria-checked="${on}" data-act="facTog" aria-label="${LX('Firmen mit Fähigkeiten','Companies with abilities')}"><span></span></button><div class="tgt"><b>${LX('Firmen mit Fähigkeiten','Companies with abilities')}</b><span>${on?LX('Zu Spielbeginn wird jedem Spieler zufällig eine Firma und ein Betriebsmodell zugeteilt – auch dir.','At the start, every player is dealt a random company and operating model – you too.'):LX('Optional: Firma und Betriebsmodell mit Vor- und Nachteilen, wie die Spielertableaus in Scythe.','Optional: company and operating model with advantages and drawbacks, like the player mats in Scythe.')}</span></div></div>`;
+  if(!on)return h;
+  h+=`<details class="facl"><summary>${LX('Was zugeteilt werden kann','What can be dealt')} · ${Object.keys(MCOS).length} ${LX('Firmen','companies')} × ${Object.keys(MMOS).length} ${LX('Modelle','models')}</summary><div class="facg">${Object.values(MCOS).map(c=>`<div class="facc"><b>${esc(c.nm)}</b><span class="up">${c.t[0][en?1:0]}</span><span class="n">${LX('Stufe 2: ','Step 2: ')+c.t[1][en?1:0]}</span></div>`).join('')}</div><div class="facg">${Object.entries(MMOS).map(([k,m])=>`<div class="facc"><b>${esc(m.nm)}</b><span class="up">${m.t[en?2:0]}</span><span class="${k==='kon'||k==='pio'?'n':'dn'}">${m.t[en?3:1]}</span></div>`).join('')}</div></details>`;
   return h}
 function uraniumTrapWarn(){
   const d=UI.deck||'std',po=MAPS[UI.map].phaseOut39||(MAPS[UI.map].phaseOutOpt&&UI.deAtom!==false);
@@ -7575,7 +7576,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v250';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v251';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -8208,7 +8209,7 @@ const A={
   tutorial:()=>{const keep={map:UI.map,nAI:UI.nAI,diff:UI.diff,regions:UI.regions,deck:UI.deck,promos:UI.promos};UI.map='de';UI.nAI=2;UI.diff='easy';UI.regions=[];UI.deck='std';UI.promos=[];loadMap('de');BOOT.zoom=false;
     A.start(null);Object.assign(UI,keep);if(S){S.tut={seen:[]};S.players.forEach(p=>{if(!p.human)p.style=null});save()}},
   start:b=>{if(!regionsOk())return'skip';if(BOOT.zoom&&!UI.zooming&&!start.hidden&&!hmReduced()){UI.zooming=1;hmZoomGo(()=>{b&&b.click?b.click():null;UI.zooming=0});return'skip'}UI.name=nmVal().trim();saveName(UI.name);const NM=UI.name||(LANG==='en'?'Your company':'Dein Betrieb');
-  newGame(NM,UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});if(UI.facOn)matDeal(UI.myCo==='rand'?null:UI.myCo,UI.myMo==='rand'?null:UI.myMo);UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';openVeil();renderStart(false);UI.intro=true;showIntro()},
+  newGame(NM,UI.nAI,UI.diff,regionsOk()&&UI.regions.length?UI.regions:null,UI.map||'de',{phaseOut:UI.deAtom!==false,deck:UI.deck||'std',styles:(UI.styles||'mix')!=='off',promos:UI.promos||[],discount:UI.disc==='orig'?'orig':'rech'});if(UI.facOn){matDeal(null,null);UI.matOpen=true}UI.undo=[];UI.prevMoney=null;UI.prevOwners=null;$('#tracker').dataset.k='';UI.vb=null;UI.sel=null;UI.buildSel=null;UI.powerKey='';UI.cartKey='';openVeil();renderStart(false);UI.intro=true;showIntro()},
   cont:()=>{UI.rulesFromStart=false;loadMap(S.map||'de');loadDeck(S.deckKeys||deckKeys('std'));applyPlantOv();applyMapN(S.n);applyGameMods();UI.vb=null;renderStart(false)},
   zin:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.3);return'skip'},
   zout:()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.3);return'skip'},
