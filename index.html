@@ -5197,7 +5197,7 @@ function endGame(){
 }
 
 /* --- KI --- */
-const AI_LV={easy:{mul:.85,res:20,pass:.3,extra:0,stock:false,guard:false,max2:true},normal:{mul:1,res:15,pass:0,extra:0,stock:false,guard:false},hard:{mul:1,res:15,pass:0,extra:0,stock:true,guard:false,endgame:true,startSel:true,premMul:.6,smart:{g:0.4,b:0.8,e:1.2,f:0.8,d:0.4,lo:0.3,hi:1.7,jump:0.25,open:0.2}},expert:{mul:1,res:20,pass:0,extra:0,stock:false,guard:false,endgame:true,startSel:true,premMul:.3,lookW:.25,smart:{g:0.2,b:0.5,e:1,f:0.5,d:0.3,lo:0.3,hi:1.4,jump:0.15,open:0.12}}};
+const AI_LV={easy:{mul:.85,res:20,pass:.3,extra:0,stock:false,guard:false,max2:true,top2:.45},normal:{mul:1,res:15,pass:0,extra:0,stock:false,guard:false,econ:true,endgame:true,stockCheap:true,s2guard:true,top2:.3},hard:{mul:1,res:15,pass:0,extra:0,stock:true,guard:false,endgame:true,startSel:true,premMul:.6,s2guard:true,top2:.25,contW:.6,smart:{g:0.4,b:0.8,e:1.2,f:0.8,d:0.4,lo:0.3,hi:1.7,jump:0.25,open:0.2}},expert:{mul:1,res:20,pass:0,extra:0,stock:false,guard:false,endgame:true,startSel:true,premMul:.3,lookW:.25,s2guard:true,top2:.15,contW:.8,smart:{g:0.2,b:0.5,e:1,f:0.5,d:0.3,lo:0.3,hi:1.4,jump:0.15,open:0.12}}};
 const AI_NAME={easy:'Leicht',normal:'Normal',hard:'Schwer',expert:'Experte'};
 const AI_NOTE={easy:'Baut langsam und lässt sich oft Kraftwerke wegschnappen.',normal:'Solide Grundstrategie, bietet bei Kraftwerken gern zu viel.',hard:'Bietet je nach Lage mutig oder zurückhaltend, deckt sich mit günstigen Rohstoffen ein und plant das Spielende.',expert:'Wägt jedes Gebot nach Bedarf, Spielstand und Konkurrenz ab, spart für den Netzausbau und beendet das Spiel nur, wenn sie dabei gewinnt.'};
 function AIK(p){return (p&&p.ai)||S.ai||'normal'}
@@ -5474,6 +5474,27 @@ function facCost(p,num,bid){return Math.max(1,bid+facPD(p,num))}
 function facCash(p,num){return Math.floor(p.money-aiReserve(p)-facPD(p,num))}
 /* KI: Kraftwerk ist so viel wert wie vorher; nur relative Vor-/Nachteile gegenüber dem eigenen Durchschnitt verschieben die Wahl. Das Geldlimit rechnet den Aufschlag ein (facCash) */
 function facAvg(p){const f=facOf(p);if(!f||!f.pd)return 0;const ts=['coal','oil','garbage','uranium','eco'];return ts.reduce((a,t)=>a+(f.pd[t]??f.pd['*']??0),0)/ts.length}
+/* v279 Phase 5: wirtschaftliche Bewertung – Effizienz, Brennstoff-Vielfalt, harte Gebotsgrenze */
+function fuelRoundCost(p,plants){const mk={...S.resMarket},pool={...p.pool};let cost=0;
+  for(const n of plants){const[t,k]=PLANTS[n];if(FREE(t)||t==='mine')continue;const rs=hybFor(t,p)||[t];let need=k;
+    for(const r of rs){const u=Math.min(pool[r],need);pool[r]-=u;need-=u}
+    for(let i=0;i<need;i++){let br=null,bp=Infinity;for(const r of rs){if(!CAP[r]||mk[r]<=0)continue;const pr=slotPrice(r,CAP[r]-mk[r]);if(pr<bp){bp=pr;br=r}}if(br==null){cost+=15;continue}cost+=bp;mk[br]--}}
+  return cost}
+function plantsAfter(p,num){const hp=heldPlants(p);if(hp.length<3)return[...hp,num];const w=hp.slice().sort((a,b)=>PLANTS[a][2]-PLANTS[b][2]||a-b)[0];return[...hp.filter(x=>x!==w),num]}
+/* Höchstgebot: so viel, dass danach noch eine Runde Brennstoff für alle Kraftwerke und (falls sinnvoll) eine Stadt bezahlbar bleibt */
+function econCap(p,num){const after=plantsAfter(p,num),fuel=fuelRoundCost(p,after);const capA=after.reduce((a,n)=>a+(PLANTS[n][0]==='mine'?0:PLANTS[n][2]),0);
+  let city=0;if(p.cities.length<capA){const o=buildOptions(p)[0];city=o?Math.min(o.cost,30):10}
+  return p.money-fuel-city-(S.round===1?0:2)}
+/* Wert-Anpassung: Städte pro Brennstoff, Vielfalt (nicht alles auf einen knappen Rohstoff), Knappheit am Markt */
+function econAdj(p,num){const[t,k,c]=PLANTS[num];if(t==='mine')return 0;if(FREE(t))return 3;
+  const rs=hybFor(t,p)||[t];let adj=Math.round((c/k-2)*1.5);
+  const mine=plantsAfter(p,num).filter(n=>n!==num).filter(n=>{const q=PLANTS[n][0];const qr=hybFor(q,p)||[q];return !FREE(q)&&qr.some(r=>rs.includes(r))}).length;
+  if(rs.length===1)adj-=mine*2;else adj+=1;
+  const dem=r=>S.players.reduce((a,q)=>a+heldPlants(q).reduce((b,n)=>{const qt=PLANTS[n][0];return b+((hybFor(qt,q)||[qt]).includes(r)?PLANTS[n][1]:0)},0),0);
+  const sc=Math.min(...rs.map(r=>{const av=(S.resMarket[r]||0)+RSUP(r);return av>0?dem(r)/av:9}));if(sc>1)adj-=Math.min(6,Math.round((sc-1)*4));
+  return adj}
+/* Menschliche Abwechslung: meist die beste Option, manchmal die zweitbeste – nur wenn sie fast gleich gut ist */
+function pickTop2(list,p,margin){if(!list.length)return null;list.sort((a,b)=>b.s-a.s);const pr=L(p).top2||0;if(list.length>1&&pr&&!ADV&&list[0].s-list[1].s<=margin&&Math.random()<pr)return list[1].o;return list[0].o}
 function aiPlantValue(p,num){const v=aiPlantValue0(p,num);const d=facPD(p,num),av=facAvg(p);if(v<0||!d&&!av)return v;return Math.max(0,Math.round(v+(av-d)*.8))}
 function aiPlantValue0(p,num){
   if(plantBlocked(p,num))return -1;
@@ -5493,6 +5514,7 @@ function aiPlantValue0(p,num){
     if(S.noUranium){const left=S.resMarket.uranium+p.pool.uranium;v=left>=2*k?Math.round(v*0.45):-1}
     else v=Math.round(v*(S.step===1?0.9:0.75));
   }
+  if(L(p).econ)v+=econAdj(p,num);
   if(L(p).smart&&v>=0){const sc=smartCeiling(p,num);return sc}
   if(v<0)return -1;v=Math.round(v*L(p).mul);if(L(p).over!=null)v=Math.min(v,num+L(p).over+(p.plants.length<3&&S.step===1&&p.plants.length===0?4:0));return v;
 }
@@ -5521,12 +5543,13 @@ function smartCeiling(p,num){
 /* v213: KI erklärt ihre Züge – kurze Gründe pro Runde, im Rundenabschluss sichtbar */
 function why(p,k,de,en){if(!S||p.human)return;S.why=S.why||{};const r=S.why[S.round]=S.why[S.round]||{};const a=r[p.id]=r[p.id]||{};a[k]=[de,en];const ks=Object.keys(S.why);if(ks.length>3)delete S.why[ks[0]]}
 function aiChoose(p){
-  let best=null,bs=-1e9;
+  let best=null,bs=-1e9;const cand=[];
   for(const num of buyable()){
     const v=aiPlantValue(p,num);if(v<0)continue;
-    const maxb=Math.min(v,facCash(p,num));if(maxb<minBid(num))continue;
-    const s=v-minBid(num)+PLANTS[num][2]*3;if(s>bs){bs=s;best=num}
+    let maxb=Math.min(v,facCash(p,num));if(L(p).econ&&S.round>1)maxb=Math.min(maxb,econCap(p,num));if(maxb<minBid(num))continue;
+    const s=v-minBid(num)+PLANTS[num][2]*3;cand.push({o:num,s});if(s>bs){bs=s;best=num}
   }
+  if(cand.length>1){const pk=pickTop2(cand,p,4);if(pk!=null&&pk!==best){best=pk;bs=cand.find(x=>x.o===pk).s}}
   if(S.round>1&&Math.random()<L(p).pass){why(p,'auc','verzichtet diesmal auf ein Kraftwerk und schont ihr Geld.','skips the auction this time to save money.');return doPass(p.id)}
   if(S.round>1){
     const spare=capacity(p)-p.cities.length;
@@ -5541,7 +5564,7 @@ function aiBid(p){
   const a=S.auc;let v=aiPlantValue(p,a.plant);
   /* v174: Leicht/Normal überbieten sich nicht mehr gegenseitig in den Ruin – Aufschlag gedeckelt (Kapazitätsgewinn × 2, max. +8 über Nennwert) */
   if(v>0&&(AIK(p)==='normal'||AIK(p)==='easy')){const g=Math.max(1,capGain(p,a.plant));v=Math.min(v,Math.floor(a.plant)+Math.min(8,2+g*2))}
-  let maxb=Math.min(v,facCash(p,a.plant));
+  let maxb=Math.min(v,facCash(p,a.plant));if(L(p).econ&&S.round>1)maxb=Math.min(maxb,Math.max(minBid(a.plant),econCap(p,a.plant)));
   if(L(p).outbid&&P(a.high).human&&v>0)maxb=Math.min(Math.round(v*1.1),facCash(p,a.plant));
   if(L(p).smart&&v>0&&a.high!=null&&P(a.high).human){
     // contest the human: worth paying extra to keep a good plant away, not only its own value
@@ -5638,6 +5661,11 @@ function aiPlan(p){
     if(cost<=limit&&canHold(p,np)){spent+=cost;RES.forEach(r=>buy[r]+=tb[r]);mk=mk2;powered+=c}
     else if(cost===Infinity&&short&&pc>0&&powered<fuelTo&&pc<=p.money-spent-reserve&&canHold(p,np)){spent+=pc;RES.forEach(r=>buy[r]+=tb[r]);mk=mk2}
   }
+  if(L(p).stockCheap&&!L(p).stock){const idx=S.seq.indexOf(p.id),later=S.players.filter(q=>q!==p&&S.seq.indexOf(q.id)>idx);
+    const np={};RES.forEach(r=>np[r]=p.pool[r]+buy[r]);
+    for(const r of RES){if(!CAP[r])continue;const uses=p.plants.some(n=>{const t=PLANTS[n][0];return(hybFor(t,p)||[t]).includes(r)});if(!uses)continue;
+      const comp=later.some(q=>q.plants.some(n=>{const t=PLANTS[n][0];return(hybFor(t,q)||[t]).includes(r)}));const lim=comp?3:2,keep=comp?35:45;let g=0;
+      while(g++<4&&mk[r]>0){const pr=slotPrice(r,CAP[r]-mk[r]);if(pr>Math.min(lim,priceCap())||p.money-spent-pr<keep)break;np[r]++;if(!canHold(p,np)){np[r]--;break}spent+=pr;buy[r]++;mk[r]--}}}
   if(L(p).stock){
     const np={};RES.forEach(r=>np[r]=p.pool[r]+buy[r]);
     for(const r of RES){let g=0;while(g++<6&&mk[r]>0){const pr=slotPrice(r,CAP[r]-mk[r]);if(pr>Math.min(3,priceCap())||p.money-spent-pr<55)break;np[r]++;if(!canHold(p,np)){np[r]--;break}spent+=pr;buy[r]++;mk[r]--}}
@@ -5699,13 +5727,14 @@ function aiPickCity(p,opts){
   const lv=L(p),A=apsp(),cand=opts.filter(x=>x.cost<=p.money&&x.cost<=opts[0].cost+(lv.pickSpan??6)).slice(0,8);if(cand.length<2)return null;
   const free=A.act.filter(c=>{const occ=S.owners[c]||[];const cr=cityRule(c);return occ.length<Math.min(cr.max,cr.costs.length)&&occ.length<S.step&&!occ.includes(p.id)});
   const others=S.players.filter(q=>q!==p&&q.cities.length);const od=others.map(q=>q.cities.map(c=>A.ix[c]).filter(j=>j!=null));
-  let best=null,bs=Infinity;
+  let best=null,bs=Infinity;aiPickCity._l=[];
   for(const o of cand){let sc=o.cost;
     if(lv.lookW){const set=[...p.cities,o.city].map(c=>A.ix[c]).filter(j=>j!=null);const dmin=new Float64Array(A.act.length).fill(Infinity);set.forEach(i=>{for(let j=0;j<dmin.length;j++)if(A.D[i][j]<dmin[j])dmin[j]=A.D[i][j]});
       const used=new Set([...p.cities,o.city]);let tot=0;for(let k=0;k<3;k++){let bj=-1,bv=Infinity;for(const c of free){if(used.has(c))continue;const j=A.ix[c];if(dmin[j]<bv){bv=dmin[j];bj=j}}if(bj<0){tot+=40;continue}tot+=bv;used.add(A.act[bj]);for(let j=0;j<dmin.length;j++)if(A.D[bj][j]<dmin[j])dmin[j]=A.D[bj][j]}
       sc+=lv.lookW*tot}
     if(lv.contW&&(S.owners[o.city]||[]).length+1>=S.step){const j=A.ix[o.city];let c=0;od.forEach(js=>{const d=Math.min(...js.map(i=>A.D[i][j]));if(d<=12)c+=1-d/14});sc-=lv.contW*c}
-    if(sc<bs){bs=sc;best=o}}
+    if(sc<bs){bs=sc;best=o}(aiPickCity._l||(aiPickCity._l=[])).push({o,s:-sc})}
+  {const l=aiPickCity._l||[];aiPickCity._l=null;const pk=pickTop2(l,p,1.5);if(pk)best=pk}
   return best}
 function aiBuild(p){
   const lv=L(p);let target=Math.max(capacity(p),1);
@@ -5720,6 +5749,9 @@ function aiBuild(p){
     else if((lv.lookW||lv.contW)&&p.cities.length){const c=aiPickCity(p,opts);if(c)o=c}
     if(lv.block){const hum=S.players.filter(q=>q!==p&&(q.human||q.cities.length>=p.cities.length));const near=c=>hum.some(q=>q.cities.some(x=>(ADJ[x]||[]).some(e=>e.to===c)))?1:0;let bs=-1e9;for(const x of opts.slice(0,5)){if(x.cost>p.money||x.cost>o.cost+3)continue;const sc=-x.cost+3*near(x.city);if(sc>bs){bs=sc;o=x}}}
     if(lv.max2&&S.turnBuilt.length>=2)break;
+    /* v279: Stufe 2 nicht auslösen, wenn die neue Stadt nicht versorgt werden kann – sie öffnet nur allen den zweiten Platz */
+    if(lv.s2guard&&S.step===1&&p.cities.length+1>=STEP2_AT&&maxCities()<STEP2_AT&&fueledCap(p)<p.cities.length+1)break;
+    if(lv.top2&&p.cities.length&&!lv.block&&!(lv.lookW||lv.contW)){const c2=opts.filter(x=>x.cost<=p.money).slice(0,2).map((x,i)=>({o:x,s:-x.cost}));const pk=pickTop2(c2,p,2);if(pk)o=pk}
     if(lv.guard&&p.cities.length+1>=END_AT&&p.money<150){const best=Math.max(...S.players.filter(q=>q!==p).map(q=>capacity(q)));if(capacity(p)<best)break}
     doBuild(p.id,o.city);
   }
@@ -8528,7 +8560,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v278';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v279';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}

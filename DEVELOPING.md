@@ -30,3 +30,8 @@
 - **Build tooltip** `buildTip(city)`: shown on mouse hover and for the selected city on touch, during your own build turn. It reads `buildOptions`/`netPaths` only.
 - **Last opponent move** `lastOpp()`: marks that player's chip with a dot and rings the cities they just built in.
 - **Sound** (`SND`, `sClink`, `sThud`, `sChime`): synthesised with Web Audio, no files. Clinks for bids, spending and payouts; a thud when a house lands; a soft chime when the game waits in ANIMATING. Never plays on the start screen or in tests (`window.__fast`). Menu → Sound on/off (`hochspannung-sound`).
+
+## Computer players (since v279)
+
+- Level flags in `AI_LV`: `econ` (normal) adds `econAdj` (cities per fuel unit, fuel diversity, market scarcity) and a hard bid cap `econCap` (keep one round of fuel and the next city). `stockCheap` (normal) buys 1–3 € fuel with spare cash, more readily when later buyers need the same resource. `s2guard` (normal and up) won't trigger Step 2 with a city it can't power. `endgame` (normal and up) only ends the game when it can win. `top2` picks the second-best plant or city now and then when it is almost as good. `contW` (hard, expert) values contested cities.
+- Strength check: `aisim.py`-style runs with all four levels at one table, 120 games: easy ~8 %, normal ~15 %, hard ~33 %, expert ~45 % wins (before: normal 5 %, below easy).
