@@ -24,3 +24,9 @@
 ## Debug board
 
 `index.html?debug=midgame` opens round 8, step 2, Germany, 4 players with 8/6/8/6 cities, a full plant market, a filled resource market and fuel in every store. It saves under `hochspannung-debug`, so your real game is never touched.
+
+## Feedback and sound (since v277)
+
+- **Build tooltip** `buildTip(city)`: shown on mouse hover and for the selected city on touch, during your own build turn. It reads `buildOptions`/`netPaths` only.
+- **Last opponent move** `lastOpp()`: marks that player's chip with a dot and rings the cities they just built in.
+- **Sound** (`SND`, `sClink`, `sThud`, `sChime`): synthesised with Web Audio, no files. Clinks for bids, spending and payouts; a thud when a house lands; a soft chime when the game waits in ANIMATING. Never plays on the start screen or in tests (`window.__fast`). Menu → Sound on/off (`hochspannung-sound`).
