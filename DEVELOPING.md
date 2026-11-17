@@ -10,3 +10,17 @@
   5. `tests/gate.py` – phase transitions with “Continue” over two rounds.
   Release only when it prints `ALL CHECKS PASSED`.
 - **Grid Master 2:** separate game in `gm2-src/` (see `gm2-src/HANDOVER.md`).
+
+## Engine and state machine (since v275)
+
+- **Rules engine** sits in one section (`ENGINE · v275 Phase 1`). Rule functions only read and write `S`. They never touch the DOM, `UI` or timers. Screen effects (payout coins, refill, build flash, toasts) go out through `emit()` and are applied by `drainEvents()` at the start of `render()`.
+- **One Dijkstra:** `netPaths(p,target)` feeds both build costs (`distFrom`) and the drawn grid lines (`linkPath`).
+- **Validators decide, the screen asks:** `canOpen`, `canRaise`, `canDrop`, `canPass` (no passing in round 1), `canBuy` (stock, money, storage), `canBuildIn`. `doOpen`/`bidRaise`/`bidDrop`/`doPass`/`discardPlant` refuse illegal moves themselves. Human moves go through `cmdBuy` and `cmdPower`.
+- **State machine:** `S.fsm` is one of `PHASE_1_ORDER`, `PHASE_2_SELECT_PLANT`, `PHASE_2_BIDDING`, `PHASE_3_BUY_RESOURCES`, `PHASE_4_BUILD_CITIES`, `PHASE_5_BUREAUCRACY`, `ANIMATING`, `GAME_OVER`. Only `fsmGo()` changes it, against the table `FSM_NEXT`. `fsmDerive()` rebuilds it for older saves. `turnSeq()` gives the order: forward in phases 2 and 5, reverse in 3 and 4.
+- **Input guard:** `inputOK()` drops game moves that do not match the current state, and repeats of the same move within 350 ms. A scheduled computer move is re-checked when its timer fires.
+- **Strict mode:** `window.__strict=true` (set by `tests/rules.py`) makes illegal transitions and refused moves throw, so every simulated game also tests the state machine.
+- **Log entries** carry data in `m` (`{k:'plant'|'buy'|'build'|'pass',…}`). Readers use it and fall back to the German text only for old saves.
+
+## Debug board
+
+`index.html?debug=midgame` opens round 8, step 2, Germany, 4 players with 8/6/8/6 cities, a full plant market, a filled resource market and fuel in every store. It saves under `hochspannung-debug`, so your real game is never touched.

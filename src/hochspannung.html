@@ -4614,7 +4614,7 @@ let S=null;
 const H=0;
 function rnd(n){return Math.floor(Math.random()*n)}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
-function log(t,pid=null){S.log.unshift({t,pid,r:S.round,ph:S.phase});if(S.log.length>120)S.log.length=120}
+function log(t,pid=null,m=null){const e={t,pid,r:S.round,ph:S.phase};if(m)e.m=m;S.log.unshift(e);if(S.log.length>120)S.log.length=120}
 function P(id){return S.players[id]}
 /* --- Kartenregeln der Erweiterungen --- */
 function MR(){return (MAPS[(S&&S.map)||MAPID]||{}).rules||{}}
@@ -4674,6 +4674,54 @@ function regGroups(set){const R=MAPS[MAPID].rules||{};if(R.regionsAny)return set
 function citiesConnected(set){if((MAPS[MAPID].rules||{}).regionsAny)return true;return regGroups(set).every(grp=>{const act=new Set(CITIES.filter(c=>grp.includes(c[2])).map(c=>c[0]));const st=[...act][0],seen=new Set([st]),q=[st];while(q.length){const u=q.shift();for(const{to}of ADJ[u])if(act.has(to)&&!seen.has(to)){seen.add(to);q.push(to)}}return seen.size===act.size})}
 function pickRegions(n){const keys=Object.keys(REGIONS);const must=MAPS[MAPID].mustRegion;let set;for(let tries=0;tries<200;tries++){set=[must&&REGIONS[must]?must:keys[rnd(keys.length)]];const RR=MAPS[MAPID].rules||{};while(set.length<n){let fr=[...new Set(set.flatMap(r=>[...(RADJ[r]||[])]))].filter(r=>!set.includes(r));if(RR.regionsAny)fr=keys.filter(r=>!set.includes(r));else if(RR.islands){const isl=new Set(set.map(regIsland));fr=[...new Set([...fr,...keys.filter(r=>!set.includes(r)&&!isl.has(regIsland(r)))])]}if(!fr.length)break;set.push(fr[rnd(fr.length)])}if(citiesConnected(set))break}return set}
 
+/* =====================================================================
+   ENGINE · v275 Phase 1 – reine Spielregeln. Nichts hier liest oder schreibt
+   DOM, UI oder Timer. Bildschirm-Effekte laufen über emit() → drainEvents().
+   ===================================================================== */
+/* --- Zustandsautomat --- */
+const ST={ORDER:'PHASE_1_ORDER',SELECT:'PHASE_2_SELECT_PLANT',BID:'PHASE_2_BIDDING',BUY:'PHASE_3_BUY_RESOURCES',BUILD:'PHASE_4_BUILD_CITIES',BUREAU:'PHASE_5_BUREAUCRACY',ANIM:'ANIMATING',OVER:'GAME_OVER'};
+const FSM_NEXT={
+  [ST.ORDER]:[ST.SELECT,ST.BUY,ST.ANIM],
+  [ST.SELECT]:[ST.BID,ST.ORDER,ST.BUY,ST.ANIM],
+  [ST.BID]:[ST.SELECT,ST.ORDER,ST.BUY,ST.ANIM],
+  [ST.BUY]:[ST.BUILD,ST.ANIM],
+  [ST.BUILD]:[ST.BUREAU,ST.ANIM],
+  [ST.BUREAU]:[ST.ORDER,ST.OVER,ST.ANIM],
+  [ST.ANIM]:[ST.ORDER,ST.BUY,ST.BUILD,ST.BUREAU],
+  [ST.OVER]:[]};
+/* strenger Modus (Tests): Regelverstöße werfen statt still ignoriert zu werden */
+function strictFail(m){if(typeof window!=='undefined'&&window.__strict)throw new Error(m);try{console.warn('[engine] '+m)}catch(_){}return false}
+function fsmGo(to){const fr=S.fsm||null;if(fr===to)return;if(fr&&!FSM_NEXT[fr].includes(to))strictFail('illegal transition '+fr+' → '+to);S.fsm=to}
+/* Zustand aus den Detailfeldern ableiten – für alte Spielstände und als Gegenprobe */
+function fsmDerive(){if(!S)return null;if(S.phase==='end')return ST.OVER;if(S.gate)return ST.ANIM;
+  switch(S.phase){case'auction':return S.auc&&S.auc.mode!=='choose'?ST.BID:ST.SELECT;case'resources':return ST.BUY;case'build':return ST.BUILD;case'bureau':return ST.BUREAU}return ST.ORDER}
+function fsmSync(){if(S&&!S.fsm)S.fsm=fsmDerive();return S&&S.fsm}
+/* Zugreihenfolge je Zustand: Phase 2 und 5 vorwärts, Phase 3 und 4 rückwärts */
+function turnSeq(state){return state===ST.BUY||state===ST.BUILD?[...S.order].reverse():[...S.order]}
+/* --- Ereignisse an den Bildschirm (Animationen, Hinweise) --- */
+const EVQ=[];function emit(e){EVQ.push(e);if(EVQ.length>200)EVQ.splice(0,EVQ.length-200)}
+/* --- Kürzeste Leitungen (Dijkstra) – eine Quelle für Baukosten und Netzlinien --- */
+function netPaths(p,target=null){
+  if(!p.cities.length)return null;const act=new Set(activeIds()),d={},pv={},done=new Set();
+  act.forEach(c=>d[c]=Infinity);p.cities.forEach(c=>d[c]=0);
+  for(;;){let u=null,b=Infinity;for(const c of act)if(!done.has(c)&&d[c]<b){b=d[c];u=c}if(u===null||u===target)break;done.add(u);for(const{to,cost}of ADJ[u]){if(act.has(to)&&d[u]+cost<d[to]){d[to]=d[u]+cost;pv[to]=u}}}
+  return{d,pv}}
+/* --- Prüfungen: der Bildschirm fragt, die Regeln entscheiden --- */
+function canOpen(pid,num,bid){const p=P(pid);if(S.fsm!==ST.SELECT||!S.auc||S.auc.mode!=='choose'||S.auc.chooser!==pid)return false;if(!buyable().includes(num)||plantBlocked(p,num))return false;return Number.isFinite(bid)&&bid>=minBid(num)&&bid<=facMax(p,num)}
+function canRaise(pid,amt){const a=S.auc;if(S.fsm!==ST.BID||!a||a.mode!=='bid'||a.bidders[a.turn]!==pid)return false;return Number.isFinite(amt)&&amt>a.bid&&amt<=facMax(P(pid),a.plant)}
+function canDrop(pid){const a=S.auc;return S.fsm===ST.BID&&!!a&&a.mode==='bid'&&a.bidders[a.turn]===pid}
+function mustBuyR1(pid){const p=P(pid);return S.round===1&&!heldPlants(p).length&&buyable().some(n=>!plantBlocked(p,n)&&minBid(n)<=facMax(p,n))}
+function canPass(pid){return S.fsm===ST.SELECT&&!!S.auc&&S.auc.mode==='choose'&&S.auc.chooser===pid&&!mustBuyR1(pid)}
+function canBuy(pid,cart){if(S.fsm!==ST.BUY||S.seq[S.seqIdx]!==pid)return false;const p=P(pid),pool={...p.pool};let cost=0;
+  for(const r of RES){const k=cart[r]||0;if(!k)continue;if(k<0||k>S.resMarket[r])return false;const c=buyCost(r,k,S.resMarket,p);if(!Number.isFinite(c))return false;cost+=c;pool[r]+=k}
+  return cost<=p.money&&canHold(p,pool)}
+function canBuildIn(pid,city){if(S.fsm!==ST.BUILD||S.seq[S.seqIdx]!==pid)return false;const o=buildOptions(P(pid)).find(x=>x.city===city);return !!o&&o.cost<=P(pid).money}
+/* --- Befehle für Eingaben des Spielers (vorher Bildschirm-Code) --- */
+function cmdBuy(pid,cart,side,plantCart){if(!withSide(side,()=>canBuy(pid,cart)))return strictFail('buy rejected');const p=P(pid);normAlloc(p);
+  withSide(side,()=>buyResources(pid,cart));if(S.resNorth&&RES.some(r=>cart[r]>0))p.lastSide={r:S.round,s:side};if(S.resNorth&&side==='north')S.log[0].t+=' (Nordmarkt)';
+  for(const[n,c]of Object.entries(plantCart||{}))if(p.alloc[n])RES.forEach(r=>{for(let i=0;i<(c[r]||0);i++)p.alloc[n].push(r)});nextSeq();return true}
+function cmdPower(pid,nums,sell){if(S.fsm!==ST.BUREAU)return strictFail('power outside bureaucracy');const p=P(pid);p.noSell=!!(S.umk&&sell===false);const o=allocPower(p,nums);if(!o)return false;
+  for(const[n,got]of Object.entries(o.take))got.forEach(r=>{const a=p.alloc[n];a.splice(a.indexOf(r),1)});payout(p,o.use,o.powered,nums||[]);finishBureau();return true}
 function newStats(){return{start:Date.now(),partial:false,series:[],step2:null,step3:null,pl:S.players.map(()=>({auc:[],res:{coal:[0,0],oil:[0,0],garbage:[0,0],uranium:[0,0]},slot:0,conn:0,built:[],income:0,maxInc:0}))}}
 function st(){if(!S.stats){S.stats=newStats();S.stats.partial=true}return S.stats}
 function newGame(name,nAI,diff,regions,mapId,opts={}){
@@ -4727,6 +4775,7 @@ function newGame(name,nAI,diff,regions,mapId,opts={}){
   S.stats=newStats();
   log('Karte: '+MP.name+'.');
   if(Object.keys(S.plantOv).length&&MP.regional)log('Regionale Kraftwerke: '+Object.entries(S.plantOv).map(([k,v])=>PN(+k)+' ('+RNAME[v[0]]+', '+v[2]+' St.)').join(', ')+'.');
+  S.fsm=null;fsmGo(ST.ORDER);/* Runde 1: Reihenfolge ausgelost */
   log('Neues Spiel. Netzgebiet: '+S.regions.map(r=>REGIONS[r].name).join(', ')+'. KI-Stärke: '+AI_NAME[S.ai]+'.');
   startAuctionPhase();
 }
@@ -4796,43 +4845,44 @@ function removeLowCities(){
 
 /* --- Versteigerung --- */
 function minBid(n){return S.phase==='auction'&&S.discount===n?1:Math.floor(n)}
-function startAuctionPhase(){S.phase='auction';S.players.forEach(p=>p.done=false);S.boughtAny=false;S.discard=null;S.discount=(MAPS[S.map].noDiscount||S.origDisc)?null:(S.market[0]??null);S.passedOnce=false;S.discGone=false;if((S.promos||[]).includes('spy')&&S.round===2&&S.spy==null){S.spy=S.order[S.order.length-1];log(P(S.spy).name+' bekommt die Industriespionage und darf die oberste Stapelkarte sehen.',S.spy)}if(S.discount!=null)log('Rabatt: Das kleinste Kraftwerk '+PN(S.discount)+' ist diese Runde ab 1 € zu haben.');nextChooser()}
+function startAuctionPhase(){S.phase='auction';fsmGo(ST.SELECT);S.players.forEach(p=>p.done=false);S.boughtAny=false;S.discard=null;S.discount=(MAPS[S.map].noDiscount||S.origDisc)?null:(S.market[0]??null);S.passedOnce=false;S.discGone=false;if((S.promos||[]).includes('spy')&&S.round===2&&S.spy==null){S.spy=S.order[S.order.length-1];log(P(S.spy).name+' bekommt die Industriespionage und darf die oberste Stapelkarte sehen.',S.spy)}if(S.discount!=null)log('Rabatt: Das kleinste Kraftwerk '+PN(S.discount)+' ist diese Runde ab 1 € zu haben.');nextChooser()}
 function nextChooser(){
   const next=S.order.find(id=>!P(id).done);
   if(next===undefined)return endAuctionPhase();
   if(!buyable().length&&S.round>1){if(!S.noPlantsLogged||S.noPlantsLogged!==S.round){S.noPlantsLogged=S.round;log(S.boughtAny?'Keine Kraftwerke mehr im Markt. Die übrigen Spieler können nichts mehr ersteigern.':'Keine Kraftwerke mehr im Markt. Die Versteigerung entfällt in dieser Runde.')}S.players.forEach(p=>p.done=true);return endAuctionPhase()}
-  S.auc={mode:'choose',chooser:next};
+  S.auc={mode:'choose',chooser:next};fsmGo(ST.SELECT);
 }
-function doPass(pid){P(pid).done=true;log(P(pid).name+' verzichtet auf ein Kraftwerk.',pid);
+function doPass(pid){if(!canPass(pid))return strictFail('pass rejected');P(pid).done=true;log(P(pid).name+' verzichtet auf ein Kraftwerk.',pid,{k:'pass'});
   if(MR().russia&&!S.passedOnce&&S.market.length){S.passedOnce=true;const x=S.market.shift();if(x===S.discount)S.discount=null;log('Erster Verzicht der Runde: Kraftwerk '+PN(x)+' fällt aus dem Markt.');drawToMarket();removeLowCities()}
   nextChooser()}
 function doOpen(pid,num,bid){
+  if(!canOpen(pid,num,bid))return strictFail('open rejected');fsmGo(ST.BID);
   const bidders=clockwise(pid,false).filter(id=>id===pid||(!P(id).done&&!plantBlocked(P(id),num)));
   S.auc={mode:'bid',chooser:pid,plant:num,bid,high:pid,bidders,all:bidders.slice(),turn:0};
   log(P(pid).name+' bietet '+bid+' € auf Kraftwerk '+PN(num)+'.',pid);
   if(bidders.length===1)award(pid);
 }
-function bidRaise(pid,amt){const a=S.auc;a.bid=amt;a.high=pid;log(P(pid).name+' erhöht auf '+amt+' €.',pid);a.turn=(a.turn+1)%a.bidders.length;if(a.bidders[a.turn]===a.high)a.turn=(a.turn+1)%a.bidders.length}
+function bidRaise(pid,amt){if(!canRaise(pid,amt))return strictFail('raise rejected');const a=S.auc;a.bid=amt;a.high=pid;log(P(pid).name+' erhöht auf '+amt+' €.',pid);a.turn=(a.turn+1)%a.bidders.length;if(a.bidders[a.turn]===a.high)a.turn=(a.turn+1)%a.bidders.length}
 function bidDrop(pid){
-  const a=S.auc;const i=a.bidders.indexOf(pid);a.bidders.splice(i,1);log(P(pid).name+' steigt aus.',pid);
+  if(!canDrop(pid))return strictFail('drop rejected');const a=S.auc;const i=a.bidders.indexOf(pid);a.bidders.splice(i,1);log(P(pid).name+' steigt aus.',pid);
   if(a.bidders.length===1)return award(a.bidders[0]);
   if(a.turn>=a.bidders.length)a.turn=0;
   if(a.bidders[a.turn]===a.high)a.turn=(a.turn+1)%a.bidders.length;
 }
 function award(pid){
   const a=S.auc,p=P(pid);
-  {const c=facCost(p,a.plant,a.bid);p.money-=c;if(p.human&&S.mat&&S.mat[p.id]&&S.voiceR!==S.round){S.voiceR=S.round;UI.toast=voiceToast(S.mat[p.id].co)}if(c!==a.bid){const sp=st().pl[p.id];sp.fac=(sp.fac||0)+(a.bid-c)}}p.plants.push(a.plant);p.plants.sort((x,y)=>x-y);if(p.subPend&&PLANTS[a.plant][0]!=='mine')attachSub(p,a.plant);
+  {const c=facCost(p,a.plant,a.bid);p.money-=c;if(p.human&&S.mat&&S.mat[p.id]&&S.voiceR!==S.round){S.voiceR=S.round;emit({t:'voice',co:S.mat[p.id].co})}if(c!==a.bid){const sp=st().pl[p.id];sp.fac=(sp.fac||0)+(a.bid-c)}}p.plants.push(a.plant);p.plants.sort((x,y)=>x-y);if(p.subPend&&PLANTS[a.plant][0]!=='mine')attachSub(p,a.plant);
   if(S.phaseOut&&(S.phaseSet||[39]).includes(a.plant)&&!S.noUranium){S.noUranium=true;log('Atomausstieg: Kraftwerk '+PN(a.plant)+' ist gekauft. Ab jetzt wird kein Uran mehr nachgefüllt.')}
   if(S.spy===pid){const i=S.order.indexOf(pid);S.spy=S.order[(i-1+S.order.length)%S.order.length];log('Die Industriespionage geht an '+P(S.spy).name+'.',S.spy)}
   st().pl[pid].auc.push({n:a.plant,price:a.bid,min:a.plant===S.discount?1:a.plant,r:S.round,disc:a.plant===S.discount});
   S.market=S.market.filter(x=>x!==a.plant);p.done=true;S.boughtAny=true;if(a.plant===S.discount)S.discount=null;
-  log(p.name+' kauft Kraftwerk '+PN(a.plant)+' für '+a.bid+' €.',pid);
+  log(p.name+' kauft Kraftwerk '+PN(a.plant)+' für '+a.bid+' €.',pid,{k:'plant',n:a.plant,price:a.bid});
   if(!(MR().china&&S.step<3))drawToMarket();removeLowCities();
   if(heldPlants(p).length>3){S.discard=pid;S.newPlant=a.plant;S.auc={mode:'wait'};return}
   nextChooser();
 }
 function discardPlant(pid,num){
-  const p=P(pid);if(num===S.newPlant&&heldPlants(p).length>3){const old=heldPlants(p).filter(x=>x!==S.newPlant);num=old.sort((a,b)=>PLANTS[a][2]-PLANTS[b][2]||a-b)[0]}
+  if(S.discard!==pid)return strictFail('discard out of turn');const p=P(pid);if(num===S.newPlant&&heldPlants(p).length>3){const old=heldPlants(p).filter(x=>x!==S.newPlant);num=old.sort((a,b)=>PLANTS[a][2]-PLANTS[b][2]||a-b)[0]}
   p.plants=p.plants.filter(x=>x!==num);if(p.sub===num){p.sub=null;log(p.name+' verliert mit dem Kraftwerk auch das Umspannwerk.',pid)}clampPool(p);
   log(p.name+' legt Kraftwerk '+PN(num)+' still.',pid);S.discard=null;S.newPlant=null;nextChooser();
 }
@@ -4842,40 +4892,21 @@ function endAuctionPhase(){
   if((MAPS[S.map].allPassRemove||(S.origDisc&&!MR().allPassTwo))&&!S.boughtAny&&S.round>1&&S.market.length){const x=S.market.shift();S.discGone=true;log('Niemand hat ein Kraftwerk gekauft. Kraftwerk '+PN(x)+' fällt weg.');drawToMarket();removeLowCities()}
   if(MR().allPassTwo&&!S.boughtAny&&S.round>1&&S.market.length){const xs=S.market.splice(0,2);log('Niemand hat ein Kraftwerk gekauft. Kraftwerke '+xs.map(PN).join(' und ')+' fallen weg.');xs.forEach(()=>drawToMarket());removeLowCities()}
   if(S.step3Pending)startStep3();
-  if(MR().orderAfterAuction){determineOrder();log('Neue Spielerreihenfolge nach der Versteigerung.')}
-  else if(S.round===1&&!MAPS[S.map].keepR1Order)determineOrder();
+  if(MR().orderAfterAuction){fsmGo(ST.ORDER);determineOrder();log('Neue Spielerreihenfolge nach der Versteigerung.')}
+  else if(S.round===1&&!MAPS[S.map].keepR1Order){fsmGo(ST.ORDER);determineOrder()}
   phaseGate('resources');
 }
 
 /* --- Rohstoffe & Bauen --- */
-function startResources(){{S.ph=S.ph||{};const rec=()=>RES.forEach(r=>{if(!CAP[r])return;const v=nextPrice(r),k=r+MSIDE;(S.ph[k]=S.ph[k]||[]).push(v==null?null:v);if(S.ph[k].length>14)S.ph[k].shift()});rec();if(S.resNorth)withSide('north',rec)}S.phase='resources';S.seq=[...S.order].reverse();S.seqIdx=0;S.rpass=[];S.lastBuyN=null}
+function startResources(){{S.ph=S.ph||{};const rec=()=>RES.forEach(r=>{if(!CAP[r])return;const v=nextPrice(r),k=r+MSIDE;(S.ph[k]=S.ph[k]||[]).push(v==null?null:v);if(S.ph[k].length>14)S.ph[k].shift()});rec();if(S.resNorth)withSide('north',rec)}S.phase='resources';fsmGo(ST.BUY);S.seq=turnSeq(ST.BUY);S.seqIdx=0;S.rpass=[];S.lastBuyN=null}
 /* v190: Phasenwechsel erst, wenn der Spieler weitertippt */
-const PH_GO={resources:()=>startResources(),build:()=>startBuild(),bureau:()=>startBureau(),round:()=>{S.round++;if(!MR().orderAfterAuction)determineOrder();startAuctionPhase()}};
+const PH_GO={resources:()=>startResources(),build:()=>startBuild(),bureau:()=>startBureau(),round:()=>{S.round++;fsmGo(ST.ORDER);if(!MR().orderAfterAuction)determineOrder();startAuctionPhase()}};
+function autoAdvance(){return !!(window.__fast||AUTO_NEXT)}
 let AUTO_NEXT=(()=>{try{return localStorage.getItem('gm-autonext')==='1'}catch(_){return false}})();
-function phaseGate(k){if(!S.players.some(p=>p.human)||window.__fast||AUTO_NEXT){PH_GO[k]();return}
-  /* v244: kauft ein Gegner als Letzter Rohstoffe, über dem Abschluss noch kurz den Markt zeigen, damit seine Einheiten golden aufleuchten und verschwinden */
-  if(k==='build'&&S.phase==='resources'&&!hmReduced()){const lt=(S.trades||[]).filter(t=>t.r===S.round).pop();if(lt&&P(lt.pid)&&!P(lt.pid).human&&lt.parts&&lt.parts.length){UI.gateMk=Date.now()+2000;setTimeout(()=>{if(S&&S.gate==='build')render()},2050)}}
-  S.gate=k}
-function gateGo(){if(!S||!S.gate)return;const k=S.gate;S.gate=null;PH_GO[k]()}
-function roundGrid(){/* v192: Rundenübersicht als Raster */
-  const r=S.round,rs=(S.rs||{})[r]||{},L=LX;
-  const hd=[L('Werk','Plant'),L('Rohst.','Fuel'),L('Bau','Build'),L('Strom','Power'),L('Kasse','Cash')];
-  const rows=S.order.map(P).map(p=>{const q=rs[p.id]||{};const au=(st().pl[p.id].auc||[]).filter(x=>x.r===r);const tr=(S.trades||[]).filter(t=>t.r===r&&t.pid===p.id);const tc=tr.reduce((x,t)=>x+t.total,0),tn=tr.reduce((x,t)=>x+t.parts.reduce((y,[,k])=>y+k,0),0);
-    const c=(m,sm,cls='')=>`<span class="rg-c${cls}"><b>${m}</b><small>${sm||'&nbsp;'}</small></span>`;
-    return `<div class="rg-r${p.human?' me':''}" ${pc(p.id)}><span class="rg-n">${coLogo(logoOf(p),p.color,'tk-logo')}<b>${p.human?L('Du','You'):esc(shortName(p.name))}</b></span>`+
-      c(au.length?au.map(x=>PN(x.n)).join(' + '):'–',au.length?au.reduce((x,a)=>x+a.price,0)+' €':'')+
-      c(tn?tn+'×':'–',tn?tc+' €':'')+
-      c(q.bn?'+'+q.bn:'–',q.bn?q.bc+' €':'')+
-      c((q.pw??p.lastPowered??0)+'',q.inc!=null?'+'+q.inc+' €':'',' pw')+
-      c(p.money+' €',cityCount(p)+' '+L('Städte','cities'),' cash')+`</div>`}).join('');
-  return `<div class="rgrid"><div class="rg-r rg-hd"><span></span>${hd.map(h=>`<span>${h}</span>`).join('')}</div>${rows}</div>${whyHTML(r)}`}
-function whyHTML(r){const W=(S.why||{})[r];if(!W)return'';const li=S.order.map(P).filter(p=>!p.human&&W[p.id]).map(p=>{const a=W[p.id];const ks=Object.keys(a);const auc=ks.filter(k=>k==='auc'||k.startsWith('bid')).map(k=>a[k]);const pick=[...auc.slice(-1),a.buy,a.build].filter(Boolean);return `<li ${pc(p.id)}><b>${esc(shortName(p.name))}</b><span>${pick.map(x=>{const t=LANG==='en'?x[1]:x[0];return esc(t.charAt(0).toUpperCase()+t.slice(1))}).join(' ')}</span></li>`}).join('');
-  return li?`<details class="why" ${UI.whyOpen?'open':''} ontoggle="UI.whyOpen=this.open"><summary>${LX('Warum haben die Gegner so gespielt?','Why did the opponents play like that?')}</summary><ul>${li}</ul></details>`:''}
-function gateHTML(){const k=S.gate,N={resources:[LX('Auktion abgeschlossen','Auction complete'),LX('Weiter zu Rohstoffe','Continue to resources')],build:[LX('Rohstoffe abgeschlossen','Resources complete'),LX('Weiter zum Bauen','Continue to build')],bureau:[LX('Bauen abgeschlossen','Building complete'),LX('Weiter zum Liefern','Continue to power')],round:[LX(`Runde ${S.round} abgeschlossen`,`Round ${S.round} complete`),LX(`Weiter zu Runde ${S.round+1}`,`Continue to round ${S.round+1}`)]}[k];
-  const lines=S.log.filter(l=>l.r===S.round).slice(0,6).map(l=>`<p ${l.pid!=null?pc(l.pid):''}><span class="dot"></span>${esc(tr(l.t))}</p>`).join('');
-  UI._ab={t:N[0],h:`<div class="row"><button type="button" class="btn pri grow" data-act="gateGo">${N[1]} →</button></div>`};
-  return `<section class="sec gatesec"><div class="g-h"><span class="g-ok">✓</span><b>${N[0]}</b></div>${k==='resources'?`<div class="g-opp">${oppPlantsHTML(true)}</div>`:''}${k==='round'?roundGrid():k==='build'?`<div class="g-sub">${LX('Wer hat was gekauft','Who bought what')}</div>${tradeGrid(true)}`:`<div class="g-log">${lines}</div>`}<p class="hint">${LX('Schau dir in Ruhe an, was passiert ist, und tippe dann auf „Weiter“.','Take a look at what happened, then tap “Continue”.')}</p></section>`}
-function startBuild(){S.phase='build';S.seq=[...S.order].reverse();S.seqIdx=0;S.turnBuilt=[];S.builtRound=0}
+function phaseGate(k){if(!S.players.some(p=>p.human)||autoAdvance()){PH_GO[k]();return}
+  fsmGo(ST.ANIM);emit({t:'gate',k,from:S.phase});S.gate=k}
+function gateGo(){if(!S||!S.gate||S.fsm!==ST.ANIM)return;const k=S.gate;S.gate=null;PH_GO[k]()}
+function startBuild(){S.phase='build';fsmGo(ST.BUILD);S.seq=turnSeq(ST.BUILD);S.seqIdx=0;S.turnBuilt=[];S.builtRound=0}
 function nextSeq(){
   if(S.phase==='resources'&&MR().india){
     const cur=S.seq[S.seqIdx];if(!S.lastBuyN&&!S.rpass.includes(cur))S.rpass.push(cur);S.lastBuyN=null;S.turnBuilt=[];
@@ -4887,22 +4918,13 @@ function nextSeq(){
 function buyResources(pid,cart){
   const p=P(pid);let total=0;const parts=[];
   let fees=0;RES.forEach(r=>{const k=cart[r];if(!k)return;const c=buyCost(r,k,S.resMarket,p);total+=c;fees+=Math.max(0,fuelFee(p,r));const sr=st().pl[pid].res[r];sr[0]+=k;sr[1]+=c;S.resMarket[r]-=k;p.pool[r]+=k;parts.push(k+' '+RNAME[r])});
-  if(total>p.money&&fees)total=Math.max(total-fees,p.money);p.money-=total;S.lastBuyN=RES.reduce((x,r)=>x+(cart[r]||0),0);if(S.lastBuyN)UI.lastBuyer=pid;
+  if(total>p.money&&fees)total=Math.max(total-fees,p.money);p.money-=total;S.lastBuyN=RES.reduce((x,r)=>x+(cart[r]||0),0);if(S.lastBuyN)emit({t:'buyer',pid});
   (S.trades=S.trades||[]).push({r:S.round,pid,side:MSIDE,items:RES.filter(r=>cart[r]).map(r=>[r,cart[r],buyCost?0:0]),parts:RES.filter(r=>cart[r]).map(r=>[r,cart[r]]),total,t:Date.now()});if(S.trades.length>60)S.trades.splice(0,S.trades.length-60);
-  log(parts.length?p.name+' kauft '+parts.join(', ')+' für '+total+' €.':p.name+' kauft keine Rohstoffe.',pid);
+  log(parts.length?p.name+' kauft '+parts.join(', ')+' für '+total+' €.':p.name+' kauft keine Rohstoffe.',pid,parts.length?{k:'buy',res:Object.fromEntries(RES.filter(r=>cart[r]).map(r=>[r,cart[r]])),cost:total}:null);
 }
 function linkPath(p,target){/* kürzeste Leitung vom eigenen Netz zur neuen Stadt – für die Netzlinien auf der Karte */
-  if(!p.cities.length)return[];const act=new Set(activeIds()),d={},pv={},done=new Set();
-  act.forEach(c=>d[c]=Infinity);p.cities.forEach(c=>d[c]=0);
-  for(;;){let u=null,b=Infinity;for(const c of act)if(!done.has(c)&&d[c]<b){b=d[c];u=c}if(u===null||u===target)break;done.add(u);for(const{to,cost}of ADJ[u]){if(act.has(to)&&d[u]+cost<d[to]){d[to]=d[u]+cost;pv[to]=u}}}
-  const out=[];let c=target,g=0;while(pv[c]!=null&&g++<200){out.push([pv[c],c].sort().join('|'));c=pv[c]}return out}
-function distFrom(p){
-  if(!p.cities.length)return null;
-  const act=new Set(activeIds()),d={},done=new Set();
-  act.forEach(c=>d[c]=Infinity);p.cities.forEach(c=>d[c]=0);
-  for(;;){let u=null,b=Infinity;for(const c of act)if(!done.has(c)&&d[c]<b){b=d[c];u=c}if(u===null)break;done.add(u);for(const{to,cost}of ADJ[u]){if(act.has(to)&&d[u]+cost<d[to])d[to]=d[u]+cost}}
-  return d;
-}
+  const r=netPaths(p,target);if(!r)return[];const out=[];let c=target,g=0;while(r.pv[c]!=null&&g++<200){out.push([r.pv[c],c].sort().join('|'));c=r.pv[c]}return out}
+function distFrom(p){const r=netPaths(p);return r?r.d:null}
 function buildOptions(p){
   const d=distFrom(p),out=[],R=MR(),MPx=MAPS[S.map];
   const starts=R.japan?new Set(MPx.startCities||[]):null;
@@ -4931,9 +4953,9 @@ function doBuild(pid,city){
   if(!o||o.cost>p.money)return false;
   if(o.free)p.fcR=S.round;
   let fxKeys=[];if(o.conn>0&&!o.jump){try{const ln=linkPath(p,city);fxKeys=ln;if(ln.length&&!(MR().islands&&o.conn===(MAPS[S.map].islandFee||20)&&!ln.length))p.links=[...new Set([...(p.links||[]),...ln])]}catch(_){}}
-  p.money-=o.cost;p.cities.push(city);{const q=rsum(pid);q.bn=(q.bn||0)+1;q.bc=(q.bc||0)+o.cost}(S.owners[city]??=[]).push(pid);if(o.jump)p.jumpUsed=true;S.builtRound=(S.builtRound||0)+1;S.turnBuilt.push({city,cost:o.cost,slot:o.slot,conn:o.conn,jump:!!o.jump});(UI.fx=UI.fx||[]).push({t:'build',pid,city,keys:fxKeys});
+  p.money-=o.cost;p.cities.push(city);{const q=rsum(pid);q.bn=(q.bn||0)+1;q.bc=(q.bc||0)+o.cost}(S.owners[city]??=[]).push(pid);if(o.jump)p.jumpUsed=true;S.builtRound=(S.builtRound||0)+1;S.turnBuilt.push({city,cost:o.cost,slot:o.slot,conn:o.conn,jump:!!o.jump});emit({t:'build',pid,city,keys:fxKeys});
   const sp=st().pl[pid];sp.slot+=o.slot;sp.conn+=o.conn;sp.built.push(city);
-  log(p.name+' baut in '+CITY[city].name+' ('+o.cost+' €)'+(o.jump?' mit dem freien Sprung':'')+'.',pid);
+  log(p.name+' baut in '+CITY[city].name+' ('+o.cost+' €)'+(o.jump?' mit dem freien Sprung':'')+'.',pid,{k:'build',city,cost:o.cost});
   return true;
 }
 function undoBuilds(pid){
@@ -4979,15 +5001,15 @@ function payout(p,use,powered,nums=[]){
   {const sp=st().pl[p.id];sp.burn=sp.burn||{coal:0,oil:0,garbage:0,uranium:0};RES.forEach(r=>sp.burn[r]+=use[r]);sp.powT=sp.powT||{};let left=powered;nums.slice().sort((a,b)=>PLANTS[b][2]-PLANTS[a][2]).forEach(n=>{const c=Math.min(left,PLANTS[n][2]);if(c>0){const t=PLANTS[n][0];sp.powT[t]=(sp.powT[t]||0)+c;left-=c}})}
   const inc=roundIncome(p,powered);p.money+=inc;p.lastPowered=powered;{const q=rsum(p.id);q.inc=inc;q.pw=powered}const sp=st().pl[p.id];sp.income+=inc;sp.maxInc=Math.max(sp.maxInc,inc);
   log(p.name+' versorgt '+powered+(powered===1?' Stadt':' Städte')+' und verdient '+inc+' €.',p.id);
-  (UI.fx=UI.fx||[]).push({t:'pay',pid:p.id,inc,powered});
+  emit({t:'pay',pid:p.id,inc,powered});
 }
 function applyPower(p,nums){
   const o=powerOptions(p,nums)||{use:{coal:0,oil:0,garbage:0,uranium:0},powered:0};
   payout(p,o.use,o.powered,nums);
 }
 function startBureau(){
-  S.phase='bureau';S.bureauDone=false;if(S.taxAt!=null&&S.round>=S.taxAt){S.taxAt=null;S.players.forEach(p=>{const t=Math.floor(p.money/5);p.money-=t;log(p.name+' zahlt '+t+' € Steuern.',p.id)})}S.outage=!!(MR().india&&(S.builtRound||0)>2*S.n);if(S.outage)log('Stromausfall! '+S.builtRound+' neue Städte in einer Runde sind mehr als doppelt so viele wie Spieler. Jeder zahlt 3 € pro Stadt von seinem Einkommen.');
-  S.players.filter(p=>!p.human).forEach(p=>applyPower(p,bestPower(p)));
+  S.phase='bureau';fsmGo(ST.BUREAU);S.bureauDone=false;if(S.taxAt!=null&&S.round>=S.taxAt){S.taxAt=null;S.players.forEach(p=>{const t=Math.floor(p.money/5);p.money-=t;log(p.name+' zahlt '+t+' € Steuern.',p.id)})}S.outage=!!(MR().india&&(S.builtRound||0)>2*S.n);if(S.outage)log('Stromausfall! '+S.builtRound+' neue Städte in einer Runde sind mehr als doppelt so viele wie Spieler. Jeder zahlt 3 € pro Stadt von seinem Einkommen.');
+  turnSeq(ST.BUREAU).map(P).filter(p=>!p.human).forEach(p=>applyPower(p,bestPower(p)));
   if(!S.players.some(p=>p.human))finishBureau();
 }
 function finishBureau(){
@@ -4996,7 +5018,7 @@ function finishBureau(){
   S.players.forEach(q=>{const f=facOf(q);if(!f||!f.refill)return;for(const[r,k]of Object.entries(f.refill)){const cp=caps(q);if((q.pool[r]||0)<cp[r]+cp.any&&supply(r)>=k)q.pool[r]=(q.pool[r]||0)+k}});
   if(S.endTriggered)return endGame();
   if(S.resNorth){const t=MAPS[S.map].north.resupply;['coal','oil','garbage'].forEach(r=>{const add=Math.min(((t[S.n]||t[4])[r]||[0,0,0])[S.step-1],supply(r),CAP_N[r]-S.resNorth[r]);if(add>0)S.resNorth[r]+=add})}
-  {const fxa={};RES.forEach(r=>{const add=(r==='uranium'&&S.noUranium)?0:Math.min(RSUP(r),supply(r),CAP[r]-S.resMarket[r]);if(add>0){S.resMarket[r]+=add;fxa[r]=add}});if(Object.keys(fxa).length)(UI.fx=UI.fx||[]).push({t:'refill',add:fxa})}
+  {const fxa={};RES.forEach(r=>{const add=(r==='uranium'&&S.noUranium)?0:Math.min(RSUP(r),supply(r),CAP[r]-S.resMarket[r]);if(add>0){S.resMarket[r]+=add;fxa[r]=add}});if(Object.keys(fxa).length)emit({t:'refill',add:fxa})}
   mineRefill();
   if(MR().china&&S.step<3)chinaRebuild();
   else if(S.step===3){const x=S.market.shift();if(x!=null)log('Kraftwerk '+PN(x)+' fällt aus dem Spiel.');drawToMarket()}
@@ -5010,7 +5032,7 @@ function finishBureau(){
   phaseGate('round');
 }
 function endGame(){
-  S.phase='end';
+  S.phase='end';fsmGo(ST.OVER);
   S.ranking=S.players.map(p=>p.id).sort((a,b)=>P(b).lastPowered-P(a).lastPowered||P(b).money-P(a).money||cityCount(P(b))-cityCount(P(a)));
   log(P(S.ranking[0]).name+' gewinnt mit '+P(S.ranking[0]).lastPowered+' versorgten Städten.',S.ranking[0]);
   st().end=Date.now();if(typeof onGameEnd==='function')onGameEnd();
@@ -5584,6 +5606,8 @@ function aiAct(a){
 /* ===================== OBERFLÄCHE ===================== */
 const UI={pcart:{},hyb:{},regions:[],diff:'expert',pnum:null,prevMoney:null,prevOwners:null,lastBid:'',lastLog:'',sel:null,bid:0,bidKey:'',cart:{coal:0,oil:0,garbage:0,uranium:0},cartKey:'',buildSel:null,power:null,powerKey:'',sheet:null,vb:null,nAI:2,name:''};
 const SAVE_KEY='hochspannung-v1';
+/* v275: ?debug=midgame lädt ein volles Brett (Stufe 2, 4 Spieler, 6–8 Städte) und speichert getrennt, damit dein echtes Spiel unberührt bleibt */
+const DEBUG_MODE=(()=>{try{const q=new URLSearchParams(location.search).get('debug');return q==='midgame'?q:null}catch(_){return null}})();
 const $=s=>document.querySelector(s);
 const top_=$('#top'),svg=$('#map'),panel=$('#panel'),sheet=$('#sheet'),start=$('#start');
 const HOUSE='<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6.2 6 1.6l5 4.6V11H7.4V8.2H4.6V11H1z" fill="currentColor"/></svg>';
@@ -6699,6 +6723,32 @@ function renderPanel(){
   if(h!==panel._h){/* perf: unveränderten Inhalt nicht neu aufbauen (spart ~30 ms je Aktualisierung, gedrosselt) */const st=panel.scrollTop,anc=panelAnchor();panel.innerHTML=h;panel._h=h;const pk=S.round+'|'+S.phase+'|'+(S.gate||'');if(UI.panPh!==pk){/* v223: neue Phase beginnt oben beim Titel */UI.panPh=pk;panel.scrollTop=0}else{panel.scrollTop=st;panelRestore(anc)}}aucScroll(a);orderPin();if(!panel._op){panel._op=1;panel.addEventListener('scroll',orderPin,{passive:true});addEventListener('resize',orderPin)}
 }
 
+/* ===== RENDER: Phasen-Abschluss (aus dem Regelteil verschoben) ===== */
+function roundGrid(){/* v192: Rundenübersicht als Raster */
+  const r=S.round,rs=(S.rs||{})[r]||{},L=LX;
+  const hd=[L('Werk','Plant'),L('Rohst.','Fuel'),L('Bau','Build'),L('Strom','Power'),L('Kasse','Cash')];
+  const rows=S.order.map(P).map(p=>{const q=rs[p.id]||{};const au=(st().pl[p.id].auc||[]).filter(x=>x.r===r);const tr=(S.trades||[]).filter(t=>t.r===r&&t.pid===p.id);const tc=tr.reduce((x,t)=>x+t.total,0),tn=tr.reduce((x,t)=>x+t.parts.reduce((y,[,k])=>y+k,0),0);
+    const c=(m,sm,cls='')=>`<span class="rg-c${cls}"><b>${m}</b><small>${sm||'&nbsp;'}</small></span>`;
+    return `<div class="rg-r${p.human?' me':''}" ${pc(p.id)}><span class="rg-n">${coLogo(logoOf(p),p.color,'tk-logo')}<b>${p.human?L('Du','You'):esc(shortName(p.name))}</b></span>`+
+      c(au.length?au.map(x=>PN(x.n)).join(' + '):'–',au.length?au.reduce((x,a)=>x+a.price,0)+' €':'')+
+      c(tn?tn+'×':'–',tn?tc+' €':'')+
+      c(q.bn?'+'+q.bn:'–',q.bn?q.bc+' €':'')+
+      c((q.pw??p.lastPowered??0)+'',q.inc!=null?'+'+q.inc+' €':'',' pw')+
+      c(p.money+' €',cityCount(p)+' '+L('Städte','cities'),' cash')+`</div>`}).join('');
+  return `<div class="rgrid"><div class="rg-r rg-hd"><span></span>${hd.map(h=>`<span>${h}</span>`).join('')}</div>${rows}</div>${whyHTML(r)}`}
+function whyHTML(r){const W=(S.why||{})[r];if(!W)return'';const li=S.order.map(P).filter(p=>!p.human&&W[p.id]).map(p=>{const a=W[p.id];const ks=Object.keys(a);const auc=ks.filter(k=>k==='auc'||k.startsWith('bid')).map(k=>a[k]);const pick=[...auc.slice(-1),a.buy,a.build].filter(Boolean);return `<li ${pc(p.id)}><b>${esc(shortName(p.name))}</b><span>${pick.map(x=>{const t=LANG==='en'?x[1]:x[0];return esc(t.charAt(0).toUpperCase()+t.slice(1))}).join(' ')}</span></li>`}).join('');
+  return li?`<details class="why" ${UI.whyOpen?'open':''} ontoggle="UI.whyOpen=this.open"><summary>${LX('Warum haben die Gegner so gespielt?','Why did the opponents play like that?')}</summary><ul>${li}</ul></details>`:''}
+function gateHTML(){const k=S.gate,N={resources:[LX('Auktion abgeschlossen','Auction complete'),LX('Weiter zu Rohstoffe','Continue to resources')],build:[LX('Rohstoffe abgeschlossen','Resources complete'),LX('Weiter zum Bauen','Continue to build')],bureau:[LX('Bauen abgeschlossen','Building complete'),LX('Weiter zum Liefern','Continue to power')],round:[LX(`Runde ${S.round} abgeschlossen`,`Round ${S.round} complete`),LX(`Weiter zu Runde ${S.round+1}`,`Continue to round ${S.round+1}`)]}[k];
+  const lines=S.log.filter(l=>l.r===S.round).slice(0,6).map(l=>`<p ${l.pid!=null?pc(l.pid):''}><span class="dot"></span>${esc(tr(l.t))}</p>`).join('');
+  UI._ab={t:N[0],h:`<div class="row"><button type="button" class="btn pri grow" data-act="gateGo">${N[1]} →</button></div>`};
+  return `<section class="sec gatesec"><div class="g-h"><span class="g-ok">✓</span><b>${N[0]}</b></div>${k==='resources'?`<div class="g-opp">${oppPlantsHTML(true)}</div>`:''}${k==='round'?roundGrid():k==='build'?`<div class="g-sub">${LX('Wer hat was gekauft','Who bought what')}</div>${tradeGrid(true)}`:`<div class="g-log">${lines}</div>`}<p class="hint">${LX('Schau dir in Ruhe an, was passiert ist, und tippe dann auf „Weiter“.','Take a look at what happened, then tap “Continue”.')}</p></section>`}
+/* ===== RENDER-BRÜCKE (v275): Regel-Ereignisse → Bildschirmzustand ===== */
+function drainEvents(){while(EVQ.length){const e=EVQ.shift();
+  if(e.t==='voice'){UI.toast=voiceToast(e.co)}
+  else if(e.t==='buyer'){UI.lastBuyer=e.pid}
+  else if(e.t==='gate'){/* v244: kauft ein Gegner als Letzter Rohstoffe, über dem Abschluss noch kurz den Markt zeigen, damit seine Einheiten golden aufleuchten und verschwinden */
+    if(e.k==='build'&&e.from==='resources'&&!hmReduced()){const lt=(S.trades||[]).filter(t=>t.r===S.round).pop();if(lt&&P(lt.pid)&&!P(lt.pid).human&&lt.parts&&lt.parts.length){UI.gateMk=Date.now()+2000;setTimeout(()=>{if(S&&S.gate==='build')render()},2050)}}}
+  else (UI.fx=UI.fx||[]).push(e)}}
 /* --- Fenster --- */
 function discardPreview(p,n){
   const q={plants:p.plants.filter(x=>x!==n),pool:{...p.pool}};clampPool(q);
@@ -8276,12 +8326,12 @@ function statsBoard(){
 
 /* --- Steuerung --- */
 let timer=null;
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(_){}}
+function save(){try{localStorage.setItem(DEBUG_MODE?'hochspannung-debug':SAVE_KEY,JSON.stringify(S))}catch(_){}}
 let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}catch(_){return'dark'}})();
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v274';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v275';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -8359,7 +8409,7 @@ function coachTick(){const old=document.getElementById('coach');document.querySe
   requestAnimationFrame(()=>{const r=tg.getBoundingClientRect(),vh=innerHeight,vw=innerWidth,m=12;
     if(r.height>vh*.45&&vw>vh){/* großes Ziel im Querformat (Karte): Karte oben rechts, damit die Mitte frei bleibt */c.classList.add('side');const w=Math.min(300,r.width*.55);c.style.width=w+'px';c.style.left=Math.round(Math.min(vw-w/2-m,r.right-w/2-m))+'px';c.style.top=Math.round(Math.max(m,Math.min(vh-c.offsetHeight-m,r.top+m)))+'px';return}
     c.classList.remove('side');c.style.width='';c.style.left='';const h=c.offsetHeight;let top=r.bottom+m;if(r.height>vh*.45)top=r.bottom-h-m;else if(top+h>vh-m)top=r.top-h-m;if(top<m)top=Math.max(m,vh-h-m-90);top=Math.max(m,Math.min(vh-h-m,top));c.style.top=Math.round(top)+'px'})}
-function render(){if(!S)return;document.getElementById('app').classList.toggle('pl2',pl2());mkFloor();const flip0=fxMkSnap(),res0=fxResSnap();normAlloc(me());layoutMap();renderTop();oppChips();handDock();renderMap();renderPanel();renderSheet();matOverlay();renderTicker();fxMkFlip(flip0);fxResFlip(res0);pl2Top();fitChips();declutterSoon();try{coachTick()}catch(_){}
+function render(){if(!S)return;fsmSync();drainEvents();document.getElementById('app').classList.toggle('pl2',pl2());mkFloor();const flip0=fxMkSnap(),res0=fxResSnap();normAlloc(me());layoutMap();renderTop();oppChips();handDock();renderMap();renderPanel();renderSheet();matOverlay();renderTicker();fxMkFlip(flip0);fxResFlip(res0);pl2Top();fitChips();declutterSoon();try{coachTick()}catch(_){}
   if(UI.fx&&UI.fx.length){const q=UI.fx;UI.fx=[];if(!fxOff())requestAnimationFrame(()=>fxRun(q))}
   const pm=UI.prevMoney||{};
   S.players.forEach(p=>{if(pm[p.id]!=null&&pm[p.id]!==p.money){const d=p.money-pm[p.id];if(d>0&&S.phase==='bureau'&&typeof PAYV!=='undefined'&&PAYV!=='coins')return;floatText(document.querySelector(`[data-pid="${p.id}"]`),(d>0?'+':'−')+Math.abs(d)+' €',d>0?'#8fe39c':'#ff8a80')}});
@@ -8758,7 +8808,8 @@ function schedule(){
   if(P(a.pid).human){/* v211: automatisch mitbieten bis zum Limit */
     const px=UI.proxy;if(a.kind==='bid'&&px&&S.auc&&S.auc.plant===px.plant){if(S.auc.bid+1<=px.max&&facMax(me(),S.auc.plant)>=S.auc.bid+1){timer=setTimeout(()=>{timer=null;if(!myTurn('bid'))return;bidRaise(H,S.auc.bid+1);after()},window.__fast?20:650)}else{UI.proxyHit={max:px.max,plant:px.plant};UI.proxy=null;buzz&&buzz();setTimeout(()=>{try{render()}catch(_){}},0)}}
     return}
-  const run=()=>{timer=null;UI.stepWait=null;S.aiN=(S.aiN||0)+1;UI.undo=[];const au=S.phase==='auction'&&S.auc&&S.auc.mode==='bid'?{h:S.auc.high,pl:S.auc.plant}:null;
+  const f0=S.fsm;
+  const run=()=>{timer=null;UI.stepWait=null;{const b=actor();if(!b||b.pid!==a.pid||b.kind!==a.kind||S.fsm!==f0){schedule();return}}S.aiN=(S.aiN||0)+1;UI.undo=[];const au=S.phase==='auction'&&S.auc&&S.auc.mode==='bid'?{h:S.auc.high,pl:S.auc.plant}:null;
     const ap=P(a.pid),c0=ap.cities.length,lg=S.log.length&&S.log[0];aiAct(a);
     if(ap.cities.length>c0)UI.flash={ids:ap.cities.slice(c0),t:Date.now()};
     if(au&&P(au.h).human&&S.phase==='auction'&&S.auc.mode==='bid'&&S.auc.plant===au.pl&&S.auc.high!==au.h){UI.outbid={name:P(S.auc.high).name,amt:S.auc.bid,t:Date.now()};buzz()}
@@ -8782,7 +8833,7 @@ function aiStepGo(){if(UI.stepWait==null||!_aiRun)return;const r=_aiRun;UI.stepW
 function tkPlant(t,i){const m=/Kraftwerk (\d+(?:\.\d+)?)/.exec(t);if(!m)return'';const n=+m[1];const P_=PLANTS[n];if(!P_)return'';const[ty,k,c]=P_;
   const fuel=FREE(ty)?LX('ohne Brennstoff','no fuel'):ty==='mine'?LX('verkauft Uran','sells uranium'):`${k}× ${(HYB[ty]||[ty]).map(r=>resIcon(r)).join('/')}`;
   return `<em class="tk-p${i?' old':''}" style="--tc:${TCOL[ty]||'#999'}"><i>${Math.floor(n)}</i><b>${tr(TYPE_NAME[ty])}</b><span>${fuel} → ${c} ${c===1?LX('Stadt','city'):LX('Städte','cities')}</span></em>`}
-function tkBuys(q){const out=[];for(const l of S.log){if(l.pid!==q.id||l.r<S.round-1)continue;const m=/kauft Kraftwerk (\d+(?:\.\d+)?) für (\d+) €/.exec(l.t);if(m)out.push({r:l.r,n:+m[1],pr:+m[2]})}
+function tkBuys(q){const out=[];for(const l of S.log){if(l.pid!==q.id||l.r<S.round-1)continue;if(l.m&&l.m.k==='plant'){out.push({r:l.r,n:l.m.n,pr:l.m.price});continue}/* ältere Spielstände: aus dem Text */const m=/kauft Kraftwerk (\d+(?:\.\d+)?) für (\d+) €/.exec(l.t);if(m)out.push({r:l.r,n:+m[1],pr:+m[2]})}
   if(!out.length)return'';
   return `<div class="tk-b"><span class="tk-bl">${LX('Kraftwerkskäufe','Plant purchases')}</span>${out.map(x=>{const P_=PLANTS[x.n];if(!P_)return'';const[ty,k,c]=P_;const fuel=FREE(ty)?LX('ohne Brennstoff','no fuel'):ty==='mine'?LX('Uran','uranium'):`${k}× ${(HYB[ty]||[ty]).map(r=>resIcon(r)).join('/')}`;
     return `<em class="tk-p" style="--tc:${TCOL[ty]||'#999'}"><small>${LX('R','R')}${x.r}</small><i>${Math.floor(x.n)}</i><b>${tr(TYPE_NAME[ty])}</b><span>${fuel} → ${c}</span><u>${x.pr} €</u></em>`}).join('')}</div>`}
@@ -8794,6 +8845,8 @@ let _pnRev=null;function plantByPN(str){if(!_pnRev||_pnRev.n!==Object.keys(PLANT
 const RREV={Kohle:'coal','Öl':'oil','Müll':'garbage',Uran:'uranium'};
 function tkHist(q,r){const o={plants:[],res:{},resCost:0,cities:0,cityCost:0,pass:false};
   for(const l of S.log){if(l.pid!==q.id||l.r!==r)continue;let m;
+    if(l.m){const x=l.m;if(x.k==='plant')o.plants.push({n:x.n,pr:x.price});else if(x.k==='buy'){for(const r in x.res)o.res[r]=(o.res[r]||0)+x.res[r];o.resCost+=x.cost}else if(x.k==='build'){o.cities++;o.cityCost+=x.cost}else if(x.k==='pass')o.pass=true;continue}
+    /* ältere Spielstände ohne Daten: aus dem Text lesen */
     if(m=/kauft Kraftwerk (\S+) für (\d+) €/.exec(l.t)){const n=plantByPN(m[1]);if(n!=null)o.plants.push({n,pr:+m[2]})}
     else if(m=/ kauft (.+) für (\d+) €\.$/.exec(l.t)){m[1].split(', ').forEach(x=>{const mm=/^(\d+) (\S+)$/.exec(x);if(mm&&RREV[mm[2]])o.res[RREV[mm[2]]]=(o.res[RREV[mm[2]]]||0)+(+mm[1])});o.resCost+=+m[2]}
     else if(m=/ baut in .+ \((\d+) €\)/.exec(l.t)){o.cities++;o.cityCost+=+m[1]}
@@ -8940,12 +8993,12 @@ const A={
   fit:()=>{fitMap();applyVB();return'skip'},
   pick:b=>{const n=+b.dataset.num;UI.sel=UI.sel===n?null:n;UI.bid=minBid(n)},
   bidm:()=>{UI.bid--},bidp:()=>{UI.bid++},
-  open:()=>{if(!myTurn('choose'))return;doOpen(H,UI.sel,UI.bid);UI.sel=null},
-  pass:()=>{if(!myTurn('choose'))return;doPass(H);UI.sel=null},
-  raise:()=>{if(!myTurn('bid'))return;bidRaise(H,UI.bid)},
-  proxy:()=>{if(!myTurn('bid'))return;UI.proxy={plant:S.auc.plant,max:UI.bid};bidRaise(H,S.auc.bid+1)},
+  open:()=>{if(!myTurn('choose')||!canOpen(H,UI.sel,UI.bid))return'skip';doOpen(H,UI.sel,UI.bid);UI.sel=null},
+  pass:()=>{if(!myTurn('choose')||!canPass(H))return'skip';doPass(H);UI.sel=null},
+  raise:()=>{if(!myTurn('bid')||!canRaise(H,UI.bid))return'skip';bidRaise(H,UI.bid)},
+  proxy:()=>{if(!myTurn('bid')||!canRaise(H,S.auc.bid+1))return'skip';UI.proxy={plant:S.auc.plant,max:UI.bid};bidRaise(H,S.auc.bid+1)},
   proxyStop:()=>{UI.proxy=null},
-  drop:()=>{if(!myTurn('bid'))return;bidDrop(H)},
+  drop:()=>{if(!myTurn('bid')||!canDrop(H))return'skip';bidDrop(H)},
   dsel:b=>{const n=+b.dataset.num;if(n!==S.newPlant)UI.discSel=n},
   dopen:()=>{UI.sheet=null},
   dconfirm:()=>{if(!myTurn('discard')||UI.discSel==null)return;const n=UI.discSel;UI.discSel=null;discardPlant(H,n)},
@@ -8965,17 +9018,22 @@ const A={
   suggest:()=>withSide(UI.kside||'south',()=>suggestCart()),
   realloc:()=>{const p=me();p.alloc=storageView(p);normAlloc(p);UI.powerKey='';UI.pcart={}},
   hyb:b=>{UI.hyb[+b.dataset.n]=b.dataset.r},
-  buy:()=>{if(!myTurn('buy'))return;const tot=Z();RES.forEach(r=>tot[r]=cartTot(r));if(!warnGate('buy',fuelWarn(tot)))return;const p=me();normAlloc(p);withSide(UI.kside||'south',()=>buyResources(H,tot));if(S.resNorth&&RES.some(r=>tot[r]>0))p.lastSide={r:S.round,s:UI.kside||'south'};if(S.resNorth&&(UI.kside||'south')==='north')S.log[0].t+=' (Nordmarkt)';for(const[n,c]of Object.entries(UI.pcart))RES.forEach(r=>{for(let i=0;i<(c[r]||0);i++)p.alloc[n].push(r)});UI.pcart={};nextSeq()},
-  skipbuy:()=>{if(!myTurn('buy'))return;if(!warnGate('skipbuy',fuelWarn({})))return;buyResources(H,{coal:0,oil:0,garbage:0,uranium:0});nextSeq()},
+  buy:()=>{if(!myTurn('buy'))return'skip';const tot=Z();RES.forEach(r=>tot[r]=cartTot(r));if(!warnGate('buy',fuelWarn(tot)))return;if(!cmdBuy(H,tot,UI.kside||'south',UI.pcart))return'skip';UI.pcart={}},
+  skipbuy:()=>{if(!myTurn('buy'))return'skip';if(!warnGate('skipbuy',fuelWarn({})))return;cmdBuy(H,{coal:0,oil:0,garbage:0,uranium:0},'south',null)},
   bsel:b=>{UI.buildSel=b.dataset.city},
-  build:()=>{if(!myTurn('build'))return;if(doBuild(H,UI.buildSel))UI.buildSel=null},
+  build:()=>{if(!myTurn('build')||!canBuildIn(H,UI.buildSel))return'skip';if(doBuild(H,UI.buildSel))UI.buildSel=null},
   breset:()=>{if(!myTurn('build'))return;undoBuilds(H)},
   bdone:()=>{if(!myTurn('build'))return;if(!warnGate('bdone',buildWarn()))return;if(!S.turnBuilt.length)log(me().name+' baut nicht aus.',H);UI.buildSel=null;nextSeq()},
   ptoggle:b=>{const n=+b.dataset.num;UI.power=UI.power.includes(n)?UI.power.filter(x=>x!==n):[...UI.power,n]},
   sellToggle:()=>{UI.sell=!UI.sell},
   jumpTog:()=>{const p=me();p.useJump=!p.useJump;UI.buildSel=null},
-  power:()=>{if(S.phase!=='bureau')return;const p=me();p.noSell=!!(S.umk&&UI.sell===false);const o=allocPower(p,UI.power);if(!o)return;for(const[n,got]of Object.entries(o.take))got.forEach(r=>{const a=p.alloc[n];a.splice(a.indexOf(r),1)});payout(p,o.use,o.powered,UI.power||[]);finishBureau();if(S.phase==='end')UI.sheet='results'},
+  power:()=>{if(S.fsm!==ST.BUREAU)return'skip';if(!cmdPower(H,UI.power||[],UI.sell))return;if(S.phase==='end')UI.sheet='results'},
 };
+
+/* v275: Eingaben nur im passenden Zustand, kein Doppelklick auf Spielzüge */
+const ACT_FSM={open:ST.SELECT,pass:ST.SELECT,raise:ST.BID,proxy:ST.BID,drop:ST.BID,dconfirm:ST.BID,buy:ST.BUY,skipbuy:ST.BUY,build:ST.BUILD,breset:ST.BUILD,bdone:ST.BUILD,advBuild:ST.BUILD,power:ST.BUREAU,gateGo:ST.ANIM};
+function inputOK(act){const need=ACT_FSM[act];if(!need)return true;if(!S||fsmSync()!==need)return false;
+  const now=performance.now(),l=UI.lastAct;if(l&&l.a===act&&now-l.t<350)return false;UI.lastAct={a:act,t:now};return true}
 function myTurn(kind){const a=actor();return a&&a.pid===H&&a.kind===kind}
 /* v263: lange drücken auf ein Kraftwerk öffnet seine Karte mit den Preisen je Spieler */
 {let lpT=null,lpEl=null;document.addEventListener('pointerdown',e=>{const c=e.target.closest('.plant[data-num]');if(!c||!S||!S.mat)return;lpEl=c;clearTimeout(lpT);lpT=setTimeout(()=>{if(lpEl!==c)return;UI.lp=Date.now();UI.back=isDock()?UI.sheet:null;UI.pnum=+c.dataset.num;UI.sheet='plant';render()},480)},true);
@@ -8985,6 +9043,7 @@ function myTurn(kind){const a=actor();return a&&a.pid===H&&a.kind===kind}
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b||b.disabled||b.hasAttribute('disabled'))return;
   const f=A[b.dataset.act];if(!f)return;
+  if(!inputOK(b.dataset.act))return;
   let anc=null;if(!start.hidden&&start.contains(b)){const sel='[data-act="'+b.dataset.act+'"]'+Object.entries(b.dataset).filter(([k])=>k!=='act').map(([k,v])=>'[data-'+k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase())+'="'+CSS.escape(v)+'"]').join('');anc={sel,top:b.getBoundingClientRect().top}}
   const fixAnc=()=>{if(!anc||start.hidden)return;const nb=start.querySelector(anc.sel);if(nb)startScroller().scrollTop+=nb.getBoundingClientRect().top-anc.top};
   const S0=S,snap=S&&S.phase!=='end'&&b.dataset.act!=='undo'?JSON.stringify(S):null;
@@ -8998,14 +9057,17 @@ document.addEventListener('click',e=>{
 });
 window.addEventListener('resize',()=>{if(S){applyVB();if(UI.sheet)renderSheet()}});
 
+/* Testbrett für ?debug=midgame: Runde 8, Stufe 2, 4 Spieler (8/6/8/6 Städte), voller Kraftwerks- und Rohstoffmarkt, Brennstoff in den Lagern */
+const DEBUG_MIDGAME={"v":1,"n":4,"players":[{"id":0,"name":"Nordlicht AG","color":"#4f9dff","human":true,"money":96,"plants":[12,14,26],"cities":["stuttgart","ulm","augsburg","muenchen","freiburg","passau","hamburg","kiel"],"pool":{"coal":2,"oil":2,"garbage":3,"uranium":0},"done":false,"lastPowered":7,"logo":"bolt","links":["stuttgart|ulm","augsburg|ulm","augsburg|muenchen","freiburg|stuttgart","muenchen|passau","hamburg|schwerin","berlin|schwerin","berlin|potsdam","leipzig|potsdam","chemnitz|leipzig","chemnitz|nuernberg","augsburg|nuernberg","hamburg|kiel"],"alloc":{"12":["coal","coal"],"14":["garbage","garbage","garbage"],"26":["oil","oil"]}},{"id":1,"name":"Rheinstrom AG","color":"#ff5fa2","human":false,"money":74,"plants":[10,23,24],"cities":["nuernberg","wuerzburg","regensburg","dresden","schwerin","luebeck"],"pool":{"coal":2,"oil":0,"garbage":2,"uranium":1},"done":false,"lastPowered":6,"logo":"wave","links":["nuernberg|wuerzburg","nuernberg|regensburg","chemnitz|dresden","chemnitz|nuernberg","berlin|schwerin","berlin|cottbus","cottbus|dresden","luebeck|schwerin"],"alloc":{"10":["coal","coal"],"23":["uranium"],"24":["garbage","garbage"]}},{"id":2,"name":"Ostwatt","color":"#b48cff","human":false,"money":79,"plants":[15,16,28],"cities":["koblenz","mainz","frankfurt","mannheim","saarbruecken","chemnitz","cuxhaven","bremen"],"pool":{"coal":3,"oil":2,"garbage":0,"uranium":0},"done":false,"lastPowered":6,"logo":"sun","links":["koblenz|mainz","frankfurt|mainz","mainz|mannheim","koblenz|saarbruecken","chemnitz|nuernberg","nuernberg|wuerzburg","frankfurt|wuerzburg","cuxhaven|hamburg","hamburg|schwerin","berlin|schwerin","berlin|potsdam","leipzig|potsdam","chemnitz|leipzig","bremen|cuxhaven"],"alloc":{"15":["coal","coal","coal"],"16":["oil","oil"],"28":[]}},{"id":3,"name":"Südnetz","color":"#4fd6c4","human":false,"money":84,"plants":[8,11,17],"cities":["berlin","potsdam","ffo","cottbus","leipzig","rostock"],"pool":{"coal":3,"oil":0,"garbage":0,"uranium":2},"done":false,"lastPowered":6,"logo":"pylon","links":["berlin|potsdam","berlin|ffo","cottbus|ffo","leipzig|potsdam","berlin|rostock"],"alloc":{"8":["coal","coal","coal"],"11":["uranium","uranium"],"17":[]}}],"deck":[32,46,21,99,27,40,35,37,42,39,50],"market":[19,22,25,29,30,33,34,44],"deckId":"std","deckKeys":[3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,42,44,46,50],"phaseSet":[39],"step3Early":false,"map":"de","noUranium":false,"phaseOut":false,"resMarket":{"coal":13,"oil":12,"garbage":12,"uranium":3},"owners":{"kiel":[0],"luebeck":[1],"schwerin":[1],"koblenz":[2],"stuttgart":[0],"nuernberg":[1],"wuerzburg":[1],"berlin":[3],"potsdam":[3],"mainz":[2],"ulm":[0],"augsburg":[0],"regensburg":[1],"ffo":[3],"cottbus":[3],"muenchen":[0],"mannheim":[2],"frankfurt":[2],"saarbruecken":[2],"dresden":[1],"chemnitz":[2],"passau":[0],"freiburg":[0],"leipzig":[3],"hamburg":[0],"rostock":[3],"cuxhaven":[2],"bremen":[2]},"regions":["SO","O","SW","N"],"ai":"hard","round":8,"step":2,"phase":"auction","order":[2,0,1,3],"seats":[2,0,1,3],"origDisc":false,"log":[{"t":"Rabatt: Das kleinste Kraftwerk 19 ist diese Runde ab 1 € zu haben.","pid":null,"r":8,"ph":"auction"},{"t":"Südnetz versorgt 6 Städte und verdient 73 €.","pid":3,"r":7,"ph":"bureau"},{"t":"Ostwatt versorgt 6 Städte und verdient 73 €.","pid":2,"r":7,"ph":"bureau"},{"t":"Rheinstrom AG versorgt 6 Städte und verdient 73 €.","pid":1,"r":7,"ph":"bureau"},{"t":"Nordlicht AG versorgt 7 Städte und verdient 82 €.","pid":0,"r":7,"ph":"bureau"},{"t":"Stufe 2 beginnt: Jede Stadt bietet jetzt zwei Plätze. Kraftwerk 18 fällt weg.","pid":null,"r":7,"ph":"build"},{"t":"Ostwatt baut in Bremen (17 €).","pid":2,"r":7,"ph":"build"},{"t":"Ostwatt baut in Cuxhaven (59 €).","pid":2,"r":7,"ph":"build"},{"t":"Nordlicht AG baut in Kiel (17 €).","pid":0,"r":7,"ph":"build"},{"t":"Nordlicht AG baut in Hamburg (78 €).","pid":0,"r":7,"ph":"build"},{"t":"Südnetz baut in Rostock (26 €).","pid":3,"r":7,"ph":"build"},{"t":"Rheinstrom AG baut in Lübeck (15 €).","pid":1,"r":7,"ph":"build"},{"t":"Rheinstrom AG baut in Schwerin (41 €).","pid":1,"r":7,"ph":"build"},{"t":"Ostwatt kauft 2 Kohle, 2 Öl für 23 €.","pid":2,"r":7,"ph":"resources"},{"t":"Nordlicht AG kauft 2 Kohle, 2 Öl für 20 €.","pid":0,"r":7,"ph":"resources"},{"t":"Südnetz kauft 3 Kohle, 2 Uran für 39 €.","pid":3,"r":7,"ph":"resources"},{"t":"Rheinstrom AG kauft 2 Müll für 10 €.","pid":1,"r":7,"ph":"resources"},{"t":"Rheinstrom AG verzichtet auf ein Kraftwerk.","pid":1,"r":7,"ph":"auction"},{"t":"Südnetz legt Kraftwerk 6 still.","pid":3,"r":7,"ph":"auction"},{"t":"Südnetz kauft Kraftwerk 11 für 2 €.","pid":3,"r":7,"ph":"auction"},{"t":"Rheinstrom AG steigt aus.","pid":1,"r":7,"ph":"auction"},{"t":"Südnetz bietet 2 € auf Kraftwerk 11.","pid":3,"r":7,"ph":"auction"},{"t":"Nordlicht AG verzichtet auf ein Kraftwerk.","pid":0,"r":7,"ph":"auction"},{"t":"Ostwatt verzichtet auf ein Kraftwerk.","pid":2,"r":7,"ph":"auction"},{"t":"Rabatt: Das kleinste Kraftwerk 11 ist diese Runde ab 1 € zu haben.","pid":null,"r":7,"ph":"auction"},{"t":"Südnetz versorgt 5 Städte und verdient 64 €.","pid":3,"r":6,"ph":"bureau"},{"t":"Ostwatt versorgt 6 Städte und verdient 73 €.","pid":2,"r":6,"ph":"bureau"},{"t":"Rheinstrom AG versorgt 4 Städte und verdient 54 €.","pid":1,"r":6,"ph":"bureau"},{"t":"Nordlicht AG versorgt 5 Städte und verdient 64 €.","pid":0,"r":6,"ph":"bureau"},{"t":"Nordlicht AG baut nicht aus.","pid":0,"r":6,"ph":"build"}],"step3Pending":false,"endTriggered":false,"turnBuilt":[],"auc":{"mode":"choose","chooser":2},"discard":null,"seq":[1,3,0,2],"seqIdx":4,"boughtAny":false,"ranking":null,"promos":[],"plantOv":{},"stats":{"start":1794911103881,"partial":false,"series":[{"r":1,"m":[55,33,43,41],"c":[1,2,1,2],"p":[1,2,1,2]},{"r":2,"m":[49,48,44,39],"c":[3,2,2,3],"p":[3,2,2,2]},{"r":3,"m":[43,42,48,36],"c":[4,2,3,4],"p":[2,2,3,2]},{"r":4,"m":[54,40,70,66],"c":[4,2,5,4],"p":[4,2,5,4]},{"r":5,"m":[75,53,81,89],"c":[6,3,6,4],"p":[6,3,6,4]},{"r":6,"m":[129,67,105,78],"c":[6,4,6,5],"p":[5,4,6,5]},{"r":7,"m":[96,74,79,84],"c":[8,6,8,6],"p":[7,6,6,6]}],"step2":7,"step3":null,"pl":[{"auc":[{"n":4,"price":4,"min":4,"r":1,"disc":false},{"n":12,"price":12,"min":12,"r":2,"disc":false},{"n":14,"price":16,"min":14,"r":3,"disc":false},{"n":26,"price":28,"min":26,"r":4,"disc":false}],"res":{"coal":[11,32],"oil":[9,39],"garbage":[0,0],"uranium":[0,0]},"slot":80,"conn":115,"built":["stuttgart","ulm","augsburg","muenchen","freiburg","passau","hamburg","kiel"],"income":372,"maxInc":82,"burn":{"coal":11,"oil":9,"garbage":0,"uranium":0},"powT":{"coal":2,"hybrid":7,"oil":19}},{"auc":[{"n":7,"price":10,"min":7,"r":1,"disc":false},{"n":10,"price":12,"min":10,"r":2,"disc":false},{"n":23,"price":23,"min":23,"r":3,"disc":false},{"n":24,"price":25,"min":24,"r":4,"disc":false}],"res":{"coal":[6,18],"oil":[3,13],"garbage":[4,20],"uranium":[3,26]},"slot":60,"conn":72,"built":["nuernberg","wuerzburg","regensburg","dresden","schwerin","luebeck"],"income":303,"maxInc":73,"burn":{"coal":4,"oil":3,"garbage":4,"uranium":3},"powT":{"oil":2,"coal":4,"uranium":7,"garbage":8}},{"auc":[{"n":3,"price":6,"min":1,"r":1,"disc":true},{"n":15,"price":15,"min":15,"r":2,"disc":false},{"n":16,"price":18,"min":16,"r":3,"disc":false},{"n":28,"price":30,"min":28,"r":6,"disc":false}],"res":{"coal":[12,47],"oil":[10,43],"garbage":[0,0],"uranium":[0,0]},"slot":80,"conn":114,"built":["koblenz","mainz","frankfurt","mannheim","saarbruecken","chemnitz","cuxhaven","bremen"],"income":382,"maxInc":73,"burn":{"coal":12,"oil":10,"garbage":0,"uranium":0},"powT":{"oil":12,"coal":17}},{"auc":[{"n":8,"price":12,"min":8,"r":1,"disc":false},{"n":5,"price":7,"min":1,"r":2,"disc":true},{"n":6,"price":9,"min":1,"r":3,"disc":true},{"n":17,"price":16,"min":1,"r":6,"disc":true},{"n":11,"price":2,"min":1,"r":7,"disc":true}],"res":{"coal":[18,67],"oil":[6,20],"garbage":[5,27],"uranium":[4,48]},"slot":60,"conn":42,"built":["berlin","potsdam","ffo","cottbus","leipzig","rostock"],"income":344,"maxInc":73,"burn":{"coal":18,"oil":6,"garbage":4,"uranium":3},"powT":{"coal":12,"hybrid":3,"garbage":4,"uranium":6}}]},"discount":19,"passedOnce":false,"discGone":false,"ph":{"coal":[1,1,3,3,3,4,4],"oil":[3,4,3,3,4,4,5],"garbage":[7,6,5,5,5,5,5],"uranium":[14,12,10,10,8,8,12]},"rpass":[],"lastBuyN":4,"trades":[{"r":5,"pid":1,"side":"","items":[["coal",2,0],["uranium",1,0]],"parts":[["coal",2],["uranium",1]],"total":14,"t":1794911103895},{"r":5,"pid":3,"side":"","items":[["coal",3,0],["oil",2,0],["garbage",2,0]],"parts":[["coal",3],["oil",2],["garbage",2]],"total":31,"t":1794911103896},{"r":5,"pid":0,"side":"","items":[["coal",1,0],["oil",1,0]],"parts":[["coal",1],["oil",1]],"total":9,"t":1794911103896},{"r":5,"pid":2,"side":"","items":[["coal",2,0],["oil",2,0]],"parts":[["coal",2],["oil",2]],"total":20,"t":1794911103898},{"r":6,"pid":1,"side":"","items":[["uranium",1,0]],"parts":[["uranium",1]],"total":8,"t":1794911103903},{"r":6,"pid":3,"side":"","items":[["coal",3,0],["garbage",1,0],["uranium",2,0]],"parts":[["coal",3],["garbage",1],["uranium",2]],"total":40,"t":1794911103903},{"r":6,"pid":2,"side":"","items":[["coal",2,0],["oil",2,0]],"parts":[["coal",2],["oil",2]],"total":19,"t":1794911103904},{"r":6,"pid":0,"side":"","items":[["oil",2,0]],"parts":[["oil",2]],"total":10,"t":1794911103904},{"r":7,"pid":1,"side":"","items":[["garbage",2,0]],"parts":[["garbage",2]],"total":10,"t":1794911103907},{"r":7,"pid":3,"side":"","items":[["coal",3,0],["uranium",2,0]],"parts":[["coal",3],["uranium",2]],"total":39,"t":1794911103908},{"r":7,"pid":0,"side":"","items":[["coal",2,0],["oil",2,0]],"parts":[["coal",2],["oil",2]],"total":20,"t":1794911103909},{"r":7,"pid":2,"side":"","items":[["coal",2,0],["oil",2,0]],"parts":[["coal",2],["oil",2]],"total":23,"t":1794911103910}],"builtRound":7,"rs":{"1":{"0":{"bn":1,"bc":10,"inc":22,"pw":1},"1":{"bn":2,"bc":27,"inc":33,"pw":2},"2":{"bn":1,"bc":10,"inc":22,"pw":1},"3":{"bn":2,"bc":24,"inc":33,"pw":2}},"2":{"0":{"bn":2,"bc":32,"inc":44,"pw":3},"1":{"inc":33,"pw":2},"2":{"bn":1,"bc":15,"inc":33,"pw":2},"3":{"bn":1,"bc":17,"inc":33,"pw":2}},"3":{"0":{"bn":1,"bc":15,"inc":33,"pw":2},"1":{"inc":33,"pw":2},"2":{"bn":1,"bc":15,"inc":44,"pw":3},"3":{"bn":1,"bc":16,"inc":33,"pw":2}},"4":{"0":{"inc":54,"pw":4},"1":{"inc":33,"pw":2},"2":{"bn":2,"bc":36,"inc":64,"pw":5},"3":{"inc":54,"pw":4}},"5":{"0":{"bn":2,"bc":43,"inc":73,"pw":6},"1":{"bn":1,"bc":17,"inc":44,"pw":3},"2":{"bn":1,"bc":42,"inc":73,"pw":6},"3":{"inc":54,"pw":4}},"6":{"0":{"inc":64,"pw":5},"1":{"bn":1,"bc":32,"inc":54,"pw":4},"2":{"inc":73,"pw":6},"3":{"bn":1,"bc":19,"inc":64,"pw":5}},"7":{"0":{"bn":2,"bc":95,"inc":82,"pw":7},"1":{"bn":2,"bc":56,"inc":73,"pw":6},"2":{"bn":2,"bc":76,"inc":73,"pw":6},"3":{"bn":1,"bc":26,"inc":73,"pw":6}}},"idle":0,"lastTot":28,"bureauDone":false,"outage":false,"newPlant":null,"fsm":"PHASE_2_SELECT_PLANT","debug":"midgame"};
 /* --- Start --- */
 function boot(data){
   /* Startbildschirm: bei jedem Öffnen ein zufälliger Spielplan */
   try{const q=new URLSearchParams(location.search).get('bootmap');if(q&&MAPS[q])UI.map=q}catch(_){}
   if(!UI.map){const ks=Object.keys(MAPS);UI.map=ks[Math.random()*ks.length|0];if(MAPS[UI.map].paris&&(UI.deck==='mix'||UI.deck==='mix1'))UI.deck='std'}
+  if(DEBUG_MODE==='midgame'){S=JSON.parse(JSON.stringify(DEBUG_MIDGAME));S.fsm=null;fsmSync();loadMap(S.map);loadDeck(S.deckKeys);applyPlantOv();applyMapN(S.n);applyGameMods();UI.prevOwners=JSON.parse(JSON.stringify(S.owners));bootEnd(true);renderStart(false);render();schedule();return}
   if(data&&data.S)S=data.S;
   else{try{const raw=localStorage.getItem(SAVE_KEY);if(raw){const s=JSON.parse(raw);if(s&&s.v===1)S=s}}catch(_){}}
-  if(S){S.ai=S.ai||'normal';loadMap(S.map||'de');loadDeck(S.deckKeys||deckKeys('std'));applyPlantOv();applyMapN(S.n);applyGameMods();UI.prevOwners=JSON.parse(JSON.stringify(S.owners));render();if(data&&data.S){renderStart(false);schedule()}else renderStart(true)}
+  if(S){fsmSync();S.ai=S.ai||'normal';loadMap(S.map||'de');loadDeck(S.deckKeys||deckKeys('std'));applyPlantOv();applyMapN(S.n);applyGameMods();UI.prevOwners=JSON.parse(JSON.stringify(S.owners));render();if(data&&data.S){renderStart(false);schedule()}else renderStart(true)}
   else renderStart(true);
 }
 try{window.claude?.hot?.snapshot?.(()=>({S}))}catch(_){}

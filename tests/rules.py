@@ -8,7 +8,7 @@ URL=os.environ.get('GM_BASE','http://localhost:8778')+'/index.html'
 JS=r"""
 async()=>{
  const R=[];const ok=(name,cond,info)=>R.push({name,ok:!!cond,info:cond?'':String(info||'')});
- const quiet=()=>{window.__fast=true;try{clearTimeout(timer)}catch(_){};window.schedule=()=>{}};
+ const quiet=()=>{window.__fast=true;window.__strict=true;try{clearTimeout(timer)}catch(_){};window.schedule=()=>{}};
  bootEnd(true);quiet();
  // ---- unit: resource price arithmetic
  newGame('T',2,'normal',null,'de',{deck:'std'});quiet();
@@ -18,7 +18,7 @@ async()=>{
  // ---- unit: payout table monotone
  let mono=true;for(let i=1;i<=20;i++)if(PAY[i]<PAY[i-1])mono=false;ok('payout table rises with cities',mono);
  // ---- unit: auction
- {const p=S.players[1];const m0=p.money,num=S.market[0];S.phase='auction';const b0=minBid(num)+2;doOpen(p.id,num,b0);
+ {const p=P(S.auc.chooser);const m0=p.money,num=S.market[0];const b0=minBid(num)+2;doOpen(p.id,num,b0);
   while(S.auc&&S.auc.mode==='bid'&&S.auc.bidders.length>1){const cur=S.auc.bidders[S.auc.turn];if(cur===p.id)bidRaise(p.id,S.auc.bid+1);else bidDrop(cur)}
   ok('auction winner owns the plant',p.plants.includes(num),JSON.stringify(p.plants));
   ok('auction winner pays the bid',p.money===m0-S.auc.bid||p.money===m0-b0,m0+'→'+p.money);
@@ -29,6 +29,35 @@ async()=>{
   ok('first city costs only the slot',m0-p.money===o1.slot&&o1.conn===0,(m0-p.money)+' slot '+o1.slot);
   const o2=buildOptions(p)[0];const m1=p.money;doBuild(p.id,o2.city);ok('second city costs slot + connection',m1-p.money===o2.slot+o2.conn&&o2.conn>0,o2.slot+'+'+o2.conn);
   ok('cannot build the same city twice',!buildOptions(p).some(x=>x.city===o1.city))}
+ // ---- Phase 1: state machine, turn order, input validation
+ {newGame('T',3,'normal',null,'de',{deck:'std'});quiet();
+  ok('new game starts in PHASE_2_SELECT_PLANT',S.fsm===ST.SELECT,S.fsm);
+  const c=S.auc.chooser;ok('round 1: passing is refused',!canPass(c));
+  let threw=false;try{doPass(c)}catch(e){threw=true}ok('round 1: doPass throws in strict mode',threw&&!P(c).done);
+  const other=S.order.find(id=>id!==c),num=buyable()[0];
+  ok('out-of-turn opening refused',!canOpen(other,num,minBid(num)));
+  ok('opening below minimum refused',!canOpen(c,num,minBid(num)-1));
+  ok('opening above cash refused',!canOpen(c,num,P(c).money+1));
+  doOpen(c,num,minBid(num));ok('opening a bid → PHASE_2_BIDDING',S.fsm===ST.BID||S.fsm===ST.SELECT,S.fsm);
+  if(S.fsm===ST.BID){const cur=S.auc.bidders[S.auc.turn];ok('raise must beat the bid',!canRaise(cur,S.auc.bid));ok('raise beyond cash refused',!canRaise(cur,P(cur).money+1));
+    const nt=S.auc.bidders.find(x=>x!==cur);ok('out-of-turn raise refused',!canRaise(nt,S.auc.bid+1))}
+  let st=0;while(S.fsm!==ST.BUY&&S.fsm!==ST.ANIM&&st++<200){const a=actor();if(!a)break;aiAct(a)}
+  ok('after round-1 auction: order re-determined, PHASE_3 next',S.fsm===ST.BUY||S.fsm===ST.ANIM,S.fsm);
+  const ord=S.players.map(p=>p.id).sort((a,b)=>cityCount(P(b))-cityCount(P(a))||Math.max(0,...P(b).plants)-Math.max(0,...P(a).plants));
+  ok('round-1 order follows biggest plant',S.order.join()===ord.join(),S.order.join()+' vs '+ord.join());
+  ok('PHASE_3 buys in reverse order',S.seq.join()===[...S.order].reverse().join(),S.seq.join());
+  const buyer=S.seq[S.seqIdx],notBuyer=S.seq[1];ok('out-of-turn buying refused',!canBuy(notBuyer,{coal:0,oil:0,garbage:0,uranium:0}));
+  ok('buying beyond storage refused',!canBuy(buyer,{coal:S.resMarket.coal,oil:0,garbage:0,uranium:0})||caps(P(buyer)).coal+caps(P(buyer)).hybrid>=S.resMarket.coal);
+  ok('illegal transition throws in strict mode',(()=>{try{fsmGo(ST.OVER);return false}catch(e){return true}})());
+  ok('old saves get a state',(()=>{const f=S.fsm;delete S.fsm;const d=fsmSync();S.fsm=f;return d===f})());
+  /* gate: with a human player the game waits in ANIMATING and ignores everything except Continue */
+  newGame('T',2,'normal',null,'de',{deck:'std'});const fw=window.__fast;window.__fast=false;window.schedule=()=>{};AUTO_NEXT=false;
+  let g=0;while(S.fsm!==ST.ANIM&&g++<200){const a=actor();if(!a)break;aiAct(a)}
+  ok('phase end waits in ANIMATING',S.fsm===ST.ANIM&&S.gate==='resources'&&actor()===null,S.fsm+' '+S.gate);
+  ok('game input blocked while ANIMATING',!inputOK('buy')&&!inputOK('open'));
+  UI.lastAct=null;ok('Continue accepted while ANIMATING',inputOK('gateGo'));gateGo();ok('Continue → PHASE_3_BUY_RESOURCES',S.fsm===ST.BUY,S.fsm);
+  UI.lastAct=null;const t0=inputOK('skipbuy'),t1=inputOK('skipbuy');ok('double click on a move is ignored',t0&&!t1);
+  window.__fast=fw;quiet()}
  // ---- full computer games with invariants
  const maps=['de','fr','it','na','bx','kr','ru','ind','jp','cn','au','uk'].filter(m=>MAPS[m]);const games=[];
  for(const mp of maps)for(const nAI of [2,4]){
@@ -38,7 +67,9 @@ async()=>{
    while(S.phase!=='end'&&steps<20000){steps++;
     if(S.gate){gateGo();continue}
     const a=actor();if(!a){if(S.phase==='bureau'){finishBureau();continue}bad='no actor in '+S.phase;break}
-    aiAct(a);
+    const f0=S.fsm;aiAct(a);
+    if(S.fsm!==fsmDerive()){bad='state '+S.fsm+' but fields say '+fsmDerive()+' (after '+a.kind+' from '+f0+')';break}
+    if((S.phase==='resources'||S.phase==='build')&&!S.gate&&S.seq.join()!==[...S.order].reverse().join()){bad='turn order not reversed in '+S.phase;break}
     for(const p of S.players){if(p.money<0){bad=p.name+' money '+p.money;break}if(new Set(p.cities).size!==p.cities.length){bad='duplicate city '+p.name;break}
       if(RES.some(r=>p.pool[r]<0)){bad='negative pool';break}}
     for(const c in S.owners)if((S.owners[c]||[]).length>3){bad='city over 3 owners '+c}
