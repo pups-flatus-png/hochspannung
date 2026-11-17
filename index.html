@@ -4590,10 +4590,10 @@ const CAP={coal:24,oil:24,garbage:24,uranium:12},TOT={...CAP},PRICES={},PRICES_N
 const UP=[1,2,3,4,5,6,7,8,10,12,14,16];
 const RES=['coal','oil','garbage','uranium'];
 const RNAME={flux:'beliebige Rohstoffe',mine:'Uran zum Verkauf',gohybrid:'Müll oder Öl',fusion:'Fusion',coal:'Kohle',oil:'Öl',garbage:'Müll',uranium:'Uran',eco:'Öko',hybrid:'Kohle oder Öl'};
-const RESUPPLY={5:{coal:[5,7,5],oil:[4,5,6],garbage:[3,3,5],uranium:[2,3,2]},6:{coal:[7,9,6],oil:[5,6,7],garbage:[3,5,6],uranium:[2,3,3]},3:{coal:[4,5,3],oil:[2,3,4],garbage:[1,2,3],uranium:[1,1,1]},4:{coal:[5,6,4],oil:[3,4,5],garbage:[2,3,4],uranium:[1,2,2]}};
+const RESUPPLY={2:{coal:[3,4,3],oil:[2,2,4],garbage:[1,2,3],uranium:[1,1,1]},5:{coal:[5,7,5],oil:[4,5,6],garbage:[3,3,5],uranium:[2,3,2]},6:{coal:[7,9,6],oil:[5,6,7],garbage:[3,5,6],uranium:[2,3,3]},3:{coal:[4,5,3],oil:[2,3,4],garbage:[1,2,3],uranium:[1,1,1]},4:{coal:[5,6,4],oil:[3,4,5],garbage:[2,3,4],uranium:[1,2,2]}};
 const PHASES={auction:'Kraftwerke versteigern',resources:'Rohstoffe kaufen',build:'Netz ausbauen',bureau:'Strom liefern',end:'Spielende'};
 let STEP2_AT=7, END_AT=17;const SLOT_COST=[10,15,20];
-const RULES_N={3:{s2:7,end:17,regions:3,remove:8},4:{s2:7,end:17,regions:4,remove:4},5:{s2:7,end:15,regions:5,remove:0},6:{s2:6,end:14,regions:5,remove:0}};
+const RULES_N={2:{s2:10,end:21,regions:3,remove:8},3:{s2:7,end:17,regions:3,remove:8},4:{s2:7,end:17,regions:4,remove:4},5:{s2:7,end:15,regions:5,remove:0},6:{s2:6,end:14,regions:5,remove:0}};
 function applyRulesN(n){const r=RULES_N[n]||RULES_N[4];STEP2_AT=r.s2;END_AT=r.end;return r}
 const regionCount=n=>(RULES_N[n]||RULES_N[4]).regions;
 const COLS6=['#5d8fb8','#c07a5c','#9283c4','#6fae8a','#c2a85a','#c46a93'];
@@ -4835,7 +4835,7 @@ const FSM_NEXT={
   [ST.SELECT]:[ST.BID,ST.ORDER,ST.BUY,ST.ANIM],
   [ST.BID]:[ST.SELECT,ST.ORDER,ST.BUY,ST.ANIM],
   [ST.BUY]:[ST.BUILD,ST.ANIM],
-  [ST.BUILD]:[ST.BUREAU,ST.ANIM],
+  [ST.BUILD]:[ST.BUREAU,ST.ANIM,ST.OVER],
   [ST.BUREAU]:[ST.ORDER,ST.OVER,ST.ANIM],
   [ST.ANIM]:[ST.ORDER,ST.BUY,ST.BUILD,ST.BUREAU],
   [ST.OVER]:[]};
@@ -4870,7 +4870,7 @@ function canBuildIn(pid,city){if(S.fsm!==ST.BUILD||S.seq[S.seqIdx]!==pid)return 
 function cmdBuy(pid,cart,side,plantCart){if(!withSide(side,()=>canBuy(pid,cart)))return strictFail('buy rejected');const p=P(pid);normAlloc(p);
   withSide(side,()=>buyResources(pid,cart));if(RES.some(r=>cart[r]>0))emit({t:'fuel',pid,res:Object.fromEntries(RES.filter(r=>cart[r]).map(r=>[r,cart[r]]))});if(S.resNorth&&RES.some(r=>cart[r]>0))p.lastSide={r:S.round,s:side};if(S.resNorth&&side==='north')S.log[0].t+=' (Nordmarkt)';
   for(const[n,c]of Object.entries(plantCart||{}))if(p.alloc[n])RES.forEach(r=>{for(let i=0;i<(c[r]||0);i++)p.alloc[n].push(r)});nextSeq();return true}
-function cmdPower(pid,nums,sell){if(S.fsm!==ST.BUREAU)return strictFail('power outside bureaucracy');const p=P(pid);p.noSell=!!(S.umk&&sell===false);const o=allocPower(p,nums);if(!o)return false;
+function cmdPower(pid,nums,sell){if(S.fsm!==ST.BUREAU)return strictFail('power outside bureaucracy');const p=P(pid);p.noSell=!!(S.umk&&sell===false);const o=allocPower(p,nums);if(!o)return false;if(o.realloc)p.alloc=o.realloc;
   for(const[n,got]of Object.entries(o.take))got.forEach(r=>{const a=p.alloc[n];a.splice(a.indexOf(r),1)});payout(p,o.use,o.powered,nums||[]);finishBureau();return true}
 function newStats(){return{start:Date.now(),partial:false,series:[],step2:null,step3:null,pl:S.players.map(()=>({auc:[],res:{coal:[0,0],oil:[0,0],garbage:[0,0],uranium:[0,0]},slot:0,conn:0,built:[],income:0,maxInc:0}))}}
 function st(){if(!S.stats){S.stats=newStats();S.stats.partial=true}return S.stats}
@@ -4944,7 +4944,7 @@ function drawToMarket(){
   if(c>=100&&c<STEP3+50&&c!==STEP3){promoEvent(c);return drawToMarket()}
   if(c===FLUX){S.market.push(c);S.market.sort((a,b)=>a-b);const x=S.market.shift();log(x===FLUX?'Der Flux-Generator ist aufgedeckt, aber das kleinste Kraftwerk im Markt: Er scheidet sofort aus.':'Der Flux-Generator ist aufgedeckt. Das kleinste Kraftwerk '+PN(x)+' fällt aus dem Markt.');if(x===S.discount)S.discount=null;return drawToMarket()}
   if(c===STEP3){
-    if(S.phase==='auction'){S.step3Pending=true;log('Die Stufe-3-Karte ist aufgetaucht. Nach der Versteigerung beginnt Stufe 3.')}
+    if(S.phase==='auction'){S.step3Pending=true;S.deck=shuffle(S.deck.filter(x=>x!==STEP3));/* v278: Regel – Stapel sofort mischen */log('Die Stufe-3-Karte ist aufgetaucht. Nach der Versteigerung beginnt Stufe 3.')}
     else startStep3();
     return;
   }
@@ -5040,6 +5040,8 @@ function endAuctionPhase(){
   if(S.discount!=null&&S.market.includes(S.discount)){const x=S.discount;S.discGone=true;S.market=S.market.filter(y=>y!==x);log('Das Rabatt-Kraftwerk '+PN(x)+' wurde nicht gekauft und fällt weg.');drawToMarket();removeLowCities()}
   S.discount=null;
   if((MAPS[S.map].allPassRemove||(S.origDisc&&!MR().allPassTwo))&&!S.boughtAny&&S.round>1&&S.market.length){const x=S.market.shift();S.discGone=true;log('Niemand hat ein Kraftwerk gekauft. Kraftwerk '+PN(x)+' fällt weg.');drawToMarket();removeLowCities()}
+  /* v278: Grundregel – kauft niemand ein Kraftwerk, fällt das kleinste weg und wird ersetzt (auch auf Karten ohne Rabatt) */
+  if(!S.boughtAny&&S.round>1&&!S.discGone&&!MR().allPassTwo&&!MR().china&&!MR().russia&&S.market.length){const x=S.market.shift();S.discGone=true;log('Niemand hat ein Kraftwerk gekauft. Kraftwerk '+PN(x)+' fällt weg.');drawToMarket();removeLowCities()}
   if(MR().allPassTwo&&!S.boughtAny&&S.round>1&&S.market.length){const xs=S.market.splice(0,2);log('Niemand hat ein Kraftwerk gekauft. Kraftwerke '+xs.map(PN).join(' und ')+' fallen weg.');xs.forEach(()=>drawToMarket());removeLowCities()}
   if(S.step3Pending)startStep3();
   if(MR().orderAfterAuction){fsmGo(ST.ORDER);determineOrder();log('Neue Spielerreihenfolge nach der Versteigerung.')}
@@ -5118,9 +5120,10 @@ function endBuild(){
   const m=maxCities();
   if(S.step===1&&m>=STEP2_AT){S.step=2;st().step2=S.round;if(MR().hold){const hd=MR().hold.filter(k=>PLANTS[k]);S.deck.unshift(...hd);log('Die Öko-Kraftwerke '+hd.map(PN).join(', ')+' kommen oben auf den Stapel.')}const x=S.market.shift();log('Stufe 2 beginnt: Jede Stadt bietet jetzt zwei Plätze. Kraftwerk '+PN(x)+' fällt weg.');if(!MAPS[S.map].step2NoReplace)drawToMarket()}
   removeLowCities();
-  if(m>=END_AT&&!S.endTriggered){S.endTriggered=true;log('Ein Netz hat '+END_AT+' Städte erreicht. Dies ist die letzte Stromlieferung.')}
+  if(m>=END_AT&&!S.endTriggered){S.endTriggered=true;log('Ein Netz hat '+END_AT+' Städte erreicht. Das Spiel endet nach dieser Bauphase.')}
   {const tot=S.players.reduce((x,p)=>x+p.cities.length,0);S.idle=tot===S.lastTot?(S.idle||0)+1:0;S.lastTot=tot;
-   if(!S.endTriggered&&S.idle>=3&&S.round>=12){S.endTriggered=true;log('Drei Runden ohne Netzausbau: Das Spiel endet mit dieser Stromlieferung.')}}
+   if(!S.endTriggered&&S.idle>=3&&S.round>=12){S.endTriggered=true;log('Drei Runden ohne Netzausbau: Das Spiel endet jetzt.')}}
+  if(S.endTriggered){finalCount();return endGame()}
   phaseGate('bureau');
 }
 
@@ -5181,9 +5184,14 @@ function finishBureau(){
   removeLowCities();
   phaseGate('round');
 }
+/* v278: Spielende direkt nach Phase 4 – jeder versorgt so viele Städte wie möglich (Kraftwerke + Rohstoffe), ohne Einnahmen */
+/* Sieger: meiste versorgte Städte, dann meistes Geld, dann meiste gebaute Städte */
+function rankPlayers(){return S.players.map(p=>p.id).sort((a,b)=>P(b).lastPowered-P(a).lastPowered||P(b).money-P(a).money||cityCount(P(b))-cityCount(P(a)))}
+function finalCount(){S.players.forEach(p=>{let pw=0;try{const o=powerOptions(p,bestPower(p));pw=o?o.powered:0}catch(_){}p.lastPowered=pw;const q=rsum(p.id);q.pw=pw;log(p.name+' könnte am Ende '+pw+(pw===1?' Stadt':' Städte')+' versorgen.',p.id,{k:'final',powered:pw})});
+  st().series.push({r:S.round,m:S.players.map(p=>p.money),c:S.players.map(p=>p.cities.length),p:S.players.map(p=>p.lastPowered)})}
 function endGame(){
   S.phase='end';fsmGo(ST.OVER);
-  S.ranking=S.players.map(p=>p.id).sort((a,b)=>P(b).lastPowered-P(a).lastPowered||P(b).money-P(a).money||cityCount(P(b))-cityCount(P(a)));
+  S.ranking=rankPlayers();
   log(P(S.ranking[0]).name+' gewinnt mit '+P(S.ranking[0]).lastPowered+' versorgten Städten.',S.ranking[0]);
   st().end=Date.now();if(typeof onGameEnd==='function')onGameEnd();
 }
@@ -6729,7 +6737,13 @@ function panelBuild(a){
   h+=`</section>`;UI._ab={t:S.turnBuilt.length?LX(`${S.turnBuilt.length} ${S.turnBuilt.length===1?'Stadt':'Städte'} gebaut`,`${S.turnBuilt.length} ${S.turnBuilt.length===1?'city':'cities'} built`):LX('Stadt auf der Karte antippen','Tap a city on the map'),h:`<div class="row">${S.turnBuilt.length?'<button type="button" class="btn" data-act="breset">Zurücknehmen</button>':''}<button type="button" class="btn pri grow" data-act="bdone">Ausbau beenden</button></div>`};
   return h;
 }
-function allocPower(p,nums){
+function allocPower(p,nums){const a0=allocPower0(p,nums);if(a0)return a0;
+  /* v278: Regel – Rohstoffe dürfen jederzeit zwischen passenden Kraftwerken umgelagert werden. Reicht der Vorrat, wird neu verteilt. */
+  if(!powerOptions(p,nums||[]))return null;const al={};p.plants.forEach(n=>al[n]=[]);const pool={...p.pool};
+  for(const n of nums||[]){const[t,k]=PLANTS[n];if(t==='mine'||FREE(t))continue;const order=HYB[t]||[t];let need=k;for(const r of order)while(need>0&&pool[r]>0&&al[n].length<STO(n)){al[n].push(r);pool[r]--;need--}}
+  for(const n of p.plants){const[t]=PLANTS[n];if(t==='mine'||FREE(t))continue;const order=HYB[t]||[t];for(const r of order)while(pool[r]>0&&al[n].length<STO(n)){al[n].push(r);pool[r]--}}
+  const r=allocPower0({...p,alloc:al},nums);if(r)r.realloc=al;return r}
+function allocPower0(p,nums){
   const use=Z(),take={},xtake={};let cities=0;const spare={...p.pool};Object.values(p.alloc||{}).forEach(a=>a.forEach(r=>spare[r]--));
   for(const n of nums){
     const[t,k,c]=PLANTS[n];if(t==='mine')continue;cities+=c+(p.sub===n?1:0);if(FREE(t))continue;
@@ -6971,7 +6985,7 @@ function renderSheet(){
 <h4>3 · Rohstoffe kaufen</h4><p>Kohle, Öl, Müll und Uran werden teurer, je knapper sie sind. Jedes Kraftwerk lagert das Doppelte seines Bedarfs. Öko-Kraftwerke brauchen nichts.</p>
 <h4>4 · Netz ausbauen</h4><p>Die erste Stadt kostet 10 €. Jede weitere kostet den Platz plus die günstigste Leitung zu deinem Netz. In Stufe 2 öffnet der zweite Platz einer Stadt (15 €), in Stufe 3 der dritte (20 €).</p>
 <h4>5 · Strom liefern</h4><p>Du verdienst Geld für jede Stadt, die du mit deinen Kraftwerken versorgst. Danach füllt sich der Rohstoffmarkt auf und der Kraftwerksmarkt rückt nach.</p>
-${S&&(S.promos||[]).length?`<div class="rdiff ig"><div class="rd-h"><div><span class="rd-k">${LANG==='en'?'In this game':'In dieser Partie'}</span><b class="rd-t">${LANG==='en'?'Promo cards':'Promokarten'}</b></div></div><ul class="rd-list">${S.promos.map(k=>`<li class="rd-i c-plant"><span class="rd-ic"><svg viewBox="0 0 16 16" width="16" height="16">${RICON.deck}</svg></span><div class="rd-tx"><b>${promoName(k)}</b><span>${PROMOS[k][LANG==='en'?'en':'de'][1]}</span></div></li>`).join('')}</ul></div>`:''}${S&&MAPS[S.map].exp?mapRulesHTML(S.map,S.regions,true):''}${S&&MAPS[S.map].deluxe?'<h4>Deluxe-Regeln ('+MAPS[S.map].name+')</h4><p>Gespielt wird mit den Deluxe-Kraftwerken. Der Startmarkt besteht nur aus Kraftwerken von 3 bis 15. Statt Müll gibt es Erdgas. Alle Rohstoffe kosten höchstens 9 €, der Markt ist anders gestaffelt als im Basisspiel.</p>'+(S.map==='na'?'<p>Nordamerika: Acht Kraftwerke liegen aus, das kleinste ist jede Runde ab 1 € zu haben. New York und Mexico City bestehen aus je zwei Städten ohne Leitungskosten. Die Spielerreihenfolge der ersten Runde bleibt zufällig. Zu Beginn von Stufe 2 fällt das kleinste Kraftwerk weg und wird ersetzt.</p>':'<p>Europa: Neun Kraftwerke liegen aus (vier aktuell, fünf zukünftig), einen Rabatt gibt es nicht. Kauft in einer Runde niemand ein Kraftwerk, fällt das kleinste weg. Zu Beginn von Stufe 2 fällt das kleinste Kraftwerk ersatzlos weg, danach liegen acht aus.</p>'):''}${S&&S.map==='fr'?'<h4>Frankreich</h4><p>Paris besteht aus drei Städten. Leitungen zwischen ihnen kosten nichts, du zahlst nur den Platz. Uran ist reichlich vorhanden, Kraftwerk 11 liegt schon zu Beginn im Markt und Kraftwerk 13 ist nicht im Spiel.</p>':''}${S&&S.deckId&&S.deckId!=='std'?'<h4>Kraftwerksdeck: '+DECKS[S.deckId].name+'</h4><p>'+DECK_NOTE[S.deckId]+'</p>':''}${S&&S.phaseOut?'<h4>Atomausstieg</h4><p>Sobald jemand '+((S.phaseSet||[39]).length>1?'eines der Kraftwerke '+(S.phaseSet||[39]).map(PN).join(', '):'Kraftwerk '+PN((S.phaseSet||[39])[0]))+' kauft, wird bis zum Spielende kein Uran mehr nachgefüllt. Was noch im Markt liegt, kann weiter gekauft werden.</p>':''}<h4>Stufen und Ende</h4><p>Stufe 2 beginnt, sobald ein Netz ${STEP2_AT} Städte hat. Stufe 3 beginnt, wenn ihre Karte aus dem Stapel kommt. Erreicht jemand ${END_AT} Städte, folgt eine letzte Lieferung: Es gewinnt, wer dann die meisten Städte versorgt. Bei Gleichstand zählt das Geld.</p>
+${S&&(S.promos||[]).length?`<div class="rdiff ig"><div class="rd-h"><div><span class="rd-k">${LANG==='en'?'In this game':'In dieser Partie'}</span><b class="rd-t">${LANG==='en'?'Promo cards':'Promokarten'}</b></div></div><ul class="rd-list">${S.promos.map(k=>`<li class="rd-i c-plant"><span class="rd-ic"><svg viewBox="0 0 16 16" width="16" height="16">${RICON.deck}</svg></span><div class="rd-tx"><b>${promoName(k)}</b><span>${PROMOS[k][LANG==='en'?'en':'de'][1]}</span></div></li>`).join('')}</ul></div>`:''}${S&&MAPS[S.map].exp?mapRulesHTML(S.map,S.regions,true):''}${S&&MAPS[S.map].deluxe?'<h4>Deluxe-Regeln ('+MAPS[S.map].name+')</h4><p>Gespielt wird mit den Deluxe-Kraftwerken. Der Startmarkt besteht nur aus Kraftwerken von 3 bis 15. Statt Müll gibt es Erdgas. Alle Rohstoffe kosten höchstens 9 €, der Markt ist anders gestaffelt als im Basisspiel.</p>'+(S.map==='na'?'<p>Nordamerika: Acht Kraftwerke liegen aus, das kleinste ist jede Runde ab 1 € zu haben. New York und Mexico City bestehen aus je zwei Städten ohne Leitungskosten. Die Spielerreihenfolge der ersten Runde bleibt zufällig. Zu Beginn von Stufe 2 fällt das kleinste Kraftwerk weg und wird ersetzt.</p>':'<p>Europa: Neun Kraftwerke liegen aus (vier aktuell, fünf zukünftig), einen Rabatt gibt es nicht. Kauft in einer Runde niemand ein Kraftwerk, fällt das kleinste weg. Zu Beginn von Stufe 2 fällt das kleinste Kraftwerk ersatzlos weg, danach liegen acht aus.</p>'):''}${S&&S.map==='fr'?'<h4>Frankreich</h4><p>Paris besteht aus drei Städten. Leitungen zwischen ihnen kosten nichts, du zahlst nur den Platz. Uran ist reichlich vorhanden, Kraftwerk 11 liegt schon zu Beginn im Markt und Kraftwerk 13 ist nicht im Spiel.</p>':''}${S&&S.deckId&&S.deckId!=='std'?'<h4>Kraftwerksdeck: '+DECKS[S.deckId].name+'</h4><p>'+DECK_NOTE[S.deckId]+'</p>':''}${S&&S.phaseOut?'<h4>Atomausstieg</h4><p>Sobald jemand '+((S.phaseSet||[39]).length>1?'eines der Kraftwerke '+(S.phaseSet||[39]).map(PN).join(', '):'Kraftwerk '+PN((S.phaseSet||[39])[0]))+' kauft, wird bis zum Spielende kein Uran mehr nachgefüllt. Was noch im Markt liegt, kann weiter gekauft werden.</p>':''}<h4>Stufen und Ende</h4><p>Stufe 2 beginnt, sobald ein Netz ${STEP2_AT} Städte hat. Stufe 3 beginnt, wenn ihre Karte aus dem Stapel kommt. Erreicht jemand ${END_AT} Städte, endet das Spiel direkt nach dem Bauen: Es gewinnt, wer mit seinen Kraftwerken und Rohstoffen die meisten Städte versorgen kann – ohne letzte Einnahme. Bei Gleichstand zählt das Geld, dann die Zahl der Städte.</p>
 <h4>Einkommen</h4><p>${PAY.slice(0,11).map((v,i)=>i+'→'+v).join(' · ')} · … bis 20→150 €</p></div>`;
   }else if(UI.sheet==='newgame'){
     h=head('Neues Spiel?')+`<p class="hint">Das laufende Spiel wird beendet.</p><div class="row"><button type="button" class="btn" data-act="close">Abbrechen</button><button type="button" class="btn pri grow" data-act="newyes">Neues Spiel einrichten</button></div>`;
@@ -7476,6 +7490,7 @@ const TP=[
 [/^Kraftwerk (\S+) fällt aus dem Markt\.$/u,'Plant $1 leaves the market.'],
 [/^Kraftwerk (\S+) fällt aus dem Spiel\.$/u,'Plant $1 leaves the game.'],
 [/^Drei Runden ohne Netzausbau: Das Spiel endet mit dieser Stromlieferung\.$/u,'Three rounds without building: the game ends with this power delivery.'],
+[/^Drei Runden ohne Netzausbau: Das Spiel endet jetzt\.$/u,'Three rounds without building: the game ends now.'],
 [/^CO₂-Abgabe: Die Rohstofffelder für 1 und 2 € schließen, alle Preise steigen um 2 €\.$/u,'CO₂ tax: the 1 € and 2 € resource spaces close, all prices rise by 2 €.'],
 [/^(.+) verkauft Uran aus (\d+) Minen?: (\d+) × (\d+) € = (\d+) €\.$/u,'$1 sells uranium from $2 mine(s): $3 × $4 € = $5 €.'],
 [/^(.+) verkauft diese Runde kein Uran\.$/u,'$1 does not sell uranium this round.'],
@@ -7605,6 +7620,9 @@ const TP=[
 [/^Stufe 3 beginnt\. Kraftwerk (\d+[′″]?) fällt weg, alle sechs Marktkraftwerke sind kaufbar\.$/u,'Step 3 begins. Plant $1 is removed; all six market plants can be bought.'],
 [/^Stufe 2 beginnt: Jede Stadt bietet jetzt zwei Plätze\. Kraftwerk (\d+[′″]?) fällt weg\.$/u,'Step 2 begins: every city now has two slots. Plant $1 is removed.'],
 [/^Ein Netz hat (\d+) Städte erreicht\. Dies ist die letzte Stromlieferung\.$/u,'A network has reached $1 cities. This is the final power delivery.'],
+[/^Ein Netz hat (\d+) Städte erreicht\. Das Spiel endet nach dieser Bauphase\.$/u,'A network has reached $1 cities. The game ends after this build phase.'],
+[/^(.+) könnte am Ende (\d+) Stadt versorgen\.$/u,'$1 can power $2 city at the end.'],
+[/^(.+) könnte am Ende (\d+) Städte versorgen\.$/u,'$1 can power $2 cities at the end.'],
 [/^(.+) hat Kraftwerk (\d+[′″]?) zur Versteigerung gestellt\. Du kannst nur mitbieten oder aussteigen\. Steigst du aus, kommst du danach selbst an die Reihe und wählst dein eigenes Kraftwerk aus dem aktuellen Markt\.$/u,'$1 has put plant $2 up for auction. You can only bid along or drop out. If you drop out, it is your turn afterwards and you pick your own plant from the current market.'],
 [/^(.+) ist am Zug …$/u,'$1 is playing …'],
 [/^(.+) legt ein Kraftwerk still\.$/u,'$1 is retiring a plant.'],
@@ -7652,7 +7670,7 @@ const TP=[
 [/(\d+) (.+) je Lieferung/u,'$1 $2 per delivery'],
 [/(.+) Städte je Einheit/u,'$1 cities per unit'],
 [/(\d+) € je Lieferung/u,'$1 € per delivery'],
-[/Stufe 2 beginnt, sobald ein Netz (\d+) Städte hat\. Stufe 3 beginnt, wenn ihre Karte aus dem Stapel kommt\. Erreicht jemand (\d+) Städte, folgt eine letzte Lieferung: Es gewinnt, wer dann die meisten Städte versorgt\. Bei Gleichstand zählt das Geld\./u,'Step 2 begins as soon as a network has $1 cities. Step 3 begins when its card comes out of the deck. Once someone reaches $2 cities, one final delivery follows: whoever then powers the most cities wins. Ties are broken by money.'],
+[/Stufe 2 beginnt, sobald ein Netz (\d+) Städte hat\. Stufe 3 beginnt, wenn ihre Karte aus dem Stapel kommt\. Erreicht jemand (\d+) Städte, endet das Spiel direkt nach dem Bauen: Es gewinnt, wer mit seinen Kraftwerken und Rohstoffen die meisten Städte versorgen kann – ohne letzte Einnahme\. Bei Gleichstand zählt das Geld, dann die Zahl der Städte\./u,'Step 2 begins as soon as a network has $1 cities. Step 3 begins when its card comes out of the deck. Once someone reaches $2 cities, the game ends right after building: whoever can power the most cities with their plants and resources wins – there is no final income. Ties go to money, then to the number of cities.'],
 [/Im Besitz von /u,'Owned by '],
 [/(.+) für Kraftwerk (\d+[′″]?) mehr$/u,'More $1 for plant $2'],[/(.+) für Kraftwerk (\d+[′″]?) weniger$/u,'Less $1 for plant $2'],
 [/^Lager von Kraftwerk (\d+[′″]?)$/u,'Storage of plant $1'],
@@ -8510,7 +8528,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v277';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v278';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}

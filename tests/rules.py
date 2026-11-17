@@ -58,6 +58,47 @@ async()=>{
   UI.lastAct=null;ok('Continue accepted while ANIMATING',inputOK('gateGo'));gateGo();ok('Continue → PHASE_3_BUY_RESOURCES',S.fsm===ST.BUY,S.fsm);
   UI.lastAct=null;const t0=inputOK('skipbuy'),t1=inputOK('skipbuy');ok('double click on a move is ignored',t0&&!t1);
   window.__fast=fw;quiet()}
+ // ---- Phase 4: edge cases
+ {const toAuction=()=>{newGame('T',3,'normal',null,'de',{deck:'std'});quiet();S.players.forEach(p=>p.human=false);let g=0;while(!(S.round>=2&&S.fsm===ST.SELECT)&&g++<3000){if(S.gate){gateGo();continue}const a=actor();if(!a){if(S.phase==='bureau'){finishBureau();continue}break}aiAct(a)}};
+  // Step 3 drawn during the auction
+  toAuction();S.step=2;const tuck=S.deck.filter(x=>x!==STEP3).slice(-2);S.deck=[STEP3,...S.deck.filter(x=>x!==STEP3)];
+  const c=S.auc.chooser,num=buyable()[0];P(c).money=999;doOpen(c,num,minBid(num));let g=0;while(S.fsm===ST.BID&&g++<50){const a=actor();aiAct(a)}
+  ok('step 3 in auction: card waits at the end of the future market',S.step3Pending&&S.market.length===7&&!S.deck.includes(STEP3),S.step3Pending+' '+S.market.length);
+  ok('step 3 in auction: tucked plants stay in the shuffled stack',tuck.every(x=>S.deck.includes(x)),tuck.join());
+  g=0;while(S.phase==='auction'&&g++<400){if(S.gate)break;const a=actor();if(!a)break;aiAct(a)}
+  ok('step 3 in auction: after the auction 6 plants, all buyable',S.step===3&&S.market.length===6&&buyN()===6,S.step+' '+S.market.length+' '+buyN());
+  // Step 3 drawn in phase 4 (obsolescence replacement)
+  toAuction();S.step=2;S.phase='build';S.fsm=ST.BUILD;S.deck=[STEP3,...S.deck.filter(x=>x!==STEP3)];const lo=S.market[0];S.players[1].cities=activeIds().slice(0,Math.floor(lo));
+  removeLowCities();ok('step 3 in phase 4: market shrinks to 6',S.step===3&&S.market.length===6&&!S.market.includes(lo),S.step+' '+S.market.join(','));
+  // Step 3 drawn in phase 5 (market update)
+  toAuction();S.players[0].human=true;g=0;while(S.fsm!==ST.BUREAU&&g++<3000){if(S.gate){gateGo();continue}const a=actor();if(!a)break;aiAct(a)}
+  if(S.fsm===ST.BUREAU){S.step=2;S.endTriggered=false;S.deck=[STEP3,...S.deck.filter(x=>x!==STEP3)];const hi=S.market[S.market.length-1];finishBureau();
+    ok('step 3 in phase 5: market shrinks to 6',S.step===3&&S.market.length===6,S.step+' '+S.market.length);
+    ok('step 3 in phase 5: tucked high plant goes back into the shuffled stack',S.deck.includes(hi)&&!S.deck.includes(STEP3),hi+' '+S.deck.join(','))}
+  else ok('step 3 in phase 5: reached phase 5',false,S.fsm);
+  // nobody buys: lowest plant leaves (also on maps without the discount rule)
+  newGame('T',3,'normal',null,'bw',{deck:'std'});quiet();S.players.forEach(p=>p.human=false);g=0;while(!(S.round>=2&&S.fsm===ST.SELECT)&&g++<3000){if(S.gate){gateGo();continue}const a=actor();if(!a){if(S.phase==='bureau'){finishBureau();continue}break}aiAct(a)}
+  {const m0=S.market.slice();g=0;while(S.fsm===ST.SELECT&&g++<20)doPass(S.auc.chooser);
+   ok('nobody buys: lowest plant removed and replaced',!S.market.includes(m0[0])&&S.market.length===m0.length,m0.join(',')+' → '+S.market.join(','))}
+  // empty stack in step 3: phase 5 still removes the lowest plant
+  toAuction();S.players[0].human=true;g=0;while(S.fsm!==ST.BUREAU&&g++<3000){if(S.gate){gateGo();continue}const a=actor();if(!a)break;aiAct(a)}
+  if(S.fsm!==ST.BUREAU)ok('empty stack test reached phase 5',false,S.fsm);else{S.step=3;S.endTriggered=false;S.deck=[];const n0=S.market.length,l0=S.market[0];let err='';try{finishBureau()}catch(e){err=e.message}
+    ok('empty stack in step 3: no crash, lowest plant removed',!err&&S.market.length===n0-1&&!S.market.includes(l0),err||n0+'→'+S.market.length)}
+  // game end straight after phase 4, no final income, tie-breakers
+  toAuction();g=0;while(S.fsm!==ST.BUILD&&g++<3000){if(S.gate){gateGo();continue}const a=actor();if(!a)break;aiAct(a)}
+  {const p1=S.players[1];p1.cities=activeIds().slice(0,END_AT);const money=S.players.map(p=>p.money);S.seqIdx=S.seq.length;endBuild();
+   ok('end: game over right after phase 4',S.phase==='end'&&S.fsm===ST.OVER,S.phase+' '+S.fsm);
+   ok('end: no income in the final round',S.players.every((p,i)=>p.money===money[i]),money+' vs '+S.players.map(p=>p.money));
+   ok('end: winner has most powered cities',S.ranking.every((id,i,a)=>!i||P(a[i-1]).lastPowered>=P(id).lastPowered),S.ranking.map(id=>P(id).lastPowered).join())}
+  {const sv=S.players.map(p=>({lp:p.lastPowered,m:p.money,c:p.cities}));const [a,b,c3]=S.players;a.lastPowered=b.lastPowered=c3.lastPowered=10;a.money=20;b.money=30;c3.money=30;a.cities=activeIds().slice(0,12);b.cities=activeIds().slice(0,11);c3.cities=activeIds().slice(0,13);
+   {const rk=rankPlayers().filter(id=>[a.id,b.id,c3.id].includes(id));ok('tie-break: money, then built cities',rk.join()===[c3.id,b.id,a.id].join(),rk.join())}S.players.forEach((p,i)=>{p.lastPowered=sv[i].lp;p.money=sv[i].m;p.cities=sv[i].c})}
+  ok('end city targets 3–6 players (+2p table)',[[2,21],[3,17],[4,17],[5,15],[6,14]].every(([n,e])=>RULES_N[n].end===e));
+  // hybrids mix fuels; fuel can be moved between plants
+  newGame('T',2,'normal',null,'de',{deck:'std'});quiet();{const p=S.players[0];p.plants=[5,26,32];p.pool={coal:1,oil:4,garbage:0,uranium:0};
+   ok('hybrid runs on mixed coal and oil',!!powerOptions(p,[5]),JSON.stringify(p.pool));
+   p.pool={coal:0,oil:3,garbage:0,uranium:0};p.alloc={5:[],26:[],32:['oil','oil','oil']};const o=allocPower(p,[26]);
+   ok('fuel stored on another plant is moved over when needed',!!o&&o.powered>=0&&o.realloc&&o.realloc[26].filter(r=>r==='oil').length>=2,JSON.stringify(o&&o.realloc))}
+ }
  // ---- full computer games with invariants
  const maps=['de','fr','it','na','bx','kr','ru','ind','jp','cn','au','uk'].filter(m=>MAPS[m]);const games=[];
  for(const mp of maps)for(const nAI of [2,4]){
