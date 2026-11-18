@@ -35,3 +35,11 @@
 
 - Level flags in `AI_LV`: `econ` (normal) adds `econAdj` (cities per fuel unit, fuel diversity, market scarcity) and a hard bid cap `econCap` (keep one round of fuel and the next city). `stockCheap` (normal) buys 1–3 € fuel with spare cash, more readily when later buyers need the same resource. `s2guard` (normal and up) won't trigger Step 2 with a city it can't power. `endgame` (normal and up) only ends the game when it can win. `top2` picks the second-best plant or city now and then when it is almost as good. `contW` (hard, expert) values contested cities.
 - Strength check: `aisim.py`-style runs with all four levels at one table, 120 games: easy ~8 %, normal ~15 %, hard ~33 %, expert ~45 % wins (before: normal 5 %, below easy).
+
+## Founders' Era interface (since v280)
+
+- Display only: reads `facOf`, `facPD`, `fuelFee`, `matLines`, `rivalOf`; never changes rules.
+- **Charter line** `charterHTML()` at the top of each phase panel: only the effects of this phase, gone when none apply; "All effects" opens the full company card.
+- **Upgrade** `matUpDockHTML()` sits in the phase panel; the full-screen window is off (the founding reveal stays).
+- **Signs:** `vBadge` (bonus filled / drawback outlined + hatched, company colour), `vPaysBadge` on chips while bidding, `vResBadges` on resource rows, `vBuildMod` emblem dot on map price labels and lines in the build tooltip, hover popovers for opponents' charters and the plant price table.
+- **Moments** `vDetect()` after each render → `vQueue()` → `vRun()`: a queue of beats (`--variant-beat` = 550 ms × `--variant-anim-speed` × `--anim-speed`) with a banner under the header. While it runs, `UI.playback` blocks game input and delays computer moves; it is never saved. Tap the banner to skip; the end always redraws from the game state. Off when motion is off or in tests.
