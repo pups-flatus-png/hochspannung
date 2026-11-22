@@ -1,4 +1,4 @@
-const CACHE='hochspannung-v291';
+const CACHE='hochspannung-v292';
 const FILES=['./','index.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
 const REL=['relief/de.webp','relief/fr.webp','relief/it.webp','relief/na.webp','relief/eu.webp','relief/bx.webp','relief/ce.webp','relief/cn.webp','relief/kr.webp','relief/br.webp','relief/es.webp','relief/ru.webp','relief/jp.webp','relief/ne.webp','relief/uk.webp','relief/qc.webp','relief/bw.webp','relief/au.webp','relief/ind.webp'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES).then(()=>Promise.all(REL.map(u=>c.add(u).catch(()=>{}))))).then(()=>self.skipWaiting()))});
