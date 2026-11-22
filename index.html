@@ -4688,18 +4688,18 @@ html body #app.pl2.desk>#ledstrip:not([hidden]){grid-area:led;display:grid;grid-
 #ledstrip .ln-c:first-child b{color:var(--accent-text,var(--accent))}
 #ledstrip .ln-h{margin:0 0 0 auto;max-width:34ch;font-size:13px;line-height:1.35;color:var(--muted);text-align:right}
 #ledstrip .ls-a{min-width:0;display:flex;flex-direction:column;justify-content:flex-end}
-html body #app.pl2.desk #ledstrip .ls-a>.actbar{position:static!important;margin:0!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:8px!important;width:auto!important}
-html body #app.pl2.desk #ledstrip .ls-a>.actbar .ab-t{font-size:14px!important;margin:0!important;justify-content:flex-end;text-align:right}
-html body #app.pl2.desk #ledstrip .ls-a>.actbar .row{flex-wrap:nowrap!important;flex:none!important}
-html body #app.pl2.desk #ledstrip .ls-a>.actbar .btn{min-height:44px!important}
+html body #app.pl2:is(.desk,.phone) #ledstrip .ls-a>.actbar{position:static!important;margin:0!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:8px!important;width:auto!important}
+html body #app.pl2:is(.desk,.phone) #ledstrip .ls-a>.actbar .ab-t{font-size:14px!important;margin:0!important;justify-content:flex-end;text-align:right}
+html body #app.pl2:is(.desk,.phone) #ledstrip .ls-a>.actbar .row{flex-wrap:nowrap!important;flex:none!important}
+html body #app.pl2:is(.desk,.phone) #ledstrip .ls-a>.actbar .btn{min-height:44px!important}
 @media (max-width:1359px){html body #app.pl2.desk{--tray:352px}html body #app.pl2.desk>#ledstrip:not([hidden]){grid-template-columns:minmax(200px,240px) minmax(0,1fr) minmax(340px,370px)}#ledstrip.noact{grid-template-columns:minmax(200px,240px) minmax(0,1fr)!important}#ledstrip .ln{gap:16px}#ledstrip .ln-h{display:none}}
 
 /* v284: bid / open / buy controls (.aucact) ride in the strip's action slot too */
-html body #app.pl2.desk #ledstrip .ls-a>.aucact{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;border:0;background:none}
-html body #app.pl2.desk #ledstrip .ls-a>.aucact[data-t]::before{content:attr(data-t);font:600 14px/1.2 Barlow,system-ui;color:var(--fg);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-html body #app.pl2.desk #ledstrip .ls-a>.aucact .row{display:flex;gap:8px;flex-wrap:nowrap;align-items:stretch}
-html body #app.pl2.desk #ledstrip .ls-a>.aucact .btn{min-height:44px}
-html body #app.pl2.desk #ledstrip .ls-a>.aucact .hint,html body #app.pl2.desk #ledstrip .ls-a>.aucact .facn{margin:0;font-size:12px;text-align:right}
+html body #app.pl2:is(.desk,.phone) #ledstrip .ls-a>.aucact{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;border:0;background:none}
+html body #app.pl2:is(.desk,.phone) #ledstrip .ls-a>.aucact[data-t]::before{content:attr(data-t);font:600 14px/1.2 Barlow,system-ui;color:var(--fg);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body #app.pl2:is(.desk,.phone) #ledstrip .ls-a>.aucact .row{display:flex;gap:8px;flex-wrap:nowrap;align-items:stretch}
+html body #app.pl2:is(.desk,.phone) #ledstrip .ls-a>.aucact .btn{min-height:44px}
+html body #app.pl2:is(.desk,.phone) #ledstrip .ls-a>.aucact .hint,html body #app.pl2:is(.desk,.phone) #ledstrip .ls-a>.aucact .facn{margin:0;font-size:12px;text-align:right}
 @media (max-width:1359px){#ledstrip .pl2-pay .sp{display:none}}
 /* v284 desk bar: Undo and menu keep their own slots; 5–6 seats drop the seat number, logo and status line so names stay whole */
 html body #app.pl2.desk #top>.iconbtn.undo{grid-column:5!important}
@@ -4739,6 +4739,27 @@ html body #app.pl2.desk.port #ledstrip .ls-a>.aucact>:not(.row){flex:none}
 html body #app.pl2.desk.port #ledstrip .ls-r>.pl2-rm{flex:1 1 auto}
 @media (max-width:1239px){html body #app.pl2.desk #pl2bar .pl2-os .os-c :is(.n,.os-lg){display:none!important}html body #app.pl2.desk #pl2bar .pl2-os .os-d small{display:none!important}html body #app.pl2.desk #pl2bar .pl2-os .os-d{min-width:30px!important}}
 @media (max-width:1239px){html body #app.pl2.desk #pl2bar .pl2-os .os-ch:has(>.os-c~.os-c~.os-c~.os-c) .os-c :is(.pw,.pb){display:none!important}html body #app.pl2.desk #pl2bar .pl2-os .os-ch:has(>.os-c~.os-c~.os-c~.os-c) .os-c .tx small{display:none!important}}
+
+/* ===== v286 Dispatch Desk · iPhone: header unchanged; strip = ledger across + commit action, pinned under the tray ===== */
+@media (orientation:landscape) and (max-height:500px){html body #app.pl2.phone.phone{grid-template-rows:auto minmax(0,1fr) auto!important;grid-template-areas:"top top" "board panel" "board led"!important}html body #app.pl2.phone>#board{grid-row:2/4!important}}
+@media (orientation:portrait) and (max-width:600px){html body #app.pl2.phone.phone{grid-template-rows:auto minmax(0,var(--bh,40%)) minmax(0,1fr) auto!important;grid-template-areas:"top" "board" "panel" "led"!important}html body #app.pl2.phone.phone.phbuild:not(.mapmin){grid-template-rows:auto minmax(0,1fr) minmax(0,38%) auto!important}html body #app.pl2.phone.phone.mapmin{grid-template-rows:auto auto minmax(0,1fr) auto!important}}
+html body #app.pl2.phone>#ledstrip:not([hidden]){grid-area:led;display:flex;flex-direction:column;gap:6px;min-width:0;padding:6px max(10px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));background:var(--panel);border-top:1px solid var(--line);box-shadow:0 -10px 22px -14px rgba(0,0,0,.6);position:relative;z-index:7;box-sizing:border-box}
+html body #app.pl2.phone #ledstrip .ls-r{display:none}
+html body #app.pl2.phone #ledstrip.noled .ls-l{display:none}
+html body #app.pl2.phone #ledstrip .ls-l{padding:3px 8px;border-radius:8px;gap:3px}
+html body #app.pl2.phone #ledstrip .ledger.lx{font-size:11.5px;table-layout:auto;width:100%}
+html body #app.pl2.phone #ledstrip .ledger.lx th,html body #app.pl2.phone #ledstrip .ledger.lx td{padding:2px 4px}
+html body #app.pl2.phone #ledstrip .ledger.lx thead th{font-size:8.5px;letter-spacing:.06em;line-height:1.1}
+html body #app.pl2.phone #ledstrip .ledger.lx tbody th{font-size:11.5px;width:auto;max-width:96px}
+html body #app.pl2.phone #ledstrip .ledger.lx td .sub,html body #app.pl2.phone #ledstrip .ledger.lx td small{display:none}
+html body #app.pl2.phone #ledstrip .ls-l .ldbar .hint{display:none}
+html body #app.pl2.phone #ledstrip .ls-a>:is(.actbar,.aucact){gap:6px!important}
+html body #app.pl2.phone #ledstrip .ls-a>.actbar .ab-t{font-size:12.5px!important;justify-content:flex-start;text-align:left}
+html body #app.pl2.phone #ledstrip .ls-a>.aucact[data-t]::before{display:none}
+html body #app.pl2.phone #ledstrip .ls-a>:is(.actbar,.aucact) .btn{min-height:40px!important}
+html body #app.pl2.phone #ledstrip .ls-a>.aucact .row{flex-wrap:nowrap}
+html body #app.pl2:is(.desk,.phone) #ledstrip .ls-a>.actbar .ab-t{flex:0 0 auto!important}
+html body #app.pl2.desk.port #ledstrip .ls-a>.actbar .ab-t{flex:1 1 auto!important}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -5456,7 +5477,7 @@ function plantLed(p,n,bid){const pd=S.mat?facPD(p,n):0,pay=Math.max(1,bid+pd),ca
   const cap=after.reduce((a,x)=>a+(PLANTS[x][0]==='mine'?0:PLANTS[x][2]+(p.sub===x?1:0)),0),fuel=fuelRoundCost(p,after);
   const city=cap>cityCount(p)?buildOptions(p).find(o=>o.cost<=cash):null;return{n,pd,pay,cash,scr,cap,fuel,city,after:city?cash-city.cost:null}}
 function ledHTML(cols,rows,hint,bar){const two=cols.length>1;
-  if(deskOn()){/* v284 Dispatch Desk (Mac): ledger strip reads across – one row per option, one column per consequence */
+  if(stripOn()){/* v284 Dispatch Desk (Mac): ledger strip reads across – one row per option, one column per consequence */
     const bests=rows.map(r=>two&&r.cmp?r.cmp(cols[0].d,cols[1].d):0);
     const head=`<thead><tr><th scope="col"><span class="sr">${LX('Auswahl','Choice')}</span></th>${rows.map(r=>`<th scope="col">${r.l}</th>`).join('')}</tr></thead>`;
     const body=cols.map((c,i)=>`<tr class="${i?'lb':'la'}"><th scope="row"><span class="lh"><span class="lk">${'AB'[i]}</span>${c.h}</span></th>${rows.map((r,j)=>{const b=bests[j];return `<td class="${b&&((b<0&&i===0)||(b>0&&i===1))?'lbest':''}${r.neg&&r.neg(c.d)?' neg':''}">${r.v(c.d)}</td>`}).join('')}</tr>`).join('');
@@ -8874,7 +8895,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v285';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v286';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -8957,23 +8978,27 @@ function coachTick(){const old=document.getElementById('coach');document.querySe
 /* v285: iPad joins – landscape ≥1000×640 uses the Mac desk as is; portrait ≥744×1000 docks the tray below the map (class .port) */
 const DESK_MQ=matchMedia('(min-width:1000px) and (min-height:640px) and (orientation:landscape),(min-width:744px) and (min-height:1000px) and (orientation:portrait)');
 const PORT_MQ=matchMedia('(orientation:portrait)');
+/* v286: iPhone – the header stays; the strip carries the ledger (reading across) and the commit action, pinned under the tray */
+const PHONE_MQ=matchMedia('(orientation:landscape) and (max-height:500px),(orientation:portrait) and (max-width:600px)');
+function phoneOn(){return !!(PHONE_MQ.matches&&S&&pl2()&&!deskOn())}
+function stripOn(){return deskOn()||phoneOn()}
 function deskOn(){return !!(DESK_MQ.matches&&S&&pl2())}
-function deskSync(){const app=document.getElementById('app');if(!app)return;const on=deskOn();const pt=on&&PORT_MQ.matches;if(app.classList.contains('desk')!==on||app.classList.contains('port')!==pt){app.classList.toggle('desk',on);app.classList.toggle('port',pt);UI.vb=null;if(typeof panel!=='undefined')panel._h=null;if(!on)deskLedClear()}}
-try{DESK_MQ.addEventListener('change',()=>{if(S)render()});PORT_MQ.addEventListener('change',()=>{if(S)render()})}catch(_){}
+function deskSync(){const app=document.getElementById('app');if(!app)return;const on=deskOn();const pt=on&&PORT_MQ.matches,ph=phoneOn();if(app.classList.contains('desk')!==on||app.classList.contains('port')!==pt||app.classList.contains('phone')!==ph){app.classList.toggle('desk',on);app.classList.toggle('port',pt);app.classList.toggle('phone',ph);UI.vb=null;if(typeof panel!=='undefined')panel._h=null;if(!on&&!ph)deskLedClear()}}
+try{DESK_MQ.addEventListener('change',()=>{if(S)render()});PHONE_MQ.addEventListener('change',()=>{if(S)render()});PORT_MQ.addEventListener('change',()=>{if(S)render()})}catch(_){}
 function deskLedClear(){const ls=document.getElementById('ledstrip');if(ls){ls.innerHTML='';ls.hidden=true}}
 function deskNow(){const p=me();if(!p)return'';const held=RES.reduce((a,r)=>a+(p.pool[r]||0),0);
   const cell=(k,v)=>`<div class="ln-c"><small>${k}</small><b>${v}</b></div>`;
   return `<div class="ln" aria-label="${LX('Dein Stand','Where you stand')}">${cell(LX('Geld','Cash'),p.money+' €')}${cell(LX('Städte','Cities'),cityCount(p))}${cell(LX('Kapazität','Capacity'),capacity(p))}${cell(LX('Rohstoffe','Fuel held'),held)}<p class="ln-h">${S.phase==='auction'&&!S.gate?LX('Wähle ein Kraftwerk: hier stehen die Folgen, bevor du bietest.','Select a plant: what it does to you shows here before you bid.'):S.phase==='build'&&!S.gate?LX('Wähle eine Stadt: hier stehen die Kosten, bevor du baust.','Select a city: its cost shows here before you build.'):''}</p></div>`}
-function deskLed(){const ls=document.getElementById('ledstrip');if(!ls)return;if(!deskOn()){if(!ls.hidden)deskLedClear();return}
+function deskLed(){const ls=document.getElementById('ledstrip');if(!ls)return;if(!stripOn()){if(!ls.hidden)deskLedClear();return}const ph=!deskOn();
   if(!ls.firstChild){ls.innerHTML='<div class="ls-r"></div><div class="ls-l"></div><div class="ls-a"></div>'}ls.hidden=false;
   const R=ls.querySelector('.ls-r'),Lg=ls.querySelector('.ls-l'),Ac=ls.querySelector('.ls-a');
   /* round facts: payout and next resource price leave the header for the strip (pl2Top rebuilds them every render) */
-  R.innerHTML='';const bar=document.getElementById('pl2bar');if(bar)bar.querySelectorAll('.pl2-pay,.pl2-rm').forEach(e=>R.appendChild(e));
+  R.innerHTML='';const bar=document.getElementById('pl2bar');if(bar&&!ph)bar.querySelectorAll('.pl2-pay,.pl2-rm').forEach(e=>R.appendChild(e));
   if(panel._fresh){panel._fresh=0;Lg.innerHTML='';Lg._now='';Ac.innerHTML='';
     const t=panel.querySelector('table.ledger');if(t){const nx=t.nextElementSibling;Lg.appendChild(t);if(nx&&nx.classList.contains('ldbar'))Lg.appendChild(nx)}
     const ab=panel.querySelector(':scope>.actbar')||panel.querySelector('.aucact');if(ab)Ac.appendChild(ab)}
-  if(!Lg.querySelector('table.ledger')){const h=deskNow();if(Lg._now!==h){Lg.innerHTML=h;Lg._now=h}}else Lg._now='';
-  ls.classList.toggle('noact',!Ac.firstChild)}
+  if(!Lg.querySelector('table.ledger')){const h=ph?'':deskNow();if(Lg._now!==h){Lg.innerHTML=h;Lg._now=h}}else Lg._now='';
+  ls.classList.toggle('noact',!Ac.firstChild);ls.classList.toggle('noled',!Lg.firstChild);if(ph&&!Ac.firstChild&&!Lg.firstChild)ls.hidden=true}
 function render(){if(!S)return;fsmSync();drainEvents();requestAnimationFrame(()=>{try{vDetect()}catch(_){}try{clashCheck()}catch(_){}try{handoffCheck()}catch(_){}});requestAnimationFrame(()=>{try{buildTip(UI.buildSel)}catch(_){}});document.getElementById('app').classList.toggle('pl2',pl2());deskSync();mkFloor();const flip0=fxMkSnap(),res0=fxResSnap();normAlloc(me());layoutMap();renderTop();oppChips();handDock();renderMap();renderPanel();renderSheet();matOverlay();renderTicker();fxMkFlip(flip0);fxResFlip(res0);pl2Top();deskLed();fitChips();declutterSoon();try{coachTick()}catch(_){}
   if(UI.fx&&UI.fx.length){const q=UI.fx;UI.fx=[];if(!fxOff())requestAnimationFrame(()=>fxRun(q))}
   const pm=UI.prevMoney||{};
