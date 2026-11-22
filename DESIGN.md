@@ -225,7 +225,7 @@ Same roles, warm paper values: background #efe6d2, panel #fbf6ea, raised #f3ead6
 
 The map is always the largest surface. Three device classes share one structure; a class on `#app` selects it (`desk`, `desk port`, `phone`).
 
-- **Desk (Mac and iPad landscape, ≥1000×640):** one 56 px bar (round, step + phase tabs left; turn order centre; cash, undo, menu right). The map is full bleed. The tray (384 px; 352 px under 1360 px) floats over the map's trailing edge with a 14 px inset, and the map fit leaves room for it. Docked sheets (Markets, Opponents) float on the leading edge as its mirror. The ledger strip runs along the bottom: company plate (Founders) · payout and next prices · ledger · commit action.
+- **Desk (Mac and iPad landscape, ≥1000×640):** one 56 px bar (round, step + phase tabs left; turn order centre; cash, undo, menu right). The map is full bleed. The tray (384 px; 352 px under 1360 px) floats over the map's trailing edge with a 14 px inset, and the map fit leaves room for it. Docked sheets (Markets, Opponents) float on the leading edge as its mirror. The ledger strip runs along the bottom: company plate (Founders) · payout and next prices · ledger · commit action. Between 1000 and 1179 px wide the strip takes two rows (ledger full width, the action on its own row), and the bar drops the money label, order caption and seat power.
 - **Desk portrait (iPad portrait, ≥744×1000):** the same bar; map above a docked tray (rows 1fr / 0.92fr); strip with prices beside the ledger and the action on its own row.
 - **Phone (landscape ≤500 px tall, portrait ≤600 px wide):** the compact phone header stays; the strip (ledger reading across plus the commit action) is pinned under the tray: in landscape in the right column beside the map, in portrait as its own row under the sheet. The draggable map/sheet split and the minimised map keep working. The strip hides when there is nothing to compare or commit.
 - **Spacing:** a 4 px base (4, 8, 12, 16, 24). Panels use 14 px padding, 10–12 px gaps between strip blocks. Touch targets are at least 44 px; strip buttons are 44 px tall (40 px on phones).
@@ -286,7 +286,8 @@ The active tab is a gold-tinted pill (18% → 5% gold gradient) with an Orbitron
 ### Motion (applies to every component)
 - **Profile:** Corporate, no overshoot. Durations: 140 ms (feedback), 300–420 ms (panels and moves), 900 ms (camera). Curves: `cubic-bezier(.2,0,0,1)` for moves and entrances, `cubic-bezier(.4,0,.2,1)` for the map camera.
 - **Replays:** clash moments and the start hand-off replay engine results, take 2.4 s or less, end in the same state as a skip, and skip on a tap without acting on it.
-- **Camera:** on desk only. It moves at most 15% of the visible map and always returns to the saved view.
+- **Camera:** on desk it moves at most 15% of the visible map; on phones it pans only when the contested city is off-screen. It always returns to the saved view.
+- **Many changes:** three or more clashes collapse into one "n changes since your turn" chip over the map; a tap plays them condensed. On phones the strip shows a change card in place of the ledger's B row.
 - **Reduced motion:** short fades and static rings only; no camera, no line drawing.
 
 ## Do's and Don'ts
@@ -297,7 +298,7 @@ The active tab is a gold-tinted pill (18% → 5% gold gradient) with an Orbitron
 - **Do** show every comparison side by side in the ledger before the commit.
 - **Do** use Orbitron with tabular figures for any number a player compares.
 - **Do** pair every colour cue with a shape, line signature, label or glyph.
-- **Do** test at 1440×900, 1280×720, 1194×834, 834×1194, 844×390 and 390×844, in German and English, Classic and Founders, dark and light.
+- **Do** test at 1440×900, 1280×720, 1024×768, 1194×834, 834×1194, 844×390 and 390×844, in German and English, Classic and Founders, dark and light.
 - **Do** drop secondary text before shrinking type when space runs out.
 
 ### Don't:
