@@ -193,7 +193,7 @@ A cool slate console with a single warm signal colour; resources and seats carry
 Same roles, warm paper values: background #efe6d2, panel #fbf6ea, raised #f3ead6, line #dccdae, ink #2a2116, muted #6c5e48, gold text #8f520a (darker so gold copy stays readable on paper). The map keeps its own plan paper (Night or Blueprint) chosen in the menu.
 
 ### Named Rules
-**The One Signal Rule.** Gold appears only on what the player can act on now: the commit button, pins and their leader lines, the active phase, the first-move pulse, and your money. Never use it for decoration, headings or rival information.
+**The One Signal Rule.** Gold appears only on what the player can act on now: the commit button, pins and their leader lines, the active phase, the first-move pulse, and your money. Never use it for decoration or rival information. The one sanctioned exception is the white-to-gold gradient fill on large titles, which stays a tint and never a solid gold.
 
 **The Ownership-Only Rule.** Company and seat colours mark who owns what (city rings, lines, seat chips, the company plate tint). They never colour a button or a call to action.
 

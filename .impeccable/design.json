@@ -320,7 +320,7 @@
   "rules": [
    {
     "name": "The One Signal Rule",
-    "body": "Gold appears only on what the player can act on now: the commit button, pins and their leader lines, the active phase, the first-move pulse, and your money. Never use it for decoration, headings or rival information.",
+    "body": "Gold appears only on what the player can act on now: the commit button, pins and their leader lines, the active phase, the first-move pulse, and your money. Never use it for decoration or rival information. The one sanctioned exception is the white-to-gold gradient fill on large titles, which stays a tint and never a solid gold.",
     "section": "colors"
    },
    {
