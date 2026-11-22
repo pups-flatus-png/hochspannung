@@ -1,10 +1,10 @@
 # Founders' Era roster – ability spec and balance check
 
-The design review (GRID_MASTER_Design_Review.pdf, Founders addendum) asks that abilities ship only once trigger, effect, cost or limit, stacking, expiry and phase timing are specified, and seat order has been playtested, and that the final names, logos and rules are reconciled with the project owner. This file records the roster as it ships in v292 and the first balance data. **Decisions for the owner are at the end.**
+The design review (GRID_MASTER_Design_Review.pdf, Founders addendum) asks that abilities ship only once trigger, effect, cost or limit, stacking, expiry and phase timing are specified, and seat order has been playtested, and that the final names, logos and rules are reconciled with the project owner. This file records the roster as it ships in v293, the balance data and the owner's decisions (22 Nov 2026, at the end).
 
 ## Roster vs. design review
 
-The six companies match the review's roster by name and territory: EcoStar, Kohle & Stahl, Atomix, Petronord, Netzbau, Recycla. Emblems are original SVG marks with distinct silhouettes (hexagon, shield, circle, star, diamond, octagon) and line signatures (solid, double, dotted, long dash, short dash, dash-dot).
+The six companies match the review's roster by name and territory: EcoStar, Kohle & Stahl, Atomix, Petronord, Netzbau, Recycla. **Confirmed as final by the owner.** Emblems are original SVG marks with distinct silhouettes (hexagon, shield, circle, star, diamond, octagon) and line signatures (solid, double, dotted, long dash, short dash, dash-dot).
 
 ## Rules that apply to every ability
 
@@ -22,7 +22,7 @@ The six companies match the review's roster by name and territory: EcoStar, Kohl
 | Kohle & Stahl | Coal and hybrid plants store 3× fuel | 3× storage, coal −2 € per purchase | Resources |
 | Atomix | Uranium plants (and mines) −6 €, uranium −1 € per unit | Uranium plants −7 €, uranium −2 € per unit | Auction, Resources |
 | Petronord | Oil −1 € per purchase | Oil −1 € per purchase, oil plants −2 € | Resources (Auction from Step II) |
-| Netzbau | One connection costing up to 2 € is free each round | Same, plus every connection −1 € | Build |
+| Netzbau | One connection costing up to 3 € is free each round (2 € until v292) | Same, plus every connection −1 € | Build |
 | Recycla | Garbage plants −2 € | Garbage plants −3 €, garbage −2 € per purchase | Auction (Resources from Step II) |
 
 "Per purchase" is once per buying action of that resource; "per unit" is for each unit bought.
@@ -38,29 +38,35 @@ The six companies match the review's roster by name and territory: EcoStar, Kohl
 | Conglomerate | 52 € | None | None |
 | Pioneer | 50 € | Second city slot already in Step I, plants −1 € | None |
 
-## Balance check (v292, computer players)
+## Balance check (computer players)
 
-Method: 4 AI players ("normal"), Germany, standard deck. Every 4-of-6 matchup, rotated through all four seats, 20 repetitions = 1,200 games per run. Fair share is 25%. With 800 games per company or strategy, one standard deviation is about 1.5 points. Rerun with `python3 tools/sim_companies.py 20 <build>` and `python3 tools/sim_strategies.py 20 <build>`.
+Method: 4 AI players ("normal"), Germany, standard deck. Every 4-of-6 matchup, rotated through all four seats, 20 repetitions = 1,200 games per run. Fair share is 25%. Rerun with `python3 tools/sim_companies.py 20 <build>` and `python3 tools/sim_strategies.py 20 <build>`.
+
+**Precision:** repeated runs differ by up to 4 points for the same company, more than the binomial 1.5 points per run suggests, so read single runs with care and pool several. The figures below pool all runs made.
 
 | Run | Win rates |
 |---|---|
-| Companies (all players on Conglomerate) | EcoStar 24.4%, Kohle & Stahl 25.1%, Atomix 25.3%, Petronord 24.6%, Netzbau 25.8%, Recycla 24.9% |
+| Companies, Netzbau 2 € (3 runs, 3,600 games) | EcoStar 24.0%, Kohle & Stahl 24.1%, Atomix 27.7%, Petronord 25.3%, Netzbau 25.1%, Recycla 23.9% |
+| Netzbau at 3 € (2 runs) / at 4 € (2 runs) | Netzbau 25.8% / 28.8% |
+| Companies, Netzbau 3 € (2 runs, v293) | EcoStar 24.4%, Kohle & Stahl 21.9%, Atomix 28.2%, Petronord 26.0%, Netzbau 25.8%, Recycla 23.7% |
 | Control: same games with no companies (labels only) | 22.8–26.8% |
 | Strategies (companies rotate underneath) | Logistics 29.5%, Investor 27.1%, Conglomerate 26.0%, Municipal 24.4%, Expansion 22.6%, Pioneer 20.4% |
 | Seat (company run) | seat 1 25.9%, seat 2 24.9%, seat 3 24.9%, seat 4 24.3% |
 
 Reading:
-- **Companies are even** under computer play: every company sits within one standard deviation of 25%, no wider than the no-company control.
+- **Companies are close but not even:** Atomix is consistently a little strong (about 28%) and Kohle & Stahl a little weak (22–24%); the others sit near 25%. The no-company control spans 22.8–26.8%, so only Atomix stands out clearly.
 - **Strategies are not:** Logistics beats Pioneer by 9 points, about four standard deviations. Cheap fuel compounds over a game; Pioneer's early second slot does not pay off for the computer players.
 - **Seat order is fair** in Founders.
+- **Netzbau:** 3 € keeps it at fair share; 4 € makes it the strongest company.
 - **Limit:** the computer players don't plan around their abilities (for example, Kohle & Stahl doesn't stockpile on purpose), so human play can differ. Real playtests remain the final word.
 
-## Decisions for the owner
+## Decisions (owner, 22 Nov 2026)
 
-1. **Roster:** confirm the six names, emblems and territories as final, or name changes.
-2. **Strategies:** pick one:
-   - keep as is;
-   - nudge Logistics (fuel −1 € only from the second purchase each round) and Pioneer (plants −2 €);
-   - or rerun with stronger computer players first.
-3. **Netzbau's free line:** connections of 2 € or less don't exist on Germany, Europe or Spain, so the Step I ability never triggers there. Across all 19 maps, only 69 of 1,534 connections qualify; the Benelux and Québec maps have the most (9 each). Raising the limit to 4 € would give Germany 6 qualifying lines and Italy 25. Options: "up to 4 €", "the cheapest connection each round is free", or keep it with map-specific wording. Netzbau still reached 25.8% in the simulation, mostly through its Step II −1 € per connection.
-4. **Human playtest:** schedule a few Founders games with people. The simulation can't test whether abilities feel distinct.
+1. **Roster:** confirmed as final.
+2. **Strategies:** kept as they are.
+3. **Netzbau's free line:** raised from up to 2 € to up to 3 € (v293). At 2 € it never triggered on Germany, Europe or Spain; at 3 € every map has at least one qualifying connection (133 across all 19 maps), and the simulation keeps Netzbau at fair share. 4 € was tested and made Netzbau too strong.
+4. **Human playtest:** recommended before calling the balance final. The simulation can't tell whether abilities feel distinct, and the computer players don't plan around them.
+
+## Watch list
+
+- Atomix about 3 points above fair share and Kohle & Stahl about 2 below, under computer play. Recheck after the human playtest before changing anything.

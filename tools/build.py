@@ -67,7 +67,7 @@ open(str(OUT)+'/manifest.webmanifest','w').write('''{
   ]
 }
 ''')
-open(str(OUT)+'/sw.js','w').write('''const CACHE='hochspannung-v292';
+open(str(OUT)+'/sw.js','w').write('''const CACHE='hochspannung-v293';
 const FILES=['./','index.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
 const REL='''+repr(REL).replace(' ','')+''';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES).then(()=>Promise.all(REL.map(u=>c.add(u).catch(()=>{}))))).then(()=>self.skipWaiting()))});
