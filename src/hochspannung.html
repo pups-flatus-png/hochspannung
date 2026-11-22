@@ -4783,6 +4783,10 @@ html body #app.pl2.phone #ledstrip .ledger.lx td .co{display:none!important}
 #ledstrip.co .pl2-pay .sp{display:none}
 /* v288: while the clash camera is displaced, map-anchored overlays step aside and re-anchor on return */
 html.camfly #bldtip{visibility:hidden}
+/* v289 start hand-off: company emblem travelling from the deal to its seat */
+.fxemb{position:fixed;z-index:9990;pointer-events:none;will-change:transform,opacity}
+.fxemb .fxemb-i{width:100%;height:100%;display:block;--ls:100%}
+.fxemb .fxemb-i svg{width:100%;height:100%}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -8918,7 +8922,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v288';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v289';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -9194,10 +9198,35 @@ function clashDraw(h,cond){const end=fxCityPt(h.c),q=h.by;if(!end)return vWait()
 function lostHTML(){if(!UI.lost||UI.lostR!==S.round||!UI.lost.length)return'';return `<div class="lostl" role="status">${UI.lost.map(l=>`<span class="lostc">${PIN_SVG}<span><b>${esc(CITY[l.c].name)}</b> · ${l.cost==null?LX('belegt von','taken by')+' '+esc(shortName(P(l.by).name)):LX('jetzt','now')+' '+l.cost+' €'}</span></span>`).join('')}</div>`}
 /* v283 Übergabe nach „Spiel starten": Sitzplätze treffen nacheinander ein, dann zeigt ein goldener Ring den ersten erlaubten Zug */
 function handoffCheck(){if(!UI.handoff||!S||!start.hidden||UI.intro||S.matReveal||document.getElementById('intro')||!sheet.hidden||UI.playback)return;UI.handoff=0;
-  const red=fxOff(),seats=[...document.querySelectorAll('.os-c[data-pid],#oppchips .oc[data-pid]')].filter(e=>e.getBoundingClientRect().width);
-  if(!red)seats.forEach((e,i)=>e.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:320,delay:i*90,easing:'cubic-bezier(.2,0,0,1)',fill:'backwards'}));
-  const tgt=[...document.querySelectorAll('.curm.tapm .plant:not([disabled]),#panel .btn.pri:not([disabled]),#ledstrip .btn.pri:not([disabled]),#pl2bar .btn.pri:not([disabled])')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.bottom>0&&r.top<innerHeight}).slice(0,4);
-  const d0=red?0:seats.length*90+260;tgt.forEach((e,i)=>e.animate([{boxShadow:'0 0 0 0 rgba(242,179,61,0)'},{boxShadow:'0 0 0 3px rgba(242,179,61,.9),0 0 18px rgba(242,179,61,.45)',offset:.3},{boxShadow:'0 0 0 0 rgba(242,179,61,0)'}],{duration:1000,delay:d0+(red?0:i*60),easing:'cubic-bezier(.2,0,0,1)'}))}
+  /* v289 per storyboard "Start Game": camera eases to the active regions (Mac/iPad), emblems travel from the deal to the seats (Founders) or neutral seats
+     arrive 80 ms apart (Classic), seat rings flash the company colour once, the tray arrives, the first legal action pulses gold once. Replay only; a tap skips. */
+  const red=fxOff()||animK()<=0,fe=!!(S.mat&&S.mat[H]),deal=UI._deal;UI._deal=null;
+  const seats=[...document.querySelectorAll('.os-c[data-pid],#oppchips .oc[data-pid]')].filter(e=>e.getBoundingClientRect().width);
+  const trays=['panel','ledstrip'].map(id=>document.getElementById(id)).filter(e=>e&&!e.hidden&&e.getBoundingClientRect().width);
+  const ringT=d=>[...document.querySelectorAll('.curm.tapm .plant:not([disabled]),#panel .btn.pri:not([disabled]),#ledstrip .btn.pri:not([disabled]),#pl2bar .btn.pri:not([disabled])')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.bottom>0&&r.top<innerHeight}).slice(0,4)
+    .map((e,i)=>e.animate([{boxShadow:'0 0 0 0 rgba(242,179,61,0)'},{boxShadow:'0 0 0 3px rgba(242,179,61,.9),0 0 18px rgba(242,179,61,.45)',offset:.3},{boxShadow:'0 0 0 0 rgba(242,179,61,0)'}],{duration:red?1000:600,delay:d+(red?0:i*60),easing:'cubic-bezier(.2,0,0,1)'}));
+  if(red){['board','top',...trays.map(e=>e.id)].forEach(id=>{const e=document.getElementById(id);if(e)e.animate([{opacity:0},{opacity:1}],{duration:150,easing:'ease-out'})});ringT(0);return}
+  const A=[],X=[],add=a=>{if(a)A.push(a);return a};let to=null;
+  /* camera: start a little wide, ease in to the fitted view (≤ 22 % zoom), Mac and iPad only */
+  if(deskOn()&&UI.vb){to={...UI.vb};const k=1.22;UI.vb={x:to.x-to.w*(k-1)/2,y:to.y-to.h*(k-1)/2,w:to.w*k,h:to.h*k};const v=UI.vb;svg.setAttribute('viewBox',`${v.x} ${v.y} ${v.w} ${v.h}`);vbTween(to,900)}
+  const tS=to?600:120,gap=fe?90:80;
+  seats.forEach((e,i)=>add(e.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:320,delay:tS+i*gap,easing:'cubic-bezier(.2,0,0,1)',fill:'backwards'})));
+  let tE=tS+seats.length*gap+320;
+  if(fe){const bd=document.getElementById('board').getBoundingClientRect(),c0=(deal&&deal.c)||[bd.left+bd.width/2,bd.top+bd.height*.4];
+    seats.forEach((e,i)=>{const pid=+e.dataset.pid,m=S.mat[pid];if(!m)return;let tg=[...e.querySelectorAll('.os-lg,.oc-lg,.vem,.cemb')].map(x=>x.getBoundingClientRect()).find(r=>r.width);if(!tg){const r=e.getBoundingClientRect();if(!r.width)return;const h=Math.min(r.height,32);tg={left:r.left+6,top:r.top+(r.height-h)/2,width:h,height:h}}
+      const st=pid===H&&deal&&deal.me?deal.me:[c0[0]+(i-(seats.length-1)/2)*64,c0[1],56],sz=Math.max(40,Math.min(72,st[2]||56)),sc=Math.max(.3,tg.height/sz);
+      const f=document.createElement('div');f.className='fxemb';f.style.cssText=`left:${st[0]}px;top:${st[1]}px;width:${sz}px;height:${sz}px;margin:${-sz/2}px 0 0 ${-sz/2}px`;f.innerHTML=coEmb(m.co,'fxemb-i');document.body.appendChild(f);X.push(f);
+      const dx=tg.left+tg.width/2-st[0],dy=tg.top+tg.height/2-st[1],d=tS+i*gap;
+      const a=add(f.animate([{opacity:0,transform:'translate(0,0) scale(.85)'},{opacity:1,transform:'translate(0,0) scale(1)',offset:.12},{transform:`translate(${dx*.5}px,${dy*.5-30}px) scale(${(1+sc)/2})`,offset:.55},{opacity:1,transform:`translate(${dx}px,${dy}px) scale(${sc})`}],{duration:620,delay:d,easing:'cubic-bezier(.2,0,0,1)',fill:'both'}));
+      a.finished.then(()=>{f.remove();add(e.animate([{boxShadow:`0 0 0 0 ${MCOL[m.co]}00`},{boxShadow:`0 0 0 3px ${MCOL[m.co]},0 0 16px ${MCOL[m.co]}aa`,offset:.4},{boxShadow:`0 0 0 0 ${MCOL[m.co]}00`}],{duration:200+160,easing:'ease-out'}))}).catch(()=>f.remove())});
+    tE=tS+seats.length*gap+620+200}
+  /* tray arrives from its docked edge */
+  const side=deskOn()&&!PORT_MQ.matches;trays.forEach(e=>add(e.animate([{opacity:0,transform:e.id==='panel'&&side?'translateX(28px)':'translateY(16px)'},{opacity:1,transform:'none'}],{duration:300,delay:tE,easing:'cubic-bezier(.2,0,0,1)',fill:'backwards'})));
+  ringT(tE+300).forEach(add);
+  /* a tap anywhere skips to the end state and does not act */
+  const skip=ev=>{off();ev.preventDefault();ev.stopPropagation();A.forEach(a=>{try{a.finish()}catch(_){}});X.forEach(x=>x.remove());if(to){UI._camT=(UI._camT||0)+1;UI.vb=to;applyVB()}
+    const eat=e2=>{e2.preventDefault();e2.stopPropagation()};document.addEventListener('click',eat,{capture:true,once:true});setTimeout(()=>document.removeEventListener('click',eat,true),400)};
+  const off=()=>{document.removeEventListener('pointerdown',skip,true);clearTimeout(tm)},tm=setTimeout(off,tE+900);document.addEventListener('pointerdown',skip,true)}
 /* C · Rivale */
 function vMomentRival(r,txt){vQueue({steps:[{b:`<span class="vsw">⚔</span>${vEm(r,'vb-em')}<span><b>${LX('Rivale','Rival')}</b> · ${txt}</span>`,snd:()=>sClash(),go:()=>{const a=vChip(H),c=vChip(r.id);[a,c].forEach(x=>x&&x.animate&&x.animate([{transform:'translateX(0)'},{transform:'translateX(-3px)'},{transform:'translateX(3px)'},{transform:'translateX(0)'}],{duration:vBeat()*.8}));vPulse(c);return vWait()}}]})}
 /* B · Firma wächst (neue Stufe) */
@@ -9733,7 +9762,7 @@ const A={
   matUpPick:b=>{const p=me();matUpgrade(p,b.dataset.k);UI.matUpHide=false;UI.matUpForce=false;save()},
   rxSkip:()=>{const z=document.querySelector('.fz');if(z){fzDone(z);return'skip'}const x=document.querySelector('.rx');if(x)rxDone(x);return'skip'},
   matCineSkip:()=>{clearTimeout(UI.cineT);UI.cineT=null;UI.cineDone=true},
-  matRevealGo:()=>{if(S){S.matReveal=0;save()}},
+  matRevealGo:()=>{if(S){try{const e=document.querySelector('.fz .fz-b.co .fz-lg'),w=document.querySelector('.fz .fz-w');const r=e&&e.getBoundingClientRect(),q=w&&w.getBoundingClientRect();UI._deal={me:r&&r.width?[r.left+r.width/2,r.top+r.height/2,r.width]:null,c:q&&q.width?[q.left+q.width/2,q.top+q.height*.3]:null}}catch(_){}S.matReveal=0;save()}},
   matExport:()=>{matExport();return'skip'},
   facTog:()=>{UI.facOn=!UI.facOn;try{localStorage.setItem('hochspannung-fac',UI.facOn?'1':'0')}catch(_){}UI.name=nmVal();renderStart(true);return'skip'},
   coSel:b=>{UI.myCo=b.dataset.f;try{localStorage.setItem('hochspannung-co',UI.myCo)}catch(_){}UI.name=nmVal();renderStart(true);return'skip'},
