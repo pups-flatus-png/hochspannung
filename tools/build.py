@@ -15,6 +15,16 @@ for fam,pkg,ws in [('Saira Condensed','saira-condensed',[500,600,700]),('Barlow'
     for w in ws:
         f=glob.glob(str(REPO/'gm2-src'/'fonts')+f'/{pkg}-latin-{w}-normal.woff2')[0]
         ff+=f"@font-face{{font-family:'{fam}';font-style:normal;font-weight:{w};font-display:swap;src:url(data:font/woff2;base64,{base64.b64encode(open(f,'rb').read()).decode()}) format('woff2')}}\n"
+# v291: relief images ship as separate binary WebP files (one per map, fetched only when that map is shown, precached by the service worker for offline play)
+REL=[]
+def _rel(m):
+    rid,data=m.group(1),m.group(2).strip()
+    if not data.startswith('data:image/webp;base64,'):return m.group(0)
+    (OUT/'relief').mkdir(exist_ok=True)
+    open(str(OUT/'relief'/(rid+'.webp')),'wb').write(base64.b64decode(data.split(',',1)[1]))
+    REL.append('relief/'+rid+'.webp')
+    return f'<script type="text/plain" id="georel-{rid}" data-src="relief/{rid}.webp"></script>'
+src=re.sub(r'<script type="text/plain" id="georel-([a-z]+)">([^<]*)</script>',_rel,src)
 base_css="html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}\nimg{max-width:100%}\n"
 def page(extra_head='',extra_body=''):
     return f'''<!doctype html>
@@ -57,9 +67,10 @@ open(str(OUT)+'/manifest.webmanifest','w').write('''{
   ]
 }
 ''')
-open(str(OUT)+'/sw.js','w').write('''const CACHE='hochspannung-v290';
+open(str(OUT)+'/sw.js','w').write('''const CACHE='hochspannung-v291';
 const FILES=['./','index.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))});
+const REL='''+repr(REL).replace(' ','')+''';
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES).then(()=>Promise.all(REL.map(u=>c.add(u).catch(()=>{}))))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 function fromNet(req){return fetch(req,{cache:'no-cache'}).then(res=>{if(res&&res.ok){const copy=res.clone();caches.open(CACHE).then(c=>c.put(req.mode==='navigate'?'index.html':req,copy))}return res})}
 self.addEventListener('fetch',e=>{

@@ -1,15 +1,31 @@
 # Developing Grid Master
 
 - **Source:** `src/hochspannung.html` (one file: HTML, CSS, JS). The rules engine sits between `/*ENGINE*/`-style sections; game data (maps, plants) at the top.
-- **Build the app:** `python3 tools/build.py` → writes `index.html`, `sw.js`, `manifest.webmanifest` into the repo root (GitHub Pages serves them). Bump `APPV` in the source and the cache name in `tools/build.py` for every release.
+- **Build the app:** `python3 tools/build.py` → writes `index.html`, `sw.js`, `manifest.webmanifest` and `relief/*.webp` (one relief image per map, extracted from the source) into the repo root (GitHub Pages serves them). When republishing the game artifact, publish `index.html` together with the `relief/` folder. Bump `APPV` in the source and the cache name in `tools/build.py` for every release.
 - **Quality gate:** `tools/check.sh` – builds into a temp folder and runs:
   1. syntax check of all scripts,
   2. `tests/rules.py` – rule unit tests (resource prices, auction, build costs, payout) and 24 complete computer games on 12 maps with invariants (no negative money, no duplicate cities, market in range, game ends in 5–25 rounds),
   3. `tests/hdrcheck.py` – header never overlaps/clips (phone portrait + landscape, iPad, Mac, DE/EN, undo, bidding with 4/6 players),
   4. `tests/fullaudit.py` – 11 game states × 10 screen sizes × 2 languages: nothing clipped, no horizontal scroll, nothing outside the screen,
-  5. `tests/gate.py` – phase transitions with “Continue” over two rounds.
+  5. `tools/budget.py` – asset budgets (see below),
+  6. `tests/gate.py` – phase transitions with “Continue” over two rounds.
   Release only when it prints `ALL CHECKS PASSED`.
 - **Grid Master 2:** separate game in `gm2-src/` (see `gm2-src/HANDOVER.md`).
+
+## Budgets (since v291)
+
+Grid Master is played on phones over mobile data, so first load has a budget. `tools/budget.py` enforces it in the quality gate:
+
+| What | Budget | v291 |
+|---|---|---|
+| `index.html` raw | 3300 KB | 2831 KB |
+| `index.html` gzip (what a phone downloads) | 1200 KB | 993 KB |
+| One map's relief (`relief/<map>.webp`, fetched only when that map is shown) | 300 KB | 193 KB (China) |
+| All reliefs (precached by the service worker after first load) | 2200 KB | 1722 KB |
+
+Measured start-up to the Home screen (uncompressed test server, Chromium): laptop on Wi-Fi 1.0 s (was 1.5 s), phone profile (4× CPU slowdown, 9 Mbit/s, 60 ms) 4.2 s (was 6.2 s), slow 3G-class link 16 s (was 28 s). With gzip in production, the phone 4G figure is about 1.5–2 s. Repeat visits load from the service worker cache.
+
+Fallbacks: fonts are embedded in the page (no network needed); if a relief file is missing or fails, the map draws without relief; the opening `src/hochspannung.html` directly still works because the source keeps the reliefs embedded; offline play has every relief once the service worker has installed.
 
 ## Engine and state machine (since v275)
 

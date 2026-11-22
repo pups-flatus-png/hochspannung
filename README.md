@@ -24,3 +24,5 @@ Spielstand und Statistik werden nur auf dem jeweiligen Gerät gespeichert.
 Städte, Regionen und Leitungskosten der Karten Frankreich, Italien, Nordamerika und Europa (Deluxe-Pläne), die Rohstoffmärkte und Nachschubtabellen der Deluxe-Pläne sowie die Kartenwerte der Kraftwerksdecks Set 1 und Set 2 stammen aus dem MIT-lizenzierten Projekt [boardgamers/powergrid](https://github.com/boardgamers/powergrid).
 
 Küstenlinien der Deluxe-Karten: [Natural Earth](https://www.naturalearthdata.com/) (gemeinfrei), über das npm-Paket world-atlas.
+
+Reliefbilder aller 19 Karten: NASA Blue Marble Topographie (gemeinfrei). App-Icons: eigene Zeichnung für dieses Projekt. Vollständige Liste: [ASSETS.md](ASSETS.md).

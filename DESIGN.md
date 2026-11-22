@@ -219,7 +219,7 @@ Same roles, warm paper values: background #efe6d2, panel #fbf6ea, raised #f3ead6
 ### Named Rules
 **The Gauge Rule.** Every number a player compares is Orbitron with tabular figures; words are never Orbitron except titles and buttons.
 
-**The No-Shrink Rule.** When space runs out, drop secondary parts (status line, logo, note) before shrinking type. Body never goes below 11 px and labels never below 10 px. A few legacy captions still sit at 8–9 px (the Step badge caption, "Leader first", the tray phase subtitle); raise them when you next touch those components.
+**The No-Shrink Rule.** When space runs out, drop secondary parts (status line, logo, note) before shrinking type. Body never goes below 11 px and interface captions never below 10 px (enforced since v291). Print on plant cards, map lettering and the price ticks on the resource tracks are exempt: they behave like printed artwork and scale with the card or map.
 
 ## Layout
 
