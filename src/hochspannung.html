@@ -4781,6 +4781,8 @@ html body #app.pl2.desk.port>#ledstrip.co:not([hidden]){grid-template-columns:mi
 html body #app.pl2.phone #ledstrip .ledger.lx td .co{display:none!important}
 @media (orientation:landscape) and (max-height:500px){html body #app.pl2.phone #ledstrip:not(.noled) .ls-c{display:none}}
 #ledstrip.co .pl2-pay .sp{display:none}
+/* v288: while the clash camera is displaced, map-anchored overlays step aside and re-anchor on return */
+html.camfly #bldtip{visibility:hidden}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -8916,7 +8918,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v287';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v288';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -9024,7 +9026,7 @@ function deskLed(){const ls=document.getElementById('ledstrip');if(!ls)return;if
     const ab=panel.querySelector(':scope>.actbar')||panel.querySelector('.aucact');if(ab)Ac.appendChild(ab)}
   if(!Lg.querySelector('table.ledger')){const h=ph?'':deskNow();if(Lg._now!==h){Lg.innerHTML=h;Lg._now=h}}else Lg._now='';
   ls.classList.toggle('noact',!Ac.firstChild);ls.classList.toggle('noled',!Lg.firstChild);if(ph&&!Ac.firstChild&&!Lg.firstChild)ls.hidden=true}
-function render(){if(!S)return;fsmSync();drainEvents();requestAnimationFrame(()=>{try{vDetect()}catch(_){}try{clashCheck()}catch(_){}try{handoffCheck()}catch(_){}});requestAnimationFrame(()=>{try{buildTip(UI.buildSel)}catch(_){}});document.getElementById('app').classList.toggle('pl2',pl2());deskSync();mkFloor();const flip0=fxMkSnap(),res0=fxResSnap();normAlloc(me());layoutMap();renderTop();oppChips();handDock();renderMap();renderPanel();renderSheet();matOverlay();renderTicker();fxMkFlip(flip0);fxResFlip(res0);pl2Top();deskLed();fitChips();declutterSoon();try{coachTick()}catch(_){}
+function render(){if(!S)return;fsmSync();drainEvents();requestAnimationFrame(()=>{try{vDetect()}catch(_){}try{clashCheck()}catch(_){}try{pclashCheck()}catch(_){}try{pstakeTake()}catch(_){}try{handoffCheck()}catch(_){}});requestAnimationFrame(()=>{try{buildTip(UI.buildSel)}catch(_){}});document.getElementById('app').classList.toggle('pl2',pl2());deskSync();mkFloor();const flip0=fxMkSnap(),res0=fxResSnap();normAlloc(me());layoutMap();renderTop();oppChips();handDock();renderMap();renderPanel();renderSheet();matOverlay();renderTicker();fxMkFlip(flip0);fxResFlip(res0);pl2Top();deskLed();fitChips();declutterSoon();try{coachTick()}catch(_){}
   if(UI.fx&&UI.fx.length){const q=UI.fx;UI.fx=[];if(!fxOff())requestAnimationFrame(()=>fxRun(q))}
   const pm=UI.prevMoney||{};
   S.players.forEach(p=>{if(pm[p.id]!=null&&pm[p.id]!==p.money){const d=p.money-pm[p.id];if(p.human&&d<0){walletSpend(pm[p.id],p.money);return}if(d>0&&S.phase==='bureau'&&typeof PAYV!=='undefined'&&PAYV!=='coins')return;floatText(document.querySelector(`[data-pid="${p.id}"]`),(d>0?'+':'−')+Math.abs(d)+' €',d>0?'#8fe39c':'#ff8a80')}});
@@ -9112,11 +9114,11 @@ function vBeat(){const vs=parseFloat(getComputedStyle(document.documentElement).
 function vCan(){return vOn()&&!window.__fast&&animK()>0&&!fxOff()&&start.hidden}
 function vCanAny(){return !window.__fast&&animK()>0&&!fxOff()&&start.hidden}
 function vQueue(m){if(!(m.any?vCanAny():vCan()))return;VQ.q.push(m);if(!VQ.busy)vRun()}
-function vBanner(html){let b=document.getElementById('vban');if(!html){if(b)b.classList.remove('on');return}if(!b){b=document.createElement('button');b.type='button';b.id='vban';b.addEventListener('click',()=>{VQ.run++;VQ.q.length=0});document.body.appendChild(b)}
+function vBanner(html){let b=document.getElementById('vban');if(!html){if(b)b.classList.remove('on');return}if(!b){b=document.createElement('button');b.type='button';b.id='vban';b.addEventListener('click',()=>{VQ.run++;VQ.q.length=0;camRestore()});document.body.appendChild(b)}
   const tp=document.getElementById('top'),pb=document.getElementById('pl2bar');b.style.top=(Math.max(tp?tp.getBoundingClientRect().bottom:0,pb?pb.getBoundingClientRect().bottom:0)+8)+'px';b.innerHTML=html+`<span class="vb-k">${LX('Tippen zum Überspringen','Tap to skip')}</span>`;b.classList.add('on')}
 async function vRun(){VQ.busy=true;UI.playback=true;const run=++VQ.run;
   try{while(VQ.q.length&&run===VQ.run){const m=VQ.q.shift();for(const st of m.steps){if(run!==VQ.run)break;vBanner(st.b);try{st.snd&&st.snd()}catch(_){}try{await st.go()}catch(_){}if(run!==VQ.run)break;await new Promise(r=>setTimeout(r,vBeat()*1.05))}}}
-  finally{VQ.q.length=0;VQ.busy=false;UI.playback=false;vBanner(null);document.querySelectorAll('.vfloat').forEach(e=>e.remove());render();schedule()}}
+  finally{VQ.q.length=0;VQ.busy=false;UI.playback=false;vBanner(null);camRestore();document.querySelectorAll('.vfloat').forEach(e=>e.remove());render();schedule()}}
 function vFloat(el,html,dy=0){if(!el)return;const b=el.getBoundingClientRect();if(!b.width)return;const f=document.createElement('div');f.className='vfloat';f.innerHTML=html;f.style.left=(b.left+b.width/2)+'px';f.style.top=(b.top+dy)+'px';document.body.appendChild(f);
   return f.animate([{opacity:0,transform:'translate(-50%,-20%) scale(.7)'},{opacity:1,transform:'translate(-50%,-110%) scale(1)',offset:.25},{opacity:1,transform:'translate(-50%,-120%)',offset:.8},{opacity:0,transform:'translate(-50%,-160%)'}],{duration:vBeat()*2.2,easing:'cubic-bezier(.2,.8,.2,1)'}).finished.then(()=>f.remove()).catch(()=>f.remove())}
 function vPulse(el){if(el&&el.animate)el.animate([{boxShadow:'0 0 0 0 rgba(0,0,0,0)'},{boxShadow:'0 0 0 4px var(--variant-accent),0 0 22px var(--variant-accent)'},{boxShadow:'0 0 0 0 rgba(0,0,0,0)'}],{duration:vBeat()*1.6,easing:'ease-out'})}
@@ -9144,9 +9146,40 @@ function clashCheck(){const st=UI.stake;if(!st||!S||S.phase!=='build'||!myTurn('
   if(next&&(!UI.buildSel||closed.has(UI.buildSel)))UI.buildSel=next.city;
   clashPlay(hits,next);render()}
 function clashPlay(hits,next){const cond=hits.length>1,em=q=>S.mat&&S.mat[q.id]?vEm(q,'vb-em'):`<i class="vb-dot" style="background:${q.color}"></i>`;
-  const steps=hits.slice(0,4).map(h=>({b:`${em(h.by)}<span><b>${esc(shortName(h.by.name))}</b> ${LX('baut in','builds in')} <b>${esc(CITY[h.c].name)}</b> · ${h.cost==null?LX('für dich voll','full for you'):LX('jetzt','now')+' '+h.cost+' €'}</span>`,snd:()=>sClash(),go:()=>clashDraw(h,cond)}));
+  const steps=hits.slice(0,4).map(h=>({b:`${em(h.by)}<span><b>${esc(shortName(h.by.name))}</b> ${LX('baut in','builds in')} <b>${esc(CITY[h.c].name)}</b> · ${h.cost==null?LX('für dich voll','full for you'):LX('jetzt','now')+' '+h.cost+' €'}</span>`,snd:()=>sClash(),go:cond?()=>clashDraw(h,cond):async()=>{const run=VQ.run;await clashCam(h.c);if(run!==VQ.run)return;await clashDraw(h,cond);if(run!==VQ.run)return;await new Promise(r=>setTimeout(r,Math.round(420*Math.max(.5,animK()))));await clashCamBack()}}));
   if(next&&!hits.some(h=>h.c===next.city))steps.push({b:`<span>${LX('Nächste günstige Stadt','Next cheapest city')}: <b>${esc(CITY[next.city].name)} · ${next.cost} €</b></span>`,snd:()=>sTick(),go:()=>{const pt=fxCityPt(next.city);if(pt)fxRing(pt[0],pt[1],pt[2],'#f2b33d',0,false);return cond?Promise.resolve():vWait()}});
   vQueue({any:true,steps})}
+
+/* v288 Clash camera (Mac and iPad): ease toward the contested city – at most 15 % of the visible map – then back to the exact saved view.
+   Display only; skipping restores the view at once (vRun finally). No camera on iPhone or with reduced motion. */
+function cbz(x1,y1,x2,y2){return t=>{let lo=0,hi=1,u=t;for(let i=0;i<18;i++){u=(lo+hi)/2;const bx=3*x1*u*(1-u)*(1-u)+3*x2*u*u*(1-u)+u*u*u;if(bx<t)lo=u;else hi=u}return 3*y1*u*(1-u)*(1-u)+3*y2*u*u*(1-u)+u*u*u}}
+const CAM_EASE=cbz(.4,0,.2,1);
+function vbTween(to,ms){return new Promise(res=>{const from=UI.vb&&{...UI.vb};if(!from||ms<=0){if(UI.vb){UI.vb={...to};applyVB()}return res()}const tok=UI._camT=(UI._camT||0)+1,t0=performance.now();
+  const step=now=>{if(UI._camT!==tok)return res();const k=Math.min(1,(now-t0)/ms),e=CAM_EASE(k);UI.vb={x:from.x+(to.x-from.x)*e,y:from.y+(to.y-from.y)*e,w:from.w+(to.w-from.w)*e,h:from.h+(to.h-from.h)*e};
+    const v=UI.vb;svg.setAttribute('viewBox',`${v.x.toFixed(1)} ${v.y.toFixed(1)} ${v.w.toFixed(1)} ${v.h.toFixed(1)}`);if(k<1)requestAnimationFrame(step);else{applyVB();res()}};requestAnimationFrame(step)})}
+function camRestore(){if(UI._cam0){UI._camT=(UI._camT||0)+1;UI.vb=UI._cam0;UI._cam0=null;applyVB()}document.documentElement.classList.remove('camfly')}
+function clashCamOn(){return deskOn()&&!fxOff()&&!!UI.vb}
+async function clashCam(c){if(!clashCamOn())return;const pt=fxCityPt(c),bd=document.getElementById('board');if(!pt||!bd)return;const b=bd.getBoundingClientRect();let R=b.right;
+  if(!PORT_MQ.matches){const q=document.getElementById('panel').getBoundingClientRect();if(q.width&&q.left>b.left)R=Math.min(R,q.left-12)}
+  const w=R-b.left,h=b.height,cx=b.left+w/2,cy=b.top+h/2,cl=(v,m)=>Math.max(-m,Math.min(m,v)),dx=cl(cx-pt[0],.15*w),dy=cl(cy-pt[1],.15*h);if(Math.abs(dx)<10&&Math.abs(dy)<10)return;
+  const s=svgScale();if(!UI._cam0)UI._cam0={...UI.vb};document.documentElement.classList.add('camfly');await vbTween({x:UI.vb.x-dx*s,y:UI.vb.y-dy*s,w:UI.vb.w,h:UI.vb.h},Math.round(700*Math.max(.5,animK())))}
+async function clashCamBack(){const v=UI._cam0;if(!v)return;await vbTween(v,Math.round(500*Math.max(.5,animK())));UI._cam0=null;document.documentElement.classList.remove('camfly');try{render()}catch(_){}}
+/* v288 Plant stakes: while you choose in the auction, remember your pinned or selected plant and – in Founders – every buyable plant your company profits from.
+   At your next choice in a later round, plants a rival now owns play a clash. Replay only; never changes rules. */
+function pstakeTake(){if(!S||S.phase!=='auction'||!myTurn('choose'))return;const p=me(),set=new Set();if(!p)return;
+  if(S.mat&&S.mat[H])buyable().forEach(n=>{if(facPD(p,n)<0)set.add(n)});[UI.pin,UI.sel].forEach(n=>{if(n!=null&&S.market.includes(n))set.add(n)});
+  UI.pstake={r:S.round,c:[...set].map(n=>({n,co:!!(S.mat&&S.mat[H]&&facPD(p,n)<0),d:S.mat&&S.mat[H]?facPD(p,n):0}))}}
+function pclashCheck(){const st=UI.pstake;if(!st||!S||S.phase!=='auction'||!myTurn('choose')||st.r===S.round)return;UI.pstake=null;
+  const hits=st.c.map(x=>({...x,by:S.players.find(q=>q.id!==H&&q.plants.includes(x.n))})).filter(h=>h.by);if(hits.length)clashPlantPlay(hits)}
+function clashPlantPlay(hits){const cond=hits.length>1,em=q=>S.mat&&S.mat[q.id]?vEm(q,'vb-em'):`<i class="vb-dot" style="background:${q.color}"></i>`;
+  const steps=hits.slice(0,4).map(h=>({b:`${em(h.by)}<span><b>${esc(shortName(h.by.name))}</b> ${LX('nimmt Kraftwerk','takes plant')} <b>${PN(h.n)}</b> · ${h.co?LX('dein Firmenrabatt','your company discount')+' −'+Math.abs(h.d)+' €':LX('dein Favorit','your pick')}</span>`,snd:()=>sClash(),go:()=>clashPlantDraw(h,cond)}));
+  vQueue({any:true,steps})}
+function clashPlantDraw(h,cond){const q=h.by,tg=vChip(q.id),src=document.querySelector('#panel .cards .plant')||document.querySelector('#panel .cards');if(!tg||!src)return vWait();
+  const o=src.getBoundingClientRect(),t=tg.getBoundingClientRect();if(!o.width||!t.width)return vWait();const T=Math.round((cond?450:900)*Math.max(.5,animK()));
+  const c=document.createElement('div');c.className='fxcard';c.innerHTML=plantCard(h.n);c.style.cssText=`left:${o.left}px;top:${o.top}px;width:${o.width}px;height:${o.height}px`;document.body.appendChild(c);
+  const dx=t.left+t.width/2-(o.left+o.width/2),dy=t.top+t.height/2-(o.top+o.height/2),sc=Math.max(.3,Math.min(1,t.height/o.height));
+  return c.animate([{transform:'translate(0,0) scale(1)',opacity:0},{transform:'translate(0,-8px) scale(1.04)',opacity:1,offset:.16},{transform:`translate(${dx*.55}px,${dy*.55-24}px) scale(${(1+sc)/2})`,offset:.55},{transform:`translate(${dx}px,${dy}px) scale(${sc})`,opacity:.9}],{duration:T,easing:'cubic-bezier(.2,0,0,1)',fill:'both'}).finished
+    .then(()=>{c.remove();sTick();try{tg.style.setProperty('--variant-accent',q.color);vPulse(tg)}catch(_){}return new Promise(r=>setTimeout(r,cond?120:360))}).catch(()=>c.remove())}
 function clashDraw(h,cond){const end=fxCityPt(h.c),q=h.by;if(!end)return vWait();const col=q.color,T=Math.round((cond?320:900)*Math.max(.5,animK()));
   const nb=EDGE_LIST.filter(e=>e.a===h.c||e.b===h.c).map(e=>e.a===h.c?e.b:e.a).find(c=>q.cities.includes(c)),st=nb&&fxCityPt(nb);
   if(st){const ns='http://www.w3.org/2000/svg',sv=document.createElementNS(ns,'svg');sv.setAttribute('class','fxline');sv.style.cssText=`--cc:${col}`;const d=`M${st[0].toFixed(1)} ${st[1].toFixed(1)}L${end[0].toFixed(1)} ${end[1].toFixed(1)}`;
