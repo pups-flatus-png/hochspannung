@@ -10,7 +10,7 @@ Audited 2026-11-22 (v291) against `src/hochspannung.html`, the build output and 
 |---|---|---|---|---|---|
 | Relief images `georel-de`, `-fr`, `-it`, `-na`, `-eu`, `-bx`, `-ce`, `-cn`, `-kr`, `-br`, `-es`, `-ru`, `-jp`, `-ne`, `-uk`, `-qc`, `-bw`, `-au`, `-ind` (19, one per map) | Source: embedded in `src/hochspannung.html` as `<script type="text/plain">` WebP data. Build: extracted to `relief/<map>.webp`, fetched only when that map is shown, precached by the service worker | WebP, 1.7 MB in total as files (29–193 KB each) | NASA Blue Marble topography, rendered per map and clipped to Natural Earth 1:10m coastlines | Public domain (NASA imagery; Natural Earth) | v176 (17d26cf); repackaged as lazy data in v210 (c228080) |
 | App icons `icon-180.png`, `icon-192.png`, `icon-512.png` | Repo root, referenced by `manifest.webmanifest` and the page head | PNG, 9 / 9 / 29 KB | Original geometric drawing made for this project (grid, network nodes in seat colours, gold bolt) | Grid Master project | d6fee11 (2026-11-05). Each PNG carries this in its `Source` text chunk |
-| Fonts Saira Condensed, Barlow, Orbitron, IBM Plex Mono (WOFF2, not raster; listed for licence) | Embedded in the built page by `tools/build.py` from `gm2-src/fonts` | WOFF2 | Google Fonts families; file names follow the Fontsource packaging | SIL Open Font License 1.1 (licence text not yet in the repo, see Open items) | — |
+| Fonts Saira Condensed, Barlow, Orbitron, IBM Plex Mono (WOFF2, not raster; listed for licence) | Embedded in the built page by `tools/build.py` from `gm2-src/fonts` | WOFF2 | Google Fonts families; file names follow the Fontsource packaging | SIL Open Font License 1.1; licence texts with each family's copyright line in `gm2-src/fonts/OFL-*.txt` (fetched from google/fonts and IBM/plex) | — |
 
 ## Not rasters (no provenance entry needed)
 
@@ -22,10 +22,6 @@ Audited 2026-11-22 (v291) against `src/hochspannung.html`, the build output and 
 
 - Cities, regions and connection costs of the France, Italy, North America and Europe boards, the Deluxe resource markets and resupply tables, and the plant values of decks Set 1 and Set 2: [boardgamers/powergrid](https://github.com/boardgamers/powergrid), MIT licence.
 - Coastlines: [Natural Earth](https://www.naturalearthdata.com/) via the npm package world-atlas, public domain.
-
-## Open items
-
-- Add the SIL Open Font License text (and each family's copyright line) next to `gm2-src/fonts/`, since the fonts are redistributed inside the built page.
 
 ## Removed
 
