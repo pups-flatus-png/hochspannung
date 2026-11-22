@@ -1,0 +1,381 @@
+{
+ "schemaVersion": 2,
+ "generatedAt": "2026-11-22T17:51:01Z",
+ "title": "Design System: Grid Master",
+ "extensions": {
+  "colorMeta": {
+   "dispatch-gold": {
+    "role": "primary",
+    "displayName": "Dispatch Gold",
+    "canonical": "#f2b33d",
+    "tonalRamp": [
+     "#2f230e",
+     "#5b4214",
+     "#916617",
+     "#d28f13",
+     "#eaac38",
+     "#e7c077",
+     "#ebd7b1",
+     "#f4ede0"
+    ]
+   },
+   "console-night": {
+    "role": "neutral",
+    "displayName": "Console Night",
+    "canonical": "#0b1014",
+    "tonalRamp": [
+     "#191f24",
+     "#2c3943",
+     "#3f5668",
+     "#537692",
+     "#7394ae",
+     "#9db2c2",
+     "#c4cfd8",
+     "#e7eaee"
+    ]
+   },
+   "panel-slate": {
+    "role": "neutral",
+    "displayName": "Panel Slate",
+    "canonical": "#121a20",
+    "tonalRamp": [
+     "#191f23",
+     "#2c3943",
+     "#405667",
+     "#547791",
+     "#7495ad",
+     "#9eb2c1",
+     "#c5cfd7",
+     "#e7ebed"
+    ]
+   },
+   "panel-raised": {
+    "role": "neutral",
+    "displayName": "Panel Raised",
+    "canonical": "#19232b",
+    "tonalRamp": [
+     "#191f23",
+     "#2d3942",
+     "#415666",
+     "#55758f",
+     "#7694ac",
+     "#9fb1c0",
+     "#c5cfd7",
+     "#e7eaed"
+    ]
+   },
+   "hairline": {
+    "role": "neutral",
+    "displayName": "Hairline",
+    "canonical": "#26333d",
+    "tonalRamp": [
+     "#1a1f23",
+     "#2e3941",
+     "#435664",
+     "#59768c",
+     "#7994a9",
+     "#a1b1be",
+     "#c6cfd6",
+     "#e7eaed"
+    ]
+   },
+   "instrument-white": {
+    "role": "neutral",
+    "displayName": "Instrument White",
+    "canonical": "#e3eaee",
+    "tonalRamp": [
+     "#191f23",
+     "#2e3a41",
+     "#435865",
+     "#587a8d",
+     "#7898aa",
+     "#a0b4bf",
+     "#c6d0d6",
+     "#e7ebed"
+    ]
+   },
+   "muted-gauge": {
+    "role": "neutral",
+    "displayName": "Muted Gauge",
+    "canonical": "#8495a1",
+    "tonalRamp": [
+     "#1c1f21",
+     "#32393d",
+     "#4a555d",
+     "#647581",
+     "#83939e",
+     "#a7b1b8",
+     "#cacfd3",
+     "#e9eaec"
+    ]
+   },
+   "signal-green": {
+    "role": "status",
+    "displayName": "Signal Green",
+    "canonical": "#58b86a",
+    "tonalRamp": [
+     "#162619",
+     "#27482d",
+     "#377042",
+     "#469e57",
+     "#68ba77",
+     "#96c99f",
+     "#c1dcc6",
+     "#e5efe7"
+    ]
+   },
+   "fault-red": {
+    "role": "status",
+    "displayName": "Fault Red",
+    "canonical": "#e0483d",
+    "tonalRamp": [
+     "#2c1210",
+     "#551e1a",
+     "#862821",
+     "#c12e23",
+     "#db5147",
+     "#de8781",
+     "#e6b9b6",
+     "#f3e3e2"
+    ]
+   },
+   "caution-amber": {
+    "role": "status",
+    "displayName": "Caution Amber",
+    "canonical": "#e8a33a",
+    "tonalRamp": [
+     "#2d210f",
+     "#583e18",
+     "#8b5f1c",
+     "#c8841c",
+     "#e2a240",
+     "#e2ba7d",
+     "#e8d4b4",
+     "#f3ece1"
+    ]
+   }
+  },
+  "typographyMeta": {
+   "display": {
+    "displayName": "Display",
+    "purpose": "Tray phase titles, section and sheet titles; Orbitron uppercase."
+   },
+   "numeral": {
+    "displayName": "Numeral",
+    "purpose": "Every compared number: ledger values, prices, capacity, seat power."
+   },
+   "numeral-hero": {
+    "displayName": "Hero numeral",
+    "purpose": "Wallet, highest bid, payout."
+   },
+   "body": {
+    "displayName": "Body",
+    "purpose": "Explanations, coach tips, log lines."
+   },
+   "title": {
+    "displayName": "Title",
+    "purpose": "Row names, plate names, ledger row headers."
+   },
+   "label": {
+    "displayName": "Label",
+    "purpose": "Instrument captions, uppercase spaced, Muted Gauge."
+   },
+   "button": {
+    "displayName": "Button",
+    "purpose": "All buttons; Orbitron uppercase."
+   }
+  },
+  "shadows": [
+   {
+    "name": "floating-panel",
+    "value": "0 14px 34px -8px rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.3)",
+    "purpose": "Desk tray and floating docked sheet over the map."
+   },
+   {
+    "name": "strip-lift",
+    "value": "0 -10px 22px -14px rgba(0,0,0,.6)",
+    "purpose": "Phone strip and portrait tray over content."
+   },
+   {
+    "name": "gold-pulse",
+    "value": "0 0 0 3px rgba(242,179,61,.9), 0 0 18px rgba(242,179,61,.45)",
+    "purpose": "Animated once on the first legal move."
+   }
+  ],
+  "motion": [
+   {
+    "name": "t-fast",
+    "value": "140ms",
+    "purpose": "Press and state feedback."
+   },
+   {
+    "name": "t-move",
+    "value": "420ms",
+    "purpose": "Panels, tokens, moves."
+   },
+   {
+    "name": "t-camera",
+    "value": "900ms",
+    "purpose": "Map camera (start hand-off); clash camera 700 ms out, 500 ms back."
+   },
+   {
+    "name": "ease-move",
+    "value": "cubic-bezier(.2,0,0,1)",
+    "purpose": "Moves and entrances; no overshoot."
+   },
+   {
+    "name": "ease-camera",
+    "value": "cubic-bezier(.4,0,.2,1)",
+    "purpose": "Map camera."
+   }
+  ],
+  "breakpoints": [
+   {
+    "name": "phone-landscape",
+    "value": "orientation:landscape and max-height:500px"
+   },
+   {
+    "name": "phone-portrait",
+    "value": "orientation:portrait and max-width:600px"
+   },
+   {
+    "name": "desk-portrait",
+    "value": "orientation:portrait and min-width:744px and min-height:1000px"
+   },
+   {
+    "name": "desk",
+    "value": "orientation:landscape and min-width:1000px and min-height:640px"
+   },
+   {
+    "name": "desk-compact",
+    "value": "max-width:1359px"
+   },
+   {
+    "name": "desk-bar-compact",
+    "value": "max-width:1239px"
+   }
+  ]
+ },
+ "components": [
+  {
+   "name": "Primary Button",
+   "kind": "button",
+   "refersTo": "button-primary",
+   "description": "The one commit action; names action and cost.",
+   "html": "<button class=\"ds-btn-pri\">Build · 21 €</button>",
+   "css": ".ds-btn-pri{min-height:44px;padding:9px 18px;border:0;border-radius:13px;background:linear-gradient(180deg,#ffd06a,#f2b33d 55%,#d99520);color:#1a1206;font:800 11.5px/1 Orbitron,system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:filter .14s,transform .14s}.ds-btn-pri:hover{filter:brightness(1.06)}.ds-btn-pri:active{transform:translateY(1px)}.ds-btn-pri:focus-visible{outline:2px solid #f2b33d;outline-offset:2px}"
+  },
+  {
+   "name": "Secondary Button",
+   "kind": "button",
+   "refersTo": "button-secondary",
+   "description": "Pass, done, buy nothing; never gold.",
+   "html": "<button class=\"ds-btn\">Done</button>",
+   "css": ".ds-btn{min-height:44px;padding:9px 18px;border:1px solid rgba(255,255,255,.1);border-radius:13px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));color:#e3eaee;font:800 11.5px/1 Orbitron,system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:border-color .14s}.ds-btn:hover{border-color:#3a4b58}.ds-btn:focus-visible{outline:2px solid #f2b33d;outline-offset:2px}"
+  },
+  {
+   "name": "Seat Chip",
+   "kind": "chip",
+   "refersTo": "seat-chip",
+   "description": "Turn-order seat with name, status and power bar in the seat colour.",
+   "html": "<button class=\"ds-seat\" style=\"--pc:#4f9dff\"><span class=\"ds-n\">3</span><span class=\"ds-tx\"><b>You</b><small>Your turn</small></span><span class=\"ds-pw\">⚡ 0/8</span></button>",
+   "css": ".ds-seat{display:flex;align-items:center;gap:8px;min-width:180px;padding:5px 9px 7px;border:1px solid #26333d;border-radius:9px;background:#19232b;color:#e3eaee;position:relative;font:400 14px Barlow,system-ui;cursor:pointer}.ds-seat::after{content:'';position:absolute;left:8px;right:8px;bottom:3px;height:2px;border-radius:2px;background:var(--pc)}.ds-seat:hover,.ds-seat:focus-visible{border-color:#f2b33d;outline:none}.ds-n{font:800 10px Orbitron,system-ui;color:#8495a1}.ds-tx{display:flex;flex-direction:column;gap:3px;flex:1}.ds-tx b{font:600 12.5px/1 Barlow,system-ui}.ds-tx small{font:500 11px/1 Barlow,system-ui;color:#f2b33d}.ds-pw{font:700 11px Orbitron,system-ui;color:#e0483d}"
+  },
+  {
+   "name": "Ledger Well",
+   "kind": "card",
+   "refersTo": "ledger-well",
+   "description": "Consequences read across: one row per option, one column per consequence.",
+   "html": "<div class=\"ds-led\"><div class=\"ds-h\"><span></span><span>You pay</span><span>Cash left</span><span>Capacity</span></div><div class=\"ds-r\"><span><i>A</i> Plant 14</span><b>24 €</b><b>156 €</b><b>8</b></div></div>",
+   "css": ".ds-led{background:#0b1014;border:1px solid #26333d;border-radius:12px;padding:8px 12px;color:#e3eaee;min-width:420px}.ds-h,.ds-r{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:8px;align-items:end}.ds-h span{font:600 10px/1.1 Barlow,system-ui;letter-spacing:.1em;text-transform:uppercase;color:#8495a1;text-align:right}.ds-r{border-top:1px solid #26333d;margin-top:6px;padding-top:6px}.ds-r span{font:600 13px Barlow,system-ui}.ds-r i{font:800 10px Orbitron,system-ui;font-style:normal;background:#f2b33d;color:#1d1405;border-radius:4px;padding:3px 6px;margin-right:6px}.ds-r b{font:700 13px Orbitron,system-ui;text-align:right}"
+  },
+  {
+   "name": "Company Plate",
+   "kind": "custom",
+   "refersTo": "ledger-strip",
+   "description": "Founders' Era identity compressed into the strip; company colour as tint only.",
+   "html": "<div class=\"ds-plate\" style=\"--c:#d9824a\"><span class=\"ds-em\"></span><div><b>Kohle &amp; Stahl · Investor</b><small>5 effects this phase</small></div><button>All effects</button></div>",
+   "css": ".ds-plate{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 12px;border-radius:10px;border:1px solid color-mix(in srgb,var(--c) 45%,#26333d);background:linear-gradient(160deg,color-mix(in srgb,var(--c) 13%,#19232b),color-mix(in srgb,var(--c) 4%,#19232b) 70%);color:#e3eaee;min-width:300px}.ds-em{width:34px;height:34px;clip-path:polygon(50% 0,100% 20%,100% 60%,50% 100%,0 60%,0 20%);background:var(--c)}.ds-plate b{display:block;font:600 14px/1.15 Barlow,system-ui}.ds-plate small{font:500 12px Barlow,system-ui;color:#8495a1}.ds-plate button{min-height:28px;padding:0 10px;border-radius:999px;border:1px solid color-mix(in srgb,var(--c) 55%,#3a4b58);background:transparent;color:#e3eaee;font:600 12px Barlow,system-ui;cursor:pointer}.ds-plate button:hover,.ds-plate button:focus-visible{background:color-mix(in srgb,var(--c) 14%,transparent);outline:none}"
+  },
+  {
+   "name": "Phase Tabs",
+   "kind": "nav",
+   "refersTo": "phase-tab-active",
+   "description": "Step badge plus five phases; only the active phase shows its label.",
+   "html": "<nav class=\"ds-tabs\"><span class=\"ds-st\">II</span><span class=\"ds-t\">1</span><span class=\"ds-t\">2</span><span class=\"ds-t on\"><i>3</i>Resources</span><span class=\"ds-t\">4</span><span class=\"ds-t\">5</span></nav>",
+   "css": ".ds-tabs{display:inline-flex;gap:4px;padding:4px;border:1px solid #26333d;border-radius:12px;background:#121a20}.ds-st{font:800 14px Orbitron,system-ui;color:#f2b33d;border:1px solid color-mix(in srgb,#f2b33d 55%,#26333d);border-radius:8px;padding:6px 10px}.ds-t{display:flex;align-items:center;gap:7px;height:32px;padding:0 8px;border-radius:8px;font:800 10.5px Orbitron,system-ui;color:#8495a1}.ds-t.on{background:linear-gradient(rgba(242,179,61,.18),rgba(242,179,61,.05));color:#e3eaee;font:700 11.5px Barlow,system-ui;letter-spacing:.12em;text-transform:uppercase;padding:0 12px 0 8px}.ds-t.on i{font:800 10.5px Orbitron,system-ui;font-style:normal;background:#f2b33d;color:#1d1405;border-radius:50%;width:20px;height:20px;display:grid;place-items:center}"
+  }
+ ],
+ "narrative": {
+  "northStar": "The Night Control Room",
+  "overview": "Grid Master is played at a dispatcher's console after dark. The network map is the control surface: it fills the screen, and everything else docks to it like instruments around a wall chart. Panels are matte slate with 1 px hairline edges, not glass. Numbers read like gauges, in Orbitron; labels and prose are quiet Barlow. One colour, dispatch gold, belongs to the player's next move. Everything else stays cool, so the eye always finds the thing you can act on.\n\nDensity is high but ordered. Each turn follows the same path: see whose turn it is and what is asked, pin up to two options, read the consequences side by side in the ledger strip, then commit with one gold action at the strip's right end. The map never gives up its place to a scrolling column of cards. Company identity (Founders' Era) shows up as ownership only: city rings, line signatures and a tinted plate, never as a second accent.\n\nMotion is direct and short. It acknowledges a press at once, replays what the engine already decided, and always ends in the same state as a skip.",
+  "keyCharacteristics": [
+   "Full-bleed map under a 56 px bar; tray docked on the trailing edge; ledger strip along the bottom.",
+   "Gold means \"you, act now\" and nothing else.",
+   "Orbitron numerals and titles, Barlow text; uppercase spaced labels for instrument captions.",
+   "Hairline borders and tonal layering; shadows only to lift floating panels off the map.",
+   "Dark by default, with a warm \"paper\" light theme that keeps every rule.",
+   "Text always stays inside its box, at every device size."
+  ],
+  "rules": [
+   {
+    "name": "The One Signal Rule",
+    "body": "Gold appears only on what the player can act on now: the commit button, pins and their leader lines, the active phase, the first-move pulse, and your money. Never use it for decoration, headings or rival information.",
+    "section": "colors"
+   },
+   {
+    "name": "The Ownership-Only Rule",
+    "body": "Company and seat colours mark who owns what (city rings, lines, seat chips, the company plate tint). They never colour a button or a call to action.",
+    "section": "colors"
+   },
+   {
+    "name": "The Two-Channel Rule",
+    "body": "Anything coloured also carries a second cue: a line signature, an emblem shape, a label, or a ▲/▼ glyph.",
+    "section": "colors"
+   },
+   {
+    "name": "The Gauge Rule",
+    "body": "Every number a player compares is Orbitron with tabular figures; words are never Orbitron except titles and buttons.",
+    "section": "typography"
+   },
+   {
+    "name": "The No-Shrink Rule",
+    "body": "When space runs out, drop secondary parts (status line, logo, note) before shrinking type. Body never goes below 11 px and labels never below 10 px. A few legacy captions still sit at 8–9 px (the Step badge caption, \"Leader first\", the tray phase subtitle); raise them when you next touch those components.",
+    "section": "typography"
+   },
+   {
+    "name": "The Map-First Rule",
+    "body": "No layout may reduce the map to a column. Panels dock to it or float over its edges; the map fit always centres the network in the part that stays visible.",
+    "section": "layout"
+   },
+   {
+    "name": "The Thumb-Zone Rule",
+    "body": "The commit action sits at the right end of the strip (bottom right) on every device, so the hand finds it in the same place every turn.",
+    "section": "layout"
+   },
+   {
+    "name": "The Matte Rule",
+    "body": "No glass, no blur on in-game panels (the statistics header is the one exception). Glows are reserved for gold \"act now\" moments and single company flashes, never ambient decoration.",
+    "section": "elevation"
+   }
+  ],
+  "dos": [
+   "**Do** keep the map full bleed and dock everything else to it (The Map-First Rule).",
+   "**Do** put the commit action at the strip's right end, naming the action and its cost.",
+   "**Do** show every comparison side by side in the ledger before the commit.",
+   "**Do** use Orbitron with tabular figures for any number a player compares.",
+   "**Do** pair every colour cue with a shape, line signature, label or glyph.",
+   "**Do** test at 1440×900, 1280×720, 1194×834, 834×1194, 844×390 and 390×844, in German and English, Classic and Founders, dark and light.",
+   "**Do** drop secondary text before shrinking type when space runs out."
+  ],
+  "donts": [
+   "**Don't** use gold for anything the player cannot act on now (The One Signal Rule).",
+   "**Don't** let a company or seat colour style a button or call to action.",
+   "**Don't** go back to the map-left, scrolling-cards-right layout.",
+   "**Don't** add glass, blur or ambient glows to in-game panels.",
+   "**Don't** let any text leave its box or truncate a number; truncate names with an ellipsis instead.",
+   "**Don't** change the phase without the player pressing \"Continue\", and don't play sound during the boot sequence.",
+   "**Don't** reveal AI personalities in the interface."
+  ]
+ }
+}

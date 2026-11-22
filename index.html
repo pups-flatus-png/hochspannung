@@ -4813,6 +4813,11 @@ html.camfly #bldtip{visibility:hidden}
 .fxemb{position:fixed;z-index:9990;pointer-events:none;will-change:transform,opacity}
 .fxemb .fxemb-i{width:100%;height:100%;display:block;--ls:100%}
 .fxemb .fxemb-i svg{width:100%;height:100%}
+html body #sheet.dock.dfloat .sheet{border-radius:12px!important;border:1px solid var(--line)!important;box-shadow:0 14px 34px -8px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.3)!important;height:100%;box-sizing:border-box}
+/* v290 finish: ledger column heads wrap instead of truncating; phones read them in 10 px sentence case */
+#ledstrip .ledger.lx thead th{overflow:visible!important;text-overflow:clip!important;overflow-wrap:normal}
+@media (max-width:1359px){#ledstrip .ledger.lx thead th{letter-spacing:.04em!important;font-size:10px}}
+html body #app.pl2.phone #ledstrip .ledger.lx thead th{font:600 10px/1.1 Barlow,system-ui!important;letter-spacing:0!important;text-transform:none!important;color:var(--muted)}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -7397,12 +7402,12 @@ ${S&&(S.promos||[]).length?`<div class="rdiff ig"><div class="rd-h"><div><span c
   }
   const dock=isDock(),old=sheet.querySelector('.sheet'),keep=dock&&old&&sheet.dataset.s===UI.sheet?old.scrollTop:0;
   sheet.innerHTML=`<div class="sheet" role="dialog" aria-modal="${dock?'false':'true'}">${h}</div>`;sheet.hidden=false;sheet.dataset.s=UI.sheet;
-  if(dock){const r=$('#board').getBoundingClientRect();sheet.classList.add('dock');sheet.style.left=r.left+'px';sheet.style.top=r.top+'px';sheet.style.height=r.height+'px';sheet.style.width=Math.min(r.width,540)+'px';if(keep)sheet.querySelector('.sheet').scrollTop=keep}else undock();
+  if(dock){const r=$('#board').getBoundingClientRect(),g=deskOn()?14:0;/* v290 desk: the docked sheet floats like the tray, mirrored on the leading edge */sheet.classList.add('dock');sheet.classList.toggle('dfloat',!!g);sheet.style.left=(r.left+g)+'px';sheet.style.top=(r.top+g)+'px';sheet.style.height=(r.height-2*g)+'px';sheet.style.width=Math.min(r.width-2*g,520)+'px';if(keep)sheet.querySelector('.sheet').scrollTop=keep}else undock();
   document.querySelectorAll('.qb').forEach(b=>b.classList.toggle('on',dock&&b.dataset.act===UI.sheet));
 }
 const DOCK_MQ=matchMedia('(orientation:landscape) and (min-width:900px) and (min-height:500px)');
 function isDock(){return !!S&&(UI.sheet==='markets'||UI.sheet==='opp')&&DOCK_MQ.matches&&start.hidden}
-function undock(){if(sheet.classList.contains('dock')){sheet.classList.remove('dock');sheet.removeAttribute('style')}}
+function undock(){if(sheet.classList.contains('dock')){sheet.classList.remove('dock','dfloat');sheet.removeAttribute('style')}}
 sheet.addEventListener('click',e=>{if(e.target===sheet){const ac=S&&actor();if(ac&&ac.kind==='discard'&&ac.pid===H)return;UI.sheet=null;renderSheet();if(UI.rulesFromStart){UI.rulesFromStart=false;renderStart(true)}}});
 
 /* --- Start --- */
@@ -8479,7 +8484,7 @@ function renderStats(){
   const opts=`<option value="total" ${view==='total'?'selected':''}>Alle Partien (Durchschnitt)</option><option value="last" ${view==='last'?'selected':''}>Letzte Partie</option><option value="trend" ${view==='trend'?'selected':''}>Entwicklung über Zeit</option><option value="custom" ${view==='custom'?'selected':''}>Eigenes Diagramm</option><option value="board" ${view==='board'?'selected':''}>Gemeinsame Rangliste</option><option value="career" ${view==='career'?'selected':''}>${LX('Firmen-Karriere','Company career')}</option><option disabled>── Einzelne Partie ──</option>${h.map((g,i)=>({g,i})).reverse().map(({g,i})=>`<option value="g:${g.id}" ${view==='game'&&sel&&sel.id===g.id?'selected':''}>${gameLabel(g,i)}</option>`).join('')}`;
   const dOpts=[['all','Alle Stärken'],['easy',AI_NAME.easy],['normal',AI_NAME.normal],['hard',AI_NAME.hard],['expert',AI_NAME.expert]].map(([k,l])=>`<option value="${k}" ${(UI.statDiff||'all')===k?'selected':''}>${l}</option>`).join('');
   const head=`<div class="st-head"><button type="button" class="btn" data-act="statsBack">← Zurück</button><h2>Statistik</h2>${all.length?`<span class="st-n">${all.length} ${all.length===1?'Partie':'Partien'}</span>`:''}</div>`;
-  if(!all.length&&view!=='board'){el.innerHTML=`<div class="st-inner">${head}<div class="st-empty"><b>Noch keine beendete Partie</b><p>Spiel eine Partie bis zur letzten Stromlieferung. Danach siehst du hier Siegquote, Rekorde, deine Ausgaben für Kraftwerke, Rohstoffe und Netz, die Verläufe von Geld und Städten und deine ganze Spielhistorie.</p>${LB.db?'<button type="button" class="btn" data-act="boardView">Gemeinsame Rangliste ansehen</button>':''}</div></div>`;el.hidden=false;return}
+  if(!all.length&&view!=='board'){el.innerHTML=`<div class="st-inner"><div class="st-top">${head}</div><div class="st-empty"><b>Noch keine beendete Partie</b><p>Spiel eine Partie bis zur letzten Stromlieferung. Danach siehst du hier Siegquote, Rekorde, deine Ausgaben für Kraftwerke, Rohstoffe und Netz, die Verläufe von Geld und Städten und deine ganze Spielhistorie.</p>${LB.db?'<button type="button" class="btn" data-act="boardView">Gemeinsame Rangliste ansehen</button>':''}</div></div>`;el.hidden=false;return}
   const bar=`<div class="st-bar"><label class="stsel"><span>Ansicht</span><select id="stView">${opts}</select></label><label class="stsel"><span>KI-Stärke</span><select id="stDiff">${dOpts}</select></label><label class="stsel"><span>Karte</span><select id="stMap">${[['all','Alle Karten'],...Object.entries(MAPS).map(([k,m])=>[k,m.name])].map(([k,l])=>`<option value="${k}" ${(UI.statMap||'all')===k?'selected':''}>${l}</option>`).join('')}</select></label></div>`;
   let body;
   if(view==='board')body=statsBoard();
@@ -8948,7 +8953,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v289';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v290';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
