@@ -192,6 +192,26 @@ html body #map.plan .city .cost.jump rect{fill:color-mix(in srgb,#b48cff 30%,var
 html body #map.plan .city .pa.po{stroke:var(--pl-hi);stroke-opacity:.9}
 html body #map.plan .city .pa.pl{stroke:var(--muted)!important;stroke-dasharray:.7 2.6;stroke-opacity:.6}
 .bsplit{display:grid;grid-template-columns:1fr auto;gap:4px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);padding:9px 11px;margin:8px 0;font-size:13px}
+/* v281 Dispatch Desk: Folgen-Übersicht (Ledger) und Anheften zum Vergleich */
+.ledger{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:13px;table-layout:fixed}
+.ledger th,.ledger td{padding:5px 6px;text-align:right;border-top:1px solid var(--line);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ledger tr:first-child th,.ledger tr:first-child td{border-top:0}
+.ledger th[scope=row]{text-align:left;color:var(--muted);font-weight:500;width:40%;white-space:normal;line-height:1.2;overflow-wrap:anywhere}
+.ledger thead th{font:600 11px/1.2 Barlow,system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);vertical-align:bottom}
+.ledger thead th .lh{display:inline-flex;align-items:center;gap:4px;max-width:100%}
+.ledger td{font-family:Orbitron,system-ui,sans-serif;font-size:12.5px;color:var(--fg);font-variant-numeric:tabular-nums}
+.ledger td small{font:400 11px Barlow,system-ui,sans-serif;color:var(--muted)}
+.ledger td.lbest{font-weight:700}
+.ledger td.lbest::before{content:"▲";font-size:8px;margin-right:4px;color:var(--muted);vertical-align:2px}
+.ledger td.neg{color:var(--bad)}
+.ledger .co{font:400 11px Barlow,system-ui,sans-serif;color:var(--muted);display:block}
+.ldbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 6px}
+.ldbar .hint{margin:0;flex:1 1 140px;min-width:0}
+.chip.pinb{display:inline-flex;align-items:center;gap:6px;min-height:36px}
+.chip.pinb svg,.ledger .pg{flex:none}
+.plant .pintag{position:absolute;left:3px;bottom:3px;width:15px;height:15px;border-radius:50%;background:var(--panel);border:1px solid var(--edge);display:grid;place-items:center;color:var(--fg);z-index:2;pointer-events:none}
+.plant.pinned{outline:2px dashed var(--edge);outline-offset:2px}
+.opt.pinned{outline:2px dashed var(--edge);outline-offset:-2px}
 .bsplit .t{color:var(--muted)}.bsplit b{font:800 13px/1 'Orbitron',var(--display);text-align:right;color:var(--fg)}
 .bsplit .sum{border-top:1px solid var(--line);padding-top:6px;color:var(--fg);font-weight:600}.bsplit b.sum{color:var(--accent-text,var(--accent));font-size:15px}
 .bsplit .rp{grid-column:1/-1;font:600 12px/1.3 Barlow,system-ui;color:var(--muted)}
@@ -5242,6 +5262,46 @@ const FACTIONS={
   waste:{nm:'Recycla',plant:{garbage:.8},fuel:{garbage:.85},conn:1.05,d:['Müll-Kraftwerke −20 %, Müll −15 %','Leitungen +5 %'],e:['Garbage plants −20%, garbage −15%','Connections +5%']}};
 const FAC_KEYS=Object.keys(FACTIONS);
 function facNote(num,bid){const p=me();if(!p||num==null||!S.mat)return'';const d=facPD(p,num);if(!d)return'';return `<p class="hint facn">${matTick(p)}${esc(matName(p))}: ${eur(d)} · ${LX('du zahlst','you pay')} <b>${facCost(p,num,bid)} €</b></p>`}
+/* v281 Dispatch Desk: Folgen vor dem Zug zeigen. Anheften (Pin) vergleicht zwei Kraftwerke oder zwei Städte. */
+const PIN_SVG='<svg class="pg" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M5.5 1.5h5l-.8 4.2 2.3 2.3v1.5H8.8V15H7.2V9.5H4V8l2.3-2.3z" fill="currentColor"/></svg>';
+function pinSync(){const k=S?S.round+'|'+S.phase+'|'+(S.seqIdx||0):'';if(UI.pinK!==k){UI.pinK=k;UI.pin=null;UI.cpin=null}}
+function plantLed(p,n,bid){const pd=S.mat?facPD(p,n):0,pay=Math.max(1,bid+pd),cash=p.money-pay,after=plantsAfter(p,n),scr=heldPlants(p).filter(x=>!after.includes(x));
+  const cap=after.reduce((a,x)=>a+(PLANTS[x][0]==='mine'?0:PLANTS[x][2]+(p.sub===x?1:0)),0),fuel=fuelRoundCost(p,after);
+  const city=cap>cityCount(p)?buildOptions(p).find(o=>o.cost<=cash):null;return{n,pd,pay,cash,scr,cap,fuel,city,after:city?cash-city.cost:null}}
+function ledHTML(cols,rows,hint,bar){const two=cols.length>1;
+  const head=two?`<thead><tr><th scope="col"></th>${cols.map(c=>`<th scope="col"><span class="lh">${c.h}</span></th>`).join('')}</tr></thead>`:'';
+  const body=rows.map(r=>{const v=cols.map(c=>r.v(c.d)),best=two&&r.cmp?r.cmp(cols[0].d,cols[1].d):0;
+    return `<tr><th scope="row">${r.l}</th>${v.map((x,i)=>`<td class="${best&&((best<0&&i===0)||(best>0&&i===1))?'lbest':''}${r.neg&&r.neg(cols[i].d)?' neg':''}">${x}</td>`).join('')}</tr>`}).join('');
+  return `<table class="ledger" aria-label="${LX('Folgen dieses Zugs','What this move does')}">${head}<tbody>${body}</tbody></table>${bar||hint?`<div class="ldbar">${hint?`<p class="hint">${hint}</p>`:''}${bar||''}</div>`:''}`}
+const lowBetter=(f)=>(a,b)=>f(a)===f(b)?0:f(a)<f(b)?-1:1,highBetter=(f)=>(a,b)=>f(a)===f(b)?0:f(a)>f(b)?-1:1;
+function plantLedgerHTML(sel,bid,opt={}){pinSync();const p=me();if(!p||sel==null)return'';const pin=opt.noPin?null:UI.pin;const cap0=capacity(p);
+  const cols=[{d:plantLed(p,sel,bid),h:`${LX('Kraftwerk','Plant')} ${PN(sel)}`}];if(pin!=null&&pin!==sel&&S.market.includes(pin))cols.push({d:plantLed(p,pin,minBid(pin)),h:`${PIN_SVG}${LX('Angeheftet','Pinned')} ${PN(pin)}`});
+  const fac=d=>d.pd?`<span class="co">${esc(MCOS[S.mat[p.id].co].nm)} ${eur(d.pd)}</span>`:'';
+  const rows=[
+    {l:LX('Du zahlst','You pay'),v:d=>`${d.pay} €${fac(d)}`,cmp:lowBetter(d=>d.pay)},
+    {l:LX('Danach übrig','Cash left'),v:d=>`${d.cash} €`,cmp:highBetter(d=>d.cash),neg:d=>d.cash<0},
+    {l:LX('Fällt weg','Scraps'),v:d=>d.scr.length?d.scr.map(PN).join(', ')+`<small> · ${LX('wählbar','your pick')}</small>`:'–'},
+    {l:LX('Kapazität','Capacity'),v:d=>`${d.cap} <small>${d.cap===cap0?'±0':(d.cap>cap0?'+':'')+(d.cap-cap0)}</small>`,cmp:highBetter(d=>d.cap)},
+    {l:LX('Brennstoff zukaufen','Fuel to buy'),v:d=>`≈ ${d.fuel} €`,cmp:lowBetter(d=>d.fuel)},
+    {l:LX('Nach günstigster Stadt','After cheapest city'),v:d=>d.city?`${d.after} €<span class="co">${esc(CITY[d.city.city].name)} ${d.city.cost} €</span>`:'–',cmp:(a,b)=>a.after==null||b.after==null?0:highBetter(d=>d.after)(a,b)}];
+  let bar='',hint='';
+  if(!opt.noPin&&cols.length>1)bar=`<button type="button" class="chip pinb" data-act="pinx">${LX('Vergleich beenden','Clear comparison')}</button>`;else if(!opt.noPin){const on=UI.pin===sel;bar=`<button type="button" class="chip pinb" data-act="pinp" data-num="${sel}" aria-pressed="${on}">${PIN_SVG}${on?LX('Lösen','Unpin'):LX('Anheften','Pin')}</button>`;
+    hint=on?LX('Tippe ein anderes Kraftwerk an, um zu vergleichen.','Tap another plant to compare.'):(isTouchUI()?LX('Lange drücken heftet an.','Long-press to pin.'):LX('⇧-Klick oder P heftet an.','⇧-click or P to pin.'))}
+  return ledHTML(cols,rows,hint,bar)}
+function cityLed(p,o){const n=cityCount(p),fu=fueledCap(p),cash=p.money-o.cost,ch=o.jump?[]:routeChain(p,o.city);return{o,cash,gain:incomeFor(n+1,fu)-incomeFor(n,fu),seg:Math.max(0,ch.length-1)}}
+function cityLedgerHTML(sel){pinSync();const p=me();if(!p||!sel)return'';const opts=buildOptions(p),so=opts.find(o=>o.city===sel);if(!so)return'';
+  const po=UI.cpin&&UI.cpin!==sel?opts.find(o=>o.city===UI.cpin):null;
+  const cols=[{d:cityLed(p,so),h:esc(CITY[sel].name)}];if(po)cols.push({d:cityLed(p,po),h:`${PIN_SVG}${esc(CITY[po.city].name)}`});
+  const rows=[
+    {l:LX('Platz','Slot'),v:d=>`${d.o.slot} €`,cmp:lowBetter(d=>d.o.slot)},
+    {l:LX('Leitung','Connection'),v:d=>`${d.o.conn} €${d.seg>1?`<small> · ${d.seg}</small>`:''}`,cmp:lowBetter(d=>d.o.conn)},
+    {l:LX('Zusammen','Total'),v:d=>`${d.o.cost} €`,cmp:lowBetter(d=>d.o.cost)},
+    {l:LX('Danach übrig','Cash left'),v:d=>`${d.cash} €`,cmp:highBetter(d=>d.cash),neg:d=>d.cash<0},
+    {l:LX('Einnahme','Income'),v:d=>d.gain>0?`+${d.gain} €`:`±0 <small>${LX('nicht versorgt','not powered')}</small>`}];
+  if(cols.length<2)return'';
+  return ledHTML(cols,rows,'',`<button type="button" class="chip pinb" data-act="cpinx">${LX('Vergleich beenden','Clear comparison')}</button>`)}
+function cityPinBar(sel){const on=UI.cpin===sel;if(UI.cpin&&!on&&buildOptions(me()).some(o=>o.city===UI.cpin))return'';return `<div class="ldbar"><p class="hint">${UI.cpin&&!on?'':on?LX('Tippe eine andere Stadt an, um zu vergleichen.','Tap another city to compare.'):isTouchUI()?LX('Lange drücken auf eine Stadt heftet sie an.','Long-press a city to pin it.'):LX('⇧-Klick oder P heftet an.','⇧-click or P to pin.')}</p><button type="button" class="chip pinb" data-act="cpin" data-city="${sel}" aria-pressed="${on}">${PIN_SVG}${on?LX('Lösen','Unpin'):LX('Anheften','Pin')}</button></div>`}
+function isTouchUI(){try{return matchMedia('(hover:none) and (pointer:coarse)').matches}catch(_){return false}}
 function facMax(p,num){return Math.max(0,p.money-facPD(p,num))}
 function facTxt(k){const f=FACTIONS[k];if(!f)return['',''];return LANG==='en'?f.e:f.d}
 function facAssign(me_){const pool=FAC_KEYS.slice().sort(()=>Math.random()-.5);S.fac={};const hk=me_&&FACTIONS[me_]?me_:pool[0];S.fac[H]=hk;const rest=pool.filter(k=>k!==hk);S.players.forEach(p=>{if(p.id!==H)S.fac[p.id]=rest.shift()||FAC_KEYS[p.id%FAC_KEYS.length]});log('Firmen mit Fähigkeiten: '+S.players.map(p=>p.name+' = '+FACTIONS[S.fac[p.id]].nm).join(', ')+'.')}
@@ -5844,10 +5904,10 @@ function plantCard(num,o={}){
   if(num===STEP3)return `<div class="plant step3"><b class="pn">III</b><span class="pl">Stufe 3</span></div>`;
   const[t,k,c]=PLANTS[num];
   const label=`Kraftwerk ${PN(num)}, ${TYPE_NAME[t]}, ${FREE(t)?'ohne Rohstoffe':k+' '+RNAME[t]}, versorgt ${c}`;
-  const cls=`plant t-${t}${o.store&&!FREE(t)?' st':''}${num===FLUX?' promo':''}${o.disc?' disc':''}${o.lg?' lg':o.sm?' sm':''}${o.sel?' sel':''}${o.on?' on':''}${o.off?' off':''}${o.inauc?' inauc':''}`;
+  const cls=`plant t-${t}${o.store&&!FREE(t)?' st':''}${num===FLUX?' promo':''}${o.disc?' disc':''}${o.lg?' lg':o.sm?' sm':''}${o.sel?' sel':''}${o.on?' on':''}${o.off?' off':''}${o.inauc?' inauc':''}${o.pin?' pinned':''}`;
   let store='';
   if(o.store&&!FREE(t)){store=`<div class="store" title="${o.store.filter(Boolean).length}/${STO(num)}">${Array.from({length:STO(num)},(_,i)=>o.store[i]?resIcon(o.store[i]):'<i></i>').join('')}<b class="sc">${o.store.filter(Boolean).length}/${STO(num)}</b></div>`}
-  const reg=S&&S.plantOv&&S.plantOv[num]&&MAPS[S.map].regional;const inner=`${reg?`<span class="regtag" title="${LX('Regionale Variante dieser Karte','Regional variant on this board')}">R</span>`:''}${o.sub?`<span class="subtag" title="${LX('Umspannwerk: versorgt eine Stadt mehr','Substation: powers one more city')}">+1</span>`:''}${num===FLUX?'<span class="promotag" title="Promokarte">P</span>':''}${plantArt(num)}${o.disc?'<span class="dtag" title="Rabatt: ab 1 €">1 €</span>':''}${o.pd?`<span class="pdtag${o.pd>0?' up':''}" title="${esc(LX('Dein Preis: Gebot ','Your price: bid ')+eur(o.pd))}">${matTick(me())}${eur(o.pd)}</span>`:''}${o.nb?`<span class="nbtag" title="Für dich gesperrt: Atomkraft nur mit passendem Netz"><svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">${RICON.nuke}</svg></span>`:''}<div class="top"><div class="nw"><b class="pn">${Math.floor(num)}${num===FLUX?'<sup class="dk">⅓</sup>':num%1?`<sup class="dk">${SRC(num)==='d1'?'S1':'S2'}</sup>`:''}</b><span class="tl">${TYPE_SHORT[t]}</span></div>${useIcon('b-'+t,'bi')}</div><div class="req">${reqHTML(t,k)}</div><div class="out"><span class="arr">→</span><span class="cty">${c}${useIcon('i-house','ico')}</span></div>${store}`;
+  const reg=S&&S.plantOv&&S.plantOv[num]&&MAPS[S.map].regional;const inner=`${o.pin?`<span class="pintag">${PIN_SVG}</span>`:''}${reg?`<span class="regtag" title="${LX('Regionale Variante dieser Karte','Regional variant on this board')}">R</span>`:''}${o.sub?`<span class="subtag" title="${LX('Umspannwerk: versorgt eine Stadt mehr','Substation: powers one more city')}">+1</span>`:''}${num===FLUX?'<span class="promotag" title="Promokarte">P</span>':''}${plantArt(num)}${o.disc?'<span class="dtag" title="Rabatt: ab 1 €">1 €</span>':''}${o.pd?`<span class="pdtag${o.pd>0?' up':''}" title="${esc(LX('Dein Preis: Gebot ','Your price: bid ')+eur(o.pd))}">${matTick(me())}${eur(o.pd)}</span>`:''}${o.nb?`<span class="nbtag" title="Für dich gesperrt: Atomkraft nur mit passendem Netz"><svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">${RICON.nuke}</svg></span>`:''}<div class="top"><div class="nw"><b class="pn">${Math.floor(num)}${num===FLUX?'<sup class="dk">⅓</sup>':num%1?`<sup class="dk">${SRC(num)==='d1'?'S1':'S2'}</sup>`:''}</b><span class="tl">${TYPE_SHORT[t]}</span></div>${useIcon('b-'+t,'bi')}</div><div class="req">${reqHTML(t,k)}</div><div class="out"><span class="arr">→</span><span class="cty">${c}${useIcon('i-house','ico')}</span></div>${store}`;
   if(o.act)return `<button type="button" class="${cls}" data-act="${o.act}" data-num="${num}" ${o.dis?'disabled':''} aria-label="${label}">${inner}</button>`;
   return `<div class="${cls}" aria-label="${label}">${inner}</div>`;
 }
@@ -6441,13 +6501,13 @@ function zoomAt(cx,cy,f){
   v.x=px-(px-v.x)*k;v.y=py-(py-v.y)*k;v.w=nw;v.h=v.h*k;applyVB();
 }
 (function mapGestures(){
-  const pts=new Map();let moved=0,tapCity=null;
+  const pts=new Map();let moved=0,tapCity=null,tapT0=0;
   svg.addEventListener('pointerdown',e=>{
     /* v267: ein neuer erster Finger räumt hängengebliebene Zeiger weg (sonst wird aus Wischen ein Zoom) */
     if(e.isPrimary)pts.clear();
     try{svg.setPointerCapture(e.pointerId)}catch(_){}
     pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    if(pts.size===1){moved=0;const t=e.target.closest&&e.target.closest('[data-city]');tapCity=t?t.dataset.city:null}else moved=99;
+    if(pts.size===1){moved=0;tapT0=performance.now();const t=e.target.closest&&e.target.closest('[data-city]');tapCity=t?t.dataset.city:null}else moved=99;
   });
   svg.addEventListener('pointermove',e=>{
     if(!pts.has(e.pointerId)||!UI.vb)return;
@@ -6465,15 +6525,15 @@ function zoomAt(cx,cy,f){
   });
   const end=e=>{
     if(!pts.has(e.pointerId))return;pts.delete(e.pointerId);
-    if(pts.size===0&&moved<=6&&tapCity)onCityTap(tapCity);
+    if(pts.size===0&&moved<=6&&tapCity)onCityTap(tapCity,e.shiftKey||e.type==='pointerup'&&performance.now()-tapT0>480);
     if(pts.size===0){tapCity=null;mapMoving(false)}
   };
   svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);svg.addEventListener('lostpointercapture',end);
   svg.addEventListener('wheel',e=>{e.preventDefault();mapMoving(true);mapMoving(false);if(UI.vb)zoomAt(e.clientX,e.clientY,e.deltaY<0?1.15:1/1.15)},{passive:false});
 })();
-function onCityTap(id){
+function onCityTap(id,pin){
   const a=actor();
-  if(S&&S.phase==='build'&&isMine(a)){UI.buildSel=UI.buildSel===id?null:id;render()}
+  if(S&&S.phase==='build'&&isMine(a)){if(pin&&buildOptions(me()).some(o=>o.city===id)){pinSync();UI.cpin=UI.cpin===id?null:id;if(!UI.buildSel)UI.buildSel=id;buzz&&buzz();render();return}UI.buildSel=UI.buildSel===id?null:id;render()}
 }
 
 /* --- Bedienpult --- */
@@ -6592,7 +6652,7 @@ function bidLadder(auc,a){/* v199: wer bietet mit – Höchstgebot, am Zug, dabe
 function marketHTML(mode){
   const buy=new Set(buyable());const m=me();const ia=S.phase==='auction'&&S.auc&&S.auc.mode==='bid'?S.auc.plant:null;
   const dc=S.phase==='auction'?S.discount:null;
-  const pdo=n=>S.mat&&S.mat[H]&&buy.has(n)?facPD(m,n):0;const card=n=>plantCard(n,mode==='pick'?{act:'pick',sel:UI.sel===n,dis:!buy.has(n)||minBid(n)>facMax(m,n)||plantBlocked(m,n),disc:n===dc,nb:plantBlocked(m,n),pd:pdo(n)}:{act:'pinfo',inauc:n===ia,disc:n===dc,nb:plantBlocked(m,n)&&buy.has(n),pd:pdo(n)});
+  const pdo=n=>S.mat&&S.mat[H]&&buy.has(n)?facPD(m,n):0;const card=n=>plantCard(n,mode==='pick'?{act:'pick',sel:UI.sel===n,dis:!buy.has(n)||minBid(n)>facMax(m,n)||plantBlocked(m,n),disc:n===dc,nb:plantBlocked(m,n),pd:pdo(n),pin:UI.pin===n}:{act:'pinfo',inauc:n===ia,disc:n===dc,nb:plantBlocked(m,n)&&buy.has(n),pd:pdo(n)});
   if(S.step===3||MR().china)return `<div class="sec"><div class="mkt-label"><span>${MR().china&&S.step<3?'Markt · Planwirtschaft':'Markt · alle kaufbar'}</span>${MR().china&&S.step<3?`<span>${S.deck.length} im Stapel</span>`:''}</div><div class="cards">${S.market.map(card).join('')}</div>${MR().china&&S.step<3?'<p class="hint mk-x">Gekaufte Kraftwerke werden erst am Rundenende ersetzt.</p>':''}</div>`;
   const bn=buyN(),now=S.market.slice(0,bn),fut=S.market.slice(bn);
   const spy=S.spy===H&&S.deck.length?`<div class="spy"><span>${LANG==='en'?'Industrial espionage · top card of the deck':'Industriespionage · oberste Karte im Stapel'}</span>${S.deck[0]===STEP3?plantCard(STEP3):S.deck[0]>=100?`<b class="spyev">${promoName(PROMO_BY_ID[S.deck[0]])}</b>`:plantCard(S.deck[0],{sm:true,act:'pinfo'})}</div>`:'';
@@ -6622,7 +6682,7 @@ function panelAuction(a){
     if(isMine(a)){
       const key=auc.plant+'-'+auc.bid;
       if(UI.bidKey!==key){UI.bidKey=key;UI.bid=auc.bid+1}
-      const can=facMax(me(),auc.plant)>=auc.bid+1;
+      const can=facMax(me(),auc.plant)>=auc.bid+1;if(can)h+=plantLedgerHTML(auc.plant,UI.bid,{noPin:true});
       h+=aucAct({t:LX(`Höchstgebot ${auc.bid} € · erhöhen oder aussteigen`,`Highest bid ${auc.bid} € · raise or drop out`),h:facNote(auc.plant,UI.bid)+(can?`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=auc.bid+1?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=facMax(me(),auc.plant)?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="raise">${LX('Bieten','Bid')}<span class="bamt"> ${UI.bid} €</span></button><button type="button" class="btn bdrop" data-act="drop">Aussteigen</button></div>`+`<div class="proxyrow">${UI.proxyHit&&UI.proxyHit.plant===auc.plant?`<p class="hint">${LX(`Dein Limit von ${UI.proxyHit.max} € ist erreicht. Weiter bieten oder aussteigen?`,`Your limit of ${UI.proxyHit.max} € has been reached. Keep bidding or drop out?`)}</p>`:''}<button type="button" class="chip" data-act="proxy" ${UI.bid<=auc.bid+1?'disabled':''}>⟳ ${LX(`Automatisch bis ${UI.bid} € mitbieten`,`Auto-bid up to ${UI.bid} €`)}</button></div>`:`<p class="hint">Du hast nicht genug Geld, um zu erhöhen.</p><button type="button" class="btn" data-act="drop">Aussteigen</button>`)});
       /* v116: Erklärtext unter den Gebotsknöpfen entfernt */
     }
@@ -6634,9 +6694,9 @@ function panelAuction(a){
     h+=`<section class="sec aucsec"><h3>Du eröffnest</h3><p class="hint">${UI.sel?'Lege dein Startgebot fest.':'Tippe auf ein Kraftwerk im aktuellen Markt, um es zu versteigern.'}${S.round===1?' In der ersten Runde muss jeder ein Kraftwerk kaufen.':''}</p>`;
     const passB=S.round>1?`<button type="button" class="btn" data-act="pass">Diese Runde passen</button>`:'';
     if(UI.sel){
-      h+=`<div class="bidbox">${plantCard(UI.sel)}<div>${plantLine(UI.sel)}</div></div>`;
-      h+=aucAct({t:LX(`Kraftwerk ${PN(UI.sel)} versteigern`,`Auction plant ${PN(UI.sel)}`),h:`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=minBid(UI.sel)?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=facMax(me(),UI.sel)?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="open">Für ${UI.bid} € anbieten</button></div>${facNote(UI.sel,UI.bid)}${passB}`});
-    }else if(passB)h+=aucAct({t:LX('Kraftwerk im Markt antippen – oder passen','Tap a plant in the market – or pass'),h:passB});
+      h+=plantLine(UI.sel)+plantLedgerHTML(UI.sel,UI.bid);
+      h+=aucAct({t:LX(`Kraftwerk ${PN(UI.sel)} versteigern`,`Auction plant ${PN(UI.sel)}`),h:`<div class="row"><div class="stepper"><button type="button" data-act="bidm" ${UI.bid<=minBid(UI.sel)?'disabled':''} aria-label="Gebot senken">−</button><output>${UI.bid} €</output><button type="button" data-act="bidp" ${UI.bid>=facMax(me(),UI.sel)?'disabled':''} aria-label="Gebot erhöhen">+</button></div><button type="button" class="btn pri grow" data-act="open">Für ${UI.bid} € anbieten</button></div>${passB}`});
+    }else{pinSync();if(UI.pin!=null&&S.market.includes(UI.pin))h+=plantLedgerHTML(UI.pin,minBid(UI.pin));if(passB)h+=aucAct({t:LX('Kraftwerk im Markt antippen – oder passen','Tap a plant in the market – or pass'),h:passB})}
     h+=`</section>`;
     return h+marketHTML('pick');
   }
@@ -6771,8 +6831,8 @@ function panelBuild(a){
   const tb=S.turnBuilt.length?`<p class="nturn">Diesen Zug: ${S.turnBuilt.length} ${S.turnBuilt.length===1?'Stadt':'Städte'} für ${S.turnBuilt.reduce((s,b)=>s+b.cost,0)} € (${S.turnBuilt.map(b=>CITY[b.city].name).join(', ')})</p>`:'';
   if(pl2()){const n=cityCount(p),cap=capacity(p),fu=fueledCap(p),g=incomeFor(n+1,fu)-incomeFor(n,fu);
     let h2=`<section class="sec pl2b"><div class="pb-st"><span><b>${n}</b><small>${LX('Städte','Cities')}</small></span><span><b>${cap}</b><small>${LX('Kapazität','Capacity')}</small></span><span><b>${p.money}€</b><small>${LX('Verfügbar','Available')}</small></span><span><b>${n>=cap?'–':'+'+g+'€'}</b><small>${LX('Nächste Stadt','Next city')}</small></span></div>${tb}${buildRuleHint(p)}`;
-    const sel2=UI.buildSel&&opts.find(o=>o.city===UI.buildSel);if(UI.buildSel&&!sel2)h2+=cityWhyNot(p,UI.buildSel);if(sel2)h2+=buildSplitHTML(p,sel2);
-    if(opts.length)h2+=`<div class="mkt-label"><span>${LX('Günstigste Städte','Cheapest cities')}</span><span>${LX('Antippen zeigt sie','Tap to show')}</span></div><div class="opts pb-opts">${opts.slice(0,6).map(o=>`<button type="button" class="opt${UI.buildSel===o.city?' sel':''}" data-act="bsel" data-city="${o.city}" ${o.cost>p.money?'disabled':''}><span class="nm">${CITY[o.city].name}</span><span class="cst">${o.cost} €</span></button>`).join('')}</div>`;else h2+=`<p class="hint">${LX('Keine Stadt ist für dich frei.','No city is open for you.')}</p>`;
+    const sel2=UI.buildSel&&opts.find(o=>o.city===UI.buildSel);if(UI.buildSel&&!sel2)h2+=cityWhyNot(p,UI.buildSel);if(sel2){const cl=cityLedgerHTML(sel2.city);h2+=(cl?'':buildSplitHTML(p,sel2))+cityPinBar(sel2.city)+cl}
+    if(opts.length)h2+=`<div class="mkt-label"><span>${LX('Günstigste Städte','Cheapest cities')}</span><span>${LX('Antippen zeigt sie','Tap to show')}</span></div><div class="opts pb-opts">${opts.slice(0,6).map(o=>`<button type="button" class="opt${UI.buildSel===o.city?' sel':''}${UI.cpin===o.city?' pinned':''}" data-act="bsel" data-city="${o.city}" ${o.cost>p.money?'disabled':''}><span class="nm">${CITY[o.city].name}</span><span class="cst">${o.cost} €</span></button>`).join('')}</div>`;else h2+=`<p class="hint">${LX('Keine Stadt ist für dich frei.','No city is open for you.')}</p>`;
     if(cityCount(p)+1>=END_AT&&!S.endTriggered)h2+=`<p class="warn">${LX(`Mit ${END_AT} Städten endet das Spiel nach dieser Runde.`,`Reaching ${END_AT} cities ends the game after this round.`)}</p>`;
     if(sel2){const w=buildWhyHTML(p,sel2);if(w)h2+=`<p class="hint">${w}</p>`}
     h2+=`</section>`;UI._ab={t:sel2?`${CITY[sel2.city].name} · ${sel2.cost} €`:S.turnBuilt.length?LX(`${S.turnBuilt.length} ${S.turnBuilt.length===1?'Stadt':'Städte'} gebaut`,`${S.turnBuilt.length} ${S.turnBuilt.length===1?'city':'cities'} built`):LX('Stadt auf der Karte antippen','Tap a city on the map'),h:`<div class="row">${S.turnBuilt.length?`<button type="button" class="btn bundo" data-act="breset" aria-label="${LX('Bauzug zurücknehmen','Undo building')}" title="${LX('Zurück','Undo')}"><svg width="20" height="18" viewBox="0 0 18 16" aria-hidden="true"><path d="M6 3 2 7l4 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 7H11a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" transform="translate(0 -2)"/></svg></button>`:''}${sel2?`<button type="button" class="btn pri grow" data-act="build" data-city="${sel2.city}">${LX('Bauen','Build')} · ${sel2.cost} €</button>`:''}<button type="button" class="btn${sel2?'':' pri grow'}" data-act="bdone">${LX('Fertig','Done')}</button></div>`};
@@ -6782,10 +6842,10 @@ function panelBuild(a){
   if(UI.buildSel&&!sel)h+=cityWhyNot(p,UI.buildSel);
   if(sel){
     const c=CITY[sel.city];
-    h+=`<div class="selinfo"><div class="t">${c.name}</div><div class="calc">Platz ${sel.slot} € + ${sel.jump?'freier Sprung 0 €':MR().islands&&p.cities.length&&islandOf(sel.city)&&!p.cities.some(x=>islandOf(x)===islandOf(sel.city))?'Insel-Aufpreis '+sel.conn+' €':'Leitung '+sel.conn+' €'} = <b>${sel.cost} €</b>${buildWhyHTML(p,sel)}<br>${(()=>{const n=p.cities.length,cap=capacity(p),fu=fueledCap(p);const g=incomeFor(n+1,fu)-incomeFor(n,fu);return n>=cap?'<span class="nwarn">Über Kapazität: bringt erst mit größeren Kraftwerken Geld.</span>':g>0?'Danach '+(n+1)+' von '+cap+' versorgt · Einnahme +'+g+' €':'<span class="nwarn">Brennstoff reicht nicht: bringt diese Runde kein Geld.</span>'})()}</div><button type="button" class="btn pri" data-act="build" ${sel.cost>p.money?'disabled':''}>${sel.cost>p.money?'Zu wenig Geld':'Hier bauen · '+sel.cost+' €'}</button></div>`;
+    h+=`<div class="selinfo"><div class="t">${c.name}</div><div class="calc">Platz ${sel.slot} € + ${sel.jump?'freier Sprung 0 €':MR().islands&&p.cities.length&&islandOf(sel.city)&&!p.cities.some(x=>islandOf(x)===islandOf(sel.city))?'Insel-Aufpreis '+sel.conn+' €':'Leitung '+sel.conn+' €'} = <b>${sel.cost} €</b>${buildWhyHTML(p,sel)}<br>${(()=>{const n=p.cities.length,cap=capacity(p),fu=fueledCap(p);const g=incomeFor(n+1,fu)-incomeFor(n,fu);return n>=cap?'<span class="nwarn">Über Kapazität: bringt erst mit größeren Kraftwerken Geld.</span>':g>0?'Danach '+(n+1)+' von '+cap+' versorgt · Einnahme +'+g+' €':'<span class="nwarn">Brennstoff reicht nicht: bringt diese Runde kein Geld.</span>'})()}</div><button type="button" class="btn pri" data-act="build" ${sel.cost>p.money?'disabled':''}>${sel.cost>p.money?'Zu wenig Geld':'Hier bauen · '+sel.cost+' €'}</button></div>`+cityPinBar(sel.city)+cityLedgerHTML(sel.city);
   }
   if(opts.length){
-    h+=`<div class="mkt-label"><span>Günstigste Städte</span><span>${p.money} € verfügbar</span></div><div class="opts">${opts.slice(0,5).map(o=>`<button type="button" class="opt${UI.buildSel===o.city?' sel':''}" data-act="bsel" data-city="${o.city}"><span><span class="nm">${CITY[o.city].name}</span> <span class="rg">${REGIONS[CITY[o.city].reg].name}</span></span><span class="cst">${o.cost} €</span></button>`).join('')}</div>`;
+    h+=`<div class="mkt-label"><span>Günstigste Städte</span><span>${p.money} € verfügbar</span></div><div class="opts">${opts.slice(0,5).map(o=>`<button type="button" class="opt${UI.buildSel===o.city?' sel':''}${UI.cpin===o.city?' pinned':''}" data-act="bsel" data-city="${o.city}"><span><span class="nm">${CITY[o.city].name}</span> <span class="rg">${REGIONS[CITY[o.city].reg].name}</span></span><span class="cst">${o.cost} €</span></button>`).join('')}</div>`;
   }else h+=`<p class="hint">Keine Stadt ist für dich frei.</p>`;
   if(cityCount(p)+1>=END_AT&&!S.endTriggered)h+=`<p class="warn">Mit ${END_AT} Städten endet das Spiel nach dieser Runde.</p>`;
   h+=`</section>`;UI._ab={t:S.turnBuilt.length?LX(`${S.turnBuilt.length} ${S.turnBuilt.length===1?'Stadt':'Städte'} gebaut`,`${S.turnBuilt.length} ${S.turnBuilt.length===1?'city':'cities'} built`):LX('Stadt auf der Karte antippen','Tap a city on the map'),h:`<div class="row">${S.turnBuilt.length?'<button type="button" class="btn" data-act="breset">Zurücknehmen</button>':''}<button type="button" class="btn pri grow" data-act="bdone">Ausbau beenden</button></div>`};
@@ -8582,7 +8642,7 @@ let THEME=(()=>{try{return localStorage.getItem('hochspannung-theme')||'dark'}ca
 const _mqLight=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
 function applyTheme(){const t=THEME==='auto'?(_mqLight&&_mqLight.matches?'light':'dark'):THEME;document.documentElement.dataset.theme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#eef1f3':'#0b1014'}
 /* Sichtbare Höhe: auf manchen iPhones (Homescreen-App) ist unten ein Streifen nicht sichtbar. Wir richten uns nach dem sichtbaren Bereich (visualViewport) und bieten "Höher setzen" als Ausweg. */
-const APPV='v280';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
+const APPV='v281';let BOTMODE=(()=>{try{return localStorage.getItem('hochspannung-bot')||'auto'}catch(_){return'auto'}})();
 function fitViewport(){try{const app=document.getElementById('app');if(!app)return;const vv=window.visualViewport;let h=vv?Math.round(vv.height):innerHeight;
   const lift=BOTMODE==='lift'?Math.round(Math.max(56,(screen.height>screen.width)===(innerHeight>innerWidth)?0:0)):0;
   if(vv&&vv.height<innerHeight-20||lift){app.style.bottom='auto';app.style.height=(Math.min(h,innerHeight)-(BOTMODE==='lift'?64:0))+'px'}else{app.style.bottom='';app.style.height=''}
@@ -9398,6 +9458,8 @@ const A={
   buy:()=>{if(!myTurn('buy'))return'skip';const tot=Z();RES.forEach(r=>tot[r]=cartTot(r));if(!warnGate('buy',fuelWarn(tot)))return;if(!cmdBuy(H,tot,UI.kside||'south',UI.pcart))return'skip';UI.pcart={}},
   skipbuy:()=>{if(!myTurn('buy'))return'skip';if(!warnGate('skipbuy',fuelWarn({})))return;cmdBuy(H,{coal:0,oil:0,garbage:0,uranium:0},'south',null)},
   bsel:b=>{UI.buildSel=b.dataset.city},
+  pinp:b=>{pinSync();const n=+b.dataset.num;UI.pin=UI.pin===n?null:n},pinx:()=>{UI.pin=null},
+  cpin:b=>{pinSync();const c=b.dataset.city;UI.cpin=UI.cpin===c?null:c},cpinx:()=>{UI.cpin=null},
   build:()=>{if(!myTurn('build')||!canBuildIn(H,UI.buildSel))return'skip';if(doBuild(H,UI.buildSel))UI.buildSel=null},
   breset:()=>{if(!myTurn('build'))return;undoBuilds(H)},
   bdone:()=>{if(!myTurn('build'))return;if(!warnGate('bdone',buildWarn()))return;if(!S.turnBuilt.length)log(me().name+' baut nicht aus.',H);UI.buildSel=null;nextSeq()},
@@ -9415,10 +9477,15 @@ function myTurn(kind){const a=actor();return a&&a.pid===H&&a.kind===kind}
 /* v276 V5: mit der Maus über einer baubaren Stadt zeigt die Karte die Leitung, ohne neu zu zeichnen */
 {const ov=()=>document.getElementById('routeov');document.addEventListener('pointerover',e=>{if(e.pointerType!=='mouse'||!S||S.phase!=='build')return;const c=e.target.closest&&e.target.closest('#map .city.can,#map .ctg');const o=ov();if(!o)return;const id=c?c.dataset.city:UI.buildSel;if(o._c===id)return;o._c=id;o.innerHTML=routeSVG(id);o.classList.toggle('hov',!!c&&id!==UI.buildSel);buildTip(id)})}
 /* v263: lange drücken auf ein Kraftwerk öffnet seine Karte mit den Preisen je Spieler */
-{let lpT=null,lpEl=null;document.addEventListener('pointerdown',e=>{const c=e.target.closest('.plant[data-num]');if(!c||!S||!S.mat)return;lpEl=c;clearTimeout(lpT);lpT=setTimeout(()=>{if(lpEl!==c)return;UI.lp=Date.now();UI.back=isDock()?UI.sheet:null;UI.pnum=+c.dataset.num;UI.sheet='plant';render()},480)},true);
+{let lpT=null,lpEl=null;document.addEventListener('pointerdown',e=>{const c=e.target.closest('.plant[data-num]');if(!c||!S||!S.mat)return;lpEl=c;clearTimeout(lpT);lpT=setTimeout(()=>{if(lpEl!==c)return;UI.lp=Date.now();if(c.dataset.act==='pick'&&!c.disabled&&myTurn('choose')){pinSync();const n=+c.dataset.num;UI.pin=UI.pin===n?null:n;buzz&&buzz();render();return}UI.back=isDock()?UI.sheet:null;UI.pnum=+c.dataset.num;UI.sheet='plant';render()},480)},true);
  let lpX=0,lpY=0;document.addEventListener('pointerdown',e=>{lpX=e.clientX;lpY=e.clientY},true);document.addEventListener('pointermove',e=>{if(lpEl&&Math.hypot(e.clientX-lpX,e.clientY-lpY)>10){clearTimeout(lpT);lpEl=null}},true);['pointerup','pointercancel'].forEach(t=>document.addEventListener(t,()=>{clearTimeout(lpT);lpEl=null},true));
  document.addEventListener('click',e=>{if(UI.lp&&Date.now()-UI.lp<700&&e.target.closest('.plant[data-num]')){e.stopPropagation();e.preventDefault();UI.lp=0}},true);
  document.addEventListener('contextmenu',e=>{if(e.target.closest('.plant[data-num]')&&S&&S.mat)e.preventDefault()})}
+/* v281: ⇧-Klick heftet ein Kraftwerk oder eine Stadt an, P heftet die Auswahl an */
+document.addEventListener('click',e=>{if(!e.shiftKey||!S)return;const b=e.target.closest('[data-act="pick"],[data-act="bsel"]');if(!b||b.disabled)return;e.preventDefault();e.stopPropagation();pinSync();
+  if(b.dataset.act==='pick'){const n=+b.dataset.num;UI.pin=UI.pin===n?null:n}else{const c=b.dataset.city;UI.cpin=UI.cpin===c?null:c;if(!UI.buildSel)UI.buildSel=c}render()},true);
+document.addEventListener('keydown',e=>{if(!S||e.repeat||e.metaKey||e.ctrlKey||e.altKey||(e.key!=='p'&&e.key!=='P'))return;const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'))return;if(!sheet.hidden)return;pinSync();
+  if(myTurn('choose')&&UI.sel!=null){UI.pin=UI.pin===UI.sel?null:UI.sel;render()}else if(S.phase==='build'&&isMine(actor())&&UI.buildSel&&buildOptions(me()).some(o=>o.city===UI.buildSel)){UI.cpin=UI.cpin===UI.buildSel?null:UI.buildSel;render()}});
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b||b.disabled||b.hasAttribute('disabled'))return;
   const f=A[b.dataset.act];if(!f)return;
