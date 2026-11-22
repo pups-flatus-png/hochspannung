@@ -55,7 +55,7 @@ Method: 4 AI players ("normal"), Germany, standard deck. Every 4-of-6 matchup, r
 
 Reading:
 - **Companies are close but not even:** Atomix is consistently a little strong (about 28%) and Kohle & Stahl a little weak (22–24%); the others sit near 25%. The no-company control spans 22.8–26.8%, so only Atomix stands out clearly.
-- **Strategies are not:** Logistics beats Pioneer by 9 points, about four standard deviations. Cheap fuel compounds over a game; Pioneer's early second slot does not pay off for the computer players.
+- **Strategies are not:** Logistics beats Pioneer by 9 points, about twice the run-to-run spread (one run so far). Cheap fuel compounds over a game; Pioneer's early second slot does not pay off for the computer players.
 - **Seat order is fair** in Founders.
 - **Netzbau:** 3 € keeps it at fair share; 4 € makes it the strongest company.
 - **Limit:** the computer players don't plan around their abilities (for example, Kohle & Stahl doesn't stockpile on purpose), so human play can differ. Real playtests remain the final word.
